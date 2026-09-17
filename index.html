@@ -23,8 +23,8 @@
         const b64=values.join('');
         const binary=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
         let html=pako.ungzip(binary,{to:'string'});
-        html=html.replace('</head>','<link rel="stylesheet" href="assets/css/student-modern.css?v=2"></head>');
-        html=html.replace('</body>','<script src="assets/js/student-ui.js?v=2"><\/script></body>');
+        html=html.replace('</head>','<link rel="stylesheet" href="assets/css/student-modern.css?v=3"><link rel="stylesheet" href="assets/css/student-dashboard.css?v=3"></head>');
+        html=html.replace('</body>','<script src="assets/js/student-ui.js?v=3"><\/script></body>');
         document.open();
         document.write(html);
         document.close();
