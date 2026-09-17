@@ -9,27 +9,24 @@
   </style>
 </head>
 <body>
-  <div class="loader"><div class="spinner"></div><h2>جاري تحميل لوحة الإدارة الكاملة...</h2><p>يتم استعادة جميع أقسام ووظائف الإدارة الأصلية.</p></div>
+  <div class="loader"><div class="spinner"></div><h2>جاري تحميل لوحة الإدارة...</h2><p>يتم تشغيل الواجهة المطورة مع جميع وظائف الإدارة الأصلية.</p></div>
   <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
   <script>
     (async function(){
       try{
         const parts=['legacy/admin16.1.part','legacy/admin16.2.part','legacy/admin16.3.part'];
         const values=await Promise.all(parts.map(async path=>{
-          const response=await fetch(path+'?v=1',{cache:'no-store'});
+          const response=await fetch(path+'?v=2',{cache:'no-store'});
           if(!response.ok) throw new Error('تعذر تحميل '+path);
           return (await response.text()).trim();
         }));
         const b64=values.join('');
         const binary=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
-        const html=pako.ungzip(binary,{to:'string'});
-        document.open();
-        document.write(html);
-        document.close();
-      }catch(error){
-        console.error(error);
-        document.body.innerHTML='<div class="error"><h2>تعذر تشغيل لوحة الإدارة الكاملة</h2><p>جرّب تحديث الصفحة بعد لحظات. إذا استمرت المشكلة سيتم إصلاح ملف التحميل.</p></div>';
-      }
+        let html=pako.ungzip(binary,{to:'string'});
+        html=html.replace('</head>','<link rel="stylesheet" href="assets/css/admin-modern.css?v=3"></head>');
+        html=html.replace('</body>','<script src="assets/js/admin-ui.js?v=3"><\/script></body>');
+        document.open();document.write(html);document.close();
+      }catch(error){console.error(error);document.body.innerHTML='<div class="error"><h2>تعذر تشغيل لوحة الإدارة</h2><p>جرّب تحديث الصفحة بعد لحظات.</p></div>'}
     })();
   </script>
 </body>
