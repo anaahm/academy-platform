@@ -2,181 +2,35 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>الأكاديمية | لوحة الطالب</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Cairo', 'sans-serif'] },
-          boxShadow: { soft: '0 18px 50px rgba(15,23,42,.08)' }
-        }
-      }
-    }
-  </script>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>جاري تحميل الأكاديمية...</title>
   <style>
-    *{box-sizing:border-box} body{font-family:'Cairo',sans-serif;background:#f8fafc;color:#0f172a}
-    .soft-card{background:#fff;border:1px solid #e2e8f0;box-shadow:0 18px 50px rgba(15,23,42,.06)}
-    .hide-scrollbar::-webkit-scrollbar{display:none}.hide-scrollbar{scrollbar-width:none}
-    .progress-ring{background:conic-gradient(#2563eb 0 72%,#e2e8f0 72% 100%)}
-    .road-line:before{content:"";position:absolute;right:19px;top:42px;bottom:-20px;width:2px;background:#e2e8f0}
-    .road-line:last-child:before{display:none}
-    .nav-mobile{padding-bottom:env(safe-area-inset-bottom)}
+    *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f8fafc;color:#0f172a;display:flex;min-height:100vh;align-items:center;justify-content:center}.loader{text-align:center;padding:32px}.spinner{width:46px;height:46px;border:5px solid #dbeafe;border-top-color:#2563eb;border-radius:50%;margin:0 auto 18px;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}h2{margin:0 0 8px;font-size:20px}p{margin:0;color:#64748b;font-size:14px}.error{max-width:620px;background:#fff;border:1px solid #fecaca;border-radius:20px;padding:24px;box-shadow:0 14px 35px rgba(15,23,42,.08)}
   </style>
 </head>
-<body class="min-h-screen pb-24 lg:pb-0">
-  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-slate-200">
-    <div class="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between gap-4">
-      <button onclick="goHome()" class="flex items-center gap-3 text-right">
-        <span class="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-200"><i class="fa-solid fa-graduation-cap"></i></span>
-        <span><strong class="block text-base md:text-lg leading-none">الأكاديمية</strong><small class="text-slate-400 text-[11px]">تعلم • اختبر • تقدّم</small></span>
-      </button>
-      <nav class="hidden lg:flex items-center bg-slate-100 p-1 rounded-2xl text-sm font-bold">
-        <button data-nav="home" onclick="switchView('home',this)" class="desktop-nav px-5 py-2 rounded-xl bg-white shadow-sm text-blue-700">الرئيسية</button>
-        <button data-nav="subjects" onclick="switchView('subjects',this)" class="desktop-nav px-5 py-2 rounded-xl text-slate-500">موادي</button>
-        <button data-nav="progress" onclick="switchView('progress',this)" class="desktop-nav px-5 py-2 rounded-xl text-slate-500">تقدمي</button>
-        <button data-nav="ranking" onclick="switchView('ranking',this)" class="desktop-nav px-5 py-2 rounded-xl text-slate-500">المتصدرون</button>
-      </nav>
-      <div class="flex items-center gap-2">
-        <button onclick="openTrackModal()" class="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs font-extrabold text-slate-600 hover:border-blue-200 hover:text-blue-700"><i class="fa-solid fa-shuffle"></i><span id="trackMini">أولى إعدادي</span></button>
-        <button class="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center"><i class="fa-solid fa-user"></i></button>
-      </div>
-    </div>
-  </header>
-
-  <main id="view-home" class="app-view max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
-    <section class="grid lg:grid-cols-[1.35fr_.65fr] gap-6 items-stretch">
-      <div class="relative overflow-hidden rounded-[2rem] bg-slate-950 text-white p-6 md:p-9 shadow-soft">
-        <div class="absolute -left-20 -top-20 w-64 h-64 rounded-full bg-blue-600/20 blur-3xl"></div>
-        <div class="absolute -right-24 -bottom-24 w-72 h-72 rounded-full bg-violet-600/20 blur-3xl"></div>
-        <div class="relative z-10 max-w-2xl">
-          <span class="inline-flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-full bg-white/10 border border-white/10 mb-5"><i class="fa-solid fa-bolt text-amber-300"></i> يوم جديد للتقدم</span>
-          <h1 class="text-3xl md:text-5xl font-black leading-tight mb-3">أهلًا يا أحمد 👋</h1>
-          <p class="text-slate-300 font-semibold leading-7 mb-7">خلّي هدفك بسيط: درس واحد اليوم، تدريب قصير بعده، وخطوة جديدة في طريقك.</p>
-          <div class="bg-white/10 border border-white/10 rounded-3xl p-4 md:p-5 flex flex-col md:flex-row md:items-center gap-4">
-            <div class="w-14 h-14 rounded-2xl bg-white text-blue-700 flex items-center justify-center text-xl shrink-0"><i class="fa-solid fa-book-open"></i></div>
-            <div class="flex-1 min-w-0"><p class="text-xs text-slate-300 font-bold mb-1">أكمل من حيث توقفت</p><h3 class="font-black text-lg truncate">اللغة العربية — المفعول المطلق</h3><div class="mt-3 h-2 bg-white/15 rounded-full overflow-hidden"><div class="h-full bg-blue-400 rounded-full" style="width:65%"></div></div></div>
-            <button onclick="openLesson()" class="bg-white text-slate-950 px-6 py-3 rounded-2xl font-black hover:bg-blue-50 transition">متابعة الدرس</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="soft-card rounded-[2rem] p-6 flex flex-col justify-between gap-6">
-        <div class="flex items-start justify-between gap-4">
-          <div><p class="text-xs font-black text-blue-600 mb-1">المسار الحالي</p><h2 id="trackTitle" class="text-xl font-black">تربية وتعليم • أولى إعدادي</h2><p class="text-sm text-slate-400 font-semibold mt-1">يمكنك تغيير المسار في أي وقت</p></div>
-          <button onclick="openTrackModal()" class="w-11 h-11 rounded-xl bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-700"><i class="fa-solid fa-pen"></i></button>
-        </div>
-        <div class="flex items-center gap-5">
-          <div class="progress-ring w-24 h-24 rounded-full p-[9px] shrink-0"><div class="w-full h-full bg-white rounded-full flex flex-col items-center justify-center"><strong class="text-xl">72%</strong><span class="text-[10px] text-slate-400 font-bold">هذا الأسبوع</span></div></div>
-          <div class="grid grid-cols-2 gap-3 flex-1 text-center">
-            <div class="bg-orange-50 rounded-2xl p-3"><strong class="block text-xl text-orange-600">5</strong><span class="text-[11px] text-slate-500 font-bold">أيام متتالية 🔥</span></div>
-            <div class="bg-emerald-50 rounded-2xl p-3"><strong class="block text-xl text-emerald-600">18</strong><span class="text-[11px] text-slate-500 font-bold">درس مكتمل</span></div>
-            <div class="bg-blue-50 rounded-2xl p-3"><strong class="block text-xl text-blue-600">27</strong><span class="text-[11px] text-slate-500 font-bold">اختبار</span></div>
-            <div class="bg-violet-50 rounded-2xl p-3"><strong class="block text-xl text-violet-600">1,240</strong><span class="text-[11px] text-slate-500 font-bold">XP</span></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="mt-9">
-      <div class="flex items-end justify-between gap-4 mb-5"><div><span class="text-xs text-blue-600 font-black">ابدأ بسرعة</span><h2 class="text-2xl font-black mt-1">موادك</h2></div><button onclick="switchView('subjects')" class="text-sm text-blue-700 font-black">عرض الكل <i class="fa-solid fa-arrow-left mr-1"></i></button></div>
-      <div id="subjectCards" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4"></div>
-    </section>
-
-    <section class="grid lg:grid-cols-3 gap-6 mt-9">
-      <div class="lg:col-span-2 soft-card rounded-[2rem] p-6 md:p-7">
-        <div class="flex items-center justify-between mb-6"><div><span class="text-xs font-black text-emerald-600">رحلتك التعليمية</span><h2 class="text-2xl font-black mt-1">الوحدة الحالية</h2></div><span class="text-xs font-black bg-emerald-50 text-emerald-700 px-3 py-2 rounded-xl">4 من 6 دروس</span></div>
-        <div class="space-y-2">
-          <div class="road-line relative flex gap-4 pb-6"><span class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 z-10"><i class="fa-solid fa-check"></i></span><div class="pt-1"><h3 class="font-black">مقدمة الوحدة</h3><p class="text-sm text-slate-400 font-semibold mt-1">مكتمل • 12 دقيقة</p></div></div>
-          <div class="road-line relative flex gap-4 pb-6"><span class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 z-10"><i class="fa-solid fa-check"></i></span><div class="pt-1"><h3 class="font-black">المفعول به</h3><p class="text-sm text-slate-400 font-semibold mt-1">مكتمل • 21 دقيقة</p></div></div>
-          <div class="road-line relative flex gap-4 pb-6"><span class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 z-10 ring-8 ring-blue-50"><i class="fa-solid fa-play text-xs"></i></span><div class="pt-1"><h3 class="font-black text-blue-700">المفعول المطلق</h3><p class="text-sm text-slate-400 font-semibold mt-1">أنت هنا • 65% مكتمل</p><button onclick="openLesson()" class="mt-3 text-xs font-black bg-blue-600 text-white px-4 py-2 rounded-xl">استكمال الدرس</button></div></div>
-          <div class="road-line relative flex gap-4 pb-6"><span class="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center shrink-0 z-10"><i class="fa-solid fa-lock text-xs"></i></span><div class="pt-1"><h3 class="font-black text-slate-500">المفعول لأجله</h3><p class="text-sm text-slate-400 font-semibold mt-1">يفتح بعد إكمال الدرس السابق</p></div></div>
-          <div class="relative flex gap-4"><span class="w-10 h-10 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 z-10"><i class="fa-solid fa-trophy"></i></span><div class="pt-1"><h3 class="font-black">اختبار الوحدة</h3><p class="text-sm text-slate-400 font-semibold mt-1">20 سؤال • +150 XP</p></div></div>
-        </div>
-      </div>
-
-      <div class="space-y-6">
-        <div class="rounded-[2rem] p-6 bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-soft"><span class="text-4xl">🎯</span><p class="text-xs font-black mt-4 opacity-80">تحدي اليوم</p><h3 class="text-2xl font-black mt-1">حل 10 أسئلة صحيحة</h3><p class="text-sm font-semibold mt-2 opacity-90">واكسب 50 XP إضافية اليوم.</p><button class="mt-5 w-full bg-white text-orange-700 py-3 rounded-2xl font-black">ابدأ التحدي</button></div>
-        <div class="soft-card rounded-[2rem] p-6"><div class="flex justify-between items-center mb-4"><h3 class="font-black text-lg">ترتيبك الأسبوعي</h3><span class="text-2xl">🏆</span></div><div class="flex items-center gap-3 bg-slate-50 rounded-2xl p-4"><strong class="text-3xl text-blue-700">#14</strong><div><p class="font-black">من بين 628 طالبًا</p><p class="text-xs text-slate-400 font-bold mt-1">تحتاج 180 XP للوصول للمركز 10</p></div></div></div>
-      </div>
-    </section>
-
-    <section class="mt-9 mb-8">
-      <div class="flex items-end justify-between gap-4 mb-5"><div><span class="text-xs text-violet-600 font-black">اختر أسلوب الشرح المناسب</span><h2 class="text-2xl font-black mt-1">مدرسون مقترحون</h2></div><span class="text-xs text-slate-400 font-bold">نماذج تجريبية</span></div>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <article class="soft-card rounded-3xl p-5"><div class="flex items-center gap-4"><div class="w-14 h-14 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center text-xl"><i class="fa-solid fa-chalkboard-user"></i></div><div><h3 class="font-black">أ/ محمد علي</h3><p class="text-xs text-slate-400 font-bold">لغة عربية</p></div></div><div class="flex justify-between text-xs font-bold text-slate-500 mt-5"><span>⭐ 4.9</span><span>12.4K مشاهدة</span></div></article>
-        <article class="soft-card rounded-3xl p-5"><div class="flex items-center gap-4"><div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl"><i class="fa-solid fa-chalkboard-user"></i></div><div><h3 class="font-black">أ/ أحمد حسن</h3><p class="text-xs text-slate-400 font-bold">رياضيات</p></div></div><div class="flex justify-between text-xs font-bold text-slate-500 mt-5"><span>⭐ 4.8</span><span>9.1K مشاهدة</span></div></article>
-        <article class="soft-card rounded-3xl p-5"><div class="flex items-center gap-4"><div class="w-14 h-14 rounded-2xl bg-violet-100 text-violet-700 flex items-center justify-center text-xl"><i class="fa-solid fa-chalkboard-user"></i></div><div><h3 class="font-black">أ/ منى خالد</h3><p class="text-xs text-slate-400 font-bold">علوم</p></div></div><div class="flex justify-between text-xs font-bold text-slate-500 mt-5"><span>⭐ 4.9</span><span>8.7K مشاهدة</span></div></article>
-        <article class="soft-card rounded-3xl p-5"><div class="flex items-center gap-4"><div class="w-14 h-14 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center text-xl"><i class="fa-solid fa-chalkboard-user"></i></div><div><h3 class="font-black">أ/ سارة محمود</h3><p class="text-xs text-slate-400 font-bold">لغة إنجليزية</p></div></div><div class="flex justify-between text-xs font-bold text-slate-500 mt-5"><span>⭐ 4.7</span><span>7.5K مشاهدة</span></div></article>
-      </div>
-    </section>
-  </main>
-
-  <main id="view-subjects" class="app-view hidden max-w-7xl mx-auto px-4 md:px-6 py-8"><div class="mb-7"><span class="text-xs font-black text-blue-600">كل المحتوى في مكان واحد</span><h1 class="text-3xl font-black mt-1">موادي</h1><p id="subjectsTrackText" class="text-slate-400 font-semibold mt-2">تربية وتعليم • أولى إعدادي</p></div><div id="subjectsFull" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"></div></main>
-
-  <main id="view-progress" class="app-view hidden max-w-6xl mx-auto px-4 md:px-6 py-8"><div class="mb-7"><span class="text-xs font-black text-emerald-600">الأرقام تساعدك تشوف تقدمك</span><h1 class="text-3xl font-black mt-1">تقدمي</h1></div><div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"><div class="soft-card rounded-3xl p-5 text-center"><strong class="text-3xl text-blue-600">18</strong><p class="text-sm text-slate-500 font-bold mt-2">درس مكتمل</p></div><div class="soft-card rounded-3xl p-5 text-center"><strong class="text-3xl text-emerald-600">86%</strong><p class="text-sm text-slate-500 font-bold mt-2">متوسط الاختبارات</p></div><div class="soft-card rounded-3xl p-5 text-center"><strong class="text-3xl text-orange-600">5</strong><p class="text-sm text-slate-500 font-bold mt-2">أيام متتالية</p></div><div class="soft-card rounded-3xl p-5 text-center"><strong class="text-3xl text-violet-600">1,240</strong><p class="text-sm text-slate-500 font-bold mt-2">XP</p></div></div><div class="soft-card rounded-[2rem] p-6"><h2 class="text-xl font-black mb-5">تقدم المواد</h2><div id="progressRows" class="space-y-5"></div></div></main>
-
-  <main id="view-ranking" class="app-view hidden max-w-4xl mx-auto px-4 md:px-6 py-8"><div class="text-center mb-8"><span class="text-5xl">🏆</span><h1 class="text-3xl font-black mt-3">المتصدرون هذا الأسبوع</h1><p class="text-slate-400 font-semibold mt-2">استمر في التعلم واجمع XP لتحسن ترتيبك</p></div><div class="soft-card rounded-[2rem] overflow-hidden"><div id="rankingRows"></div></div></main>
-
-  <nav class="nav-mobile lg:hidden fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-xl border-t border-slate-200 px-2 pt-2">
-    <div class="grid grid-cols-4 max-w-md mx-auto">
-      <button data-mobile="home" onclick="switchView('home',this)" class="mobile-nav text-blue-600 py-2 text-center"><i class="fa-solid fa-house text-lg block mb-1"></i><span class="text-[10px] font-black">الرئيسية</span></button>
-      <button data-mobile="subjects" onclick="switchView('subjects',this)" class="mobile-nav text-slate-400 py-2 text-center"><i class="fa-solid fa-book text-lg block mb-1"></i><span class="text-[10px] font-black">موادي</span></button>
-      <button data-mobile="progress" onclick="switchView('progress',this)" class="mobile-nav text-slate-400 py-2 text-center"><i class="fa-solid fa-chart-line text-lg block mb-1"></i><span class="text-[10px] font-black">تقدمي</span></button>
-      <button data-mobile="ranking" onclick="switchView('ranking',this)" class="mobile-nav text-slate-400 py-2 text-center"><i class="fa-solid fa-trophy text-lg block mb-1"></i><span class="text-[10px] font-black">الترتيب</span></button>
-    </div>
-  </nav>
-
-  <div id="trackModal" class="hidden fixed inset-0 z-[100] bg-slate-950/60 backdrop-blur-sm p-4 items-center justify-center">
-    <div class="bg-white rounded-[2rem] w-full max-w-xl p-6 md:p-8 shadow-2xl">
-      <div class="flex items-center justify-between mb-6"><div><p class="text-xs text-blue-600 font-black">إعداد المسار</p><h2 class="text-2xl font-black mt-1">اختر مرحلتك الدراسية</h2></div><button onclick="closeTrackModal()" class="w-10 h-10 rounded-xl bg-slate-100 text-slate-500"><i class="fa-solid fa-xmark"></i></button></div>
-      <div class="space-y-4"><div><label class="text-xs font-black text-slate-500 mb-2 block">نوع التعليم</label><div class="grid grid-cols-2 gap-3"><button data-type="تربية وتعليم" onclick="selectTrackButton('type',this)" class="track-type border-2 border-blue-600 bg-blue-50 text-blue-700 rounded-2xl p-4 font-black">تربية وتعليم</button><button data-type="أزهر" onclick="selectTrackButton('type',this)" class="track-type border-2 border-slate-200 rounded-2xl p-4 font-black text-slate-500">أزهر</button></div></div><div><label class="text-xs font-black text-slate-500 mb-2 block">المرحلة</label><div class="grid grid-cols-3 gap-2"><button data-stage="ابتدائي" onclick="selectTrackButton('stage',this)" class="track-stage border-2 border-slate-200 rounded-xl py-3 font-bold text-sm">ابتدائي</button><button data-stage="إعدادي" onclick="selectTrackButton('stage',this)" class="track-stage border-2 border-blue-600 bg-blue-50 text-blue-700 rounded-xl py-3 font-bold text-sm">إعدادي</button><button data-stage="ثانوي" onclick="selectTrackButton('stage',this)" class="track-stage border-2 border-slate-200 rounded-xl py-3 font-bold text-sm">ثانوي</button></div></div><div><label class="text-xs font-black text-slate-500 mb-2 block">الصف</label><select id="gradeSelect" class="w-full border-2 border-slate-200 rounded-2xl p-4 font-black outline-none focus:border-blue-500"><option>الأول</option><option>الثاني</option><option>الثالث</option></select></div></div>
-      <button onclick="saveTrack()" class="mt-7 w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-lg shadow-lg shadow-blue-200">حفظ المسار</button>
-    </div>
-  </div>
-
-  <div id="lessonModal" class="hidden fixed inset-0 z-[110] bg-slate-950/70 p-3 md:p-6 overflow-y-auto">
-    <div class="bg-slate-50 rounded-[2rem] max-w-5xl mx-auto min-h-[80vh] overflow-hidden shadow-2xl">
-      <div class="bg-white border-b border-slate-200 p-4 md:p-5 flex items-center justify-between sticky top-0 z-10"><div><p class="text-[11px] text-blue-600 font-black">اللغة العربية • الوحدة الثانية</p><h2 class="font-black text-lg">المفعول المطلق</h2></div><button onclick="closeLesson()" class="w-10 h-10 rounded-xl bg-slate-100 text-slate-500"><i class="fa-solid fa-xmark"></i></button></div>
-      <div class="p-4 md:p-7 grid lg:grid-cols-[1.5fr_.5fr] gap-6">
-        <div class="space-y-5"><div class="aspect-video bg-slate-900 rounded-3xl flex items-center justify-center text-white"><div class="text-center"><i class="fa-solid fa-circle-play text-6xl text-blue-400 mb-3"></i><p class="font-black">مكان فيديو الشرح</p><p class="text-xs text-slate-400 mt-1">سيتم ربط فيديو YouTube هنا</p></div></div><div class="soft-card rounded-3xl p-5"><p class="text-xs text-slate-400 font-black mb-3">اختر شرح المدرس</p><div class="flex gap-2 flex-wrap"><button class="bg-blue-600 text-white px-4 py-2 rounded-xl font-black text-sm">أ/ محمد علي</button><button class="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl font-black text-sm">أ/ أحمد سعيد</button><button class="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl font-black text-sm">أ/ خالد محمود</button></div></div><div class="soft-card rounded-3xl p-6"><h3 class="text-xl font-black mb-4">ملخص الدرس</h3><p class="text-slate-600 leading-8 font-semibold">هنا يظهر الشرح المكتوب أو الصور المرتبطة بالدرس. سنربط هذه المنطقة لاحقًا ببيانات Firebase بحيث يستطيع المدرس أو الإدارة إضافة المحتوى وتحديثه.</p></div></div>
-        <aside class="space-y-4"><div class="soft-card rounded-3xl p-5"><h3 class="font-black mb-4">تقدمك</h3><div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-blue-600" style="width:65%"></div></div><p class="text-xs text-slate-400 font-bold mt-2">65% من الدرس</p></div><div class="soft-card rounded-3xl p-5"><span class="text-3xl">🧠</span><h3 class="font-black text-lg mt-3">اختبر نفسك</h3><p class="text-sm text-slate-400 font-semibold mt-2">10 أسئلة قصيرة لتثبيت المعلومة.</p><button class="mt-4 w-full bg-emerald-500 text-white py-3 rounded-xl font-black">ابدأ التدريب</button></div></aside>
-      </div>
-    </div>
-  </div>
-
-<script>
-  const subjects=[
-    {name:'اللغة العربية',icon:'fa-language',tone:'blue',progress:65,lessons:12},
-    {name:'الرياضيات',icon:'fa-calculator',tone:'emerald',progress:42,lessons:10},
-    {name:'العلوم',icon:'fa-flask',tone:'violet',progress:78,lessons:9},
-    {name:'الدراسات',icon:'fa-earth-africa',tone:'amber',progress:30,lessons:8},
-    {name:'الإنجليزية',icon:'fa-a',tone:'rose',progress:56,lessons:11},
-    {name:'الحاسب',icon:'fa-laptop-code',tone:'cyan',progress:15,lessons:6}
-  ];
-  const tone={blue:['bg-blue-50','text-blue-700'],emerald:['bg-emerald-50','text-emerald-700'],violet:['bg-violet-50','text-violet-700'],amber:['bg-amber-50','text-amber-700'],rose:['bg-rose-50','text-rose-700'],cyan:['bg-cyan-50','text-cyan-700']};
-  let currentType='تربية وتعليم',currentStage='إعدادي';
-  function renderSubjects(){
-    const small=document.getElementById('subjectCards');
-    small.innerHTML=subjects.map((s,i)=>`<button onclick="switchView('subjects')" class="soft-card rounded-3xl p-4 text-right hover:-translate-y-1 transition"><span class="w-11 h-11 ${tone[s.tone][0]} ${tone[s.tone][1]} rounded-2xl flex items-center justify-center mb-4"><i class="fa-solid ${s.icon}"></i></span><h3 class="font-black text-sm">${s.name}</h3><p class="text-[11px] text-slate-400 font-bold mt-1">${s.lessons} درس</p><div class="h-1.5 bg-slate-100 rounded-full mt-4 overflow-hidden"><div class="h-full bg-slate-900 rounded-full" style="width:${s.progress}%"></div></div></button>`).join('');
-    document.getElementById('subjectsFull').innerHTML=subjects.map(s=>`<article class="soft-card rounded-[2rem] p-6"><div class="flex items-center gap-4"><span class="w-14 h-14 ${tone[s.tone][0]} ${tone[s.tone][1]} rounded-2xl flex items-center justify-center text-xl"><i class="fa-solid ${s.icon}"></i></span><div><h3 class="font-black text-lg">${s.name}</h3><p class="text-xs text-slate-400 font-bold">${s.lessons} درس • ${s.progress}% مكتمل</p></div></div><div class="mt-5 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-blue-600" style="width:${s.progress}%"></div></div><button onclick="goHome();setTimeout(openLesson,100)" class="mt-5 w-full border-2 border-slate-200 py-3 rounded-2xl font-black text-sm hover:border-blue-200 hover:text-blue-700">فتح المادة</button></article>`).join('');
-    document.getElementById('progressRows').innerHTML=subjects.slice(0,5).map(s=>`<div><div class="flex justify-between text-sm font-black mb-2"><span>${s.name}</span><span class="text-slate-400">${s.progress}%</span></div><div class="h-2.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-blue-600 rounded-full" style="width:${s.progress}%"></div></div></div>`).join('');
-  }
-  function renderRanking(){const names=['يوسف أحمد','مريم محمد','عمر خالد','سلمى علي','أنت'];document.getElementById('rankingRows').innerHTML=names.map((n,i)=>`<div class="flex items-center gap-4 p-5 border-b last:border-0 ${n==='أنت'?'bg-blue-50':''}"><strong class="w-8 text-center ${i<3?'text-amber-500':'text-slate-400'}">#${i+1}</strong><span class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-user text-slate-400"></i></span><div class="flex-1"><p class="font-black">${n}</p><p class="text-xs text-slate-400 font-bold">${1700-i*125} XP</p></div>${i<3?'<span>🏅</span>':''}</div>`).join('')}
-  function switchView(name,btn){document.querySelectorAll('.app-view').forEach(v=>v.classList.add('hidden'));document.getElementById('view-'+name).classList.remove('hidden');document.querySelectorAll('.desktop-nav').forEach(b=>{b.classList.remove('bg-white','shadow-sm','text-blue-700');b.classList.add('text-slate-500')});const d=document.querySelector(`[data-nav="${name}"]`);if(d){d.classList.add('bg-white','shadow-sm','text-blue-700');d.classList.remove('text-slate-500')}document.querySelectorAll('.mobile-nav').forEach(b=>{b.classList.remove('text-blue-600');b.classList.add('text-slate-400')});const m=document.querySelector(`[data-mobile="${name}"]`);if(m){m.classList.add('text-blue-600');m.classList.remove('text-slate-400')}window.scrollTo({top:0,behavior:'smooth'})}
-  function goHome(){switchView('home')}
-  function openTrackModal(){const m=document.getElementById('trackModal');m.classList.remove('hidden');m.classList.add('flex')}
-  function closeTrackModal(){const m=document.getElementById('trackModal');m.classList.add('hidden');m.classList.remove('flex')}
-  function selectTrackButton(type,el){const cls=type==='type'?'.track-type':'.track-stage';document.querySelectorAll(cls).forEach(b=>{b.classList.remove('border-blue-600','bg-blue-50','text-blue-700');b.classList.add('border-slate-200','text-slate-500')});el.classList.add('border-blue-600','bg-blue-50','text-blue-700');el.classList.remove('border-slate-200','text-slate-500');if(type==='type')currentType=el.dataset.type;else currentStage=el.dataset.stage}
-  function saveTrack(){const grade=document.getElementById('gradeSelect').value;const title=`${currentType} • ${grade} ${currentStage}`;document.getElementById('trackTitle').innerText=title;document.getElementById('trackMini').innerText=`${grade} ${currentStage}`;document.getElementById('subjectsTrackText').innerText=title;closeTrackModal()}
-  function openLesson(){document.getElementById('lessonModal').classList.remove('hidden');document.body.style.overflow='hidden'}
-  function closeLesson(){document.getElementById('lessonModal').classList.add('hidden');document.body.style.overflow=''}
-  renderSubjects();renderRanking();
-</script>
+<body>
+  <div class="loader" id="loader"><div class="spinner"></div><h2>جاري تحميل النسخة الكاملة...</h2><p>يتم تشغيل جميع خصائص منصة الطالب الأصلية.</p></div>
+  <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+  <script>
+    (async function(){
+      try{
+        const parts=['legacy/student16.1.part','legacy/student16.2.part','legacy/student16.3.part'];
+        const values=await Promise.all(parts.map(async path=>{
+          const response=await fetch(path+'?v=1',{cache:'no-store'});
+          if(!response.ok) throw new Error('تعذر تحميل '+path);
+          return (await response.text()).trim();
+        }));
+        const b64=values.join('');
+        const binary=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
+        const html=pako.ungzip(binary,{to:'string'});
+        document.open();
+        document.write(html);
+        document.close();
+      }catch(error){
+        console.error(error);
+        document.body.innerHTML='<div class="error"><h2>تعذر تشغيل النسخة الكاملة</h2><p>جرّب تحديث الصفحة بعد لحظات. إذا استمرت المشكلة سيتم إصلاح ملف التحميل.</p></div>';
+      }
+    })();
+  </script>
 </body>
 </html>
