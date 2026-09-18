@@ -29,7 +29,7 @@ async function toggleLike(id){
  if(snap.exists())await ref.remove();else await ref.set(true);
 }
 async function reportPost(id){
- if(!confirm('إرسال بلاغ للإدارة عن هذا المنشور؟'))return;
+ if(!(await window.AcademyUI.confirm({title:'إرسال بلاغ؟',message:'سيصل البلاغ إلى إدارة المنصة لمراجعة هذا المنشور.',tone:'warning',acceptText:'إرسال البلاغ'})))return;
  await C.db.ref('community/forums/'+id+'/reports/'+user.uid).set({createdAt:Date.now()});C.toast('تم إرسال البلاغ للإدارة.');
 }
 async function toggleGroup(id){
