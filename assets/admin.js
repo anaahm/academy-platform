@@ -8,7 +8,7 @@ const auth=firebase.auth(),db=firebase.database();
 const $=id=>document.getElementById(id), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 
 let currentUser=null,root={},unsubscribe=null;
-const editState={subject:null,lesson:null,quiz:null,file:null,simulation:null,live:null,news:null};
+const editState={subject:null,lesson:null,quiz:null,file:null,simulation:null,live:null,schedule:null,news:null};
 const stageNames={primary:'ابتدائي',prep:'إعدادي',sec:'ثانوي'};
 const defaultSubjects={
  primary:[{id:'arabic',name:'اللغة العربية',emoji:'📖'},{id:'math',name:'الرياضيات',emoji:'🧮'},{id:'science',name:'العلوم',emoji:'🔬'},{id:'english',name:'اللغة الإنجليزية',emoji:'🇬🇧'},{id:'social',name:'الدراسات الاجتماعية',emoji:'🌍'},{id:'religion',name:'التربية الدينية',emoji:'🕌'}],
@@ -73,10 +73,10 @@ function adminName(){
 }
 
 function setTab(tab){
- $$$('.admin-tab').forEach(s=>s.classList.toggle('active',s.id==='admin-tab-'+tab));
- $$$('[data-admin-tab]').forEach(b=>b.classList.toggle('active',b.dataset.adminTab===tab));
+ $('.admin-tab').forEach(s=>s.classList.toggle('active',s.id==='admin-tab-'+tab));
+ $('[data-admin-tab]').forEach(b=>b.classList.toggle('active',b.dataset.adminTab===tab));
  const meta={
-  overview:['لوحة المعلومات','صباح الخير 👋'],curriculum:['هيكل المنهج','المواد والوحدات'],lessons:['المحتوى','إدارة الدروس'],quizzes:['التقييم','إدارة الاختبارات'],simulations:['التدريب','إدارة المحاكيات'],files:['المكتبة','الملفات والمراجع'],live:['الجلسات','البث المباشر'],teachers:['فريق التدريس','المدرسون والمراجعات'],students:['المتعلمون','إدارة الطلاب'],news:['التواصل','الأخبار والتحديثات'],community:['الإشراف','المجتمع والبلاغات'],announcements:['التواصل','الإعلانات'],settings:['المنصة','الإعدادات']
+  overview:['لوحة المعلومات','صباح الخير 👋'],curriculum:['هيكل المنهج','المواد والوحدات'],lessons:['المحتوى','إدارة الدروس'],quizzes:['التقييم','إدارة الاختبارات'],simulations:['التدريب','إدارة المحاكيات'],files:['المكتبة','الملفات والمراجع'],schedule:['المواعيد','جدول الحصص'],live:['الجلسات','البث المباشر'],teachers:['فريق التدريس','المدرسون والمراجعات'],students:['المتعلمون','إدارة الطلاب'],news:['التواصل','الأخبار والتحديثات'],community:['الإشراف','المجتمع والبلاغات'],announcements:['التواصل','الإعلانات'],settings:['المنصة','الإعدادات']
  }[tab]||['الإدارة','لوحة الإدارة'];
  $('adminSectionKicker').textContent=meta[0];$('adminSectionTitle').textContent=meta[1];
  $('adminSidebar').classList.remove('open');$('adminOverlay').classList.add('hidden');
@@ -84,10 +84,10 @@ function setTab(tab){
 }
 function renderAll(){
  $('adminName').textContent=adminName();$('adminEmailMini').textContent=currentUser?.email||'';$('adminAvatar').textContent=(adminName()[0]||'م').toUpperCase();
- renderOverview();renderCurriculum();renderLessons();renderQuizzes();renderSimulations();renderFiles();renderLiveSessions();renderTeachers();renderStudents();renderNews();renderCommunityAdmin();loadAnnouncement();loadSettings();updatePendingBadge();updateCommunityBadge();
+ renderOverview();renderCurriculum();renderLessons();renderQuizzes();renderSimulations();renderFiles();renderLiveSessions();renderScheduleEvents();renderTeachers();renderStudents();renderNews();renderCommunityAdmin();loadAnnouncement();loadSettings();updatePendingBadge();updateCommunityBadge();
 }
 function renderTab(tab){
- ({overview:renderOverview,curriculum:renderCurriculum,lessons:renderLessons,quizzes:renderQuizzes,simulations:renderSimulations,files:renderFiles,live:renderLiveSessions,teachers:renderTeachers,students:renderStudents,news:renderNews,community:renderCommunityAdmin,announcements:loadAnnouncement,settings:loadSettings}[tab]||(()=>{}))();
+ ({overview:renderOverview,curriculum:renderCurriculum,lessons:renderLessons,quizzes:renderQuizzes,simulations:renderSimulations,files:renderFiles,live:renderLiveSessions,schedule:renderScheduleEvents,teachers:renderTeachers,students:renderStudents,news:renderNews,community:renderCommunityAdmin,announcements:loadAnnouncement,settings:loadSettings}[tab]||(()=>{}))();
 }
 
 /* Overview */
@@ -190,7 +190,7 @@ function renderLessons(){
  $('lessonsAdminList').innerHTML=arr.length?'<table class="admin-table"><thead><tr><th>الدرس</th><th>المسار</th><th>المرحلة</th><th>المادة</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>'+arr.map(l=>'<tr><td><strong>'+esc(l.title||'درس')+'</strong><br><small>'+(l.videos?.length||0)+' فيديو • '+(l.questions?.length||0)+' سؤال</small></td><td>'+esc(typeLabel(l.type))+'</td><td>'+esc(gradeLabel(l.stage,l.grade))+'</td><td>'+esc(l.subject||'-')+'</td><td><span class="status-pill '+(l.isHidden?'rejected':'approved')+'">'+(l.isHidden?'مخفي':'منشور')+'</span></td><td><div class="admin-action-row"><button class="admin-action-btn" data-edit-lesson="'+l.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><button class="admin-action-btn" data-toggle-lesson="'+l.id+'" title="إظهار/إخفاء"><i class="fa-solid fa-eye"></i></button><button class="admin-action-btn danger" data-delete-lesson="'+l.id+'" title="حذف"><i class="fa-solid fa-trash"></i></button></div></td></tr>').join('')+'</tbody></table>':empty('لا توجد دروس','أضف أول درس جديد.');
  $$('[data-edit-lesson]').forEach(b=>b.onclick=()=>editLesson(b.dataset.editLesson));
  $$('[data-toggle-lesson]').forEach(b=>b.onclick=()=>{const l=root.lessons?.[b.dataset.toggleLesson];db.ref('lessons/'+b.dataset.toggleLesson+'/isHidden').set(!l?.isHidden)});
- $$$('[data-delete-lesson]').forEach(b=>b.onclick=()=>{if(confirm('حذف الدرس نهائيًا؟'))db.ref('lessons/'+b.dataset.deleteLesson).remove()});
+ $('[data-delete-lesson]').forEach(b=>b.onclick=()=>{if(confirm('حذف الدرس نهائيًا؟'))db.ref('lessons/'+b.dataset.deleteLesson).remove()});
 }
 async function editLesson(id){
  const l=root.lessons?.[id];if(!l)return;
@@ -303,6 +303,46 @@ async function saveLiveSession(e){
  closeModal('liveModal');resetLiveEditor();
 }
 
+/* Weekly schedule */
+const scheduleDayNames={0:'الأحد',1:'الاثنين',2:'الثلاثاء',3:'الأربعاء',4:'الخميس',5:'الجمعة',6:'السبت'};
+function renderScheduleEvents(){
+ const list=values(root.scheduleEvents).sort((a,b)=>Number(a.dayOfWeek||0)-Number(b.dayOfWeek||0)||String(a.time||'').localeCompare(String(b.time||'')));
+ const el=$('scheduleAdminList');if(!el)return;
+ el.innerHTML=list.length?list.map(e=>{
+   const status=e.isActive===false?'موقوفة':'نشطة';
+   return '<div class="admin-list-item"><div><strong>'+esc(e.title||'حصة')+'</strong><small>'+esc(typeLabel(e.type))+' • '+esc(gradeLabel(e.stage,e.grade))+' • '+esc(e.subjectName||e.subject||'')+'</small><small>'+esc(scheduleDayNames[Number(e.dayOfWeek)]||'')+' • '+esc(e.time||'')+' • '+Number(e.duration||60)+' دقيقة • '+esc(e.teacher||'بدون مدرس')+'</small></div><div class="admin-action-row"><button class="admin-action-btn" data-edit-schedule="'+e.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><button class="admin-action-btn '+(e.isActive===false?'success':'')+'" data-toggle-schedule="'+e.id+'" title="تفعيل/إيقاف"><i class="fa-solid '+(e.isActive===false?'fa-play':'fa-pause')+'"></i></button><button class="admin-action-btn danger" data-delete-schedule="'+e.id+'" title="حذف"><i class="fa-solid fa-trash"></i></button></div></div>';
+ }).join(''):empty('لا توجد حصص أسبوعية','أضف أول حصة من النموذج.');
+ $('[data-edit-schedule]').forEach(b=>b.onclick=()=>editScheduleEvent(b.dataset.editSchedule));
+ $('[data-toggle-schedule]').forEach(b=>b.onclick=()=>db.ref('scheduleEvents/'+b.dataset.toggleSchedule+'/isActive').set(root.scheduleEvents?.[b.dataset.toggleSchedule]?.isActive===false));
+ $('[data-delete-schedule]').forEach(b=>b.onclick=()=>{if(confirm('حذف الحصة من الجدول؟'))db.ref('scheduleEvents/'+b.dataset.deleteSchedule).remove()});
+}
+function resetScheduleEditor(){
+ editState.schedule=null;$('scheduleEventForm')?.reset();
+ if($('scheduleTime'))$('scheduleTime').value='18:00';
+ if($('scheduleDuration'))$('scheduleDuration').value=60;
+ if($('scheduleActive'))$('scheduleActive').checked=true;
+ fillGrades($('scheduleGrade'),$('scheduleStage')?.value||'primary');
+ fillSubjects($('scheduleSubject'),$('scheduleStage')?.value||'primary',$('scheduleGrade')?.value||'1',$('scheduleType')?.value||'public');
+}
+function editScheduleEvent(id){
+ const e=root.scheduleEvents?.[id];if(!e)return;editState.schedule=id;
+ $('scheduleType').value=e.type||'public';$('scheduleStage').value=e.stage||'primary';
+ fillGrades($('scheduleGrade'),e.stage||'primary',e.grade||'1');$('scheduleGrade').value=String(e.grade||1);
+ fillSubjects($('scheduleSubject'),e.stage||'primary',String(e.grade||1),e.type||'public');$('scheduleSubject').value=e.subject||'';
+ $('scheduleTitle').value=e.title||'';$('scheduleTeacher').value=e.teacher||'';$('scheduleDay').value=String(e.dayOfWeek??6);
+ $('scheduleTime').value=e.time||'18:00';$('scheduleDuration').value=Number(e.duration||60);$('scheduleUrl').value=e.url||'';$('scheduleActive').checked=e.isActive!==false;
+ $('scheduleTitle').focus();window.scrollTo({top:0,behavior:'smooth'});
+}
+async function saveScheduleEvent(e){
+ e.preventDefault();
+ const subject=$('scheduleSubject').value,subjectName=$('scheduleSubject').selectedOptions[0]?.textContent||subject;
+ const payload={type:$('scheduleType').value,stage:$('scheduleStage').value,grade:$('scheduleGrade').value,subject,subjectName,title:$('scheduleTitle').value.trim(),teacher:$('scheduleTeacher').value.trim(),dayOfWeek:Number($('scheduleDay').value),time:$('scheduleTime').value,duration:Number($('scheduleDuration').value||60),url:$('scheduleUrl').value.trim(),isActive:$('scheduleActive').checked};
+ if(!payload.title||!payload.time)return toast('أكمل عنوان الحصة والوقت.','error');
+ if(editState.schedule){payload.updatedAt=Date.now();await db.ref('scheduleEvents/'+editState.schedule).update(payload);toast('تم تحديث موعد الحصة')}
+ else{payload.createdAt=Date.now();await db.ref('scheduleEvents').push(payload);toast('تمت إضافة الحصة للجدول')}
+ resetScheduleEditor();
+}
+
 /* Community */
 function communityReportCount(){
  return Object.values(root.community?.forums||{}).reduce((n,p)=>n+Object.keys(p?.reports||{}).length,0);
@@ -340,11 +380,11 @@ function renderTeachers(){
  $('assignTeacher').innerHTML=teachers.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||t.email||t.id)+'</option>').join('');
  refreshAssignmentSubjects();
  $('teacherSubmissionsList').innerHTML=subs.length?subs.map(s=>'<div class="admin-list-item"><div><strong>'+esc(s.title||'محتوى')+'</strong><small>'+esc(s.teacherName||root.teacherProfiles?.[s.uid]?.name||'مدرس')+' • '+esc(typeLabel(s.type))+' • '+esc(gradeLabel(s.stage,s.grade))+' • '+esc(s.subjectName||s.subject||'')+'</small>'+(s.videoUrl?'<a href="'+cleanUrl(s.videoUrl)+'" target="_blank" rel="noopener" style="font-size:9px;color:#2563eb">فتح الفيديو</a>':'')+'</div><div class="admin-action-row">'+((s.status||'pending')==='pending'?'<button class="admin-action-btn success" data-approve="'+s.uid+'|'+s.id+'" title="اعتماد"><i class="fa-solid fa-check"></i></button><button class="admin-action-btn danger" data-reject="'+s.uid+'|'+s.id+'" title="رفض"><i class="fa-solid fa-xmark"></i></button>':'<span class="status-pill '+(s.status==='approved'?'approved':'rejected')+'">'+(s.status==='approved'?'معتمد':'مرفوض')+'</span>')+'</div></div>').join(''):empty('لا توجد طلبات محتوى','عندما يرسل مدرس درسًا سيظهر هنا.');
- $$$('[data-toggle-teacher]').forEach(b=>b.onclick=()=>db.ref('teacherProfiles/'+b.dataset.toggleTeacher+'/isActive').set(root.teacherProfiles?.[b.dataset.toggleTeacher]?.isActive===false));
- $$$('[data-remove-teacher]').forEach(b=>b.onclick=()=>{if(confirm('إزالة صفة المدرس من الحساب؟'))db.ref('teacherProfiles/'+b.dataset.removeTeacher).remove()});
- $$$('[data-promote]').forEach(b=>b.onclick=async()=>{const s=root.studentProfilesV3?.[b.dataset.promote]||{};await db.ref('teacherProfiles/'+b.dataset.promote).set({name:s.name||'',email:s.email||'',isActive:true,createdAt:Date.now(),assignments:[]});toast('تم تحويل الحساب إلى مدرس')});
- $$$('[data-approve]').forEach(b=>b.onclick=()=>approveSubmission(b.dataset.approve));
- $$$('[data-reject]').forEach(b=>b.onclick=async()=>{const [uid,id]=b.dataset.reject.split('|');await db.ref('teacherSubmissions/'+uid+'/'+id).update({status:'rejected',reviewedAt:Date.now()});toast('تم رفض المحتوى')});
+ $('[data-toggle-teacher]').forEach(b=>b.onclick=()=>db.ref('teacherProfiles/'+b.dataset.toggleTeacher+'/isActive').set(root.teacherProfiles?.[b.dataset.toggleTeacher]?.isActive===false));
+ $('[data-remove-teacher]').forEach(b=>b.onclick=()=>{if(confirm('إزالة صفة المدرس من الحساب؟'))db.ref('teacherProfiles/'+b.dataset.removeTeacher).remove()});
+ $('[data-promote]').forEach(b=>b.onclick=async()=>{const s=root.studentProfilesV3?.[b.dataset.promote]||{};await db.ref('teacherProfiles/'+b.dataset.promote).set({name:s.name||'',email:s.email||'',isActive:true,createdAt:Date.now(),assignments:[]});toast('تم تحويل الحساب إلى مدرس')});
+ $('[data-approve]').forEach(b=>b.onclick=()=>approveSubmission(b.dataset.approve));
+ $('[data-reject]').forEach(b=>b.onclick=async()=>{const [uid,id]=b.dataset.reject.split('|');await db.ref('teacherSubmissions/'+uid+'/'+id).update({status:'rejected',reviewedAt:Date.now()});toast('تم رفض المحتوى')});
 }
 function refreshAssignmentSubjects(){
  fillGrades($('assignGrade'),$('assignStage').value);fillSubjects($('assignSubject'),$('assignStage').value,$('assignGrade').value,$('assignType').value);
@@ -419,14 +459,14 @@ async function startDataListener(){
 }
 
 /* events */
-$$$('[data-admin-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.adminTab));
-$$$('[data-jump-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.jumpTab));
-$$$('[data-close-admin-modal]').forEach(b=>b.onclick=()=>closeModal(b.dataset.closeAdminModal));
+$('[data-admin-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.adminTab));
+$('[data-jump-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.jumpTab));
+$('[data-close-admin-modal]').forEach(b=>b.onclick=()=>closeModal(b.dataset.closeAdminModal));
 $('openSubjectModal').onclick=()=>{resetSubjectEditor();openModal('subjectModal')};$('openLessonModal').onclick=()=>{resetLessonEditor();openModal('lessonModal')};$('openQuizModal').onclick=()=>{resetQuizEditor();openModal('quizModal')};$('openFileModal').onclick=()=>{resetFileEditor();openModal('fileModal')};$('openSimulationModal').onclick=()=>{resetSimulationEditor();openModal('simulationModal')};$('openLiveModal').onclick=()=>{resetLiveEditor();openModal('liveModal')};
 $('addLessonVideoRow').onclick=addLessonVideoRow;
 renderLessonVideosEditor([{name:'',url:''}]);
 $('newsForm').onsubmit=saveNews;$('newsCancelEdit').onclick=resetNewsEditor;
-$('subjectForm').onsubmit=saveSubject;$('lessonForm').onsubmit=saveLesson;$('quizForm').onsubmit=saveQuiz;$('fileForm').onsubmit=saveFile;$('simulationForm').onsubmit=saveSimulation;$('liveForm').onsubmit=saveLiveSession;$('studyGroupForm').onsubmit=saveStudyGroup;$('announcementForm').onsubmit=saveAnnouncement;$('settingsForm').onsubmit=saveSettings;
+$('subjectForm').onsubmit=saveSubject;$('lessonForm').onsubmit=saveLesson;$('quizForm').onsubmit=saveQuiz;$('fileForm').onsubmit=saveFile;$('simulationForm').onsubmit=saveSimulation;$('liveForm').onsubmit=saveLiveSession;$('scheduleEventForm').onsubmit=saveScheduleEvent;$('studyGroupForm').onsubmit=saveStudyGroup;$('announcementForm').onsubmit=saveAnnouncement;$('settingsForm').onsubmit=saveSettings;
 $('lessonSearch').oninput=renderLessons;$('lessonFilterStage').onchange=renderLessons;$('lessonFilterType').onchange=renderLessons;$('studentSearch').oninput=renderStudents;
 $('curriculumType').onchange=renderCurriculum;$('curriculumStage').onchange=()=>{fillGrades($('curriculumGrade'),$('curriculumStage').value);renderCurriculum()};$('curriculumGrade').onchange=renderCurriculum;
 $('assignType').onchange=refreshAssignmentSubjects;$('assignStage').onchange=refreshAssignmentSubjects;$('assignGrade').onchange=refreshAssignmentSubjects;$('addAssignmentBtn').onclick=addAssignment;
@@ -444,6 +484,7 @@ bindHierarchy('subjectType','subjectStage','subjectGrade',null);
 bindHierarchy('newLessonType','newLessonStage','newLessonGrade','newLessonSubject');
 bindHierarchy('newQuizType','newQuizStage','newQuizGrade','newQuizSubject');
 bindHierarchy('newFileType','newFileStage','newFileGrade','newFileSubject');
+bindHierarchy('scheduleType','scheduleStage','scheduleGrade','scheduleSubject');
 bindHierarchy('simType','simStage','simGrade',null);
 fillGrades($('curriculumGrade'),$('curriculumStage').value);
 refreshAssignmentSubjects();
