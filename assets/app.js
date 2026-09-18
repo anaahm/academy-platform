@@ -567,10 +567,20 @@
     $('openExplorerPublic').addEventListener('click', () => openExplorer());
     $('openSubjectsExplorer').addEventListener('click', () => { openExplorer(); switchExplorerTab('subjects'); });
     $('exploreAllStagesMain').addEventListener('click', () => location.href='./explore.html');
+    $('dashHomeBtn')?.addEventListener('click', () => window.scrollTo({top:0,behavior:'smooth'}));
+    $('dashSubjectsBtn')?.addEventListener('click', () => document.querySelector('.dashboard-section')?.scrollIntoView({behavior:'smooth'}));
+    $('dashTestsBtn')?.addEventListener('click', () => location.href='./exam-center.html');
+    $('dashProgressBtn')?.addEventListener('click', () => location.href='./progress.html');
+    $('dashLibraryBtn')?.addEventListener('click', () => location.href='./library.html');
+    $('dashLiveBtn')?.addEventListener('click', () => location.href='./live.html');
+    $('dashCommunityBtn')?.addEventListener('click', () => location.href='./community.html');
+    $('dashLeaderboardBtn')?.addEventListener('click', () => location.href='./leaderboard.html');
     $('exploreAllStagesSide').addEventListener('click', () => location.href='./explore.html');
     $('exploreSubjectsDash').addEventListener('click', () => location.href='./explore.html');
     $('mobileExploreBtn').addEventListener('click', () => location.href='./explore.html');
     $('mobileSubjectsBtn').addEventListener('click', () => document.querySelector('.dashboard-section')?.scrollIntoView({behavior:'smooth'}));
+    $('mobileTestsBtn')?.addEventListener('click', () => location.href='./exam-center.html');
+    $('mobileHomeBtn')?.addEventListener('click', () => window.scrollTo({top:0,behavior:'smooth'}));
     $('closeExplorer').addEventListener('click', closeExplorer);
     $('explorerBackdrop').addEventListener('click', closeExplorer);
 
