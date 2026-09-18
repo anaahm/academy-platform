@@ -1,6 +1,41 @@
 (() => {
 'use strict';
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function enhanceAccessibility(){
+  document.querySelectorAll('button[title],a[title]').forEach(el=>{
+    if(!el.hasAttribute('aria-label'))el.setAttribute('aria-label',el.getAttribute('title'));
+  });
+  document.querySelectorAll('.modal-panel,.admin-modal,.teacher-grade-modal,.live-viewer-panel').forEach(el=>{
+    el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');
+  });
+  document.querySelectorAll('.feature-tabs,.lesson-tabs').forEach(list=>{
+    list.setAttribute('role','tablist');
+    [...list.querySelectorAll('button')].forEach(btn=>{
+      btn.setAttribute('role','tab');
+      btn.setAttribute('aria-selected',btn.classList.contains('active')?'true':'false');
+      btn.addEventListener('click',()=>{
+        [...list.querySelectorAll('button')].forEach(x=>x.setAttribute('aria-selected',x.classList.contains('active')?'true':'false'));
+      });
+    });
+  });
+  const groups=[
+    ['[data-profile-tab]','profile'],
+    ['[data-admin-tab]','admin'],
+    ['[data-teacher-tab]','teacher']
+  ];
+  groups.forEach(([selector])=>{
+    const items=[...document.querySelectorAll(selector)];
+    items.forEach(btn=>{
+      if(btn.classList.contains('active'))btn.setAttribute('aria-current','page');
+      btn.addEventListener('click',()=>requestAnimationFrame(()=>{
+        items.forEach(x=>{
+          if(x.classList.contains('active'))x.setAttribute('aria-current','page');
+          else x.removeAttribute('aria-current');
+        });
+      }));
+    });
+  });
+}
 function ensureRouteProgress(){
   let bar=document.querySelector('.ui-route-progress');
   if(!bar){bar=document.createElement('div');bar.className='ui-route-progress';document.body.appendChild(bar)}
@@ -83,7 +118,7 @@ document.addEventListener('pointerdown',e=>{
   span.className='ui-ripple';span.style.width=span.style.height=size+'px';span.style.left=(e.clientX-r.left-size/2)+'px';span.style.top=(e.clientY-r.top-size/2)+'px';
   btn.appendChild(span);setTimeout(()=>span.remove(),520);
 },{passive:true});
-document.addEventListener('DOMContentLoaded',()=>{document.body?.classList.add('ui-page-enter');finishRouteProgress();if(!navigator.onLine)showNetworkBanner(false)});
+document.addEventListener('DOMContentLoaded',()=>{document.body?.classList.add('ui-page-enter');finishRouteProgress();enhanceAccessibility();if(!navigator.onLine)showNetworkBanner(false)});
 window.addEventListener('offline',()=>showNetworkBanner(false));
 window.addEventListener('online',()=>showNetworkBanner(true));
 document.addEventListener('click',e=>{
