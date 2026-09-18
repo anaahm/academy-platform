@@ -137,8 +137,16 @@
 
   async function loadDatabaseSnapshot() {
     try {
-      const snap = await database.ref('/').once('value');
-      state.dbData = snap.val() || {};
+      const [subjectsSnap, announcementsSnap, settingsSnap] = await Promise.all([
+        database.ref('customSubjects').once('value'),
+        database.ref('announcements').once('value'),
+        database.ref('settings').once('value')
+      ]);
+      state.dbData = {
+        customSubjects: subjectsSnap.val() || {},
+        announcements: announcementsSnap.val() || {},
+        settings: settingsSnap.val() || {}
+      };
     } catch (e) {
       console.warn('Database read unavailable', e);
       state.dbData = {};
