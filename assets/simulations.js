@@ -34,11 +34,11 @@ function buildQuestions(sim){
  Object.entries(map).forEach(([key,subject])=>{const want=Number(sim.counts?.[key]||0);result.push(...shuffle(p[subject]||[]).slice(0,want))});
  return shuffle(result);
 }
-function start(id){
+async function start(id){
  const sim=sims().find(x=>x.id===id);if(!sim)return;
  const questions=buildQuestions(sim);const requested=Object.values(sim.counts||{}).reduce((a,n)=>a+Number(n||0),0);
  if(!questions.length)return C.toast('لا توجد أسئلة كافية لهذا المحاكي بعد.','error');
- if(questions.length<requested&&!confirm('عدد الأسئلة المتاحة أقل من إعداد المحاكي. هل تبدأ بالأسئلة المتاحة؟'))return;
+ if(questions.length<requested){const ok=await window.AcademyUI.confirm({title:'عدد الأسئلة أقل من المطلوب',message:'المحاكي سيبدأ بالأسئلة المتاحة حاليًا بدل العدد الكامل المحدد.',tone:'warning',acceptText:'ابدأ بالمتاح'});if(!ok)return;}
  current={sim,questions};answers=new Array(questions.length).fill(null);index=0;endAt=Date.now()+Number(sim.time||60)*60000;
  $('simRunnerTitle').textContent=sim.name||'المحاكي';$('simulationRunner').classList.remove('hidden');document.body.style.overflow='hidden';$('simResult').classList.add('hidden');$('simQuestionArea').classList.remove('hidden');$('simRunnerNav').classList.remove('hidden');
  tick();timer=setInterval(tick,1000);renderQuestion();
@@ -53,8 +53,8 @@ function renderQuestion(){
  $('simPrev').disabled=index===0;$('simNext').textContent=index===current.questions.length-1?'إنهاء الامتحان':'التالي';
 }
 $('simPrev').onclick=()=>{if(index>0){index--;renderQuestion()}};
-$('simNext').onclick=()=>{if(index===current.questions.length-1){if(confirm('إنهاء المحاكاة وإظهار النتيجة؟'))finish(false)}else{index++;renderQuestion()}};
-$('quitSimulation').onclick=()=>{if(confirm('الخروج من المحاكاة؟ لن يتم حفظ المحاولة غير المكتملة.'))closeRunner()};
+$('simNext').onclick=async()=>{if(index===current.questions.length-1){const ok=await window.AcademyUI.confirm({title:'إنهاء المحاكاة؟',message:'سيتم إنهاء المحاكاة الآن وحساب نتيجتك بناءً على الإجابات الحالية.',tone:'warning',acceptText:'إنهاء وإظهار النتيجة'});if(ok)finish(false)}else{index++;renderQuestion()}};
+$('quitSimulation').onclick=async()=>{const ok=await window.AcademyUI.confirm({title:'الخروج من المحاكاة؟',message:'لن يتم حفظ المحاولة غير المكتملة إذا خرجت الآن.',tone:'danger',acceptText:'خروج بدون حفظ'});if(ok)closeRunner()};
 function closeRunner(){clearInterval(timer);$('simulationRunner').classList.add('hidden');document.body.style.overflow='';current=null}
 
 async function finish(auto){
