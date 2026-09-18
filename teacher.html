@@ -88,16 +88,33 @@
         </section>
 
         <section class="teacher-tab hidden" id="teacher-tab-students">
-          <article class="teacher-card">
-            <div class="teacher-card-head"><div><span class="section-kicker">نظرة تعليمية</span><h3>طلاب محتواك</h3></div><span>👥</span></div>
-            <div class="empty-state"><span>📊</span><h3>إحصائيات الطلاب هتظهر هنا</h3><p>بعد ربط مشاهدة الدروس بالمدرس، هتشوف عدد الطلاب والتفاعل والنتائج.</p></div>
+          <section class="teacher-stat-grid">
+            <article><span class="stat-icon blue"><i class="fa-solid fa-eye"></i></span><div><strong id="teacherTotalViews">0</strong><small>مشاهدة للمحتوى</small></div></article>
+            <article><span class="stat-icon green"><i class="fa-solid fa-circle-check"></i></span><div><strong id="teacherTotalCompletions">0</strong><small>إكمال للدروس</small></div></article>
+            <article><span class="stat-icon violet"><i class="fa-solid fa-file-circle-check"></i></span><div><strong id="teacherQuizAttempts">0</strong><small>محاولة تدريب</small></div></article>
+            <article><span class="stat-icon orange"><i class="fa-solid fa-percent"></i></span><div><strong id="teacherCompletionRate">0%</strong><small>نسبة الإكمال</small></div></article>
+          </section>
+          <article class="teacher-card" style="margin-top:16px">
+            <div class="teacher-card-head"><div><span class="section-kicker">تفاعل مجمع</span><h3>أداء دروسك عند الطلاب</h3></div><span>👥</span></div>
+            <p class="profile-muted">الأرقام مجمعة فقط ولا تعرض أسماء الطلاب أو بياناتهم الشخصية.</p>
+            <div class="teacher-engagement-list" id="teacherEngagementList"></div>
           </article>
         </section>
 
         <section class="teacher-tab hidden" id="teacher-tab-analytics">
-          <article class="teacher-card">
-            <div class="teacher-card-head"><div><span class="section-kicker">التحليل</span><h3>أداء المحتوى</h3></div><span>📈</span></div>
-            <div class="empty-state"><span>🧠</span><h3>لوحة التحليلات جاهزة للربط</h3><p>هنضيف المشاهدات، نسبة إكمال الدرس، ومتوسط نتائج الاختبارات لكل محتوى.</p></div>
+          <section class="teacher-grid">
+            <article class="teacher-card">
+              <div class="teacher-card-head"><div><span class="section-kicker">أقوى محتوى</span><h3>أفضل درس حسب المشاهدات</h3></div><span>🏆</span></div>
+              <div id="teacherTopLesson" class="teacher-highlight-metric"></div>
+            </article>
+            <article class="teacher-card">
+              <div class="teacher-card-head"><div><span class="section-kicker">جودة الاستيعاب</span><h3>متوسط نتائج التدريبات</h3></div><span>🎯</span></div>
+              <div id="teacherAverageQuiz" class="teacher-highlight-metric"></div>
+            </article>
+          </section>
+          <article class="teacher-card" style="margin-top:16px">
+            <div class="teacher-card-head"><div><span class="section-kicker">تفصيل كل درس</span><h3>تحليلات المحتوى</h3></div><span>📈</span></div>
+            <div class="teacher-analytics-table" id="teacherAnalyticsList"></div>
           </article>
         </section>
       </div>
