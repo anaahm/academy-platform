@@ -52,6 +52,14 @@ function updateSubjects(){
  const list=getSubjects($('teacherStage').value,$('teacherGrade').value,$('teacherEducationType').value);
  $('teacherSubject').innerHTML=list.map(s=>'<option value="'+s.id+'">'+s.name+'</option>').join('');
 }
+function initTeacherCollapse(){
+ const shell=$('teacherPortal'),btn=$('teacherCollapseBtn');if(!shell||!btn)return;
+ const apply=()=>{const collapsed=innerWidth>900&&localStorage.getItem('academyTeacherCollapsed')==='1';shell.classList.toggle('teacher-collapsed',collapsed)};
+ apply();
+ btn.onclick=()=>{if(innerWidth<=900)return;const next=!shell.classList.contains('teacher-collapsed');shell.classList.toggle('teacher-collapsed',next);localStorage.setItem('academyTeacherCollapsed',next?'1':'0')};
+ $('[data-teacher-tab]').forEach(el=>{if(!el.title)el.title=el.textContent.trim().replace(/\s+/g,' ')});
+ window.addEventListener('resize',apply,{passive:true});
+}
 function switchTab(tab){
  $$('[data-teacher-tab]').forEach(b=>b.classList.toggle('active',b.dataset.teacherTab===tab));
  $$('.teacher-tab').forEach(s=>s.classList.add('hidden'));
@@ -216,6 +224,7 @@ $('assignmentEducationType')?.addEventListener('change',updateAssignmentSubjects
 $('teacherGradeForm')?.addEventListener('submit',saveGrade);
 $('closeTeacherGradeModal')?.addEventListener('click',closeGradeModal);
 $('teacherGradeModal')?.addEventListener('click',e=>{if(e.target===$('teacherGradeModal'))closeGradeModal()});
+initTeacherCollapse();
 $('teacherMenuBtn').onclick=()=>$('teacherSide').classList.toggle('open');
 $('teacherLogout').onclick=async()=>{await auth.signOut();location.replace('./index.html')};
 
