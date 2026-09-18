@@ -257,8 +257,10 @@
         <label><span>المادة</span><select id="newLessonSubject"></select></label>
         <label><span>الوحدة</span><input id="newLessonUnit" type="number" min="1" value="1"></label>
         <label><span>عنوان الدرس</span><input id="newLessonTitle" required></label>
-        <label><span>اسم المدرس</span><input id="newLessonTeacher" placeholder="أ/ ..."></label>
-        <label><span>رابط YouTube</span><input id="newLessonVideo" type="url" dir="ltr" placeholder="https://youtube.com/..."></label>
+        <div class="full admin-video-editor-wrap">
+          <div class="admin-video-editor-head"><span>فيديوهات المدرسين</span><button class="btn btn-soft" type="button" id="addLessonVideoRow"><i class="fa-solid fa-plus"></i> إضافة مدرس/فيديو</button></div>
+          <div id="lessonVideosEditor" class="admin-video-editor"></div>
+        </div>
         <label class="full"><span>الشرح المكتوب</span><textarea id="newLessonContent" rows="7"></textarea></label>
         <label class="switch-field"><span>مخفي عن الطلاب</span><div><input id="newLessonHidden" type="checkbox"><strong>مخفي</strong></div></label>
         <button class="btn btn-primary full" type="submit">نشر الدرس</button>
