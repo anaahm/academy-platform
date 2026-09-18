@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>مجتمع الطلاب | الأكاديمية</title>
+  <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./assets/app-icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/learning.css"><link rel="stylesheet" href="./assets/hub.css">
+</head>
+<body class="feature-page">
+  <div id="toast" class="toast"></div>
+  <header class="learning-header">
+    <div class="container learning-nav">
+      <a class="brand" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-book-open"></i></span><span><strong>الأكاديمية</strong><small>مجتمع الطلاب</small></span></a>
+      <div class="learning-breadcrumb"><a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><span>المجتمع</span></div>
+      <span class="avatar" id="pageAvatar">ط</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="feature-hero">
+      <div class="container"><div class="feature-hero-card"><div class="feature-hero-copy"><span class="section-kicker light">تعلم مع غيرك</span><h1>مجتمع الأكاديمية</h1><p>شارك سؤالًا أو فكرة تعليمية، وانضم لمجموعات الدراسة. لا توجد رسائل خاصة داخل المنصة حفاظًا على الخصوصية.</p></div><span class="feature-hero-art">🤝</span></div></div>
+    </section>
+
+    <section class="container feature-container">
+      <div class="feature-toolbar">
+        <div class="feature-tabs"><button class="active" data-community-tab="forums">المنتدى</button><button data-community-tab="groups">مجموعات الدراسة</button></div>
+        <button class="btn btn-primary" id="togglePostForm"><i class="fa-solid fa-plus"></i> منشور جديد</button>
+      </div>
+
+      <div class="community-layout">
+        <div>
+          <form id="newPostForm" class="community-post new-post-form hidden">
+            <span class="section-kicker">شارك بشكل محترم ومفيد</span>
+            <input id="postTitle" required maxlength="120" placeholder="عنوان المنشور">
+            <textarea id="postContent" required maxlength="1200" placeholder="اكتب سؤالك أو فكرتك التعليمية..."></textarea>
+            <div style="display:flex;gap:8px"><button class="btn btn-primary" type="submit">نشر</button><button class="btn btn-soft" type="button" id="cancelPost">إلغاء</button></div>
+          </form>
+
+          <div class="community-feed" id="forumFeed"></div>
+          <div class="community-feed hidden" id="groupsFeed"></div>
+        </div>
+
+        <aside class="community-side">
+          <article class="community-side-card">
+            <span class="section-kicker">قواعد بسيطة</span><h3>خلي المجتمع مفيد</h3>
+            <p style="font-size:10px;color:#64748b">ما تشاركش رقم هاتف أو عنوان أو بيانات شخصية. استخدم زر الإبلاغ لو شفت محتوى غير مناسب.</p>
+          </article>
+          <article class="community-side-card">
+            <span class="section-kicker">إحصائيات</span><h3>المجتمع الآن</h3>
+            <div class="exam-history-list"><div class="exam-history-item"><span>المنشورات</span><strong id="postCount">0</strong></div><div class="exam-history-item"><span>مجموعات الدراسة</span><strong id="groupCount">0</strong></div><div class="exam-history-item"><span>مجموعاتك</span><strong id="myGroupCount">0</strong></div></div>
+          </article>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="./assets/firebase-config.js"></script><script src="./assets/student-core.js"></script><script src="./assets/community.js"></script><script src="./assets/pwa.js"></script>
+</body>
+</html>
