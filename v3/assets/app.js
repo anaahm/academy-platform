@@ -204,6 +204,96 @@
     };
   }
 
+
+  function safeHtml(value = '') {
+    return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+
+  async function updateDailyActivity(uid) {
+    const today = new Date().toISOString().slice(0,10);
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+    await database.ref('studentProfilesV3/' + uid).transaction(profile => {
+      if (!profile) return profile;
+      profile.activity = profile.activity || {};
+      profile.stats = profile.stats || {};
+      const last = profile.activity.lastDate || '';
+      if (last !== today) {
+        profile.stats.streak = last === yesterday ? Number(profile.stats.streak || 0) + 1 : 1;
+        profile.activity.lastDate = today;
+      }
+      profile.activity.lastSeenAt = Date.now();
+      return profile;
+    });
+  }
+
+  function buildDashboardNotifications() {
+    const items = [];
+    const ann = state.dbData.announcements;
+    if (ann?.isActive && (!ann.expiry || Date.now() < ann.expiry) && ann.text) {
+      items.push({icon:'fa-bullhorn',title:'إعلان من الأكاديمية',text:ann.text});
+    }
+    if (state.profile?.lastLessonTitle) {
+      items.push({icon:'fa-circle-play',title:'أكمل من حيث توقفت',text:'ارجع إلى ' + state.profile.lastLessonTitle + ' وكمّل تقدمك.'});
+    } else {
+      items.push({icon:'fa-rocket',title:'ابدأ أول درس',text:'اختر مادة من موادك وابدأ أول خطوة في رحلتك.'});
+    }
+    const streak = Number(state.profile?.stats?.streak || 0);
+    if (streak >= 2) items.push({icon:'fa-fire',title:'حافظ على السلسلة',text:'أنت مستمر منذ ' + streak + ' أيام. درس قصير اليوم يحافظ عليها.'});
+    const xp = Number(state.profile?.stats?.totalXP || 0);
+    if (xp < 500) items.push({icon:'fa-star',title:'هدفك القادم',text:'باقي ' + Math.max(0,500-xp) + ' XP للوصول لإنجاز 500 نقطة.'});
+    return items.slice(0,4);
+  }
+
+  function renderSmartDashboard() {
+    const stats = statsFromProfile();
+    const achievements = [
+      {emoji:'🚀',name:'البداية',ok:stats.lessons>=1},
+      {emoji:'📚',name:'5 دروس',ok:stats.lessons>=5},
+      {emoji:'🎯',name:'أول اختبار',ok:stats.quizzes>=1},
+      {emoji:'⭐',name:'500 XP',ok:stats.xp>=500}
+    ];
+    let shell = document.getElementById('smartDashboardGrid');
+    if (!shell) {
+      shell = document.createElement('section');
+      shell.id = 'smartDashboardGrid';
+      shell.className = 'smart-dashboard-grid';
+      const anchor = document.querySelector('.dashboard-bottom-grid');
+      if (anchor) anchor.insertAdjacentElement('afterend', shell);
+    }
+    const notes = buildDashboardNotifications();
+    shell.innerHTML = `
+      <article class="dashboard-smart-card">
+        <div class="smart-card-head"><div><span class="section-kicker">رحلتك تتحسن</span><h3>إنجازاتك</h3></div><span>🏆</span></div>
+        <div class="achievement-row">
+          ${achievements.map(a=>`<div class="achievement-mini ${a.ok?'':'locked'}"><span>${a.emoji}</span><strong>${a.name}</strong></div>`).join('')}
+        </div>
+        <a href="./profile.html" class="text-btn" style="margin-top:14px">عرض كل الإنجازات <i class="fa-solid fa-arrow-left"></i></a>
+      </article>
+      <article class="dashboard-smart-card">
+        <div class="smart-card-head"><div><span class="section-kicker">مهم لك الآن</span><h3>الإشعارات</h3></div><span>🔔</span></div>
+        <div class="notification-list">
+          ${notes.slice(0,3).map(n=>`<div class="notification-item"><span><i class="fa-solid ${n.icon}"></i></span><div><strong>${safeHtml(n.title)}</strong><p>${safeHtml(n.text)}</p></div></div>`).join('')}
+        </div>
+      </article>`;
+  }
+
+  function showNotificationPopover() {
+    document.getElementById('notificationPopover')?.remove();
+    const notes = buildDashboardNotifications();
+    const box = document.createElement('div');
+    box.id = 'notificationPopover';
+    box.className = 'notification-popover';
+    box.innerHTML = '<h3>إشعاراتك</h3><div class="notification-list">' +
+      notes.map(n=>`<div class="notification-item"><span><i class="fa-solid ${n.icon}"></i></span><div><strong>${safeHtml(n.title)}</strong><p>${safeHtml(n.text)}</p></div></div>`).join('') +
+      '</div>';
+    document.body.appendChild(box);
+    setTimeout(()=>document.addEventListener('click', function closer(e){
+      if (!e.target.closest('#notificationPopover') && !e.target.closest('#notificationBtn') && !e.target.closest('#dashNotificationBtn')) {
+        box.remove(); document.removeEventListener('click', closer);
+      }
+    }),0);
+  }
+
   function renderDashboard() {
     const p = state.profile;
     const name = p.name || state.user.displayName || 'طالبنا';
@@ -267,6 +357,7 @@
           : './subject.html?' + q.toString();
       };
     }
+    renderSmartDashboard();
     renderHeaderUser();
   }
 
@@ -367,6 +458,20 @@
 
     $('mobileMenuBtn').addEventListener('click', () => $('mobileMenu').classList.toggle('hidden'));
     $('userChip').addEventListener('click', () => $('userMenu').classList.toggle('hidden'));
+    if (!document.getElementById('profileMenuBtn')) {
+      const profileBtn = document.createElement('button');
+      profileBtn.id = 'profileMenuBtn';
+      profileBtn.innerHTML = '<i class="fa-regular fa-user"></i> حسابي';
+      profileBtn.addEventListener('click', () => location.href='./profile.html');
+      $('userMenu').insertBefore(profileBtn, $('logoutBtn'));
+    }
+    $('mobileProfileBtn')?.addEventListener('click', () => location.href='./profile.html');
+    $('notificationBtn')?.addEventListener('click', (e) => { e.stopPropagation(); showNotificationPopover(); });
+    const dashBell = document.querySelector('.dashboard-actions .icon-btn');
+    if (dashBell) {
+      dashBell.id = 'dashNotificationBtn';
+      dashBell.addEventListener('click', (e) => { e.stopPropagation(); showNotificationPopover(); });
+    }
     $('goDashboardBtn').addEventListener('click', showDashboard);
     $('exploreFromMenu').addEventListener('click', () => location.href='./explore.html');
     $('logoutBtn').addEventListener('click', async () => { await auth.signOut(); $('userMenu').classList.add('hidden'); });
@@ -501,6 +606,8 @@
     }
 
     try {
+      state.profile = await loadProfile(user.uid);
+      await updateDailyActivity(user.uid);
       state.profile = await loadProfile(user.uid);
     } catch (e) {
       console.warn(e);
