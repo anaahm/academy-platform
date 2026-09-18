@@ -3,10 +3,10 @@
 
 const firebaseConfig = window.ACADEMY_FIREBASE_CONFIG || JSON.parse(localStorage.getItem('academyFirebaseConfig') || 'null');
 if(!firebaseConfig){location.replace('./index.html');return}
-firebase.initializeApp(firebaseConfig);
+if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(),db=firebase.database();
 const $=id=>document.getElementById(id), $$=(s,r=document)=>[...r.querySelectorAll(s)];
-let user=null,teacher=null,data={},submissions={};
+let user=null,teacher=null,data={},submissions={},analytics={};
 
 const defaults={
  primary:[{id:'arabic',name:'اللغة العربية'},{id:'math',name:'الرياضيات'},{id:'science',name:'العلوم'},{id:'english',name:'اللغة الإنجليزية'},{id:'social',name:'الدراسات الاجتماعية'},{id:'religion',name:'التربية الدينية'}],
@@ -62,17 +62,57 @@ function renderSubmissionList(target,items){
  $(target).innerHTML=items.length?items.map(x=>'<article class="submission-item"><div><h4>'+escapeHtml(x.title||'محتوى بدون عنوان')+'</h4><p>'+(stageName[x.stage]||x.stage||'')+' • صف '+(x.grade||'')+' • '+(x.subjectName||x.subject||'')+'</p></div><span class="status-pill '+(x.status||'pending')+'">'+statusLabel(x.status)+'</span></article>').join(''):'<p class="profile-muted">لا يوجد محتوى هنا حتى الآن.</p>';
 }
 function escapeHtml(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function ownLessons(){
+ return Object.entries(data.lessons||{}).map(([id,v])=>({id,...(v||{})})).filter(l=>l.teacherId===user?.uid||Array.isArray(l.videos)&&l.videos.some(v=>v?.teacherId===user?.uid));
+}
+function metricFor(id){return analytics?.[id]||{}}
+function renderTeacherAnalytics(){
+ const lessons=ownLessons();
+ const metrics=lessons.map(l=>({lesson:l,m:metricFor(l.id)}));
+ const totalViews=metrics.reduce((a,x)=>a+Number(x.m.views||0),0);
+ const totalCompletions=metrics.reduce((a,x)=>a+Number(x.m.completions||0),0);
+ const quizAttempts=metrics.reduce((a,x)=>a+Number(x.m.quizAttempts||0),0);
+ const scoreTotal=metrics.reduce((a,x)=>a+Number(x.m.quizScoreTotal||0),0);
+ const completionRate=totalViews?Math.min(100,Math.round(totalCompletions/totalViews*100)):0;
+ const averageQuiz=quizAttempts?Math.round(scoreTotal/quizAttempts):0;
+ if($('teacherTotalViews'))$('teacherTotalViews').textContent=totalViews;
+ if($('teacherTotalCompletions'))$('teacherTotalCompletions').textContent=totalCompletions;
+ if($('teacherQuizAttempts'))$('teacherQuizAttempts').textContent=quizAttempts;
+ if($('teacherCompletionRate'))$('teacherCompletionRate').textContent=completionRate+'%';
+
+ const engagement=$('teacherEngagementList');
+ if(engagement)engagement.innerHTML=metrics.length?metrics.map(x=>{
+   const views=Number(x.m.views||0),done=Number(x.m.completions||0),rate=views?Math.min(100,Math.round(done/views*100)):0;
+   return '<article class="teacher-engagement-item"><div><strong>'+escapeHtml(x.lesson.title||'درس')+'</strong><small>'+views+' مشاهدة • '+done+' إكمال</small></div><div class="teacher-mini-progress"><span style="width:'+rate+'%"></span></div><b>'+rate+'%</b></article>';
+ }).join(''):'<div class="portal-empty-state"><span>📊</span><h3>لا يوجد محتوى منشور بعد</h3><p>بعد اعتماد أول درس ستبدأ التحليلات في الظهور.</p></div>';
+
+ const top=[...metrics].sort((a,b)=>Number(b.m.views||0)-Number(a.m.views||0))[0];
+ if($('teacherTopLesson'))$('teacherTopLesson').innerHTML=top?'<strong>'+escapeHtml(top.lesson.title||'درس')+'</strong><span>'+Number(top.m.views||0)+' مشاهدة</span>':'<strong>—</strong><span>لا توجد بيانات بعد</span>';
+ if($('teacherAverageQuiz'))$('teacherAverageQuiz').innerHTML='<strong>'+averageQuiz+'%</strong><span>'+quizAttempts+' محاولة تدريب</span>';
+
+ const list=$('teacherAnalyticsList');
+ if(list)list.innerHTML=metrics.length?metrics.map(x=>{
+   const views=Number(x.m.views||0),done=Number(x.m.completions||0),attempts=Number(x.m.quizAttempts||0),avg=Number(x.m.quizAverage||0);
+   const rate=views?Math.min(100,Math.round(done/views*100)):0;
+   return '<div class="teacher-analytics-row"><div><strong>'+escapeHtml(x.lesson.title||'درس')+'</strong><small>'+(stageName[x.lesson.stage]||x.lesson.stage||'')+' • صف '+(x.lesson.grade||'')+'</small></div><span><b>'+views+'</b><small>مشاهدة</small></span><span><b>'+rate+'%</b><small>إكمال</small></span><span><b>'+attempts+'</b><small>تدريب</small></span><span><b>'+avg+'%</b><small>متوسط</small></span></div>';
+ }).join(''):'<div class="portal-empty-state"><span>📈</span><h3>لا توجد تحليلات بعد</h3><p>ستظهر الأرقام عندما يبدأ الطلاب في استخدام المحتوى.</p></div>';
+}
+
 function render(){
  const name=teacher.name||user.displayName||user.email.split('@')[0]||'أستاذنا';
  $('teacherTopName').textContent='أهلًا '+name+' 👋';$('teacherWelcomeName').textContent=name;
  const assignments=normalizeAssignments(),subs=Object.entries(submissions||{}).map(([id,v])=>({id,...v})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
- const approved=subs.filter(s=>s.status==='approved'),pending=subs.filter(s=>(s.status||'pending')==='pending');
- $('teacherApprovedCount').textContent=approved.length;$('teacherPendingCount').textContent=pending.length;
+ const approved=subs.filter(s=>s.status==='approved'),pending=subs.filter(s=>(s.status||'pending')==='pending'),lessons=ownLessons();
+ $('teacherApprovedCount').textContent=lessons.length||approved.length;$('teacherPendingCount').textContent=pending.length;
  $('teacherSubjectCount').textContent=new Set(assignments.map(a=>a.subject).filter(Boolean)).size||teacher.subjectCount||0;
  $('teacherGradeCount').textContent=new Set(assignments.map(a=>(a.stage||'')+'-'+(a.grade||'')).filter(x=>x!=='-')).size||teacher.gradeCount||0;
 
  $('teacherAssignments').innerHTML=assignments.length?assignments.map(a=>'<article class="teacher-assignment"><span>📘</span><div><strong>'+(a.subjectName||a.subject||'مادة مسندة')+'</strong><small>'+(a.type==='azhar'?'أزهر':'تعليم عام')+' • '+(stageName[a.stage]||a.stage||'كل المراحل')+' • '+(a.grade?'صف '+a.grade:'كل الصفوف')+'</small></div></article>').join(''):'<p class="profile-muted">لم تحدد الإدارة موادًا بعينها بعد.</p>';
- renderSubmissionList('teacherRecentSubmissions',subs.slice(0,5));renderSubmissionList('teacherApprovedList',approved);
+ renderSubmissionList('teacherRecentSubmissions',subs.slice(0,5));
+ if($('teacherApprovedList')){
+   $('teacherApprovedList').innerHTML=lessons.length?lessons.map(l=>'<article class="submission-item"><div><h4>'+escapeHtml(l.title||'درس')+'</h4><p>'+(stageName[l.stage]||l.stage||'')+' • صف '+(l.grade||'')+' • '+(l.subject||'')+'</p></div><span class="status-pill approved">منشور</span></article>').join(''):'<p class="profile-muted">لا يوجد محتوى منشور حتى الآن.</p>';
+ }
+ renderTeacherAnalytics();
 }
 async function submitContent(e){
  e.preventDefault();
@@ -105,12 +145,14 @@ auth.onAuthStateChanged(async u=>{
  if(!u){showNoAccess('سجّل الدخول أولًا من المنصة، وبعدها افتح بوابة المدرس.');return}
  user=u;
  try{
-   const [t,subjectsSnap,s]=await Promise.all([
+   const [t,subjectsSnap,s,lessonsSnap,analyticsSnap]=await Promise.all([
      db.ref('teacherProfiles/'+u.uid).once('value'),
      db.ref('customSubjects').once('value'),
-     db.ref('teacherSubmissions/'+u.uid).once('value')
+     db.ref('teacherSubmissions/'+u.uid).once('value'),
+     db.ref('lessons').once('value'),
+     db.ref('contentAnalytics').once('value')
    ]);
-   teacher=t.val();data={customSubjects:subjectsSnap.val()||{}};submissions=s.val()||{};
+   teacher=t.val();data={customSubjects:subjectsSnap.val()||{},lessons:lessonsSnap.val()||{}};submissions=s.val()||{};analytics=analyticsSnap.val()||{};
    if(!teacher){showNoAccess('الحساب الحالي ليس له ملف مدرس. الإدارة لازم تضيفه كمدرس أولًا.');return}
    if(teacher.isActive===false||teacher.status==='blocked'){showNoAccess('حساب المدرس غير مفعل حاليًا. تواصل مع الإدارة.');return}
    $('teacherAccess').classList.add('hidden');$('teacherPortal').classList.remove('hidden');updateGrades();render();
