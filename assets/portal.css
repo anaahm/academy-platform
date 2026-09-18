@@ -105,3 +105,5 @@
  .teacher-shell.teacher-collapsed .teacher-nav button{font-size:inherit;justify-content:flex-start;padding:12px 13px}
  .teacher-shell.teacher-collapsed .teacher-nav button i{font-size:inherit}
 }
+
+.teacher-spaced-card{margin-top:16px}
