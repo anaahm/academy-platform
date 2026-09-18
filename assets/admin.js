@@ -6,7 +6,7 @@ if(!firebaseConfig) throw new Error('Firebase configuration is missing');
 if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(),db=firebase.database();
 const $=id=>document.getElementById(id), $$=(s,r=document)=>[...r.querySelectorAll(s)];
-const askConfirm=opts=>window.AcademyUI?.confirm?window.AcademyUI.confirm(opts):Promise.resolve(window.confirm(opts.message||opts.title||'هل أنت متأكد؟'));
+const askConfirm=opts=>window.AcademyUI?.confirm?window.AcademyUI.confirm(opts):(console.error('AcademyUI confirm unavailable'),Promise.resolve(false));
 
 let currentUser=null,root={},unsubscribe=null;
 const editState={subject:null,lesson:null,quiz:null,file:null,simulation:null,live:null,schedule:null,news:null};
