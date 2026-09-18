@@ -378,7 +378,7 @@
     if($('dailyGoalMessage')) {
       $('dailyGoalMessage').textContent=done===3?'ممتاز! أنهيت تحدي اليوم بالكامل 🎉':done===2?'باقي خطوة واحدة فقط، كمّلها 💪':done===1?'بداية ممتازة، كمّل خطوتين كمان.':'ابدأ بخطوة صغيرة وخلي اليوم يتحسب لك.';
     }
-    $('[data-daily-goal]').forEach(btn=>{
+    $$('[data-daily-goal]').forEach(btn=>{
       const key=btn.dataset.dailyGoal,complete=!!goals?.[key];
       btn.classList.toggle('completed',complete);
       const icon=btn.querySelector('.goal-state');
@@ -416,9 +416,9 @@
       $('dashboardMoreMenu')?.classList.toggle('hidden');
       $('dashboardMoreToggle')?.classList.toggle('open');
     });
-    $('[data-nav-label]').forEach(btn=>btn.addEventListener('click',()=>{
+    $$('[data-nav-label]').forEach(btn=>btn.addEventListener('click',()=>{
       if(btn.id==='dashHomeBtn'||btn.id==='dashSubjectsBtn'){
-        $('[data-nav-label]').forEach(x=>x.classList.remove('active'));
+        $$('[data-nav-label]').forEach(x=>x.classList.remove('active'));
         btn.classList.add('active');
       }
       document.querySelector('.dashboard-sidebar')?.classList.remove('open');
@@ -882,9 +882,9 @@
     $('dashMobileMenu').addEventListener('click', () => document.querySelector('.dashboard-sidebar').classList.toggle('open'));
 
     initDashboardSidebar();
-    $('[data-daily-goal]').forEach(btn=>btn.addEventListener('click',()=>toggleDailyGoal(btn.dataset.dailyGoal)));
+    $$('[data-daily-goal]').forEach(btn=>btn.addEventListener('click',()=>toggleDailyGoal(btn.dataset.dailyGoal)));
     $('dailyQuickStart')?.addEventListener('click',()=>{
-      const firstIncomplete=$('[data-daily-goal]').find(btn=>!btn.classList.contains('completed'));
+      const firstIncomplete=$$('[data-daily-goal]').find(btn=>!btn.classList.contains('completed'));
       const key=firstIncomplete?.dataset.dailyGoal||'lesson';
       if(key==='lesson') $('continueLearningBtn')?.click();
       else if(key==='quiz') location.href='./exam-center.html';
