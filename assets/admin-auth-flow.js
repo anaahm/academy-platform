@@ -13,7 +13,7 @@ const app=document.getElementById('adminApp');
 const toastEl=document.getElementById('toast');
 
 function notify(msg,type='success'){
-  if(!toastEl){alert(msg);return}
+  if(!toastEl){console.error(msg);return}
   toastEl.textContent=msg;toastEl.className='toast show '+type;
   clearTimeout(notify.t);notify.t=setTimeout(()=>toastEl.className='toast',3500);
 }
