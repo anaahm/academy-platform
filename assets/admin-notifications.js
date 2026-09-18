@@ -27,7 +27,7 @@ function render(){
     return '<div class="admin-list-item"><div><strong>'+esc(n.title||'إشعار')+'</strong><small>'+esc(target)+'</small><small>'+esc((n.text||'').slice(0,120))+'</small></div><div class="admin-action-row"><span class="status-pill '+(active?'approved':'rejected')+'">'+(active?'نشط':'منتهي')+'</span><button class="admin-action-btn '+(n.isActive===false?'success':'')+'" data-broadcast-toggle="'+id+'"><i class="fa-solid '+(n.isActive===false?'fa-play':'fa-pause')+'"></i></button><button class="admin-action-btn danger" data-broadcast-delete="'+id+'"><i class="fa-solid fa-trash"></i></button></div></div>';
   }).join(''):'<div class="empty-admin"><span>📭</span><h3>لا توجد إشعارات موجهة</h3><p>أنشئ أول إشعار للفئة المناسبة.</p></div>';
   $$('[data-broadcast-toggle]').forEach(b=>b.onclick=()=>db.ref('notificationBroadcasts/'+b.dataset.broadcastToggle+'/isActive').set(broadcasts?.[b.dataset.broadcastToggle]?.isActive===false));
-  $('[data-broadcast-delete]').forEach(b=>b.onclick=async()=>{const ok=await window.AcademyUI.confirm({title:'حذف الإشعار؟',message:'سيتم حذف الإشعار الموجه ولن يظهر للطلاب بعد ذلك.',tone:'danger',acceptText:'حذف الإشعار'});if(ok)await db.ref('notificationBroadcasts/'+b.dataset.broadcastDelete).remove()});
+  $$('[data-broadcast-delete]').forEach(b=>b.onclick=async()=>{const ok=await window.AcademyUI.confirm({title:'حذف الإشعار؟',message:'سيتم حذف الإشعار الموجه ولن يظهر للطلاب بعد ذلك.',tone:'danger',acceptText:'حذف الإشعار'});if(ok)await db.ref('notificationBroadcasts/'+b.dataset.broadcastDelete).remove()});
 }
 $('broadcastStage').onchange=updateGrades;
 $('broadcastForm').onsubmit=async e=>{
