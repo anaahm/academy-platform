@@ -83,8 +83,14 @@ $$('[data-notification-filter]').forEach(b=>b.onclick=()=>{
 });
 
 (async()=>{
-  ({user,profile}=await C.requireStudent());
-  $('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
-  await reload();
+  try{
+    ({user,profile}=await C.requireStudent());
+    $('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
+    window.AcademyUI?.showPageLoading('جاري جمع إشعاراتك وتحديثاتك...');
+    await reload();
+  }catch(err){
+    console.error(err);C.toast('تعذر تحميل الإشعارات الآن.','error');
+    $('notificationList').innerHTML=window.AcademyUI?.errorStateHtml('تعذر تحميل الإشعارات','تحقق من الاتصال ثم حاول مرة أخرى.','<button class="btn btn-primary" onclick="location.reload()">إعادة المحاولة</button>')||'';
+  }finally{window.AcademyUI?.hidePageLoading()}
 })();
 })();
