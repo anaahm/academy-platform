@@ -137,15 +137,17 @@
 
   async function loadDatabaseSnapshot() {
     try {
-      const [subjectsSnap, announcementsSnap, settingsSnap] = await Promise.all([
+      const [subjectsSnap, announcementsSnap, settingsSnap, postsSnap] = await Promise.all([
         database.ref('customSubjects').once('value'),
         database.ref('announcements').once('value'),
-        database.ref('settings').once('value')
+        database.ref('settings').once('value'),
+        database.ref('posts').once('value')
       ]);
       state.dbData = {
         customSubjects: subjectsSnap.val() || {},
         announcements: announcementsSnap.val() || {},
-        settings: settingsSnap.val() || {}
+        settings: settingsSnap.val() || {},
+        posts: postsSnap.val() || {}
       };
     } catch (e) {
       console.warn('Database read unavailable', e);
@@ -185,6 +187,23 @@
     $('userNavActions').classList.remove('hidden');
     renderDashboard();
     window.scrollTo({top:0});
+  }
+
+  function renderPublicNews() {
+    const grid = $('homeNewsGrid');
+    if (!grid) return;
+    const posts = Object.entries(state.dbData.posts || {})
+      .map(([id,v]) => ({id,...(v||{})}))
+      .sort((a,b) => Number(b.date || b.createdAt || 0) - Number(a.date || a.createdAt || 0))
+      .slice(0,3);
+    grid.innerHTML = posts.length
+      ? posts.map(n => `<article class="home-news-card">
+          <span class="news-date">${n.date ? new Date(n.date).toLocaleDateString('ar-EG',{day:'numeric',month:'long',year:'numeric'}) : ''}</span>
+          <h3>${safeHtml(n.title || 'تحديث جديد')}</h3>
+          <p>${safeHtml(n.content || '')}</p>
+          <a href="./news.html">قراءة الأخبار <i class="fa-solid fa-arrow-left"></i></a>
+        </article>`).join('')
+      : '<article class="home-news-card"><span class="news-date">الأكاديمية</span><h3>قريبًا تحديثات جديدة</h3><p>ستظهر هنا أحدث الأخبار والإضافات التي تنشرها الإدارة.</p><a href="./news.html">صفحة الأخبار</a></article>';
   }
 
   function renderHeaderUser() {
@@ -649,6 +668,7 @@
   async function init() {
     bindEvents();
     await loadDatabaseSnapshot();
+    renderPublicNews();
     renderExplorerStages();
     renderExplorerSubjects();
   }
