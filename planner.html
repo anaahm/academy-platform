@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>مخطط المذاكرة | الأكاديمية</title>
+  <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./assets/app-icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/learning.css"><link rel="stylesheet" href="./assets/hub.css">
+</head>
+<body class="feature-page">
+  <div id="toast" class="toast"></div>
+
+  <header class="learning-header">
+    <div class="container learning-nav">
+      <a class="brand" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-book-open"></i></span><span><strong>الأكاديمية</strong><small>خطتك اليومية</small></span></a>
+      <div class="learning-breadcrumb"><a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><span>مخطط المذاكرة</span></div>
+      <div class="learning-user"><a class="icon-btn" href="./progress.html" title="متابعة التقدم"><i class="fa-solid fa-chart-line"></i></a><span class="avatar" id="pageAvatar">ط</span></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="feature-hero">
+      <div class="container">
+        <div class="feature-hero-card">
+          <div><span class="section-kicker light">نظّم وقتك بدل ما تذاكر عشوائي</span><h1>مخطط المذاكرة الشخصي</h1><p>حدد مهامك اليومية، رتّب الأولويات، واتبع خطة واقعية مرتبطة بموادك وتقدمك.</p></div>
+          <span class="feature-hero-art">🗓️</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="container feature-page-content">
+      <section class="feature-stat-grid planner-stats">
+        <article><span class="feature-card-icon blue"><i class="fa-solid fa-list-check"></i></span><div><strong id="plannerTotal">0</strong><small>مهمة</small></div></article>
+        <article><span class="feature-card-icon green"><i class="fa-solid fa-check-double"></i></span><div><strong id="plannerDone">0</strong><small>مكتملة</small></div></article>
+        <article><span class="feature-card-icon amber"><i class="fa-solid fa-clock"></i></span><div><strong id="plannerToday">0</strong><small>اليوم</small></div></article>
+        <article><span class="feature-card-icon violet"><i class="fa-solid fa-bullseye"></i></span><div><strong id="plannerRate">0%</strong><small>نسبة الإنجاز</small></div></article>
+      </section>
+
+      <section class="planner-layout">
+        <div class="planner-main">
+          <article class="feature-card planner-add-card">
+            <div class="feature-card-head"><div><span class="section-kicker">أضف خطوة واضحة</span><h2>مهمة مذاكرة جديدة</h2></div><span class="feature-card-icon blue"><i class="fa-solid fa-plus"></i></span></div>
+            <form id="plannerForm" class="planner-form">
+              <label class="planner-full"><span>المهمة</span><input id="plannerTitle" required maxlength="100" placeholder="مثال: مراجعة الوحدة الثانية"></label>
+              <label><span>المادة</span><select id="plannerSubject"></select></label>
+              <label><span>التاريخ</span><input id="plannerDate" type="date" required></label>
+              <label><span>المدة المتوقعة</span><select id="plannerDuration"><option value="15">15 دقيقة</option><option value="30" selected>30 دقيقة</option><option value="45">45 دقيقة</option><option value="60">60 دقيقة</option><option value="90">90 دقيقة</option></select></label>
+              <label><span>الأولوية</span><select id="plannerPriority"><option value="normal">عادية</option><option value="high">مهمة</option><option value="urgent">عاجلة</option></select></label>
+              <button class="btn btn-primary planner-full" type="submit"><i class="fa-solid fa-plus"></i> إضافة للخطة</button>
+            </form>
+          </article>
+
+          <article class="feature-card planner-list-card">
+            <div class="feature-card-head"><div><span class="section-kicker">خطة التنفيذ</span><h2>مهامك</h2></div>
+              <div class="feature-filter-chips">
+                <button class="active" data-planner-filter="all">الكل</button>
+                <button data-planner-filter="today">اليوم</button>
+                <button data-planner-filter="pending">المتبقي</button>
+                <button data-planner-filter="done">مكتمل</button>
+              </div>
+            </div>
+            <div id="plannerTaskList" class="planner-task-list"></div>
+          </article>
+        </div>
+
+        <aside class="planner-side">
+          <article class="feature-card">
+            <div class="feature-card-head"><div><span class="section-kicker">اقتراح تلقائي</span><h3>ابدأ من هنا</h3></div><span>✨</span></div>
+            <div id="plannerSuggestion" class="planner-suggestion"></div>
+          </article>
+          <article class="feature-card">
+            <div class="feature-card-head"><div><span class="section-kicker">هدف الأسبوع</span><h3>خطة بسيطة قابلة للتنفيذ</h3></div><span>🎯</span></div>
+            <div class="planner-week-goal">
+              <div class="planner-ring" id="plannerWeekRing"><strong id="plannerWeekDone">0/5</strong></div>
+              <p>حاول تكمل 5 مهام مذاكرة خلال الأسبوع. الاستمرارية أهم من عدد الساعات.</p>
+            </div>
+          </article>
+          <article class="feature-card planner-tip-card"><span>💡</span><h3>قاعدة 30 دقيقة</h3><p>لو المهمة كبيرة، قسمها إلى جلسات 30 دقيقة وحدد مهمة واحدة واضحة لكل جلسة.</p></article>
+        </aside>
+      </section>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="./assets/firebase-config.js"></script>
+  <script src="./assets/student-core.js"></script>
+  <script src="./assets/planner.js"></script>
+  <script src="./assets/activity-tracker.js"></script>
+  <script src="./assets/pwa.js"></script>
+</body>
+</html>
