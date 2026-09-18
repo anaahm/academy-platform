@@ -57,11 +57,11 @@ function initTeacherCollapse(){
  const apply=()=>{const collapsed=innerWidth>900&&localStorage.getItem('academyTeacherCollapsed')==='1';shell.classList.toggle('teacher-collapsed',collapsed)};
  apply();
  btn.onclick=()=>{if(innerWidth<=900)return;const next=!shell.classList.contains('teacher-collapsed');shell.classList.toggle('teacher-collapsed',next);localStorage.setItem('academyTeacherCollapsed',next?'1':'0')};
- $('[data-teacher-tab]').forEach(el=>{if(!el.title)el.title=el.textContent.trim().replace(/\s+/g,' ')});
+ $$('[data-teacher-tab]').forEach(el=>{if(!el.title)el.title=el.textContent.trim().replace(/\s+/g,' ')});
  window.addEventListener('resize',apply,{passive:true});
 }
 function switchTab(tab){
- $$('[data-teacher-tab]').forEach(b=>b.classList.toggle('active',b.dataset.teacherTab===tab));
+ $$$('[data-teacher-tab]').forEach(b=>b.classList.toggle('active',b.dataset.teacherTab===tab));
  $$('.teacher-tab').forEach(s=>s.classList.add('hidden'));
  $('teacher-tab-'+tab).classList.remove('hidden');
  if(innerWidth<900)$('teacherSide').classList.remove('open');
@@ -213,7 +213,7 @@ async function submitContent(e){
 function showNoAccess(message){
  $('teacherPortal').classList.add('hidden');$('teacherAccess').classList.remove('hidden');$('teacherAccessText').textContent=message;
 }
-$$('[data-teacher-tab]').forEach(b=>b.onclick=()=>switchTab(b.dataset.teacherTab));
+$$$('[data-teacher-tab]').forEach(b=>b.onclick=()=>switchTab(b.dataset.teacherTab));
 $$('[data-open-teacher-submit]').forEach(b=>b.onclick=()=>switchTab('submit'));
 $('teacherStage').addEventListener('change',updateGrades);$('teacherGrade').addEventListener('change',updateSubjects);$('teacherEducationType').addEventListener('change',updateSubjects);
 $('teacherSubmissionForm').addEventListener('submit',submitContent);
