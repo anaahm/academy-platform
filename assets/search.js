@@ -3,7 +3,7 @@
 
 const cfg=window.ACADEMY_FIREBASE_CONFIG;
 if(!cfg) throw new Error('Firebase config missing');
-firebase.initializeApp(cfg);
+if(!firebase.apps.length) firebase.initializeApp(cfg);
 const db=firebase.database();
 const $=id=>document.getElementById(id), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 
