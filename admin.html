@@ -63,6 +63,7 @@
         <button data-admin-tab="simulations"><i class="fa-solid fa-stopwatch"></i> المحاكيات</button>
         <button data-admin-tab="files"><i class="fa-solid fa-folder-open"></i> الملفات والمكتبة</button>
         <button data-admin-tab="live"><i class="fa-solid fa-tower-broadcast"></i> البث المباشر</button>
+        <button data-admin-tab="schedule"><i class="fa-regular fa-calendar-days"></i> جدول الحصص</button>
 
         <span class="admin-nav-label">المستخدمون</span>
         <button data-admin-tab="teachers"><i class="fa-solid fa-chalkboard-user"></i> المدرسون والمراجعات <span id="pendingBadge" class="nav-badge hidden">0</span></button>
@@ -151,6 +152,33 @@
         <section class="admin-tab" id="admin-tab-live">
           <div class="admin-section-head"><div><span class="section-kicker">الجلسات</span><h2>البث المباشر</h2><p>أضف جلسات YouTube أو Zoom وحدد حالتها وموعدها.</p></div><button class="btn btn-primary" id="openLiveModal"><i class="fa-solid fa-plus"></i> جلسة جديدة</button></div>
           <div id="liveAdminGrid" class="admin-subject-grid"></div>
+        </section>
+
+        <section class="admin-tab" id="admin-tab-schedule">
+          <div class="admin-section-head"><div><span class="section-kicker">المواعيد الأسبوعية</span><h2>جدول الحصص</h2><p>أنشئ حصة أسبوعية ثابتة تظهر تلقائيًا للطلاب المناسبين.</p></div><a class="btn btn-soft" href="./schedule.html" target="_blank"><i class="fa-solid fa-eye"></i> معاينة جدول الطالب</a></div>
+          <div class="admin-teacher-grid">
+            <article class="admin-card admin-form-card">
+              <div class="admin-card-head"><div><span class="section-kicker">حصة جديدة</span><h3>إضافة موعد أسبوعي</h3></div><span>📅</span></div>
+              <form id="scheduleEventForm" class="admin-form">
+                <label><span>نوع التعليم</span><select id="scheduleType"><option value="public">تعليم عام</option><option value="azhar">أزهر</option></select></label>
+                <label><span>المرحلة</span><select id="scheduleStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+                <label><span>الصف</span><select id="scheduleGrade"></select></label>
+                <label><span>المادة</span><select id="scheduleSubject"></select></label>
+                <label class="full"><span>عنوان الحصة</span><input id="scheduleTitle" required maxlength="120" placeholder="مثال: مراجعة الوحدة الثانية"></label>
+                <label><span>المدرس</span><input id="scheduleTeacher" maxlength="100" placeholder="أ/ ..."></label>
+                <label><span>اليوم</span><select id="scheduleDay"><option value="6">السبت</option><option value="0">الأحد</option><option value="1">الاثنين</option><option value="2">الثلاثاء</option><option value="3">الأربعاء</option><option value="4">الخميس</option><option value="5">الجمعة</option></select></label>
+                <label><span>الوقت</span><input id="scheduleTime" type="time" required value="18:00"></label>
+                <label><span>المدة بالدقائق</span><input id="scheduleDuration" type="number" min="10" max="240" value="60"></label>
+                <label class="full"><span>رابط الحصة — اختياري</span><input id="scheduleUrl" type="url" dir="ltr" placeholder="https://..."></label>
+                <label class="switch-field full"><span>الحالة</span><div><input id="scheduleActive" type="checkbox" checked><strong>نشطة</strong></div></label>
+                <button class="btn btn-primary full" type="submit"><i class="fa-solid fa-plus"></i> إضافة للجدول</button>
+              </form>
+            </article>
+            <article class="admin-card">
+              <div class="admin-card-head"><div><span class="section-kicker">الحصص الحالية</span><h3>المواعيد الأسبوعية</h3></div><span>🗓️</span></div>
+              <div id="scheduleAdminList" class="admin-list admin-scroll-list"></div>
+            </article>
+          </div>
         </section>
 
         <section class="admin-tab" id="admin-tab-community">
