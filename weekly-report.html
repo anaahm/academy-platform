@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>التقرير الأسبوعي | الأكاديمية</title>
+  <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./assets/app-icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/learning.css"><link rel="stylesheet" href="./assets/hub.css">
+</head>
+<body class="feature-page">
+  <div id="toast" class="toast"></div>
+  <header class="learning-header">
+    <div class="container learning-nav">
+      <a class="brand" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-book-open"></i></span><span><strong>الأكاديمية</strong><small>تقريرك الأسبوعي</small></span></a>
+      <div class="learning-breadcrumb"><a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><span>التقرير الأسبوعي</span></div>
+      <div class="learning-user"><a class="icon-btn" href="./planner.html" title="مخطط المذاكرة"><i class="fa-regular fa-calendar-check"></i></a><span class="avatar" id="pageAvatar">ط</span></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="feature-hero">
+      <div class="container">
+        <div class="feature-hero-card">
+          <div><span class="section-kicker light">شوف مستواك بوضوح</span><h1>تقريرك الأسبوعي</h1><p>ملخص ذكي لنشاطك واختباراتك وتقدم موادك، مع توصيات عملية للأسبوع الجديد.</p></div>
+          <span class="feature-hero-art">📈</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="container feature-page-content">
+      <div class="weekly-report-heading">
+        <div><span class="section-kicker">الأسبوع الحالي</span><h2 id="weeklyRange">—</h2><p id="weeklySummary">جاري تحليل نشاطك...</p></div>
+        <button class="btn btn-soft" id="printWeeklyReport"><i class="fa-solid fa-print"></i> طباعة التقرير</button>
+      </div>
+
+      <section class="feature-stat-grid">
+        <article><span class="feature-card-icon blue"><i class="fa-solid fa-clock"></i></span><div><strong id="weeklyMinutes">0</strong><small>دقيقة مذاكرة</small></div></article>
+        <article><span class="feature-card-icon green"><i class="fa-solid fa-circle-check"></i></span><div><strong id="weeklyLessons">0</strong><small>درس مكتمل</small></div></article>
+        <article><span class="feature-card-icon violet"><i class="fa-solid fa-file-circle-check"></i></span><div><strong id="weeklyQuizzes">0</strong><small>اختبار</small></div></article>
+        <article><span class="feature-card-icon amber"><i class="fa-solid fa-star"></i></span><div><strong id="weeklyAverage">—</strong><small>متوسط الاختبارات</small></div></article>
+      </section>
+
+      <section class="weekly-report-grid">
+        <article class="feature-card">
+          <div class="feature-card-head"><div><span class="section-kicker">نشاط 7 أيام</span><h3>وقت المذاكرة اليومي</h3></div><span>⏱️</span></div>
+          <div class="weekly-bars" id="weeklyBars"></div>
+        </article>
+
+        <article class="feature-card">
+          <div class="feature-card-head"><div><span class="section-kicker">مقارنة</span><h3>مقارنة بالأسبوع السابق</h3></div><span>📊</span></div>
+          <div id="weeklyComparison" class="weekly-comparison"></div>
+        </article>
+
+        <article class="feature-card">
+          <div class="feature-card-head"><div><span class="section-kicker">المواد</span><h3>أين تتقدم أكثر؟</h3></div><span>📚</span></div>
+          <div id="weeklySubjects" class="weekly-subjects"></div>
+        </article>
+
+        <article class="feature-card">
+          <div class="feature-card-head"><div><span class="section-kicker">توصيات</span><h3>خطة الأسبوع القادم</h3></div><span>✨</span></div>
+          <div id="weeklyRecommendations" class="weekly-recommendations"></div>
+        </article>
+      </section>
+
+      <section class="feature-card">
+        <div class="feature-card-head"><div><span class="section-kicker">آخر النتائج</span><h3>اختبارات ومحاكيات هذا الأسبوع</h3></div><a class="text-btn" href="./progress.html">كل التقدم <i class="fa-solid fa-arrow-left"></i></a></div>
+        <div id="weeklyResults" class="weekly-results"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="./assets/firebase-config.js"></script>
+  <script src="./assets/student-core.js"></script>
+  <script src="./assets/weekly-report.js"></script>
+  <script src="./assets/pwa.js"></script>
+</body>
+</html>
