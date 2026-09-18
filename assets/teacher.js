@@ -126,7 +126,7 @@ function renderTeacherAssignments(){
  const box=$('teacherAssignmentSubmissions');
  if(box)box.innerHTML=rows.length?rows.map(r=>{
    const graded=r.status==='graded';
-   return '<div class="teacher-analytics-row assignment-review-row"><div><strong>'+escapeHtml(r.studentName||'طالب')+'</strong><small>'+escapeHtml(r.assignment.title||'واجب')+' • '+(r.submittedAt?new Date(r.submittedAt).toLocaleDateString('ar-EG'):'')+'</small></div><span><b>'+(graded?Number(r.score||0)+'%':'—')+'</b><small>الدرجة</small></span><span><b>'+(graded?'مصَحح':'جديد')+'</b><small>الحالة</small></span><button class="btn '+(graded?'btn-soft':'btn-primary')+'" data-grade-assignment="'+r.assignment.id+'|'+r.uid+'">'+(graded?'تعديل التصحيح':'تصحيح')+'</button></div>';
+   return '<div class="teacher-analytics-row assignment-review-row"><div><strong>'+escapeHtml(r.studentName||'طالب')+'</strong><small>'+escapeHtml(r.assignment.title||'واجب')+' • '+(r.submittedAt?new Date(r.submittedAt).toLocaleDateString('ar-EG'):'')+'</small></div><span><b>'+(graded?Number(r.score||0)+' / '+Number(r.maxScore||r.assignment.maxScore||100):'—')+'</b><small>الدرجة</small></span><span><b>'+(graded?'مصَحح':'جديد')+'</b><small>الحالة</small></span><button class="btn '+(graded?'btn-soft':'btn-primary')+'" data-grade-assignment="'+r.assignment.id+'|'+r.uid+'">'+(graded?'تعديل التصحيح':'تصحيح')+'</button></div>';
  }).join(''):'<div class="portal-empty-state"><span>📥</span><h3>لا توجد تسليمات بعد</h3><p>تسليمات الطلاب هتظهر هنا.</p></div>';
  $('[data-grade-assignment]').forEach(b=>b.onclick=()=>openGradeSubmission(b.dataset.gradeAssignment));
 }
@@ -150,16 +150,18 @@ function openGradeSubmission(key){
  const [assignmentId,uid]=key.split('|'),a=homeworkAssignments[assignmentId],s=assignmentSubmissions[assignmentId]?.[uid];if(!a||!s)return;
  activeGrade={assignmentId,uid};$('gradeModalTitle').textContent=(s.studentName||'طالب')+' • '+(a.title||'واجب');
  $('gradeSubmissionPreview').innerHTML='<div><small>إجابة الطالب</small><p>'+escapeHtml(s.answer||'لا توجد إجابة نصية')+'</p>'+(s.link?'<a href="'+escapeHtml(s.link)+'" target="_blank" rel="noopener">فتح الرابط المرفق <i class="fa-solid fa-arrow-up-right-from-square"></i></a>':'')+'</div>';
+ const maxScore=Number(a.maxScore||100);$('gradeScore').max=maxScore;$('gradeScoreLabel').textContent='الدرجة من '+maxScore;
  $('gradeScore').value=s.status==='graded'?Number(s.score||0):'';$('gradeFeedback').value=s.feedback||'';
  $('teacherGradeModal').classList.remove('hidden');document.body.style.overflow='hidden';
 }
 function closeGradeModal(){activeGrade=null;$('teacherGradeModal')?.classList.add('hidden');document.body.style.overflow=''}
 async function saveGrade(e){
  e.preventDefault();if(!activeGrade)return;
- const score=Math.max(0,Math.min(100,Number($('gradeScore').value||0))),feedback=$('gradeFeedback').value.trim();
- await db.ref('assignmentSubmissions/'+activeGrade.assignmentId+'/'+activeGrade.uid).update({status:'graded',score,feedback,gradedAt:Date.now(),gradedBy:user.uid});
+ const a=homeworkAssignments[activeGrade.assignmentId]||{},maxScore=Number(a.maxScore||100);
+ const score=Math.max(0,Math.min(maxScore,Number($('gradeScore').value||0))),percent=Math.round(score/maxScore*100),feedback=$('gradeFeedback').value.trim();
+ await db.ref('assignmentSubmissions/'+activeGrade.assignmentId+'/'+activeGrade.uid).update({status:'graded',score,maxScore,percent,feedback,gradedAt:Date.now(),gradedBy:user.uid});
  assignmentSubmissions[activeGrade.assignmentId]=assignmentSubmissions[activeGrade.assignmentId]||{};
- assignmentSubmissions[activeGrade.assignmentId][activeGrade.uid]={...(assignmentSubmissions[activeGrade.assignmentId][activeGrade.uid]||{}),status:'graded',score,feedback,gradedAt:Date.now(),gradedBy:user.uid};
+ assignmentSubmissions[activeGrade.assignmentId][activeGrade.uid]={...(assignmentSubmissions[activeGrade.assignmentId][activeGrade.uid]||{}),status:'graded',score,maxScore,percent,feedback,gradedAt:Date.now(),gradedBy:user.uid};
  closeGradeModal();renderTeacherAssignments();toast('تم حفظ التصحيح وإرساله للطالب ✅');
 }
 
