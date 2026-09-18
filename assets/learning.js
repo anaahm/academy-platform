@@ -191,8 +191,8 @@ function renderNav(c){
  $('previousLessonBtn').onclick=()=>{if(prev)location.href=url('lesson.html',c,{id:prev.id})};$('nextLessonBtn').onclick=()=>{if(next)location.href=url('lesson.html',c,{id:next.id})};
 }
 function bindTabs(){
- $('[data-lesson-tab]').forEach(b=>b.onclick=()=>{
-   $('[data-lesson-tab]').forEach(x=>x.classList.toggle('active',x===b));
+ $$('[data-lesson-tab]').forEach(b=>b.onclick=()=>{
+   $$('[data-lesson-tab]').forEach(x=>x.classList.toggle('active',x===b));
    $('lessonExplanationPanel').classList.toggle('hidden',b.dataset.lessonTab!=='explanation');
    $('lessonQuizPanel').classList.toggle('hidden',b.dataset.lessonTab!=='quiz');
    $('lessonResourcesPanel').classList.toggle('hidden',b.dataset.lessonTab!=='resources');
@@ -263,7 +263,7 @@ async function markComplete(c,id){
  updateProgress(id);renderOutline(c,state.currentLesson);toast('رائع! +50 XP وتم حفظ تقدمك 🎉');
 }
 function setupQuiz(c,l){
- const qs=Array.isArray(l.questions)?l.questions:[];$('quizIntroText').textContent=qs.length?'تدريب مكوّن من '+qs.length+' سؤال على هذا الدرس.':'لا توجد أسئلة مضافة لهذا الدرس حتى الآن.';$('startQuizBtn').disabled=!qs.length;$('startQuizBtn').onclick=()=>startQuiz(qs,c,l.id);$('retryQuizBtn').onclick=()=>startQuiz(qs,c,l.id);$('reviewLessonBtn').onclick=()=>$$('[data-lesson-tab]').find(b=>b.dataset.lessonTab==='explanation')?.click();
+ const qs=Array.isArray(l.questions)?l.questions:[];$('quizIntroText').textContent=qs.length?'تدريب مكوّن من '+qs.length+' سؤال على هذا الدرس.':'لا توجد أسئلة مضافة لهذا الدرس حتى الآن.';$('startQuizBtn').disabled=!qs.length;$('startQuizBtn').onclick=()=>startQuiz(qs,c,l.id);$('retryQuizBtn').onclick=()=>startQuiz(qs,c,l.id);$('reviewLessonBtn').onclick=()=>$$$('[data-lesson-tab]').find(b=>b.dataset.lessonTab==='explanation')?.click();
 }
 function startQuiz(qs,c,sourceId){
  const ok=qs.filter(q=>q&&Array.isArray(q.opts)&&q.opts.length>=2);if(!ok.length){toast('لا توجد أسئلة قابلة للتشغيل حاليًا.','error');return}
@@ -311,13 +311,13 @@ function bindLearningExplorer(){
  if(!$('explorerDrawer'))return;
  $('closeExplorer').onclick=closeLearningExplorer;
  $('explorerBackdrop').onclick=closeLearningExplorer;
- $('[data-explorer-tab]').forEach(b=>b.onclick=()=>{
-   $('[data-explorer-tab]').forEach(x=>x.classList.toggle('active',x===b));
+ $$('[data-explorer-tab]').forEach(b=>b.onclick=()=>{
+   $$('[data-explorer-tab]').forEach(x=>x.classList.toggle('active',x===b));
    $('explorerStagesView').classList.toggle('hidden',b.dataset.explorerTab!=='stages');
    $('explorerSubjectsView').classList.toggle('hidden',b.dataset.explorerTab!=='subjects');
  });
- $('[data-type-filter]').forEach(b=>b.onclick=()=>{
-   $('[data-type-filter]').forEach(x=>x.classList.toggle('active',x===b));
+ $$('[data-type-filter]').forEach(b=>b.onclick=()=>{
+   $$('[data-type-filter]').forEach(x=>x.classList.toggle('active',x===b));
    renderLearningStages(b.dataset.typeFilter);
  });
  $('explorerSearch').addEventListener('input',()=>renderLearningStages(document.querySelector('[data-type-filter].active')?.dataset.typeFilter||'all'));
@@ -339,12 +339,12 @@ function renderLearningStages(typeFilter='all'){
    rows.push('<article class="explorer-stage-item explorer-stage-rich"><span class="emoji">'+(type==='azhar'?'🕌':stages[stage].emoji)+'</span><div><strong>'+esc(title)+'</strong><small>اختر الصف ثم شاهد مواده</small><div class="explore-grade-links">'+gradeList.map(g=>'<button data-explore-grade="'+g+'" data-explore-stage="'+stage+'" data-explore-type="'+type+'">'+g+'</button>').join('')+'</div></div></article>');
  }));
  $('explorerStageList').innerHTML=rows.join('')||'<p>لا توجد نتائج مطابقة.</p>';
- $('[data-explore-grade]').forEach(b=>b.onclick=()=>renderLearningSubjects(b.dataset.exploreType,b.dataset.exploreStage,b.dataset.exploreGrade));
+ $$('[data-explore-grade]').forEach(b=>b.onclick=()=>renderLearningSubjects(b.dataset.exploreType,b.dataset.exploreStage,b.dataset.exploreGrade));
 }
 function renderLearningSubjects(type,stage,grade){
  const subjects=getSubjects(stage,String(grade),type);
  $('explorerStagesView').classList.add('hidden');$('explorerSubjectsView').classList.remove('hidden');
- $('[data-explorer-tab]').forEach(b=>b.classList.toggle('active',b.dataset.explorerTab==='subjects'));
+ $$('[data-explorer-tab]').forEach(b=>b.classList.toggle('active',b.dataset.explorerTab==='subjects'));
  $('explorerSubjectList').innerHTML=subjects.map(s=>'<a class="explorer-subject-item" href="'+url('subject.html',{type,stage,grade,subject:s.id})+'"><span class="emoji">'+(s.emoji||'📚')+'</span><div><strong>'+esc(s.name)+'</strong><small>'+esc(grades[stage]?.[grade]||'')+' • '+(type==='azhar'?'أزهر':'تعليم عام')+'</small></div><button><i class="fa-solid fa-arrow-left"></i></button></a>').join('');
 }
 
