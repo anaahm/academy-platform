@@ -1,7 +1,7 @@
 (() => {
 'use strict';
 const C=window.AcademyCore,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-let user,profile,assignments=[],submissions={},filter='all',activeAssignment=null;
+let user,profile,assignments=[],submissions={},data={customSubjects:{}},filter='all',activeAssignment=null;
 
 function matching(){
   return assignments.filter(a=>!a.isHidden&&a.type===profile.educationType&&a.stage===profile.stage&&String(a.grade)===String(profile.grade)).sort((a,b)=>Number(a.dueAt||Infinity)-Number(b.dueAt||Infinity));
@@ -22,7 +22,7 @@ function dueText(ts){
   return d.toLocaleDateString('ar-EG',{day:'numeric',month:'short'});
 }
 function subjectName(id){
-  return C.subjectName({customSubjects:{}},id,profile.stage,String(profile.grade),profile.educationType)||id||'مادة';
+  return C.subjectName(data,id,profile.stage,String(profile.grade),profile.educationType)||id||'مادة';
 }
 function filtered(){
   const arr=matching();
@@ -71,8 +71,8 @@ $$('[data-assignment-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.assign
 
 (async()=>{
   ({user,profile}=await C.requireStudent());$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
-  const a=await C.db.ref('assignments').once('value');
-  assignments=Object.entries(a.val()||{}).map(([id,v])=>({id,...(v||{})}));
+  const [a,subjectsSnap]=await Promise.all([C.db.ref('assignments').once('value'),C.db.ref('customSubjects').once('value')]);
+  assignments=Object.entries(a.val()||{}).map(([id,v])=>({id,...(v||{})}));data.customSubjects=subjectsSnap.val()||{};
   const mine=matching();
   const snaps=await Promise.all(mine.map(x=>C.db.ref('assignmentSubmissions/'+x.id+'/'+user.uid).once('value')));
   submissions={};mine.forEach((x,i)=>{if(snaps[i].exists())submissions[x.id]=snaps[i].val()});
