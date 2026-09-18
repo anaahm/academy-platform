@@ -34,3 +34,8 @@
 .teacher-access{max-width:600px;margin:80px auto;background:#fff;border:1px solid var(--line);border-radius:28px;padding:34px;text-align:center}.teacher-access>span{font-size:56px}.teacher-access h1{font-size:28px;margin:10px 0}.teacher-access p{color:#64748b}
 @media(max-width:900px){.profile-layout{grid-template-columns:1fr}.profile-nav-card{position:static;display:flex;overflow-x:auto}.profile-nav-card button{min-width:max-content}.profile-two-col,.smart-dashboard-grid,.teacher-grid{grid-template-columns:1fr}.teacher-shell{grid-template-columns:1fr}.teacher-side{position:fixed;right:0;width:260px;transform:translateX(105%);z-index:80;transition:.2s}.teacher-side.open{transform:translateX(0)}.teacher-stat-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:650px){.profile-hero{grid-template-columns:auto 1fr}.profile-level{grid-column:1/-1}.profile-stat-grid{grid-template-columns:repeat(2,1fr)}.badge-grid{grid-template-columns:repeat(2,1fr)}.achievement-row{grid-template-columns:repeat(2,1fr)}.teacher-page{padding:16px}.teacher-welcome{align-items:flex-start}.teacher-welcome-art{font-size:44px}.teacher-form{grid-template-columns:1fr}.teacher-form .full{grid-column:auto}}
+
+.portal-empty-state,.teacher-card .empty-state{border:1px dashed #cbd5e1;border-radius:18px;padding:36px 18px;text-align:center;background:#f8fafc}
+.portal-empty-state span,.teacher-card .empty-state span{font-size:42px;display:block}
+.portal-empty-state h3,.teacher-card .empty-state h3{margin:8px 0 3px}
+.portal-empty-state p,.teacher-card .empty-state p{font-size:10px;color:#64748b;margin:0}
