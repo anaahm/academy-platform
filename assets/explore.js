@@ -70,5 +70,12 @@ $$('[data-type]').forEach(b=>b.onclick=()=>selectType(b.dataset.type));
 $$('[data-stage]').forEach(b=>b.onclick=()=>selectStage(b.dataset.stage));
 $('explorePageSearch').addEventListener('input',e=>{state.search=e.target.value.trim();if(state.grade)renderSubjects()});
 
-db.ref('/').once('value').then(s=>{state.data=s.val()||{};renderGrades()}).catch(()=>renderGrades());
+Promise.all([
+  db.ref('customSubjects').once('value'),
+  db.ref('lessons').once('value'),
+  db.ref('quizzes').once('value')
+]).then(([subjectsSnap,lessonsSnap,quizzesSnap])=>{
+  state.data={customSubjects:subjectsSnap.val()||{},lessons:lessonsSnap.val()||{},quizzes:quizzesSnap.val()||{}};
+  renderGrades();
+}).catch(()=>renderGrades());
 })();
