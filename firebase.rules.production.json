@@ -190,6 +190,10 @@
     "scheduleEvents": {
       ".read": "auth != null",
       ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "notificationBroadcasts": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
     }
   }
 }
