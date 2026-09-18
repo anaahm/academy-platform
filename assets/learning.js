@@ -476,6 +476,7 @@ function renderLearningSubjects(type,stage,grade){
 }
 
 async function init(){
+ window.AcademyUI?.showPageLoading(page==='lesson'?'جاري تجهيز الدرس...':'جاري تجهيز المادة...');
  try{
    const [subjectsSnap,lessonsSnap,quizzesSnap,filesSnap]=await Promise.all([
      db.ref('customSubjects').once('value'),
@@ -485,7 +486,14 @@ async function init(){
    ]);
    state.data={customSubjects:subjectsSnap.val()||{},lessons:lessonsSnap.val()||{},quizzes:quizzesSnap.val()||{},files:filesSnap.val()||{}};
  }catch(e){toast('تعذر تحميل المحتوى الآن.','error')}
- auth.onAuthStateChanged(async user=>{state.user=user;await loadProfile(user);if(page==='subject'){renderSubject();bindLearningExplorer()}if(page==='lesson')renderLesson()});
+ auth.onAuthStateChanged(async user=>{
+   state.user=user;
+   try{
+     await loadProfile(user);
+     if(page==='subject'){renderSubject();bindLearningExplorer()}
+     if(page==='lesson')renderLesson();
+   }finally{window.AcademyUI?.hidePageLoading()}
+ });
 }
 init();
 })();
