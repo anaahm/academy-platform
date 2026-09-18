@@ -133,9 +133,9 @@ function renderLesson(){
  const id=params.get('id'), lesson=state.data.lessons?.[id];
  if(!id||!lesson||lesson.isHidden){toast('الدرس غير موجود أو غير متاح.','error');setTimeout(()=>history.back(),900);return}
  state.currentLesson={id,...lesson};state.subject=subjectFor(c);filterContent(c);state.unitLessons=state.lessons.filter(l=>Number(l.unit||1)===Number(lesson.unit||1));
+ if(state.user) db.ref('studentProfilesV3/'+state.user.uid).update({lastLessonTitle:lesson.title||'',lastSubjectId:c.subject,lastLessonId:id,lastActiveAt:Date.now()}).catch(()=>{});
  document.title=(lesson.title||'الدرس')+' | الأكاديمية';$('lessonTitle').textContent=lesson.title||'الدرس';$('lessonMeta').textContent=unitName(c,lesson.unit||1)+' • '+state.subject.name;
- $('lessonBreadcrumb').innerHTML='<a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><a href="'+url('subject.html',c)+'">'+esc(state.subject.name)+'</a><i class="fa-solid fa-chevron-left"></i><span>'+esc(lesson.title||'الدرس')+'</span>';
- $('backToSubjectLink').href=url('subject.html',c);
+ $('lessonBreadcrumb').innerHTML='<a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><a id="backToSubjectLink" href="'+url('subject.html',c)+'">'+esc(state.subject.name)+'</a><i class="fa-solid fa-chevron-left"></i><span>'+esc(lesson.title||'الدرس')+'</span>';
  renderVideo(lesson);renderExplanation(lesson);renderFiles();renderOutline(c,lesson);renderNav(c);updateProgress(id);bindTabs();setupQuiz(c,lesson);
  $('markCompleteBtn').onclick=()=>markComplete(c,id);$('markCompleteHeader').onclick=()=>markComplete(c,id);
 }
@@ -174,7 +174,11 @@ async function markComplete(c,id){
  if(!state.user){toast('سجّل الدخول أولًا لحفظ تقدمك.','error');return} if(done(id)){toast('هذا الدرس مكتمل بالفعل ✨');return}
  const at=Date.now();await db.ref('studentProfilesV3/'+state.user.uid+'/learningProgress/'+id).update({completed:true,completedAt:at,subject:c.subject});
  await db.ref('studentProfilesV3/'+state.user.uid+'/stats').transaction(s=>{s=s||{};s.completedLessons=(s.completedLessons||0)+1;s.totalXP=(s.totalXP||0)+50;s.level=Math.floor((s.totalXP||0)/1000)+1;return s});
- state.profile.learningProgress=state.profile.learningProgress||{};state.profile.learningProgress[id]={completed:true,completedAt:at,subject:c.subject};updateProgress(id);renderOutline(c,state.currentLesson);toast('رائع! +50 XP وتم حفظ تقدمك 🎉');
+ state.profile.learningProgress=state.profile.learningProgress||{};state.profile.learningProgress[id]={completed:true,completedAt:at,subject:c.subject};
+ const subjectPct=progress();
+ await db.ref('studentProfilesV3/'+state.user.uid+'/subjectProgress/'+c.subject).set(subjectPct);
+ await db.ref('studentProfilesV3/'+state.user.uid).update({lastLessonTitle:state.currentLesson?.title||'',lastSubjectId:c.subject,lastActiveAt:Date.now()});
+ updateProgress(id);renderOutline(c,state.currentLesson);toast('رائع! +50 XP وتم حفظ تقدمك 🎉');
 }
 function setupQuiz(c,l){
  const qs=Array.isArray(l.questions)?l.questions:[];$('quizIntroText').textContent=qs.length?'تدريب مكوّن من '+qs.length+' سؤال على هذا الدرس.':'لا توجد أسئلة مضافة لهذا الدرس حتى الآن.';$('startQuizBtn').disabled=!qs.length;$('startQuizBtn').onclick=()=>startQuiz(qs,c,l.id);$('retryQuizBtn').onclick=()=>startQuiz(qs,c,l.id);$('reviewLessonBtn').onclick=()=>$$('[data-lesson-tab]').find(b=>b.dataset.lessonTab==='explanation')?.click();
