@@ -1,9 +1,9 @@
-const CACHE='academy-shell-2026-09-18-v13';
+const CACHE='academy-shell-2026-09-18-v14';
 const CORE=[
  './','./index.html','./offline.html','./explore.html','./search.html','./planner.html',
  './assignments.html','./weekly-report.html','./schedule.html','./notifications.html','./subject.html','./lesson.html',
  './exam-center.html','./progress.html','./library.html','./simulations.html',
- './assets/styles.css','./assets/learning.css','./assets/portal.css','./assets/hub.css','./assets/ui-kit.css','./assets/ui-kit.js','./assets/learning.js',
+ './assets/styles.css','./assets/learning.css','./assets/portal.css','./assets/hub.css','./assets/ui-kit.css','./assets/ui-kit.js','./assets/student-shell.js','./assets/learning.js',
  './assets/firebase-config.js','./assets/auth-flow.js','./assets/student-core.js','./assets/notification-engine.js','./assets/notifications.js','./assets/notification-widget.js','./assets/pwa.js','./assets/app-icon.svg','./manifest.webmanifest'
 ];
 
