@@ -165,3 +165,13 @@ button:disabled,.btn:disabled{cursor:not-allowed;opacity:.58}
 .ui-page-loader-card>strong{font-size:16px}.ui-page-loader-card>p{font-size:9px;color:#64748b;margin:5px 0 14px}
 .ui-loader-line{display:block;height:4px;background:#eef2f7;border-radius:999px;overflow:hidden}.ui-loader-line i{display:block;width:38%;height:100%;border-radius:999px;background:linear-gradient(90deg,#60a5fa,#2563eb,#7c3aed);animation:uiLoadLine 1s ease-in-out infinite}
 @keyframes uiLoadLine{0%{transform:translateX(170%)}100%{transform:translateX(-280%)}}
+
+.ui-network-banner{position:fixed;top:14px;left:50%;transform:translate(-50%,-14px);z-index:2100;display:flex;align-items:center;gap:9px;padding:10px 14px;border-radius:13px;font-size:9px;font-weight:900;box-shadow:0 14px 38px rgba(15,23,42,.18);opacity:0;pointer-events:none;transition:.2s}
+.ui-network-banner.show{opacity:1;transform:translate(-50%,0)}.ui-network-banner.offline{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}.ui-network-banner.online{background:#ecfdf5;color:#047857;border:1px solid #bbf7d0}
+.ui-empty-state,.ui-error-state{border:1px dashed #cbd5e1;border-radius:20px;padding:36px 18px;text-align:center;background:linear-gradient(180deg,#fff,#f8fafc)}
+.ui-empty-icon,.ui-error-icon{width:54px;height:54px;border-radius:18px;display:grid;place-items:center;margin:0 auto 10px;font-size:20px}.ui-empty-icon{background:#eff6ff;color:#2563eb}.ui-error-icon{background:#fef2f2;color:#dc2626}
+.ui-empty-state h3,.ui-error-state h3{font-size:14px;margin:4px 0}.ui-empty-state p,.ui-error-state p{font-size:9px;color:#64748b;margin:0 auto;max-width:480px;line-height:1.8}
+.ui-empty-state .btn,.ui-error-state .btn{margin-top:14px}
+.empty-state,.empty-admin,.portal-empty-state,.feature-empty{position:relative;overflow:hidden}
+.empty-state:before,.empty-admin:before,.portal-empty-state:before,.feature-empty:before{content:"";position:absolute;width:110px;height:110px;border-radius:50%;background:rgba(37,99,235,.035);left:-35px;top:-45px}
+@media(max-width:560px){.ui-network-banner{top:8px;width:calc(100% - 20px);justify-content:center;text-align:center}.ui-empty-state,.ui-error-state{padding:28px 14px;border-radius:17px}}
