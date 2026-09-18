@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>متابعة التقدم | الأكاديمية</title>
+  <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./assets/app-icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/learning.css"><link rel="stylesheet" href="./assets/hub.css">
+</head>
+<body class="feature-page">
+  <div id="toast" class="toast"></div>
+  <header class="learning-header">
+    <div class="container learning-nav">
+      <a class="brand" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-book-open"></i></span><span><strong>الأكاديمية</strong><small>متابعة التقدم</small></span></a>
+      <div class="learning-breadcrumb"><a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><span>التقدم</span></div>
+      <span class="avatar" id="pageAvatar">ط</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="feature-hero">
+      <div class="container"><div class="feature-hero-card"><div class="feature-hero-copy"><span class="section-kicker light">اعرف أنت واقف فين</span><h1>متابعة تقدمك</h1><p>شوف تقدم المواد، نتائج الاختبارات، وقت الدراسة، ونشاطك الأسبوعي في لوحة واحدة.</p></div><span class="feature-hero-art">📈</span></div></div>
+    </section>
+
+    <section class="container feature-container">
+      <div class="feature-stat-row">
+        <article><span class="stat-icon green"><i class="fa-solid fa-check"></i></span><div><strong id="progressLessons">0</strong><small>درس مكتمل</small></div></article>
+        <article><span class="stat-icon blue"><i class="fa-solid fa-percent"></i></span><div><strong id="progressAverage">0%</strong><small>متوسط الاختبارات</small></div></article>
+        <article><span class="stat-icon violet"><i class="fa-solid fa-clock"></i></span><div><strong id="progressMinutes">0</strong><small>دقيقة دراسة</small></div></article>
+        <article><span class="stat-icon orange"><i class="fa-solid fa-fire"></i></span><div><strong id="progressStreak">0</strong><small>أيام متتالية</small></div></article>
+      </div>
+
+      <div class="analytics-grid">
+        <article class="analytics-card">
+          <span class="section-kicker">المواد</span><h3>تقدمك في كل مادة</h3>
+          <div class="subject-progress-list" id="subjectProgressList"></div>
+        </article>
+
+        <article class="analytics-card">
+          <span class="section-kicker">آخر 7 أيام</span><h3>نشاط الدراسة</h3>
+          <div class="activity-bars" id="activityBars"></div>
+        </article>
+
+        <article class="analytics-card">
+          <span class="section-kicker">الاختبارات</span><h3>آخر النتائج</h3>
+          <div class="exam-history-list" id="progressQuizHistory"></div>
+          <a class="btn btn-soft btn-block" style="margin-top:12px" href="./exam-center.html">فتح مركز الاختبارات</a>
+        </article>
+
+        <article class="analytics-card">
+          <span class="section-kicker">المحاكيات</span><h3>مستواك في الامتحانات التجريبية</h3>
+          <div class="exam-history-list" id="progressSimulationHistory"></div>
+          <a class="btn btn-soft btn-block" style="margin-top:12px" href="./simulations.html">فتح المحاكيات</a>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="./assets/firebase-config.js"></script><script src="./assets/student-core.js"></script><script src="./assets/progress.js"></script><script src="./assets/pwa.js"></script>
+</body>
+</html>
