@@ -1,0 +1,84 @@
+{
+  "rules": {
+    ".read": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true",
+    ".write": false,
+
+    "adminProfiles": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
+        ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+      }
+    },
+
+    "studentProfilesV3": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
+        ".write": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)"
+      }
+    },
+
+    "teacherProfiles": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
+        ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+      }
+    },
+
+    "teacherSubmissions": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
+        ".write": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)"
+      }
+    },
+
+    "customSubjects": {
+      ".read": true,
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "lessons": {
+      ".read": true,
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "quizzes": {
+      ".read": true,
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "files": {
+      ".read": true,
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "announcements": {
+      ".read": true,
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "settings": {
+      ".read": true,
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "posts": {
+      ".read": true,
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "leaderboard": {
+      ".read": true,
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "liveSessions": {
+      ".read": true,
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "community": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+
+    "users": {
+      ".read": false,
+      ".write": false
+    },
+    "access_codes": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}
