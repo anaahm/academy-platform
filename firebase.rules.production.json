@@ -155,7 +155,7 @@
     "assignments": {
       ".read": "auth != null",
       "$assignmentId": {
-        ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || ((!data.exists() && newData.child('teacherId').val() === auth.uid && root.child('teacherProfiles').child(auth.uid).child('isActive').val() !== false) || (data.child('teacherId').val() === auth.uid && (!newData.exists() || newData.child('teacherId').val() === auth.uid))))",
+        ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || ((!data.exists() && newData.child('teacherId').val() === auth.uid && root.child('teacherProfiles').child(auth.uid).exists() && root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true) || (data.child('teacherId').val() === auth.uid && root.child('teacherProfiles').child(auth.uid).exists() && root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true && (!newData.exists() || newData.child('teacherId').val() === auth.uid))))",
         "title": {
           ".validate": "!newData.exists() || (newData.isString() && newData.val().length > 0 && newData.val().length <= 120)"
         },
@@ -174,7 +174,7 @@
       "$assignmentId": {
         "$uid": {
           ".read": "auth != null && (auth.uid === $uid || root.child('assignments').child($assignmentId).child('teacherId').val() === auth.uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
-          ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || root.child('assignments').child($assignmentId).child('teacherId').val() === auth.uid || (auth.uid === $uid && root.child('assignments').child($assignmentId).exists() && (!data.exists() || data.child('status').val() !== 'graded') && newData.child('status').val() === 'submitted'))",
+          ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (root.child('assignments').child($assignmentId).child('teacherId').val() === auth.uid && root.child('teacherProfiles').child(auth.uid).exists() && root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true) || (auth.uid === $uid && root.child('assignments').child($assignmentId).exists() && (!data.exists() || data.child('status').val() !== 'graded') && newData.child('status').val() === 'submitted' && !newData.child('score').exists() && !newData.child('maxScore').exists() && !newData.child('percent').exists() && !newData.child('feedback').exists() && !newData.child('gradedAt').exists() && !newData.child('gradedBy').exists()))",
           "status": {
             ".validate": "!newData.exists() || newData.val() === 'submitted' || newData.val() === 'graded'"
           },
@@ -183,6 +183,18 @@
           },
           "feedback": {
             ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 2000)"
+          },
+          "maxScore": {
+            ".validate": "!newData.exists() || (newData.isNumber() && newData.val() > 0 && newData.val() <= 1000)"
+          },
+          "percent": {
+            ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 0 && newData.val() <= 100)"
+          },
+          "gradedAt": {
+            ".validate": "!newData.exists() || newData.isNumber()"
+          },
+          "gradedBy": {
+            ".validate": "!newData.exists() || newData.isString()"
           }
         }
       }
