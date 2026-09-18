@@ -368,7 +368,7 @@
     $('mobileMenuBtn').addEventListener('click', () => $('mobileMenu').classList.toggle('hidden'));
     $('userChip').addEventListener('click', () => $('userMenu').classList.toggle('hidden'));
     $('goDashboardBtn').addEventListener('click', showDashboard);
-    $('exploreFromMenu').addEventListener('click', () => openExplorer());
+    $('exploreFromMenu').addEventListener('click', () => location.href='./explore.html');
     $('logoutBtn').addEventListener('click', async () => { await auth.signOut(); $('userMenu').classList.add('hidden'); });
 
     $('loginForm').addEventListener('submit', async (e) => {
@@ -449,10 +449,10 @@
 
     $('openExplorerPublic').addEventListener('click', () => openExplorer());
     $('openSubjectsExplorer').addEventListener('click', () => { openExplorer(); switchExplorerTab('subjects'); });
-    $('exploreAllStagesMain').addEventListener('click', () => openExplorer());
-    $('exploreAllStagesSide').addEventListener('click', () => openExplorer());
-    $('exploreSubjectsDash').addEventListener('click', () => { openExplorer(); switchExplorerTab('subjects'); });
-    $('mobileExploreBtn').addEventListener('click', () => openExplorer());
+    $('exploreAllStagesMain').addEventListener('click', () => location.href='./explore.html');
+    $('exploreAllStagesSide').addEventListener('click', () => location.href='./explore.html');
+    $('exploreSubjectsDash').addEventListener('click', () => location.href='./explore.html');
+    $('mobileExploreBtn').addEventListener('click', () => location.href='./explore.html');
     $('mobileSubjectsBtn').addEventListener('click', () => document.querySelector('.dashboard-section')?.scrollIntoView({behavior:'smooth'}));
     $('closeExplorer').addEventListener('click', closeExplorer);
     $('explorerBackdrop').addEventListener('click', closeExplorer);
