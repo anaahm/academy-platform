@@ -277,7 +277,15 @@ function renderLearningSubjects(type,stage,grade){
 }
 
 async function init(){
- try{const s=await db.ref('/').once('value');state.data=s.val()||{}}catch(e){toast('تعذر تحميل المحتوى الآن.','error')}
+ try{
+   const [subjectsSnap,lessonsSnap,quizzesSnap,filesSnap]=await Promise.all([
+     db.ref('customSubjects').once('value'),
+     db.ref('lessons').once('value'),
+     db.ref('quizzes').once('value'),
+     db.ref('files').once('value')
+   ]);
+   state.data={customSubjects:subjectsSnap.val()||{},lessons:lessonsSnap.val()||{},quizzes:quizzesSnap.val()||{},files:filesSnap.val()||{}};
+ }catch(e){toast('تعذر تحميل المحتوى الآن.','error')}
  auth.onAuthStateChanged(async user=>{state.user=user;await loadProfile(user);if(page==='subject'){renderSubject();bindLearningExplorer()}if(page==='lesson')renderLesson()});
 }
 init();
