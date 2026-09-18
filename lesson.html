@@ -65,6 +65,7 @@
           <button class="active" data-lesson-tab="explanation"><i class="fa-solid fa-book-open"></i> الشرح</button>
           <button data-lesson-tab="quiz"><i class="fa-solid fa-bullseye"></i> التدريب</button>
           <button data-lesson-tab="resources"><i class="fa-solid fa-paperclip"></i> المرفقات</button>
+          <button data-lesson-tab="notes"><i class="fa-regular fa-note-sticky"></i> ملاحظاتي</button>
         </nav>
 
         <section class="lesson-tab-panel" id="lessonExplanationPanel">
@@ -105,6 +106,15 @@
           <article class="resources-card">
             <div class="content-heading"><span class="content-icon"><i class="fa-solid fa-paperclip"></i></span><div><span class="section-kicker">كل ما يخص الدرس</span><h2>المرفقات والملفات</h2></div></div>
             <div id="lessonResources" class="resource-list"></div>
+          </article>
+        </section>
+
+        <section class="lesson-tab-panel hidden" id="lessonNotesPanel">
+          <article class="lesson-notes-card">
+            <div class="content-heading"><span class="content-icon"><i class="fa-regular fa-note-sticky"></i></span><div><span class="section-kicker">مساحتك الخاصة</span><h2>ملاحظاتي على الدرس</h2></div></div>
+            <p class="lesson-notes-help">اكتب الكلمات المهمة، سؤال عايز ترجع له، أو ملخصك الشخصي. الملاحظات محفوظة في حسابك أنت فقط.</p>
+            <textarea id="lessonNotesText" class="lesson-notes-textarea" maxlength="5000" placeholder="اكتب ملاحظاتك هنا..."></textarea>
+            <div class="lesson-notes-footer"><span id="lessonNotesStatus">لم يتم الحفظ بعد</span><button class="btn btn-primary" id="saveLessonNotesBtn"><i class="fa-solid fa-floppy-disk"></i> حفظ الملاحظات</button></div>
           </article>
         </section>
       </div>
