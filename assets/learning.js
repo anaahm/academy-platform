@@ -92,6 +92,12 @@ function renderSubject(){
  $('subjectStageLabel').textContent=(c.type==='azhar'?'التعليم الأزهري':'التعليم العام')+' • '+(grades[c.stage]?.[c.grade]||stages[c.stage]?.name||'');
  $('subjectDescription').textContent='منهج '+state.subject.name+' مرتب في وحدات ودروس، مع اختبارات وتدريبات لمتابعة تقدمك.';
  $('subjectProgressText').textContent=pct+'%';$('subjectProgressBar').style.width=pct+'%';
+ const certBtn=$('subjectCertificateBtn');
+ if(certBtn){
+   const canCert=!!state.user && pct>=100 && state.lessons.length>0;
+   certBtn.classList.toggle('hidden',!canCert);
+   if(canCert)certBtn.href='./certificate.html?'+new URLSearchParams({type:c.type,stage:c.stage,grade:String(c.grade),subject:c.subject}).toString();
+ }
  $('lessonCount').textContent=state.lessons.length;$('completedCount').textContent=complete;$('quizCount').textContent=state.quizzes.length;
  $('subjectBreadcrumb').innerHTML='<a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><span>'+esc(state.subject.name)+'</span>';
  renderCurriculum(c,'all');renderSubjectSide(c);
