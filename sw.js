@@ -1,10 +1,10 @@
-const CACHE='academy-shell-2026-09-18-v7';
+const CACHE='academy-shell-2026-09-18-v8';
 const CORE=[
  './','./index.html','./offline.html','./explore.html','./search.html','./planner.html',
  './assignments.html','./weekly-report.html','./schedule.html','./notifications.html',
  './exam-center.html','./progress.html','./library.html','./simulations.html',
  './assets/styles.css','./assets/learning.css','./assets/portal.css','./assets/hub.css',
- './assets/firebase-config.js','./assets/student-core.js','./assets/notification-engine.js','./assets/notifications.js','./assets/notification-widget.js','./assets/pwa.js','./assets/app-icon.svg','./manifest.webmanifest'
+ './assets/firebase-config.js','./assets/auth-flow.js','./assets/student-core.js','./assets/notification-engine.js','./assets/notifications.js','./assets/notification-widget.js','./assets/pwa.js','./assets/app-icon.svg','./manifest.webmanifest'
 ];
 
 self.addEventListener('install',event=>{
