@@ -49,7 +49,7 @@ function render(){
       const q=new URLSearchParams({type:b.type||profile.educationType||'public',stage:b.stage||profile.stage||'prep',grade:String(b.grade||profile.grade||1),subject:b.subject||'',id:b.lessonId||b.id});
       return `<article class="saved-lesson-card"><span class="saved-lesson-icon"><i class="fa-solid fa-bookmark"></i></span><div><strong>${b.title||'درس محفوظ'}</strong><small>اضغط للرجوع إلى الدرس</small></div><div class="saved-lesson-actions"><a href="./lesson.html?${q.toString()}" title="فتح الدرس"><i class="fa-solid fa-arrow-left"></i></a><button data-remove-bookmark="${b.id}" title="إزالة"><i class="fa-solid fa-trash"></i></button></div></article>`;
     }).join(''):'<div class="profile-empty-saved"><span>🔖</span><h3>لسه مفيش دروس محفوظة</h3><p>احفظ أي درس من علامة الحفظ داخل صفحة الدرس.</p></div>';
-    $('[data-remove-bookmark]').forEach(btn=>btn.onclick=async()=>{
+    $$('[data-remove-bookmark]').forEach(btn=>btn.onclick=async()=>{
       await db.ref('studentProfilesV3/'+user.uid+'/bookmarks/'+btn.dataset.removeBookmark).remove();
       if(profile.bookmarks)delete profile.bookmarks[btn.dataset.removeBookmark];
       render();toast('تمت إزالة الدرس من المحفوظات.');
