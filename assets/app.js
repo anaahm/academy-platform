@@ -4,7 +4,7 @@
   const firebaseConfig = window.ACADEMY_FIREBASE_CONFIG;
   if (!firebaseConfig) throw new Error('Firebase config is missing');
 
-  firebase.initializeApp(firebaseConfig);
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const database = firebase.database();
 
