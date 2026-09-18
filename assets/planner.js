@@ -49,7 +49,7 @@ async function toggleTask(id){
  const t=tasks[id];if(!t)return;
  const done=!t.done;await C.db.ref('studentProfilesV3/'+user.uid+'/studyPlanner/'+id).update({done,completedAt:done?Date.now():null});
 }
-async function removeTask(id){if(confirm('حذف المهمة من خطتك؟'))await C.db.ref('studentProfilesV3/'+user.uid+'/studyPlanner/'+id).remove()}
+async function removeTask(id){const ok=await window.AcademyUI.confirm({title:'حذف المهمة؟',message:'سيتم حذف المهمة من مخطط المذاكرة الخاص بك.',tone:'danger',acceptText:'حذف المهمة'});if(ok)await C.db.ref('studentProfilesV3/'+user.uid+'/studyPlanner/'+id).remove()}
 $('plannerForm').onsubmit=async e=>{
  e.preventDefault();
  const payload={title:$('plannerTitle').value.trim(),subject:$('plannerSubject').value,date:$('plannerDate').value,duration:Number($('plannerDuration').value||30),priority:$('plannerPriority').value,done:false,createdAt:Date.now()};
