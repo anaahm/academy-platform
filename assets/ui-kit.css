@@ -2,16 +2,70 @@
 :root{
   --ui-primary:#2563eb;
   --ui-primary-dark:#1d4ed8;
+  --ui-accent:#7c3aed;
   --ui-success:#059669;
   --ui-warning:#d97706;
   --ui-danger:#dc2626;
+
   --ui-ink:#0f172a;
+  --ui-text:#334155;
   --ui-muted:#64748b;
+  --ui-subtle:#94a3b8;
   --ui-line:#e2e8f0;
+  --ui-line-soft:#edf1f6;
   --ui-surface:#ffffff;
   --ui-soft:#f8fafc;
-  --ui-radius:16px;
-  --ui-shadow:0 18px 55px rgba(15,23,42,.16);
+  --ui-bg:#f5f7fb;
+
+  --ui-radius-xs:9px;
+  --ui-radius-sm:12px;
+  --ui-radius-md:16px;
+  --ui-radius-card:22px;
+  --ui-radius-hero:30px;
+
+  --ui-shadow-card:0 8px 28px rgba(15,23,42,.045);
+  --ui-shadow-hover:0 15px 38px rgba(15,23,42,.07);
+  --ui-shadow-float:0 18px 55px rgba(15,23,42,.16);
+  --ui-shadow-modal:0 30px 90px rgba(15,23,42,.22);
+
+  --ui-space-1:4px;
+  --ui-space-2:8px;
+  --ui-space-3:12px;
+  --ui-space-4:16px;
+  --ui-space-5:20px;
+  --ui-space-6:24px;
+  --ui-space-8:32px;
+
+  --ui-text-xs:9px;
+  --ui-text-sm:10px;
+  --ui-text-md:12px;
+  --ui-text-lg:14px;
+  --ui-title-sm:18px;
+  --ui-title-md:22px;
+  --ui-title-lg:30px;
+
+  /* aliases for legacy styles so the whole product follows one theme */
+  --navy:var(--ui-ink);
+  --ink:var(--ui-ink);
+  --text:var(--ui-text);
+  --muted:var(--ui-muted);
+  --line:var(--ui-line);
+  --soft:var(--ui-soft);
+  --indigo:var(--ui-primary-dark);
+  --indigo-2:var(--ui-primary);
+  --radius:var(--ui-radius-card);
+  --radius-lg:var(--ui-radius-hero);
+  --shadow:var(--ui-shadow-float);
+  --shadow-sm:var(--ui-shadow-card);
+
+  --admin-bg:var(--ui-bg);
+  --admin-card:var(--ui-surface);
+  --admin-line:var(--ui-line);
+  --admin-text:var(--ui-ink);
+  --admin-muted:var(--ui-muted);
+
+  --ui-radius:var(--ui-radius-md);
+  --ui-shadow:var(--ui-shadow-float);
 }
 html{scroll-behavior:smooth}
 body{text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
@@ -54,7 +108,7 @@ button:disabled,.btn:disabled{cursor:not-allowed;opacity:.58}
 .learning-header{position:sticky;top:0;z-index:70;background:rgba(255,255,255,.91)!important;backdrop-filter:blur(18px);border-bottom:1px solid rgba(226,232,240,.9);box-shadow:0 7px 25px rgba(15,23,42,.035)}
 .learning-nav{min-height:72px}
 .learning-breadcrumb{color:#64748b}.learning-breadcrumb a{color:#334155}.learning-breadcrumb i{font-size:8px;color:#cbd5e1}
-.feature-page,.learning-body,.teacher-v3-body,.admin-v3-body{background:#f5f7fb}
+.feature-page,.learning-body,.teacher-v3-body,.admin-v3-body{background:var(--ui-bg)}
 .feature-hero{padding-top:26px}
 .feature-hero-card{border:1px solid rgba(255,255,255,.08)}
 .feature-container,.feature-page-content{padding-top:24px;padding-bottom:72px}
@@ -69,13 +123,13 @@ button:disabled,.btn:disabled{cursor:not-allowed;opacity:.58}
   border-color:#93c5fd!important;box-shadow:0 0 0 4px rgba(59,130,246,.08)!important;background:#fff!important
 }
 .feature-card,.admin-card,.teacher-card,.profile-card,.community-side-card,.exam-side-card,.unit-card{
-  border-color:#e5eaf1!important;box-shadow:0 8px 28px rgba(15,23,42,.045)!important
+  border-color:var(--ui-line-soft)!important;box-shadow:var(--ui-shadow-card)!important
 }
 .feature-card:hover,.admin-card:hover,.teacher-card:hover,.profile-card:hover,.community-side-card:hover,.exam-side-card:hover{
-  border-color:#d6deea!important;box-shadow:0 15px 38px rgba(15,23,42,.07)!important
+  border-color:#d6deea!important;box-shadow:var(--ui-shadow-hover)!important
 }
 .feature-stat-row article,.feature-stat-grid article,.admin-stat-grid article,.teacher-stat-grid article,.profile-stat-grid article{
-  border-color:#e5eaf1!important;box-shadow:0 7px 22px rgba(15,23,42,.035);transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease
+  border-color:var(--ui-line-soft)!important;box-shadow:0 7px 22px rgba(15,23,42,.035);transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease
 }
 .feature-stat-row article:hover,.feature-stat-grid article:hover,.admin-stat-grid article:hover,.teacher-stat-grid article:hover,.profile-stat-grid article:hover{
   transform:translateY(-2px);border-color:#d7e0ec!important;box-shadow:0 13px 30px rgba(15,23,42,.065)
@@ -104,7 +158,7 @@ button:disabled,.btn:disabled{cursor:not-allowed;opacity:.58}
 .admin-list-item small,.teacher-assignment small,.submission-item p,.feature-meta span,.profile-form small,.status-pill{font-size:9px!important}
 .empty-state,.empty-admin,.portal-empty-state,.feature-empty{background:linear-gradient(180deg,#fbfdff,#f8fafc);border-color:#cfd9e7!important}
 .toast{box-shadow:0 15px 45px rgba(15,23,42,.16)}
-.modal-panel,.admin-modal,.teacher-grade-modal{border:1px solid #e2e8f0;box-shadow:0 30px 90px rgba(15,23,42,.22)}
+.modal-panel,.admin-modal,.teacher-grade-modal{border:1px solid #e2e8f0;box-shadow:var(--ui-shadow-modal)}
 @media(max-width:900px){
   .learning-nav{min-height:64px}
   .admin-page,.teacher-page{padding:18px!important}
