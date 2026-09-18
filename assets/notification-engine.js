@@ -39,11 +39,12 @@ async function loadNotifications(user,profileInput){
   const {db}=ensureFirebase();
   const profile=profileInput||((await db.ref('studentProfilesV3/'+user.uid).once('value')).val()||{});
   const reads=profile.notificationReads||{};
-  const [assignSnap,liveSnap,scheduleSnap,annSnap]=await Promise.all([
+  const [assignSnap,liveSnap,scheduleSnap,annSnap,broadcastSnap]=await Promise.all([
     db.ref('assignments').once('value'),
     db.ref('liveSessions').once('value'),
     db.ref('scheduleEvents').once('value'),
-    db.ref('announcements').once('value')
+    db.ref('announcements').once('value'),
+    db.ref('notificationBroadcasts').once('value')
   ]);
 
   const assignments=Object.entries(assignSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(a=>matchesStudent(a,profile)&&!a.isHidden);
@@ -105,6 +106,21 @@ async function loadNotifications(user,profileInput){
     const key=cleanKey('announcement-'+stamp);
     items.push({key,kind:'announcement',category:'system',icon:'fa-bullhorn',tone:'blue',title:'إعلان من الأكاديمية',text:ann.text,createdAt:stamp||now,href:'./index.html',priority:'normal',read:!!reads[key]});
   }
+
+  Object.entries(broadcastSnap.val()||{}).forEach(([id,n])=>{
+    if(!n||n.isActive===false)return;
+    if(n.expiresAt&&now>Number(n.expiresAt))return;
+    if(n.type&&n.type!==profile.educationType)return;
+    if(n.stage&&n.stage!==profile.stage)return;
+    if(n.grade&&String(n.grade)!==String(profile.grade))return;
+    const stamp=Number(n.createdAt||0),key=cleanKey('broadcast-'+id+'-'+stamp);
+    let href='./notifications.html';
+    if(n.href){
+      const raw=String(n.href).trim();
+      if(raw.startsWith('./')||raw.startsWith('/')||/^https?:\/\//i.test(raw))href=raw;
+    }
+    items.push({key,kind:'broadcast',category:'system',icon:n.priority==='urgent'?'fa-circle-exclamation':'fa-bell',tone:n.priority==='urgent'?'red':n.priority==='high'?'amber':'blue',title:n.title||'إشعار من الأكاديمية',text:n.text||'',createdAt:stamp||now,href,priority:n.priority||'normal',read:!!reads[key]});
+  });
 
   items.sort((a,b)=>{
     const unread=(a.read?1:0)-(b.read?1:0);if(unread!==0)return unread;
