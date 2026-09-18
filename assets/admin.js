@@ -73,8 +73,8 @@ function adminName(){
 }
 
 function setTab(tab){
- $('.admin-tab').forEach(s=>s.classList.toggle('active',s.id==='admin-tab-'+tab));
- $('[data-admin-tab]').forEach(b=>b.classList.toggle('active',b.dataset.adminTab===tab));
+ $$('.admin-tab').forEach(s=>s.classList.toggle('active',s.id==='admin-tab-'+tab));
+ $$('[data-admin-tab]').forEach(b=>b.classList.toggle('active',b.dataset.adminTab===tab));
  const meta={
   overview:['لوحة المعلومات','صباح الخير 👋'],curriculum:['هيكل المنهج','المواد والوحدات'],lessons:['المحتوى','إدارة الدروس'],quizzes:['التقييم','إدارة الاختبارات'],simulations:['التدريب','إدارة المحاكيات'],files:['المكتبة','الملفات والمراجع'],schedule:['المواعيد','جدول الحصص'],live:['الجلسات','البث المباشر'],teachers:['فريق التدريس','المدرسون والمراجعات'],students:['المتعلمون','إدارة الطلاب'],news:['التواصل','الأخبار والتحديثات'],community:['الإشراف','المجتمع والبلاغات'],announcements:['التواصل','الإعلانات'],settings:['المنصة','الإعدادات']
  }[tab]||['الإدارة','لوحة الإدارة'];
@@ -190,7 +190,7 @@ function renderLessons(){
  $('lessonsAdminList').innerHTML=arr.length?'<table class="admin-table"><thead><tr><th>الدرس</th><th>المسار</th><th>المرحلة</th><th>المادة</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>'+arr.map(l=>'<tr><td><strong>'+esc(l.title||'درس')+'</strong><br><small>'+(l.videos?.length||0)+' فيديو • '+(l.questions?.length||0)+' سؤال</small></td><td>'+esc(typeLabel(l.type))+'</td><td>'+esc(gradeLabel(l.stage,l.grade))+'</td><td>'+esc(l.subject||'-')+'</td><td><span class="status-pill '+(l.isHidden?'rejected':'approved')+'">'+(l.isHidden?'مخفي':'منشور')+'</span></td><td><div class="admin-action-row"><button class="admin-action-btn" data-edit-lesson="'+l.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><button class="admin-action-btn" data-toggle-lesson="'+l.id+'" title="إظهار/إخفاء"><i class="fa-solid fa-eye"></i></button><button class="admin-action-btn danger" data-delete-lesson="'+l.id+'" title="حذف"><i class="fa-solid fa-trash"></i></button></div></td></tr>').join('')+'</tbody></table>':empty('لا توجد دروس','أضف أول درس جديد.');
  $$('[data-edit-lesson]').forEach(b=>b.onclick=()=>editLesson(b.dataset.editLesson));
  $$('[data-toggle-lesson]').forEach(b=>b.onclick=()=>{const l=root.lessons?.[b.dataset.toggleLesson];db.ref('lessons/'+b.dataset.toggleLesson+'/isHidden').set(!l?.isHidden)});
- $('[data-delete-lesson]').forEach(b=>b.onclick=()=>{if(confirm('حذف الدرس نهائيًا؟'))db.ref('lessons/'+b.dataset.deleteLesson).remove()});
+ $$('[data-delete-lesson]').forEach(b=>b.onclick=()=>{if(confirm('حذف الدرس نهائيًا؟'))db.ref('lessons/'+b.dataset.deleteLesson).remove()});
 }
 async function editLesson(id){
  const l=root.lessons?.[id];if(!l)return;
@@ -312,9 +312,9 @@ function renderScheduleEvents(){
    const status=e.isActive===false?'موقوفة':'نشطة';
    return '<div class="admin-list-item"><div><strong>'+esc(e.title||'حصة')+'</strong><small>'+esc(typeLabel(e.type))+' • '+esc(gradeLabel(e.stage,e.grade))+' • '+esc(e.subjectName||e.subject||'')+'</small><small>'+esc(scheduleDayNames[Number(e.dayOfWeek)]||'')+' • '+esc(e.time||'')+' • '+Number(e.duration||60)+' دقيقة • '+esc(e.teacher||'بدون مدرس')+'</small></div><div class="admin-action-row"><button class="admin-action-btn" data-edit-schedule="'+e.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><button class="admin-action-btn '+(e.isActive===false?'success':'')+'" data-toggle-schedule="'+e.id+'" title="تفعيل/إيقاف"><i class="fa-solid '+(e.isActive===false?'fa-play':'fa-pause')+'"></i></button><button class="admin-action-btn danger" data-delete-schedule="'+e.id+'" title="حذف"><i class="fa-solid fa-trash"></i></button></div></div>';
  }).join(''):empty('لا توجد حصص أسبوعية','أضف أول حصة من النموذج.');
- $('[data-edit-schedule]').forEach(b=>b.onclick=()=>editScheduleEvent(b.dataset.editSchedule));
- $('[data-toggle-schedule]').forEach(b=>b.onclick=()=>db.ref('scheduleEvents/'+b.dataset.toggleSchedule+'/isActive').set(root.scheduleEvents?.[b.dataset.toggleSchedule]?.isActive===false));
- $('[data-delete-schedule]').forEach(b=>b.onclick=()=>{if(confirm('حذف الحصة من الجدول؟'))db.ref('scheduleEvents/'+b.dataset.deleteSchedule).remove()});
+ $$('[data-edit-schedule]').forEach(b=>b.onclick=()=>editScheduleEvent(b.dataset.editSchedule));
+ $$('[data-toggle-schedule]').forEach(b=>b.onclick=()=>db.ref('scheduleEvents/'+b.dataset.toggleSchedule+'/isActive').set(root.scheduleEvents?.[b.dataset.toggleSchedule]?.isActive===false));
+ $$('[data-delete-schedule]').forEach(b=>b.onclick=()=>{if(confirm('حذف الحصة من الجدول؟'))db.ref('scheduleEvents/'+b.dataset.deleteSchedule).remove()});
 }
 function resetScheduleEditor(){
  editState.schedule=null;$('scheduleEventForm')?.reset();
@@ -380,11 +380,11 @@ function renderTeachers(){
  $('assignTeacher').innerHTML=teachers.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||t.email||t.id)+'</option>').join('');
  refreshAssignmentSubjects();
  $('teacherSubmissionsList').innerHTML=subs.length?subs.map(s=>'<div class="admin-list-item"><div><strong>'+esc(s.title||'محتوى')+'</strong><small>'+esc(s.teacherName||root.teacherProfiles?.[s.uid]?.name||'مدرس')+' • '+esc(typeLabel(s.type))+' • '+esc(gradeLabel(s.stage,s.grade))+' • '+esc(s.subjectName||s.subject||'')+'</small>'+(s.videoUrl?'<a href="'+cleanUrl(s.videoUrl)+'" target="_blank" rel="noopener" style="font-size:9px;color:#2563eb">فتح الفيديو</a>':'')+'</div><div class="admin-action-row">'+((s.status||'pending')==='pending'?'<button class="admin-action-btn success" data-approve="'+s.uid+'|'+s.id+'" title="اعتماد"><i class="fa-solid fa-check"></i></button><button class="admin-action-btn danger" data-reject="'+s.uid+'|'+s.id+'" title="رفض"><i class="fa-solid fa-xmark"></i></button>':'<span class="status-pill '+(s.status==='approved'?'approved':'rejected')+'">'+(s.status==='approved'?'معتمد':'مرفوض')+'</span>')+'</div></div>').join(''):empty('لا توجد طلبات محتوى','عندما يرسل مدرس درسًا سيظهر هنا.');
- $('[data-toggle-teacher]').forEach(b=>b.onclick=()=>db.ref('teacherProfiles/'+b.dataset.toggleTeacher+'/isActive').set(root.teacherProfiles?.[b.dataset.toggleTeacher]?.isActive===false));
- $('[data-remove-teacher]').forEach(b=>b.onclick=()=>{if(confirm('إزالة صفة المدرس من الحساب؟'))db.ref('teacherProfiles/'+b.dataset.removeTeacher).remove()});
- $('[data-promote]').forEach(b=>b.onclick=async()=>{const s=root.studentProfilesV3?.[b.dataset.promote]||{};await db.ref('teacherProfiles/'+b.dataset.promote).set({name:s.name||'',email:s.email||'',isActive:true,createdAt:Date.now(),assignments:[]});toast('تم تحويل الحساب إلى مدرس')});
- $('[data-approve]').forEach(b=>b.onclick=()=>approveSubmission(b.dataset.approve));
- $('[data-reject]').forEach(b=>b.onclick=async()=>{const [uid,id]=b.dataset.reject.split('|');await db.ref('teacherSubmissions/'+uid+'/'+id).update({status:'rejected',reviewedAt:Date.now()});toast('تم رفض المحتوى')});
+ $$('[data-toggle-teacher]').forEach(b=>b.onclick=()=>db.ref('teacherProfiles/'+b.dataset.toggleTeacher+'/isActive').set(root.teacherProfiles?.[b.dataset.toggleTeacher]?.isActive===false));
+ $$('[data-remove-teacher]').forEach(b=>b.onclick=()=>{if(confirm('إزالة صفة المدرس من الحساب؟'))db.ref('teacherProfiles/'+b.dataset.removeTeacher).remove()});
+ $$('[data-promote]').forEach(b=>b.onclick=async()=>{const s=root.studentProfilesV3?.[b.dataset.promote]||{};await db.ref('teacherProfiles/'+b.dataset.promote).set({name:s.name||'',email:s.email||'',isActive:true,createdAt:Date.now(),assignments:[]});toast('تم تحويل الحساب إلى مدرس')});
+ $$('[data-approve]').forEach(b=>b.onclick=()=>approveSubmission(b.dataset.approve));
+ $$('[data-reject]').forEach(b=>b.onclick=async()=>{const [uid,id]=b.dataset.reject.split('|');await db.ref('teacherSubmissions/'+uid+'/'+id).update({status:'rejected',reviewedAt:Date.now()});toast('تم رفض المحتوى')});
 }
 function refreshAssignmentSubjects(){
  fillGrades($('assignGrade'),$('assignStage').value);fillSubjects($('assignSubject'),$('assignStage').value,$('assignGrade').value,$('assignType').value);
@@ -419,8 +419,8 @@ function resetNewsEditor(){
 function renderNews(){
  const list=newsItems(),el=$('newsAdminList');if(!el)return;
  el.innerHTML=list.length?list.map(n=>'<div class="admin-list-item"><div><strong>'+esc(n.title||'خبر')+'</strong><small>'+(n.date?new Date(n.date).toLocaleDateString('ar-EG'):'')+'</small><p style="font-size:9px;color:#64748b;margin:5px 0 0">'+esc((n.content||'').slice(0,150))+'</p></div><div class="admin-action-row"><button class="admin-action-btn" data-edit-news="'+n.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><button class="admin-action-btn danger" data-delete-news="'+n.id+'" title="حذف"><i class="fa-solid fa-trash"></i></button></div></div>').join(''):empty('لا توجد أخبار','اكتب أول تحديث للمنصة.');
- $('[data-edit-news]').forEach(b=>b.onclick=()=>editNews(b.dataset.editNews));
- $('[data-delete-news]').forEach(b=>b.onclick=()=>{if(confirm('حذف الخبر؟'))db.ref('posts/'+b.dataset.deleteNews).remove()});
+ $$('[data-edit-news]').forEach(b=>b.onclick=()=>editNews(b.dataset.editNews));
+ $$('[data-delete-news]').forEach(b=>b.onclick=()=>{if(confirm('حذف الخبر؟'))db.ref('posts/'+b.dataset.deleteNews).remove()});
 }
 function editNews(id){
  const n=root.posts?.[id];if(!n)return;editState.news=id;
@@ -459,9 +459,9 @@ async function startDataListener(){
 }
 
 /* events */
-$('[data-admin-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.adminTab));
-$('[data-jump-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.jumpTab));
-$('[data-close-admin-modal]').forEach(b=>b.onclick=()=>closeModal(b.dataset.closeAdminModal));
+$$('[data-admin-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.adminTab));
+$$('[data-jump-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.jumpTab));
+$$('[data-close-admin-modal]').forEach(b=>b.onclick=()=>closeModal(b.dataset.closeAdminModal));
 $('openSubjectModal').onclick=()=>{resetSubjectEditor();openModal('subjectModal')};$('openLessonModal').onclick=()=>{resetLessonEditor();openModal('lessonModal')};$('openQuizModal').onclick=()=>{resetQuizEditor();openModal('quizModal')};$('openFileModal').onclick=()=>{resetFileEditor();openModal('fileModal')};$('openSimulationModal').onclick=()=>{resetSimulationEditor();openModal('simulationModal')};$('openLiveModal').onclick=()=>{resetLiveEditor();openModal('liveModal')};
 $('addLessonVideoRow').onclick=addLessonVideoRow;
 renderLessonVideosEditor([{name:'',url:''}]);
