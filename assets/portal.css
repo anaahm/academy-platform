@@ -60,3 +60,5 @@
 @media(max-width:720px){.assignment-review-row{grid-template-columns:1fr!important}.assignment-review-row>span{display:flex;justify-content:space-between}.teacher-grade-modal{padding:22px}}
 
 .teacher-shell .admin-action-row{display:flex;gap:6px;align-items:center}.teacher-shell .admin-action-btn{width:34px;height:34px;border:0;border-radius:10px;background:#f1f5f9;color:#475569;display:grid;place-items:center}.teacher-shell .admin-action-btn.danger{background:#fef2f2;color:#dc2626}.teacher-shell .admin-action-btn.success{background:#ecfdf5;color:#059669}
+
+.notification-badge{position:absolute;top:-5px;left:-5px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#ef4444;color:#fff;font-size:8px;font-weight:900;display:grid;place-items:center;border:2px solid #fff;line-height:1}.icon-btn.has-notification-badge{position:relative}
