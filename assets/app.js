@@ -358,6 +358,8 @@
     const subjects = getSubjects(p.stage, String(p.grade), p.educationType);
 
     $('dashStudentName').textContent = name;
+    if ($('dashAccountName')) $('dashAccountName').textContent = name;
+    if ($('dashAccountAvatar')) $('dashAccountAvatar').textContent = initials(name);
     $('currentGradeTitle').textContent = gradeLabels[p.stage]?.[p.grade] || stageLabels[p.stage] || 'مرحلتك الدراسية';
     $('currentEducationTitle').textContent = educationLabel(p.educationType);
     $('levelNumber').textContent = stats.level;
@@ -540,6 +542,22 @@
     $('goDashboardBtn').addEventListener('click', showDashboard);
     $('exploreFromMenu').addEventListener('click', () => location.href='./explore.html');
     $('logoutBtn').addEventListener('click', async () => { await auth.signOut(); $('userMenu').classList.add('hidden'); });
+
+    $('dashProfileBtn')?.addEventListener('click', () => location.href='./profile.html?tab=account');
+    $('dashStudySettingsBtn')?.addEventListener('click', () => location.href='./profile.html?tab=study');
+    $('dashChangeStudyBtn')?.addEventListener('click', () => location.href='./profile.html?tab=study');
+    $('dashAccountProfile')?.addEventListener('click', () => location.href='./profile.html?tab=account');
+    $('dashAccountStudy')?.addEventListener('click', () => location.href='./profile.html?tab=study');
+    $('dashAccountBtn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      $('dashAccountMenu')?.classList.toggle('hidden');
+    });
+    const dashboardLogout = async () => {
+      await auth.signOut();
+      location.replace('./index.html');
+    };
+    $('dashLogoutBtn')?.addEventListener('click', dashboardLogout);
+    $('dashAccountLogout')?.addEventListener('click', dashboardLogout);
 
     const loginForm = $('loginForm');
     if (loginForm && loginForm.dataset.authBound !== 'true') {
