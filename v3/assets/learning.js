@@ -124,7 +124,7 @@ function renderSubjectSide(c){
  if(next){$('resumeTitle').textContent=done(next.id)?'راجع أول درس':next.title||'ابدأ أول درس';$('resumeDescription').textContent=unitName(c,next.unit||1)+' • '+(next.videos?.length||0)+' فيديو';$('resumeBtn').onclick=()=>location.href=url('lesson.html',c,{id:next.id})} else $('resumeBtn').disabled=true;
  const week=Math.min(3,state.lessons.filter(l=>pLesson(l.id).completedAt&&Date.now()-pLesson(l.id).completedAt<604800000).length);
  $('weeklyProgressText').textContent=week+' من 3';$('weeklyProgressBar').style.width=(week/3*100)+'%';
- $('exploreStagesBtn').onclick=()=>location.href='./index.html#stages';$('exploreOtherSubjectsBtn').onclick=()=>location.href='./index.html#subjects';
+ $('exploreStagesBtn').onclick=()=>openLearningExplorer();$('exploreOtherSubjectsBtn').onclick=()=>openLearningExplorer();
 }
 
 /* lesson */
@@ -209,9 +209,51 @@ function renderQuizOnly(c,id){
  document.querySelector('.lesson-progress-card')?.classList.add('hidden');const back=url('subject.html',c);$('backToSubjectLink').href=back;$('previousLessonBtn').onclick=()=>location.href=back;$('previousLessonBtn').innerHTML='<i class="fa-solid fa-arrow-right"></i> العودة للمادة';$('nextLessonBtn').classList.add('hidden');
 }
 
+
+function bindLearningExplorer(){
+ if(!$('explorerDrawer'))return;
+ $('closeExplorer').onclick=closeLearningExplorer;
+ $('explorerBackdrop').onclick=closeLearningExplorer;
+ $('[data-explorer-tab]').forEach(b=>b.onclick=()=>{
+   $('[data-explorer-tab]').forEach(x=>x.classList.toggle('active',x===b));
+   $('explorerStagesView').classList.toggle('hidden',b.dataset.explorerTab!=='stages');
+   $('explorerSubjectsView').classList.toggle('hidden',b.dataset.explorerTab!=='subjects');
+ });
+ $('[data-type-filter]').forEach(b=>b.onclick=()=>{
+   $('[data-type-filter]').forEach(x=>x.classList.toggle('active',x===b));
+   renderLearningStages(b.dataset.typeFilter);
+ });
+ $('explorerSearch').addEventListener('input',()=>renderLearningStages(document.querySelector('[data-type-filter].active')?.dataset.typeFilter||'all'));
+}
+function openLearningExplorer(){
+ $('explorerBackdrop').classList.remove('hidden');$('explorerDrawer').classList.add('open');document.body.style.overflow='hidden';
+ renderLearningStages('all');
+}
+function closeLearningExplorer(){
+ $('explorerBackdrop').classList.add('hidden');$('explorerDrawer').classList.remove('open');document.body.style.overflow='';
+}
+function renderLearningStages(typeFilter='all'){
+ const q=($('explorerSearch')?.value||'').trim().toLowerCase(), types=typeFilter==='all'?['public','azhar']:[typeFilter];
+ const rows=[];
+ types.forEach(type=>['primary','prep','sec'].forEach(stage=>{
+   const title=stages[stage].name+' • '+(type==='azhar'?'أزهر':'تعليم عام');
+   if(q && !title.toLowerCase().includes(q))return;
+   const gradeList=stage==='primary'?[1,2,3,4,5,6]:[1,2,3];
+   rows.push('<article class="explorer-stage-item explorer-stage-rich"><span class="emoji">'+(type==='azhar'?'🕌':stages[stage].emoji)+'</span><div><strong>'+esc(title)+'</strong><small>اختر الصف ثم شاهد مواده</small><div class="explore-grade-links">'+gradeList.map(g=>'<button data-explore-grade="'+g+'" data-explore-stage="'+stage+'" data-explore-type="'+type+'">'+g+'</button>').join('')+'</div></div></article>');
+ }));
+ $('explorerStageList').innerHTML=rows.join('')||'<p>لا توجد نتائج مطابقة.</p>';
+ $('[data-explore-grade]').forEach(b=>b.onclick=()=>renderLearningSubjects(b.dataset.exploreType,b.dataset.exploreStage,b.dataset.exploreGrade));
+}
+function renderLearningSubjects(type,stage,grade){
+ const subjects=getSubjects(stage,String(grade),type);
+ $('explorerStagesView').classList.add('hidden');$('explorerSubjectsView').classList.remove('hidden');
+ $('[data-explorer-tab]').forEach(b=>b.classList.toggle('active',b.dataset.explorerTab==='subjects'));
+ $('explorerSubjectList').innerHTML=subjects.map(s=>'<a class="explorer-subject-item" href="'+url('subject.html',{type,stage,grade,subject:s.id})+'"><span class="emoji">'+(s.emoji||'📚')+'</span><div><strong>'+esc(s.name)+'</strong><small>'+esc(grades[stage]?.[grade]||'')+' • '+(type==='azhar'?'أزهر':'تعليم عام')+'</small></div><button><i class="fa-solid fa-arrow-left"></i></button></a>').join('');
+}
+
 async function init(){
  try{const s=await db.ref('/').once('value');state.data=s.val()||{}}catch(e){toast('تعذر تحميل المحتوى الآن.','error')}
- auth.onAuthStateChanged(async user=>{state.user=user;await loadProfile(user);if(page==='subject')renderSubject();if(page==='lesson')renderLesson()});
+ auth.onAuthStateChanged(async user=>{state.user=user;await loadProfile(user);if(page==='subject'){renderSubject();bindLearningExplorer()}if(page==='lesson')renderLesson()});
 }
 init();
 })();
