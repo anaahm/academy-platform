@@ -6,6 +6,7 @@ if(!firebaseConfig) throw new Error('Firebase configuration is missing');
 if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(),db=firebase.database();
 const $=id=>document.getElementById(id), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const askConfirm=opts=>window.AcademyUI?.confirm?window.AcademyUI.confirm(opts):Promise.resolve(window.confirm(opts.message||opts.title||'هل أنت متأكد؟'));
 
 let currentUser=null,root={},unsubscribe=null;
 const editState={subject:null,lesson:null,quiz:null,file:null,simulation:null,live:null,schedule:null,news:null};
@@ -129,7 +130,7 @@ function editSubject(id){
  if($('subjectModalTitle'))$('subjectModalTitle').textContent='تعديل المادة والوحدات';openModal('subjectModal');
 }
 async function deleteSubject(id){
- if(!confirm('حذف المادة المخصصة؟'))return;
+ if(!(await askConfirm({title:'حذف المادة؟',message:'سيتم حذف المادة المخصصة من هذا الصف. تأكد أنه لا يوجد محتوى تحتاجه مرتبط بها.',tone:'danger',acceptText:'حذف المادة'})))return;
  const type=$('curriculumType').value,stage=$('curriculumStage').value,grade=$('curriculumGrade').value;
  const current=root.customSubjects?.[stage]?.[grade],arr=Array.isArray(current)?[...current]:Object.values(current||{});
  const next=arr.filter(x=>!(x?.id===id&&(!x.type||x.type===type)));
@@ -190,7 +191,7 @@ function renderLessons(){
  $('lessonsAdminList').innerHTML=arr.length?'<table class="admin-table"><thead><tr><th>الدرس</th><th>المسار</th><th>المرحلة</th><th>المادة</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody>'+arr.map(l=>'<tr><td><strong>'+esc(l.title||'درس')+'</strong><br><small>'+(l.videos?.length||0)+' فيديو • '+(l.questions?.length||0)+' سؤال</small></td><td>'+esc(typeLabel(l.type))+'</td><td>'+esc(gradeLabel(l.stage,l.grade))+'</td><td>'+esc(l.subject||'-')+'</td><td><span class="status-pill '+(l.isHidden?'rejected':'approved')+'">'+(l.isHidden?'مخفي':'منشور')+'</span></td><td><div class="admin-action-row"><button class="admin-action-btn" data-edit-lesson="'+l.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><button class="admin-action-btn" data-toggle-lesson="'+l.id+'" title="إظهار/إخفاء"><i class="fa-solid fa-eye"></i></button><button class="admin-action-btn danger" data-delete-lesson="'+l.id+'" title="حذف"><i class="fa-solid fa-trash"></i></button></div></td></tr>').join('')+'</tbody></table>':empty('لا توجد دروس','أضف أول درس جديد.');
  $$('[data-edit-lesson]').forEach(b=>b.onclick=()=>editLesson(b.dataset.editLesson));
  $$('[data-toggle-lesson]').forEach(b=>b.onclick=()=>{const l=root.lessons?.[b.dataset.toggleLesson];db.ref('lessons/'+b.dataset.toggleLesson+'/isHidden').set(!l?.isHidden)});
- $$('[data-delete-lesson]').forEach(b=>b.onclick=()=>{if(confirm('حذف الدرس نهائيًا؟'))db.ref('lessons/'+b.dataset.deleteLesson).remove()});
+ $$('[data-delete-lesson]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الدرس نهائيًا؟',message:'لن يمكن استرجاع الدرس بعد الحذف من المنصة.',tone:'danger',acceptText:'حذف الدرس'}))await db.ref('lessons/'+b.dataset.deleteLesson).remove()});
 }
 async function editLesson(id){
  const l=root.lessons?.[id];if(!l)return;
@@ -219,7 +220,7 @@ function renderQuizzes(){
  const arr=values(root.quizzes).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
  $('quizzesAdminList').innerHTML=arr.length?'<table class="admin-table"><thead><tr><th>الاختبار</th><th>المرحلة</th><th>المادة</th><th>الوحدة</th><th>الأسئلة</th><th>إجراء</th></tr></thead><tbody>'+arr.map(q=>'<tr><td><strong>'+esc(q.name||'اختبار')+'</strong></td><td>'+esc(gradeLabel(q.stage,q.grade))+'</td><td>'+esc(q.subject||'-')+'</td><td>'+(Number(q.unit||0)===0?'شامل':esc(q.unit||'-'))+'</td><td>'+(q.questions?.length||0)+'</td><td><div class="admin-action-row"><button class="admin-action-btn" data-edit-quiz="'+q.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><button class="admin-action-btn danger" data-delete-quiz="'+q.id+'"><i class="fa-solid fa-trash"></i></button></div></td></tr>').join('')+'</tbody></table>':empty('لا توجد اختبارات','أنشئ أول اختبار.');
  $$('[data-edit-quiz]').forEach(b=>b.onclick=()=>editQuiz(b.dataset.editQuiz));
- $$('[data-delete-quiz]').forEach(b=>b.onclick=()=>{if(confirm('حذف الاختبار؟'))db.ref('quizzes/'+b.dataset.deleteQuiz).remove()});
+ $$('[data-delete-quiz]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الاختبار؟',message:'سيتم حذف الاختبار والأسئلة الموجودة بداخله من المنصة.',tone:'danger',acceptText:'حذف الاختبار'}))await db.ref('quizzes/'+b.dataset.deleteQuiz).remove()});
 }
 function resetQuizEditor(){editState.quiz=null;$('quizForm').reset();fillGrades($('newQuizGrade'),$('newQuizStage').value);fillSubjects($('newQuizSubject'),$('newQuizStage').value,$('newQuizGrade').value,$('newQuizType').value);if($('quizModalTitle'))$('quizModalTitle').textContent='إنشاء اختبار'}
 function editQuiz(id){
@@ -244,7 +245,7 @@ function renderSimulations(){
  }).join(''):empty('لا توجد محاكيات','أنشئ أول محاكي لطلابك.');
  $$('[data-edit-sim]').forEach(b=>b.onclick=()=>editSimulation(b.dataset.editSim));
  $$('[data-toggle-sim]').forEach(b=>b.onclick=()=>db.ref('simulations/'+b.dataset.toggleSim+'/isHidden').set(!root.simulations?.[b.dataset.toggleSim]?.isHidden));
- $$('[data-delete-sim]').forEach(b=>b.onclick=()=>{if(confirm('حذف المحاكي؟'))db.ref('simulations/'+b.dataset.deleteSim).remove()});
+ $$('[data-delete-sim]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف المحاكي؟',message:'سيتم حذف إعدادات هذا المحاكي من المنصة.',tone:'danger',acceptText:'حذف المحاكي'}))await db.ref('simulations/'+b.dataset.deleteSim).remove()});
 }
 function resetSimulationEditor(){editState.simulation=null;$('simulationForm').reset();$('simTime').value=60;['simAr','simMa','simSc','simEn'].forEach(id=>$(id).value=5);fillGrades($('simGrade'),$('simStage').value);if($('simulationModalTitle'))$('simulationModalTitle').textContent='إنشاء محاكي جديد'}
 function editSimulation(id){
@@ -265,7 +266,7 @@ function renderFiles(){
  const arr=values(root.files).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
  $('filesAdminGrid').innerHTML=arr.length?arr.map(f=>'<article class="admin-file-card"><i class="fa-solid fa-file-pdf"></i><div><strong>'+esc(f.title||'ملف')+'</strong><small>'+esc(gradeLabel(f.stage,f.grade))+' • '+esc(f.subject||'')+'</small></div><div class="admin-action-row"><button class="admin-action-btn" data-edit-file="'+f.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><a class="admin-action-btn success" href="'+cleanUrl(f.url)+'" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i></a><button class="admin-action-btn danger" data-delete-file="'+f.id+'"><i class="fa-solid fa-trash"></i></button></div></article>').join(''):empty('لا توجد ملفات','أضف ملفات أو مذكرات للمادة.');
  $$('[data-edit-file]').forEach(b=>b.onclick=()=>editFile(b.dataset.editFile));
- $$('[data-delete-file]').forEach(b=>b.onclick=()=>{if(confirm('حذف الملف من المنصة؟'))db.ref('files/'+b.dataset.deleteFile).remove()});
+ $$('[data-delete-file]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الملف؟',message:'سيتم إزالة الملف من مكتبة المنصة.',tone:'danger',acceptText:'حذف الملف'}))await db.ref('files/'+b.dataset.deleteFile).remove()});
 }
 function resetFileEditor(){editState.file=null;$('fileForm').reset();fillGrades($('newFileGrade'),$('newFileStage').value);fillSubjects($('newFileSubject'),$('newFileStage').value,$('newFileGrade').value,$('newFileType').value);if($('fileModalTitle'))$('fileModalTitle').textContent='إضافة ملف'}
 function editFile(id){
@@ -288,7 +289,7 @@ function renderLiveSessions(){
    return '<article class="admin-subject-card"><span class="status-pill '+cls+'">'+label+'</span><h3 style="margin-top:10px">📡 '+esc(s.title||'جلسة')+'</h3><p>👨‍🏫 '+esc(s.teacher||'غير محدد')+' • ⏱️ '+Number(s.duration||60)+' دقيقة</p><p>'+(s.scheduledTime?new Date(s.scheduledTime).toLocaleString('ar-EG'):'موعد غير محدد')+'</p><div class="admin-action-row" style="margin-top:12px"><button class="admin-action-btn" data-edit-live="'+s.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><a class="admin-action-btn success" href="'+cleanUrl(s.youtubeLiveUrl||s.zoomLink||'#')+'" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i></a><button class="admin-action-btn danger" data-delete-live="'+s.id+'"><i class="fa-solid fa-trash"></i></button></div></article>';
  }).join(''):empty('لا توجد جلسات','أضف أول بث مباشر أو جلسة قادمة.');
  $$('[data-edit-live]').forEach(b=>b.onclick=()=>editLiveSession(b.dataset.editLive));
- $$('[data-delete-live]').forEach(b=>b.onclick=()=>{if(confirm('حذف الجلسة؟'))db.ref('liveSessions/'+b.dataset.deleteLive).remove()});
+ $$('[data-delete-live]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الجلسة؟',message:'سيتم حذف موعد البث أو الجلسة من جداول الطلاب.',tone:'danger',acceptText:'حذف الجلسة'}))await db.ref('liveSessions/'+b.dataset.deleteLive).remove()});
 }
 function toLocalDateTimeInput(ts){if(!ts)return'';const d=new Date(Number(ts));return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}
 function resetLiveEditor(){editState.live=null;$('liveForm').reset();$('liveDuration').value=60;$('liveStatus').value='upcoming';if($('liveModalTitle'))$('liveModalTitle').textContent='إضافة جلسة بث'}
@@ -314,7 +315,7 @@ function renderScheduleEvents(){
  }).join(''):empty('لا توجد حصص أسبوعية','أضف أول حصة من النموذج.');
  $$('[data-edit-schedule]').forEach(b=>b.onclick=()=>editScheduleEvent(b.dataset.editSchedule));
  $$('[data-toggle-schedule]').forEach(b=>b.onclick=()=>db.ref('scheduleEvents/'+b.dataset.toggleSchedule+'/isActive').set(root.scheduleEvents?.[b.dataset.toggleSchedule]?.isActive===false));
- $$('[data-delete-schedule]').forEach(b=>b.onclick=()=>{if(confirm('حذف الحصة من الجدول؟'))db.ref('scheduleEvents/'+b.dataset.deleteSchedule).remove()});
+ $$('[data-delete-schedule]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الحصة؟',message:'سيختفي هذا الموعد من جداول الطلاب المستهدفين.',tone:'danger',acceptText:'حذف الحصة'}))await db.ref('scheduleEvents/'+b.dataset.deleteSchedule).remove()});
 }
 function resetScheduleEditor(){
  editState.schedule=null;$('scheduleEventForm')?.reset();
@@ -358,9 +359,9 @@ function renderCommunityAdmin(){
    return '<div class="admin-list-item"><div><strong>'+esc(p.title||'منشور')+'</strong><small>'+esc(p.author||'طالب')+' • ❤️ '+likes+' • 🚩 '+reports+'</small><p style="font-size:9px;color:#64748b;margin:5px 0 0">'+esc((p.content||'').slice(0,140))+'</p></div><div class="admin-action-row">'+(reports?'<button class="admin-action-btn success" data-clear-reports="'+p.id+'" title="تصفير البلاغات"><i class="fa-solid fa-check"></i></button>':'')+'<button class="admin-action-btn danger" data-delete-post="'+p.id+'" title="حذف المنشور"><i class="fa-solid fa-trash"></i></button></div></div>';
  }).join(''):empty('لا توجد منشورات','المجتمع هادئ حتى الآن.');
  $('communityGroupsAdminList').innerHTML=groups.length?groups.map(g=>'<div class="admin-list-item"><div><strong>'+esc(g.name||'مجموعة')+'</strong><small>'+Object.keys(g.members||{}).length+' عضو • '+esc(g.subjectName||'كل المواد')+'</small></div><button class="admin-action-btn danger" data-delete-group="'+g.id+'"><i class="fa-solid fa-trash"></i></button></div>').join(''):empty('لا توجد مجموعات','أنشئ مجموعة دراسة من النموذج أعلاه.');
- $$('[data-delete-post]').forEach(b=>b.onclick=()=>{if(confirm('حذف المنشور من المجتمع؟'))db.ref('community/forums/'+b.dataset.deletePost).remove()});
+ $$('[data-delete-post]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف المنشور؟',message:'سيتم حذف المنشور من مجتمع الطلاب نهائيًا.',tone:'danger',acceptText:'حذف المنشور'}))await db.ref('community/forums/'+b.dataset.deletePost).remove()});
  $$('[data-clear-reports]').forEach(b=>b.onclick=()=>db.ref('community/forums/'+b.dataset.clearReports+'/reports').remove());
- $$('[data-delete-group]').forEach(b=>b.onclick=()=>{if(confirm('حذف مجموعة الدراسة؟'))db.ref('community/studyGroups/'+b.dataset.deleteGroup).remove()});
+ $$('[data-delete-group]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف مجموعة الدراسة؟',message:'سيتم حذف المجموعة وإزالتها من قائمة الطلاب.',tone:'danger',acceptText:'حذف المجموعة'}))await db.ref('community/studyGroups/'+b.dataset.deleteGroup).remove()});
  updateCommunityBadge();
 }
 async function saveStudyGroup(e){
@@ -381,7 +382,7 @@ function renderTeachers(){
  refreshAssignmentSubjects();
  $('teacherSubmissionsList').innerHTML=subs.length?subs.map(s=>'<div class="admin-list-item"><div><strong>'+esc(s.title||'محتوى')+'</strong><small>'+esc(s.teacherName||root.teacherProfiles?.[s.uid]?.name||'مدرس')+' • '+esc(typeLabel(s.type))+' • '+esc(gradeLabel(s.stage,s.grade))+' • '+esc(s.subjectName||s.subject||'')+'</small>'+(s.videoUrl?'<a href="'+cleanUrl(s.videoUrl)+'" target="_blank" rel="noopener" style="font-size:9px;color:#2563eb">فتح الفيديو</a>':'')+'</div><div class="admin-action-row">'+((s.status||'pending')==='pending'?'<button class="admin-action-btn success" data-approve="'+s.uid+'|'+s.id+'" title="اعتماد"><i class="fa-solid fa-check"></i></button><button class="admin-action-btn danger" data-reject="'+s.uid+'|'+s.id+'" title="رفض"><i class="fa-solid fa-xmark"></i></button>':'<span class="status-pill '+(s.status==='approved'?'approved':'rejected')+'">'+(s.status==='approved'?'معتمد':'مرفوض')+'</span>')+'</div></div>').join(''):empty('لا توجد طلبات محتوى','عندما يرسل مدرس درسًا سيظهر هنا.');
  $$('[data-toggle-teacher]').forEach(b=>b.onclick=()=>db.ref('teacherProfiles/'+b.dataset.toggleTeacher+'/isActive').set(root.teacherProfiles?.[b.dataset.toggleTeacher]?.isActive===false));
- $$('[data-remove-teacher]').forEach(b=>b.onclick=()=>{if(confirm('إزالة صفة المدرس من الحساب؟'))db.ref('teacherProfiles/'+b.dataset.removeTeacher).remove()});
+ $$('[data-remove-teacher]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'إزالة صلاحية المدرس؟',message:'سيفقد هذا الحساب الوصول إلى بوابة المدرس وصلاحيات المواد المسندة إليه.',tone:'warning',acceptText:'إزالة الصلاحية'}))await db.ref('teacherProfiles/'+b.dataset.removeTeacher).remove()});
  $$('[data-promote]').forEach(b=>b.onclick=async()=>{const s=root.studentProfilesV3?.[b.dataset.promote]||{};await db.ref('teacherProfiles/'+b.dataset.promote).set({name:s.name||'',email:s.email||'',isActive:true,createdAt:Date.now(),assignments:[]});toast('تم تحويل الحساب إلى مدرس')});
  $$('[data-approve]').forEach(b=>b.onclick=()=>approveSubmission(b.dataset.approve));
  $$('[data-reject]').forEach(b=>b.onclick=async()=>{const [uid,id]=b.dataset.reject.split('|');await db.ref('teacherSubmissions/'+uid+'/'+id).update({status:'rejected',reviewedAt:Date.now()});toast('تم رفض المحتوى')});
@@ -420,7 +421,7 @@ function renderNews(){
  const list=newsItems(),el=$('newsAdminList');if(!el)return;
  el.innerHTML=list.length?list.map(n=>'<div class="admin-list-item"><div><strong>'+esc(n.title||'خبر')+'</strong><small>'+(n.date?new Date(n.date).toLocaleDateString('ar-EG'):'')+'</small><p style="font-size:9px;color:#64748b;margin:5px 0 0">'+esc((n.content||'').slice(0,150))+'</p></div><div class="admin-action-row"><button class="admin-action-btn" data-edit-news="'+n.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><button class="admin-action-btn danger" data-delete-news="'+n.id+'" title="حذف"><i class="fa-solid fa-trash"></i></button></div></div>').join(''):empty('لا توجد أخبار','اكتب أول تحديث للمنصة.');
  $$('[data-edit-news]').forEach(b=>b.onclick=()=>editNews(b.dataset.editNews));
- $$('[data-delete-news]').forEach(b=>b.onclick=()=>{if(confirm('حذف الخبر؟'))db.ref('posts/'+b.dataset.deleteNews).remove()});
+ $$('[data-delete-news]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الخبر؟',message:'سيتم حذف الخبر أو التحديث من المنصة.',tone:'danger',acceptText:'حذف الخبر'}))await db.ref('posts/'+b.dataset.deleteNews).remove()});
 }
 function editNews(id){
  const n=root.posts?.[id];if(!n)return;editState.news=id;
