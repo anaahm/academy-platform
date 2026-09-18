@@ -474,10 +474,16 @@ $('adminMenuBtn').onclick=()=>{$('adminSidebar').classList.add('open');$('adminO
 $('adminRefreshBtn').onclick=async()=>{const s=await db.ref('/').once('value');root=s.val()||{};renderAll();toast('تم تحديث البيانات')};
 $('adminLogout').onclick=()=>auth.signOut();
 $('adminGlobalSearch').oninput=e=>{const q=e.target.value.trim();$('lessonSearch').value=q;$('studentSearch').value=q;if(q){setTab('lessons');renderLessons()}};
-$('adminLoginForm').onsubmit=async e=>{
- e.preventDefault();const btn=$('adminLoginBtn');btn.disabled=true;btn.textContent='جاري التحقق...';
- try{await auth.signInWithEmailAndPassword($('adminEmail').value.trim(),$('adminPassword').value)}catch(err){toast('البريد أو كلمة المرور غير صحيحة.','error')}finally{btn.disabled=false;btn.textContent='دخول لوحة الإدارة'}
-};
+if($('adminLoginForm')?.dataset.adminAuthBound!=='true'){
+ $('adminLoginForm').onsubmit=async e=>{
+  e.preventDefault();const btn=$('adminLoginBtn');btn.disabled=true;btn.textContent='جاري التحقق...';
+  try{
+   await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+   await auth.signInWithEmailAndPassword($('adminEmail').value.trim(),$('adminPassword').value);
+  }catch(err){toast('البريد أو كلمة المرور غير صحيحة.','error')}
+  finally{btn.disabled=false;btn.textContent='دخول لوحة الإدارة'}
+ };
+}
 $('adminResetPassword').onclick=async()=>{const email=$('adminEmail').value.trim();if(!email)return toast('اكتب البريد أولًا.','error');try{await auth.sendPasswordResetEmail(email);toast('تم إرسال رابط إعادة تعيين كلمة المرور.')}catch{toast('تعذر إرسال الرابط.','error')}};
 
 bindHierarchy('subjectType','subjectStage','subjectGrade',null);
