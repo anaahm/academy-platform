@@ -541,20 +541,25 @@
     $('exploreFromMenu').addEventListener('click', () => location.href='./explore.html');
     $('logoutBtn').addEventListener('click', async () => { await auth.signOut(); $('userMenu').classList.add('hidden'); });
 
-    $('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = $('loginSubmitBtn');
-      btn.disabled = true; btn.textContent = 'جاري تسجيل الدخول...';
-      try {
-        await auth.signInWithEmailAndPassword($('loginEmail').value.trim(), $('loginPassword').value);
-        closeModal('authModal');
-        toast('تم تسجيل الدخول بنجاح 👋');
-      } catch (error) {
-        toast(friendlyAuthError(error), 'error');
-      } finally {
-        btn.disabled = false; btn.textContent = 'تسجيل الدخول';
-      }
-    });
+    const loginForm = $('loginForm');
+    if (loginForm && loginForm.dataset.authBound !== 'true') {
+      loginForm.dataset.authBound = 'true';
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = $('loginSubmitBtn');
+        btn.disabled = true; btn.textContent = 'جاري تسجيل الدخول...';
+        try {
+          await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+          await auth.signInWithEmailAndPassword($('loginEmail').value.trim(), $('loginPassword').value);
+          closeModal('authModal');
+          toast('تم تسجيل الدخول بنجاح 👋');
+        } catch (error) {
+          toast(friendlyAuthError(error), 'error');
+        } finally {
+          btn.disabled = false; btn.textContent = 'تسجيل الدخول';
+        }
+      });
+    }
 
     $('registerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
