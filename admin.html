@@ -3,83 +3,273 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>جاري تحميل لوحة الإدارة...</title>
-  <style>
-    *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f8fafc;color:#0f172a;display:flex;min-height:100vh;align-items:center;justify-content:center}.loader{text-align:center;padding:32px}.spinner{width:46px;height:46px;border:5px solid #e2e8f0;border-top-color:#0f172a;border-radius:50%;margin:0 auto 18px;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}h2{margin:0 0 8px;font-size:20px}p{margin:0;color:#64748b;font-size:14px}.error{max-width:620px;background:#fff;border:1px solid #fecaca;border-radius:20px;padding:24px;box-shadow:0 14px 35px rgba(15,23,42,.08)}
-  </style>
+  <meta name="theme-color" content="#0f172a">
+  <title>إدارة الأكاديمية</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./assets/styles.css">
+  <link rel="stylesheet" href="./assets/admin.css">
 </head>
-<body>
-  <div class="loader"><div class="spinner"></div><h2>جاري تحميل لوحة الإدارة...</h2><p>يتم تشغيل الواجهة المطورة مع جميع وظائف الإدارة الأصلية.</p></div>
-  <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
-  <script>
-    (async function(){
-      try{
-        const parts=['legacy/admin16.1.part','legacy/admin16.2.part','legacy/admin16.3.part'];
-        const values=await Promise.all(parts.map(async path=>{
-          const response=await fetch(path+'?v=2',{cache:'no-store'});
-          if(!response.ok) throw new Error('تعذر تحميل '+path);
-          return (await response.text()).trim();
-        }));
-        const b64=values.join('');
-        const binary=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
-        let html=pako.ungzip(binary,{to:'string'});
-        const initStart=html.indexOf('init: () => {');
-        const toggleStart=html.indexOf('toggleSidebar:',initStart);
-        if(initStart>-1&&toggleStart>initStart){
-          const secureInit=`init: () => {
-                firebase.auth().onAuthStateChanged(async user => {
-                    if(!user) {
-                        document.getElementById('login-view').classList.remove('hidden');
-                        document.getElementById('panel-view').classList.add('hidden');
-                        return;
-                    }
-                    try {
-                        const [adminSnap, studentSnap, teacherSnap] = await Promise.all([
-                            database.ref('adminProfiles/' + user.uid).once('value'),
-                            database.ref('studentProfilesV3/' + user.uid).once('value'),
-                            database.ref('teacherProfiles/' + user.uid).once('value')
-                        ]);
-                        const explicitAdmin = adminSnap.val()?.isAdmin === true;
-                        if(!explicitAdmin) {
-                            await firebase.auth().signOut();
-                            alert('هذا الحساب ليس له صلاحية إدارة المنصة. يجب إضافته كمدير من إعدادات Firebase.');
-                            return;
-                        }
-                        document.getElementById('login-view').classList.add('hidden');
-                        document.getElementById('panel-view').classList.remove('hidden');
-                        admin.fixCustomSubjectsStructure();
-                        admin.fetchData();
-                        setTimeout(() => {
-                            ['l','q','sim'].forEach(p => admin.updateHierarchy(p));
-                            admin.updateVisHierarchy();
-                        }, 800);
-                    } catch(e) {
-                        console.error('Admin access check failed', e);
-                        await firebase.auth().signOut();
-                        alert('تعذر التحقق من صلاحية الإدارة.');
-                    }
-                });
-            },
-            `;
-          html=html.slice(0,initStart)+secureInit+html.slice(toggleStart);
-        }
-        html=html.replace(
-          ".catch(e => { document.getElementById('login-btn').innerText = \"تسجيل الدخول\"; alert(e.message); });",
-          ".catch(e => { document.getElementById('login-btn').innerText = \"تسجيل الدخول\"; const msg=(e.code===\"auth/invalid-login-credentials\"||e.code===\"auth/wrong-password\"||e.code===\"auth/user-not-found\")?\"البريد الإلكتروني أو كلمة المرور غير صحيحة، أو حساب الإدارة غير موجود في Firebase Authentication.\":(e.message||\"تعذر تسجيل الدخول\"); app.notify(msg,\"error\"); });"
-        );
-        html=html.replace(
-          '<button type="button" id="login-btn" onclick="app.login(event)"',
-          '<button type="button" id="login-btn" onclick="app.login(event)"'
-        );
-        html=html.replace(
-          '</div>\n        </div>\n    </div>\n\n    <!-- Main Panel -->',
-          '<button type="button" id="admin-reset-pass-btn" class="w-full mt-3 text-sm font-black text-blue-600 hover:text-blue-800" onclick="(async()=>{const email=document.getElementById(\'adm-email\').value.trim();if(!email){app.notify(\'اكتب البريد الإلكتروني أولًا\',\'error\');return}try{await firebase.auth().sendPasswordResetEmail(email);app.notify(\'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك\')}catch(e){app.notify(\'تعذر إرسال الرابط. تأكد أن البريد مسجل في Firebase Authentication\',\'error\')}})()">نسيت كلمة المرور؟</button></div>\n        </div>\n    </div>\n\n    <!-- Main Panel -->'
-        );
-        html=html.replace('</head>','<link rel="stylesheet" href="assets/css/admin-modern.css?v=3"></head>');
-        html=html.replace('</body>','<script src="assets/js/admin-ui.js?v=3"><\/script></body>');
-        document.open();document.write(html);document.close();
-      }catch(error){console.error(error);document.body.innerHTML='<div class="error"><h2>تعذر تشغيل لوحة الإدارة</h2><p>جرّب تحديث الصفحة بعد لحظات.</p></div>'}
-    })();
-  </script>
+<body class="admin-v3-body">
+  <div id="toast" class="toast"></div>
+
+  <section id="adminLogin" class="admin-login-page">
+    <div class="admin-login-shell">
+      <div class="admin-login-brand">
+        <span class="admin-login-mark"><i class="fa-solid fa-shield-halved"></i></span>
+        <span class="section-kicker light">لوحة إدارة آمنة</span>
+        <h1>إدارة الأكاديمية</h1>
+        <p>مركز واحد لإدارة الطلاب والمدرسين والمحتوى والمناهج.</p>
+        <div class="admin-login-points">
+          <span><i class="fa-solid fa-check"></i> صلاحيات مدير مستقلة</span>
+          <span><i class="fa-solid fa-check"></i> مراجعة محتوى المدرسين قبل النشر</span>
+          <span><i class="fa-solid fa-check"></i> إدارة مباشرة لبيانات Firebase</span>
+        </div>
+      </div>
+      <form id="adminLoginForm" class="admin-login-card">
+        <span class="admin-mini-logo"><i class="fa-solid fa-crown"></i></span>
+        <h2>تسجيل دخول الإدارة</h2>
+        <p>استخدم حساب المدير المعتمد في Firebase.</p>
+        <label><span>البريد الإلكتروني</span><div class="input-wrap"><i class="fa-regular fa-envelope"></i><input id="adminEmail" type="email" required placeholder="admin@example.com"></div></label>
+        <label><span>كلمة المرور</span><div class="input-wrap"><i class="fa-solid fa-lock"></i><input id="adminPassword" type="password" required minlength="6" placeholder="••••••••"></div></label>
+        <button class="btn btn-primary btn-block btn-lg" id="adminLoginBtn" type="submit">دخول لوحة الإدارة</button>
+        <button class="link-btn admin-reset-link" id="adminResetPassword" type="button">نسيت كلمة المرور؟</button>
+      </form>
+    </div>
+  </section>
+
+  <section id="adminApp" class="admin-shell hidden">
+    <aside class="admin-sidebar" id="adminSidebar">
+      <a class="brand brand-light admin-brand" href="./index.html">
+        <span class="brand-mark"><i class="fa-solid fa-book-open"></i></span>
+        <span><strong>الأكاديمية</strong><small>لوحة الإدارة</small></span>
+      </a>
+
+      <div class="admin-user-mini">
+        <span class="avatar" id="adminAvatar">م</span>
+        <div><strong id="adminName">مدير المنصة</strong><small id="adminEmailMini">Administrator</small></div>
+      </div>
+
+      <nav class="admin-nav">
+        <span class="admin-nav-label">نظرة عامة</span>
+        <button class="active" data-admin-tab="overview"><i class="fa-solid fa-grid-2"></i> لوحة المعلومات</button>
+
+        <span class="admin-nav-label">المحتوى التعليمي</span>
+        <button data-admin-tab="curriculum"><i class="fa-solid fa-layer-group"></i> المواد والوحدات</button>
+        <button data-admin-tab="lessons"><i class="fa-solid fa-circle-play"></i> الدروس</button>
+        <button data-admin-tab="quizzes"><i class="fa-solid fa-file-circle-question"></i> الاختبارات</button>
+        <button data-admin-tab="files"><i class="fa-solid fa-folder-open"></i> الملفات والمكتبة</button>
+
+        <span class="admin-nav-label">المستخدمون</span>
+        <button data-admin-tab="teachers"><i class="fa-solid fa-chalkboard-user"></i> المدرسون والمراجعات <span id="pendingBadge" class="nav-badge hidden">0</span></button>
+        <button data-admin-tab="students"><i class="fa-solid fa-user-graduate"></i> الطلاب</button>
+
+        <span class="admin-nav-label">المنصة</span>
+        <button data-admin-tab="announcements"><i class="fa-solid fa-bullhorn"></i> الإعلانات</button>
+        <button data-admin-tab="settings"><i class="fa-solid fa-sliders"></i> الإعدادات</button>
+      </nav>
+
+      <div class="admin-sidebar-footer">
+        <a href="./index.html" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> عرض المنصة</a>
+        <button id="adminLogout"><i class="fa-solid fa-arrow-right-from-bracket"></i> تسجيل الخروج</button>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <div class="admin-topbar-title">
+          <button id="adminMenuBtn" class="admin-menu-btn"><i class="fa-solid fa-bars"></i></button>
+          <div><span id="adminSectionKicker">لوحة المعلومات</span><h1 id="adminSectionTitle">صباح الخير 👋</h1></div>
+        </div>
+        <div class="admin-top-actions">
+          <label class="admin-global-search"><i class="fa-solid fa-magnifying-glass"></i><input id="adminGlobalSearch" placeholder="ابحث في الدروس والطلاب..."></label>
+          <button class="icon-btn" id="adminRefreshBtn" title="تحديث البيانات"><i class="fa-solid fa-rotate"></i></button>
+        </div>
+      </header>
+
+      <main class="admin-page">
+        <section class="admin-tab active" id="admin-tab-overview">
+          <div class="admin-hero">
+            <div><span class="section-kicker light">مركز التحكم</span><h2>كل الأكاديمية تحت عينك</h2><p>تابع النمو والمحتوى والمراجعات من مكان واحد.</p></div>
+            <span class="admin-hero-art">📊</span>
+          </div>
+          <div class="admin-stat-grid" id="overviewStats"></div>
+          <div class="admin-overview-grid">
+            <article class="admin-card">
+              <div class="admin-card-head"><div><span class="section-kicker">آخر النشاطات</span><h3>أحدث المحتوى</h3></div><span>🕘</span></div>
+              <div id="latestContentList" class="admin-list"></div>
+            </article>
+            <article class="admin-card">
+              <div class="admin-card-head"><div><span class="section-kicker">يحتاج تدخلك</span><h3>مراجعات المدرسين</h3></div><span>📝</span></div>
+              <div id="overviewPendingList" class="admin-list"></div>
+              <button class="btn btn-soft btn-block" data-jump-tab="teachers">فتح كل المراجعات</button>
+            </article>
+          </div>
+        </section>
+
+        <section class="admin-tab" id="admin-tab-curriculum">
+          <div class="admin-section-head"><div><span class="section-kicker">هيكل المنهج</span><h2>المواد والوحدات</h2><p>أضف مواد مخصصة ونظّم وحداتها لكل صف ومسار.</p></div><button class="btn btn-primary" id="openSubjectModal"><i class="fa-solid fa-plus"></i> إضافة مادة</button></div>
+          <div class="admin-filter-bar">
+            <select id="curriculumType"><option value="public">تعليم عام</option><option value="azhar">أزهر</option></select>
+            <select id="curriculumStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select>
+            <select id="curriculumGrade"></select>
+          </div>
+          <div id="curriculumAdminGrid" class="admin-subject-grid"></div>
+        </section>
+
+        <section class="admin-tab" id="admin-tab-lessons">
+          <div class="admin-section-head"><div><span class="section-kicker">المحتوى الأساسي</span><h2>إدارة الدروس</h2><p>إنشاء وتعديل الدروس وربطها بالفيديوهات والمدرسين.</p></div><button class="btn btn-primary" id="openLessonModal"><i class="fa-solid fa-plus"></i> درس جديد</button></div>
+          <div class="admin-filter-bar">
+            <input id="lessonSearch" placeholder="ابحث باسم الدرس...">
+            <select id="lessonFilterStage"><option value="">كل المراحل</option><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select>
+            <select id="lessonFilterType"><option value="">كل المسارات</option><option value="public">عام</option><option value="azhar">أزهر</option></select>
+          </div>
+          <div id="lessonsAdminList" class="admin-table-wrap"></div>
+        </section>
+
+        <section class="admin-tab" id="admin-tab-quizzes">
+          <div class="admin-section-head"><div><span class="section-kicker">القياس والتقييم</span><h2>إدارة الاختبارات</h2><p>أنشئ اختبارات للوحدات أو اختبارات شاملة.</p></div><button class="btn btn-primary" id="openQuizModal"><i class="fa-solid fa-plus"></i> اختبار جديد</button></div>
+          <div id="quizzesAdminList" class="admin-table-wrap"></div>
+        </section>
+
+        <section class="admin-tab" id="admin-tab-files">
+          <div class="admin-section-head"><div><span class="section-kicker">المكتبة</span><h2>الملفات والمراجع</h2><p>أضف روابط PDF والمذكرات والملفات المساعدة.</p></div><button class="btn btn-primary" id="openFileModal"><i class="fa-solid fa-plus"></i> ملف جديد</button></div>
+          <div id="filesAdminGrid" class="admin-file-grid"></div>
+        </section>
+
+        <section class="admin-tab" id="admin-tab-teachers">
+          <div class="admin-section-head"><div><span class="section-kicker">فريق التدريس</span><h2>المدرسون والمراجعات</h2><p>فعّل المدرسين، اسند لهم المواد، وراجع المحتوى قبل النشر.</p></div><a class="btn btn-soft" href="./teacher.html" target="_blank"><i class="fa-solid fa-eye"></i> معاينة بوابة المدرس</a></div>
+          <div class="admin-teacher-grid">
+            <article class="admin-card"><div class="admin-card-head"><div><span class="section-kicker">المدرسون</span><h3>الحسابات الحالية</h3></div><span>👨‍🏫</span></div><div id="teachersAdminList" class="admin-list"></div></article>
+            <article class="admin-card"><div class="admin-card-head"><div><span class="section-kicker">ترقية حساب</span><h3>طلاب يمكن تحويلهم لمدرسين</h3></div><span>➕</span></div><div id="teacherCandidates" class="admin-list admin-scroll-list"></div></article>
+          </div>
+          <article class="admin-card admin-spaced-card">
+            <div class="admin-card-head"><div><span class="section-kicker">الصلاحيات</span><h3>إسناد مادة وصف</h3></div><span>🔐</span></div>
+            <div class="assignment-form">
+              <select id="assignTeacher"></select><select id="assignType"><option value="public">تعليم عام</option><option value="azhar">أزهر</option></select>
+              <select id="assignStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select>
+              <select id="assignGrade"></select><select id="assignSubject"></select>
+              <button class="btn btn-primary" id="addAssignmentBtn">إسناد</button>
+            </div>
+          </article>
+          <article class="admin-card admin-spaced-card">
+            <div class="admin-card-head"><div><span class="section-kicker">المراجعة قبل النشر</span><h3>محتوى المدرسين</h3></div><span id="pendingCountText" class="status-pill pending">0 قيد المراجعة</span></div>
+            <div id="teacherSubmissionsList" class="admin-list"></div>
+          </article>
+        </section>
+
+        <section class="admin-tab" id="admin-tab-students">
+          <div class="admin-section-head"><div><span class="section-kicker">المتعلمون</span><h2>الطلاب</h2><p>متابعة الحسابات والمراحل والتقدم بدون تخزين كلمات المرور.</p></div></div>
+          <div class="admin-filter-bar"><input id="studentSearch" placeholder="ابحث باسم الطالب أو البريد..."></div>
+          <div id="studentsAdminList" class="admin-table-wrap"></div>
+        </section>
+
+        <section class="admin-tab" id="admin-tab-announcements">
+          <div class="admin-section-head"><div><span class="section-kicker">التواصل</span><h2>الإعلانات</h2><p>رسالة مهمة تظهر للطلاب داخل إشعاراتهم.</p></div></div>
+          <article class="admin-card admin-form-card">
+            <form id="announcementForm" class="admin-form">
+              <label class="full"><span>نص الإعلان</span><textarea id="announcementText" required placeholder="اكتب الإعلان هنا..."></textarea></label>
+              <label><span>مدة الإعلان بالأيام</span><input id="announcementDays" type="number" min="1" value="3"></label>
+              <label class="switch-field"><span>حالة الإعلان</span><div><input id="announcementActive" type="checkbox"><strong>نشط</strong></div></label>
+              <button class="btn btn-primary full" type="submit">حفظ الإعلان</button>
+            </form>
+          </article>
+        </section>
+
+        <section class="admin-tab" id="admin-tab-settings">
+          <div class="admin-section-head"><div><span class="section-kicker">هوية المنصة</span><h2>الإعدادات</h2><p>بيانات عامة لا تحتوي أسرارًا أو مفاتيح API.</p></div></div>
+          <article class="admin-card admin-form-card">
+            <form id="settingsForm" class="admin-form">
+              <label><span>اسم المنصة</span><input id="settingSiteName" placeholder="الأكاديمية"></label>
+              <label><span>رقم واتساب للدعم</span><input id="settingWhatsapp" dir="ltr" placeholder="201xxxxxxxxx"></label>
+              <label class="full"><span>رابط الشعار</span><input id="settingLogo" dir="ltr" placeholder="https://..."></label>
+              <label class="full"><span>نبذة عن المنصة</span><textarea id="settingAbout"></textarea></label>
+              <button class="btn btn-primary full" type="submit">حفظ الإعدادات</button>
+            </form>
+          </article>
+        </section>
+      </main>
+    </div>
+  </section>
+
+  <div id="adminOverlay" class="admin-mobile-overlay hidden"></div>
+
+  <div class="modal-backdrop hidden" id="subjectModal">
+    <div class="modal-panel admin-modal">
+      <button class="modal-close" data-close-admin-modal="subjectModal"><i class="fa-solid fa-xmark"></i></button>
+      <span class="section-kicker">مادة جديدة</span><h2>إضافة مادة ووحداتها</h2>
+      <form id="subjectForm" class="admin-form">
+        <label><span>نوع التعليم</span><select id="subjectType"><option value="public">تعليم عام</option><option value="azhar">أزهر</option></select></label>
+        <label><span>المرحلة</span><select id="subjectStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+        <label><span>الصف</span><select id="subjectGrade"></select></label>
+        <label><span>اسم المادة</span><input id="subjectName" required></label>
+        <label><span>رمز المادة</span><input id="subjectId" required placeholder="مثال: arabic_plus"></label>
+        <label><span>الإيموجي</span><input id="subjectEmoji" value="📚"></label>
+        <label class="full"><span>الوحدات — كل وحدة في سطر</span><textarea id="subjectUnits" placeholder="الوحدة الأولى&#10;الوحدة الثانية"></textarea></label>
+        <button class="btn btn-primary full" type="submit">حفظ المادة</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="lessonModal">
+    <div class="modal-panel admin-modal admin-modal-wide">
+      <button class="modal-close" data-close-admin-modal="lessonModal"><i class="fa-solid fa-xmark"></i></button>
+      <span class="section-kicker">محتوى تعليمي</span><h2>إضافة درس جديد</h2>
+      <form id="lessonForm" class="admin-form">
+        <label><span>نوع التعليم</span><select id="newLessonType"><option value="public">عام</option><option value="azhar">أزهر</option></select></label>
+        <label><span>المرحلة</span><select id="newLessonStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+        <label><span>الصف</span><select id="newLessonGrade"></select></label>
+        <label><span>المادة</span><select id="newLessonSubject"></select></label>
+        <label><span>الوحدة</span><input id="newLessonUnit" type="number" min="1" value="1"></label>
+        <label><span>عنوان الدرس</span><input id="newLessonTitle" required></label>
+        <label><span>اسم المدرس</span><input id="newLessonTeacher" placeholder="أ/ ..."></label>
+        <label><span>رابط YouTube</span><input id="newLessonVideo" type="url" dir="ltr" placeholder="https://youtube.com/..."></label>
+        <label class="full"><span>الشرح المكتوب</span><textarea id="newLessonContent" rows="7"></textarea></label>
+        <label class="switch-field"><span>مخفي عن الطلاب</span><div><input id="newLessonHidden" type="checkbox"><strong>مخفي</strong></div></label>
+        <button class="btn btn-primary full" type="submit">نشر الدرس</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="quizModal">
+    <div class="modal-panel admin-modal admin-modal-wide">
+      <button class="modal-close" data-close-admin-modal="quizModal"><i class="fa-solid fa-xmark"></i></button>
+      <span class="section-kicker">اختبار جديد</span><h2>إنشاء اختبار</h2>
+      <form id="quizForm" class="admin-form">
+        <label><span>نوع التعليم</span><select id="newQuizType"><option value="public">عام</option><option value="azhar">أزهر</option></select></label>
+        <label><span>المرحلة</span><select id="newQuizStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+        <label><span>الصف</span><select id="newQuizGrade"></select></label>
+        <label><span>المادة</span><select id="newQuizSubject"></select></label>
+        <label><span>الوحدة — 0 للشامل</span><input id="newQuizUnit" type="number" min="0" value="1"></label>
+        <label><span>اسم الاختبار</span><input id="newQuizName" required></label>
+        <label class="full"><span>الأسئلة بصيغة JSON</span><textarea id="newQuizQuestions" rows="10" dir="ltr" placeholder='[{"text":"السؤال","opts":["أ","ب","ج","د"],"correctAnswer":0}]'></textarea></label>
+        <button class="btn btn-primary full" type="submit">حفظ الاختبار</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="fileModal">
+    <div class="modal-panel admin-modal">
+      <button class="modal-close" data-close-admin-modal="fileModal"><i class="fa-solid fa-xmark"></i></button>
+      <span class="section-kicker">المكتبة</span><h2>إضافة ملف</h2>
+      <form id="fileForm" class="admin-form">
+        <label><span>العنوان</span><input id="newFileTitle" required></label>
+        <label><span>الرابط</span><input id="newFileUrl" required type="url" dir="ltr"></label>
+        <label><span>نوع التعليم</span><select id="newFileType"><option value="public">عام</option><option value="azhar">أزهر</option></select></label>
+        <label><span>المرحلة</span><select id="newFileStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+        <label><span>الصف</span><select id="newFileGrade"></select></label>
+        <label><span>المادة</span><select id="newFileSubject"></select></label>
+        <button class="btn btn-primary full" type="submit">إضافة الملف</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="./assets/firebase-config.js"></script>
+  <script src="./assets/admin.js"></script>
 </body>
 </html>
