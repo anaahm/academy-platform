@@ -232,7 +232,7 @@
   <div class="modal-backdrop hidden" id="subjectModal">
     <div class="modal-panel admin-modal">
       <button class="modal-close" data-close-admin-modal="subjectModal"><i class="fa-solid fa-xmark"></i></button>
-      <span class="section-kicker">مادة جديدة</span><h2>إضافة مادة ووحداتها</h2>
+      <span class="section-kicker">المناهج</span><h2 id="subjectModalTitle">إضافة مادة ووحداتها</h2>
       <form id="subjectForm" class="admin-form">
         <label><span>نوع التعليم</span><select id="subjectType"><option value="public">تعليم عام</option><option value="azhar">أزهر</option></select></label>
         <label><span>المرحلة</span><select id="subjectStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
@@ -249,7 +249,7 @@
   <div class="modal-backdrop hidden" id="lessonModal">
     <div class="modal-panel admin-modal admin-modal-wide">
       <button class="modal-close" data-close-admin-modal="lessonModal"><i class="fa-solid fa-xmark"></i></button>
-      <span class="section-kicker">محتوى تعليمي</span><h2>إضافة درس جديد</h2>
+      <span class="section-kicker">محتوى تعليمي</span><h2 id="lessonModalTitle">إضافة درس جديد</h2>
       <form id="lessonForm" class="admin-form">
         <label><span>نوع التعليم</span><select id="newLessonType"><option value="public">عام</option><option value="azhar">أزهر</option></select></label>
         <label><span>المرحلة</span><select id="newLessonStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
@@ -271,7 +271,7 @@
   <div class="modal-backdrop hidden" id="quizModal">
     <div class="modal-panel admin-modal admin-modal-wide">
       <button class="modal-close" data-close-admin-modal="quizModal"><i class="fa-solid fa-xmark"></i></button>
-      <span class="section-kicker">اختبار جديد</span><h2>إنشاء اختبار</h2>
+      <span class="section-kicker">اختبار جديد</span><h2 id="quizModalTitle">إنشاء اختبار</h2>
       <form id="quizForm" class="admin-form">
         <label><span>نوع التعليم</span><select id="newQuizType"><option value="public">عام</option><option value="azhar">أزهر</option></select></label>
         <label><span>المرحلة</span><select id="newQuizStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
@@ -288,7 +288,7 @@
   <div class="modal-backdrop hidden" id="fileModal">
     <div class="modal-panel admin-modal">
       <button class="modal-close" data-close-admin-modal="fileModal"><i class="fa-solid fa-xmark"></i></button>
-      <span class="section-kicker">المكتبة</span><h2>إضافة ملف</h2>
+      <span class="section-kicker">المكتبة</span><h2 id="fileModalTitle">إضافة ملف</h2>
       <form id="fileForm" class="admin-form">
         <label><span>العنوان</span><input id="newFileTitle" required></label>
         <label><span>الرابط</span><input id="newFileUrl" required type="url" dir="ltr"></label>
@@ -304,7 +304,7 @@
   <div class="modal-backdrop hidden" id="simulationModal">
     <div class="modal-panel admin-modal admin-modal-wide">
       <button class="modal-close" data-close-admin-modal="simulationModal"><i class="fa-solid fa-xmark"></i></button>
-      <span class="section-kicker">محاكاة امتحان</span><h2>إنشاء محاكي جديد</h2>
+      <span class="section-kicker">محاكاة امتحان</span><h2 id="simulationModalTitle">إنشاء محاكي جديد</h2>
       <form id="simulationForm" class="admin-form">
         <label><span>اسم المحاكي</span><input id="simName" required></label>
         <label><span>المدة بالدقائق</span><input id="simTime" type="number" min="5" max="300" value="60"></label>
@@ -324,7 +324,7 @@
   <div class="modal-backdrop hidden" id="liveModal">
     <div class="modal-panel admin-modal admin-modal-wide">
       <button class="modal-close" data-close-admin-modal="liveModal"><i class="fa-solid fa-xmark"></i></button>
-      <span class="section-kicker">جلسة مباشرة</span><h2>إضافة جلسة بث</h2>
+      <span class="section-kicker">جلسة مباشرة</span><h2 id="liveModalTitle">إضافة جلسة بث</h2>
       <form id="liveForm" class="admin-form">
         <label><span>عنوان الجلسة</span><input id="liveTitle" required></label>
         <label><span>اسم المدرس</span><input id="liveTeacher"></label>
