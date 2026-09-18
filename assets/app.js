@@ -1,15 +1,9 @@
 (() => {
   'use strict';
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDyaSx72GXPLZqvfinZm6lpWvtLi3jvrR4",
-    authDomain: "talebyg-a2609.firebaseapp.com",
-    databaseURL: "https://talebyg-a2609-default-rtdb.firebaseio.com",
-    projectId: "talebyg-a2609",
-    storageBucket: "talebyg-a2609.firebasestorage.app"
-  };
+  const firebaseConfig = window.ACADEMY_FIREBASE_CONFIG;
+  if (!firebaseConfig) throw new Error('Firebase config is missing');
 
-  localStorage.setItem('academyFirebaseConfig', JSON.stringify(firebaseConfig));
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const database = firebase.database();
