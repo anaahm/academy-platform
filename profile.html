@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>حسابي | الأكاديمية</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/learning.css"><link rel="stylesheet" href="./assets/portal.css">
+</head>
+<body class="learning-body">
+  <div id="toast" class="toast"></div>
+  <header class="learning-header">
+    <div class="container learning-nav">
+      <a class="brand" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-book-open"></i></span><span><strong>الأكاديمية</strong><small>تعليم يصنع فرقًا</small></span></a>
+      <div class="learning-breadcrumb"><a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><span>حسابي</span></div>
+      <a class="btn btn-soft" href="./index.html"><i class="fa-solid fa-house"></i> لوحة الطالب</a>
+    </div>
+  </header>
+
+  <main class="container profile-page">
+    <section class="profile-hero">
+      <div class="profile-avatar-wrap"><span id="profileAvatar">ط</span><button id="avatarHint" title="الصورة الشخصية ستتوفر لاحقًا"><i class="fa-solid fa-camera"></i></button></div>
+      <div class="profile-hero-copy"><span class="section-kicker">ملفك الشخصي</span><h1 id="profileNameTitle">مرحبًا بك</h1><p id="profileStageTitle">رحلتك التعليمية محفوظة هنا.</p></div>
+      <div class="profile-level"><span>🏅</span><div><small>مستواك</small><strong id="profileLevel">1</strong><p><span id="profileXp">0</span> XP</p></div></div>
+    </section>
+
+    <section class="profile-layout">
+      <aside class="profile-nav-card">
+        <button class="active" data-profile-tab="overview"><i class="fa-solid fa-chart-pie"></i> نظرة عامة</button>
+        <button data-profile-tab="account"><i class="fa-regular fa-user"></i> بيانات الحساب</button>
+        <button data-profile-tab="study"><i class="fa-solid fa-graduation-cap"></i> مرحلتي الدراسية</button>
+        <button data-profile-tab="security"><i class="fa-solid fa-shield-halved"></i> الأمان</button>
+        <button id="profileLogout" class="danger"><i class="fa-solid fa-arrow-right-from-bracket"></i> تسجيل الخروج</button>
+      </aside>
+
+      <div class="profile-content">
+        <section class="profile-tab" id="tab-overview">
+          <div class="profile-stat-grid">
+            <article><span class="stat-icon green"><i class="fa-solid fa-check"></i></span><div><strong id="profileLessons">0</strong><small>درس مكتمل</small></div></article>
+            <article><span class="stat-icon blue"><i class="fa-regular fa-circle-check"></i></span><div><strong id="profileQuizzes">0</strong><small>اختبار مكتمل</small></div></article>
+            <article><span class="stat-icon orange"><i class="fa-solid fa-fire"></i></span><div><strong id="profileStreak">0</strong><small>أيام متتالية</small></div></article>
+            <article><span class="stat-icon violet"><i class="fa-solid fa-star"></i></span><div><strong id="profileTotalXp">0</strong><small>نقطة خبرة</small></div></article>
+          </div>
+
+          <div class="profile-two-col">
+            <article class="profile-card">
+              <div class="profile-card-head"><div><span class="section-kicker">إنجازاتك</span><h2>شارات الرحلة</h2></div><span>🏆</span></div>
+              <div class="badge-grid" id="profileBadges"></div>
+            </article>
+            <article class="profile-card">
+              <div class="profile-card-head"><div><span class="section-kicker">آخر نشاط</span><h2>تابع من حيث توقفت</h2></div><span>▶️</span></div>
+              <div class="last-activity" id="lastActivity"><p>ابدأ أول درس وسيظهر هنا تلقائيًا.</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="profile-tab hidden" id="tab-account">
+          <article class="profile-card">
+            <div class="profile-card-head"><div><span class="section-kicker">بياناتك الأساسية</span><h2>معلومات الحساب</h2></div><span>👤</span></div>
+            <form id="accountForm" class="profile-form">
+              <label><span>الاسم</span><div class="input-wrap"><i class="fa-regular fa-user"></i><input id="profileNameInput" required minlength="2"></div></label>
+              <label><span>البريد الإلكتروني</span><div class="input-wrap locked"><i class="fa-regular fa-envelope"></i><input id="profileEmailInput" disabled></div><small>تغيير البريد سيتم من قسم الأمان لاحقًا.</small></label>
+              <button class="btn btn-primary" type="submit">حفظ التغييرات</button>
+            </form>
+          </article>
+        </section>
+
+        <section class="profile-tab hidden" id="tab-study">
+          <article class="profile-card">
+            <div class="profile-card-head"><div><span class="section-kicker">تخصيص تجربتك</span><h2>مرحلتك الدراسية</h2></div><span>🎓</span></div>
+            <p class="profile-muted">تغيير المرحلة سيغيّر المواد التي تظهر في لوحة الطالب، لكنه لن يحذف تقدمك القديم.</p>
+            <form id="studyForm" class="profile-form">
+              <label><span>نوع التعليم</span><select id="studyType"><option value="public">تربية وتعليم</option><option value="azhar">أزهر شريف</option></select></label>
+              <label><span>المرحلة</span><select id="studyStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+              <label><span>الصف</span><select id="studyGrade"></select></label>
+              <button class="btn btn-primary" type="submit">تحديث المرحلة</button>
+            </form>
+          </article>
+        </section>
+
+        <section class="profile-tab hidden" id="tab-security">
+          <div class="profile-two-col">
+            <article class="profile-card">
+              <div class="profile-card-head"><div><span class="section-kicker">كلمة المرور</span><h2>إعادة تعيين كلمة المرور</h2></div><span>🔐</span></div>
+              <p class="profile-muted">سنرسل رابطًا آمنًا إلى بريدك لتعيين كلمة مرور جديدة.</p>
+              <button id="sendResetBtn" class="btn btn-primary">إرسال رابط إعادة التعيين</button>
+            </article>
+            <article class="profile-card danger-card">
+              <div class="profile-card-head"><div><span class="section-kicker">الجلسة الحالية</span><h2>تسجيل الخروج</h2></div><span>🚪</span></div>
+              <p class="profile-muted">يمكنك تسجيل الخروج من هذا الجهاز في أي وقت.</p>
+              <button id="securityLogout" class="btn btn-soft">تسجيل الخروج</button>
+            </article>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="./assets/profile.js"></script>
+</body>
+</html>
