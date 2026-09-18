@@ -253,6 +253,7 @@ function updateProgress(id){
 async function markComplete(c,id){
  if(!state.user){toast('سجّل الدخول أولًا لحفظ تقدمك.','error');return} if(done(id)){toast('هذا الدرس مكتمل بالفعل ✨');return}
  const at=Date.now();await db.ref('studentProfilesV3/'+state.user.uid+'/learningProgress/'+id).update({completed:true,completedAt:at,subject:c.subject});
+ await db.ref('studentProfilesV3/'+state.user.uid+'/dailyGoals/'+new Date().toISOString().slice(0,10)+'/lesson').set(true);
  await db.ref('studentProfilesV3/'+state.user.uid+'/stats').transaction(s=>{s=s||{};s.completedLessons=(s.completedLessons||0)+1;s.totalXP=(s.totalXP||0)+50;s.level=Math.floor((s.totalXP||0)/1000)+1;return s});
  if(window.AcademyCore?.addLeaderboardXP) await window.AcademyCore.addLeaderboardXP(state.user.uid,state.profile?.name||state.user.displayName||'طالب',50,0);
  state.profile.learningProgress=state.profile.learningProgress||{};state.profile.learningProgress[id]={completed:true,completedAt:at,subject:c.subject};
@@ -263,7 +264,7 @@ async function markComplete(c,id){
  updateProgress(id);renderOutline(c,state.currentLesson);toast('رائع! +50 XP وتم حفظ تقدمك 🎉');
 }
 function setupQuiz(c,l){
- const qs=Array.isArray(l.questions)?l.questions:[];$('quizIntroText').textContent=qs.length?'تدريب مكوّن من '+qs.length+' سؤال على هذا الدرس.':'لا توجد أسئلة مضافة لهذا الدرس حتى الآن.';$('startQuizBtn').disabled=!qs.length;$('startQuizBtn').onclick=()=>startQuiz(qs,c,l.id);$('retryQuizBtn').onclick=()=>startQuiz(qs,c,l.id);$('reviewLessonBtn').onclick=()=>$$$('[data-lesson-tab]').find(b=>b.dataset.lessonTab==='explanation')?.click();
+ const qs=Array.isArray(l.questions)?l.questions:[];$('quizIntroText').textContent=qs.length?'تدريب مكوّن من '+qs.length+' سؤال على هذا الدرس.':'لا توجد أسئلة مضافة لهذا الدرس حتى الآن.';$('startQuizBtn').disabled=!qs.length;$('startQuizBtn').onclick=()=>startQuiz(qs,c,l.id);$('retryQuizBtn').onclick=()=>startQuiz(qs,c,l.id);$('reviewLessonBtn').onclick=()=>$('[data-lesson-tab]').find(b=>b.dataset.lessonTab==='explanation')?.click();
 }
 function startQuiz(qs,c,sourceId){
  const ok=qs.filter(q=>q&&Array.isArray(q.opts)&&q.opts.length>=2);if(!ok.length){toast('لا توجد أسئلة قابلة للتشغيل حاليًا.','error');return}
@@ -294,6 +295,7 @@ async function finishQuiz(){
      total:qz.questions.length,
      createdAt:Date.now()
    });
+   await db.ref('studentProfilesV3/'+state.user.uid+'/dailyGoals/'+new Date().toISOString().slice(0,10)+'/quiz').set(true);
    if(window.AcademyCore?.addLeaderboardXP) await window.AcademyCore.addLeaderboardXP(state.user.uid,state.profile?.name||state.user.displayName||'طالب',gained,1);
  }
 }
