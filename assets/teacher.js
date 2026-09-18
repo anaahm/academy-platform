@@ -211,6 +211,7 @@ async function submitContent(e){
  finally{btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-paper-plane"></i> إرسال للمراجعة'}
 }
 function showNoAccess(message){
+ window.AcademyUI?.hidePageLoading();
  $('teacherPortal').classList.add('hidden');$('teacherAccess').classList.remove('hidden');$('teacherAccessText').textContent=message;
 }
 $$('[data-teacher-tab]').forEach(b=>b.onclick=()=>switchTab(b.dataset.teacherTab));
@@ -231,6 +232,7 @@ $('teacherLogout').onclick=async()=>{await auth.signOut();location.replace('./in
 auth.onAuthStateChanged(async u=>{
  if(!u){showNoAccess('سجّل الدخول أولًا من المنصة، وبعدها افتح بوابة المدرس.');return}
  user=u;
+ window.AcademyUI?.showPageLoading('جاري تحميل بوابة المدرس وصلاحياتك...');
  try{
    const [t,subjectsSnap,s,lessonsSnap,analyticsSnap,homeworkSnap]=await Promise.all([
      db.ref('teacherProfiles/'+u.uid).once('value'),
@@ -246,7 +248,7 @@ auth.onAuthStateChanged(async u=>{
    const ownIds=Object.entries(homeworkAssignments).filter(([,a])=>a?.teacherId===u.uid).map(([id])=>id);
    const snaps=await Promise.all(ownIds.map(id=>db.ref('assignmentSubmissions/'+id).once('value')));
    assignmentSubmissions={};ownIds.forEach((id,i)=>assignmentSubmissions[id]=snaps[i].val()||{});
-   $('teacherAccess').classList.add('hidden');$('teacherPortal').classList.remove('hidden');updateGrades();updateAssignmentGrades();render();
+   $('teacherAccess').classList.add('hidden');$('teacherPortal').classList.remove('hidden');updateGrades();updateAssignmentGrades();render();window.AcademyUI?.hidePageLoading();
  }catch(err){console.error(err);showNoAccess('تعذر تحميل صلاحيات المدرس الآن.')}
 });
 })();
