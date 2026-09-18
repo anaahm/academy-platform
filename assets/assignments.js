@@ -71,10 +71,15 @@ $$('[data-assignment-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.assign
 
 (async()=>{
   ({user,profile}=await C.requireStudent());$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
-  const [a,s]=await Promise.all([C.db.ref('assignments').once('value'),C.db.ref('assignmentSubmissions').once('value')]);
+  const a=await C.db.ref('assignments').once('value');
   assignments=Object.entries(a.val()||{}).map(([id,v])=>({id,...(v||{})}));
-  const all=s.val()||{};submissions={};Object.entries(all).forEach(([aid,rows])=>{if(rows?.[user.uid])submissions[aid]=rows[user.uid]});
-  C.db.ref('assignmentSubmissions').on('value',snap=>{const all=snap.val()||{};submissions={};Object.entries(all).forEach(([aid,rows])=>{if(rows?.[user.uid])submissions[aid]=rows[user.uid]});render()});
+  const mine=matching();
+  const snaps=await Promise.all(mine.map(x=>C.db.ref('assignmentSubmissions/'+x.id+'/'+user.uid).once('value')));
+  submissions={};mine.forEach((x,i)=>{if(snaps[i].exists())submissions[x.id]=snaps[i].val()});
+  mine.forEach(x=>C.db.ref('assignmentSubmissions/'+x.id+'/'+user.uid).on('value',snap=>{
+    if(snap.exists())submissions[x.id]=snap.val();else delete submissions[x.id];
+    render();
+  }));
   render();
 })();
 })();
