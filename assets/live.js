@@ -46,8 +46,14 @@ $$('[data-live-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.liveFilter;$
 $('liveSearch').oninput=render;
 
 (async()=>{
- ({user,profile}=await C.requireStudent());$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
- const s=await C.db.ref('liveSessions').once('value');sessions=Object.entries(s.val()||{}).map(([id,v])=>({id,...(v||{})}));
- renderStats();render();
+ try{
+  ({user,profile}=await C.requireStudent());$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
+  window.AcademyUI?.showPageLoading('جاري تحميل الجلسات والبث...');
+  const s=await C.db.ref('liveSessions').once('value');sessions=Object.entries(s.val()||{}).map(([id,v])=>({id,...(v||{})}));
+  renderStats();render();
+ }catch(err){
+  console.error(err);C.toast('تعذر تحميل الجلسات الآن.','error');
+  $('liveGrid').innerHTML=window.AcademyUI?.errorStateHtml('تعذر تحميل البث والجلسات','تحقق من الاتصال وحاول مرة أخرى.','<button class="btn btn-primary" onclick="location.reload()">إعادة المحاولة</button>')||'';
+ }finally{window.AcademyUI?.hidePageLoading()}
 })();
 })();
