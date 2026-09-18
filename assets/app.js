@@ -351,12 +351,78 @@
     }),0);
   }
 
+  function todayKey() {
+    return new Date().toISOString().slice(0,10);
+  }
+
+  function renderDailyGoals(goals = {}) {
+    const keys=['lesson','quiz','review'];
+    const done=keys.filter(k=>goals?.[k]).length;
+    const pct=Math.round(done/keys.length*100);
+    const ring=$('dailyGoalRing');
+    if(ring) ring.style.background='conic-gradient(#2563eb '+(pct*3.6)+'deg,#e8eef7 0deg)';
+    if($('dailyGoalPercent')) $('dailyGoalPercent').textContent=pct+'%';
+    if($('dailyGoalCount')) $('dailyGoalCount').textContent=done+' من 3 مكتمل';
+    if($('dailyGoalMessage')) {
+      $('dailyGoalMessage').textContent=done===3?'ممتاز! أنهيت تحدي اليوم بالكامل 🎉':done===2?'باقي خطوة واحدة فقط، كمّلها 💪':done===1?'بداية ممتازة، كمّل خطوتين كمان.':'ابدأ بخطوة صغيرة وخلي اليوم يتحسب لك.';
+    }
+    $('[data-daily-goal]').forEach(btn=>{
+      const key=btn.dataset.dailyGoal,complete=!!goals?.[key];
+      btn.classList.toggle('completed',complete);
+      const icon=btn.querySelector('.goal-state');
+      if(icon) icon.className=complete?'fa-solid fa-circle-check goal-state':'fa-regular fa-circle goal-state';
+    });
+  }
+
+  async function loadDailyGoals() {
+    if(!state.user)return;
+    try{
+      const snap=await database.ref('studentProfilesV3/'+state.user.uid+'/dailyGoals/'+todayKey()).once('value');
+      renderDailyGoals(snap.val()||{});
+    }catch(e){console.warn('Daily goals load failed',e)}
+  }
+
+  async function toggleDailyGoal(key) {
+    if(!state.user||!key)return;
+    const ref=database.ref('studentProfilesV3/'+state.user.uid+'/dailyGoals/'+todayKey()+'/'+key);
+    try{
+      await ref.transaction(v=>!v);
+      await loadDailyGoals();
+    }catch(e){toast('تعذر تحديث تحدي اليوم.','error')}
+  }
+
+  function initDashboardSidebar() {
+    const shell=$('studentDashboard');
+    if(!shell)return;
+    const saved=localStorage.getItem('academySidebarCollapsed')==='1';
+    shell.classList.toggle('sidebar-collapsed',saved);
+    $('sidebarCollapseBtn')?.addEventListener('click',()=>{
+      shell.classList.toggle('sidebar-collapsed');
+      localStorage.setItem('academySidebarCollapsed',shell.classList.contains('sidebar-collapsed')?'1':'0');
+    });
+    $('dashboardMoreToggle')?.addEventListener('click',()=>{
+      $('dashboardMoreMenu')?.classList.toggle('hidden');
+      $('dashboardMoreToggle')?.classList.toggle('open');
+    });
+    $('[data-nav-label]').forEach(btn=>btn.addEventListener('click',()=>{
+      if(btn.id==='dashHomeBtn'||btn.id==='dashSubjectsBtn'){
+        $('[data-nav-label]').forEach(x=>x.classList.remove('active'));
+        btn.classList.add('active');
+      }
+      document.querySelector('.dashboard-sidebar')?.classList.remove('open');
+    }));
+  }
+
   function renderDashboard() {
     const p = state.profile;
     const name = p.name || state.user.displayName || 'طالبنا';
     const stats = statsFromProfile();
     const subjects = getSubjects(p.stage, String(p.grade), p.educationType);
 
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? 'صباح الخير' : hour < 18 ? 'أهلًا' : 'مساء الخير';
+    const greetingEl=document.querySelector('.dashboard-greeting');
+    if(greetingEl) greetingEl.childNodes[0].textContent=greeting+' ';
     $('dashStudentName').textContent = name;
     if ($('dashAccountName')) $('dashAccountName').textContent = name;
     if ($('dashAccountAvatar')) $('dashAccountAvatar').textContent = initials(name);
@@ -416,6 +482,7 @@
           : './subject.html?' + q.toString();
       };
     }
+    loadDailyGoals();
     renderSmartDashboard();
     renderHeaderUser();
   }
@@ -688,6 +755,16 @@
     });
 
     $('dashMobileMenu').addEventListener('click', () => document.querySelector('.dashboard-sidebar').classList.toggle('open'));
+
+    initDashboardSidebar();
+    $('[data-daily-goal]').forEach(btn=>btn.addEventListener('click',()=>toggleDailyGoal(btn.dataset.dailyGoal)));
+    $('dailyQuickStart')?.addEventListener('click',()=>{
+      const firstIncomplete=$('[data-daily-goal]').find(btn=>!btn.classList.contains('completed'));
+      const key=firstIncomplete?.dataset.dailyGoal||'lesson';
+      if(key==='lesson') $('continueLearningBtn')?.click();
+      else if(key==='quiz') location.href='./exam-center.html';
+      else location.href='./progress.html';
+    });
 
 
     document.addEventListener('click', (e) => {
