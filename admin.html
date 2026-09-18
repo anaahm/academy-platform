@@ -72,6 +72,7 @@
         <span class="admin-nav-label">المنصة</span>
         <button data-admin-tab="news"><i class="fa-regular fa-newspaper"></i> الأخبار والتحديثات</button>
         <button data-admin-tab="community"><i class="fa-solid fa-users"></i> المجتمع والبلاغات <span id="communityReportBadge" class="nav-badge hidden">0</span></button>
+        <button data-admin-tab="notifications"><i class="fa-regular fa-bell"></i> الإشعارات الموجهة</button>
         <button data-admin-tab="announcements"><i class="fa-solid fa-bullhorn"></i> الإعلانات</button>
         <button data-admin-tab="settings"><i class="fa-solid fa-sliders"></i> الإعدادات</button>
       </nav>
@@ -246,6 +247,31 @@
             <article class="admin-card">
               <div class="admin-card-head"><div><span class="section-kicker">المنشور</span><h3>الأخبار الحالية</h3></div><span>📣</span></div>
               <div id="newsAdminList" class="admin-list admin-scroll-list"></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="admin-tab" id="admin-tab-notifications">
+          <div class="admin-section-head"><div><span class="section-kicker">تواصل ذكي</span><h2>الإشعارات الموجهة</h2><p>أرسل إشعارًا لمسار أو مرحلة أو صف محدد مع رابط إجراء اختياري.</p></div><a class="btn btn-soft" href="./notifications.html" target="_blank"><i class="fa-solid fa-eye"></i> معاينة مركز الطالب</a></div>
+          <div class="admin-teacher-grid">
+            <article class="admin-card admin-form-card">
+              <div class="admin-card-head"><div><span class="section-kicker">إشعار جديد</span><h3>إنشاء إشعار موجه</h3></div><span>🔔</span></div>
+              <form id="broadcastForm" class="admin-form">
+                <label class="full"><span>عنوان الإشعار</span><input id="broadcastTitle" required maxlength="120" placeholder="مثال: مراجعة مهمة قبل الاختبار"></label>
+                <label class="full"><span>نص الإشعار</span><textarea id="broadcastText" required maxlength="800" placeholder="اكتب الرسالة بوضوح..."></textarea></label>
+                <label><span>المسار</span><select id="broadcastType"><option value="">كل المسارات</option><option value="public">تعليم عام</option><option value="azhar">أزهر</option></select></label>
+                <label><span>المرحلة</span><select id="broadcastStage"><option value="">كل المراحل</option><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+                <label><span>الصف</span><select id="broadcastGrade"><option value="">كل الصفوف</option></select></label>
+                <label><span>الأولوية</span><select id="broadcastPriority"><option value="normal">عادي</option><option value="high">مهم</option><option value="urgent">عاجل</option></select></label>
+                <label><span>مدة الإشعار بالأيام</span><input id="broadcastDays" type="number" min="1" max="30" value="7"></label>
+                <label><span>رابط الإجراء — اختياري</span><input id="broadcastHref" placeholder="./exam-center.html أو https://..."></label>
+                <label class="switch-field full"><span>الحالة</span><div><input id="broadcastActive" type="checkbox" checked><strong>نشط</strong></div></label>
+                <button class="btn btn-primary full" type="submit"><i class="fa-solid fa-paper-plane"></i> نشر الإشعار</button>
+              </form>
+            </article>
+            <article class="admin-card">
+              <div class="admin-card-head"><div><span class="section-kicker">السجل</span><h3>الإشعارات الحالية</h3></div><span>📨</span></div>
+              <div id="broadcastAdminList" class="admin-list admin-scroll-list"></div>
             </article>
           </div>
         </section>
