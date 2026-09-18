@@ -107,3 +107,15 @@
 }
 
 .teacher-spaced-card{margin-top:16px}
+
+/* Teacher mobile topbar polish */
+@media(max-width:650px){
+  .teacher-top{height:auto;min-height:72px;padding:10px 12px;gap:10px}
+  .teacher-top>div:first-child{min-width:0}.teacher-top h1{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52vw}
+  .teacher-top p{display:none}
+  .teacher-top .dashboard-actions{gap:6px}
+  .teacher-top .dashboard-actions .btn{padding:9px 10px;font-size:9px}
+  .teacher-top .icon-btn{width:38px;height:38px}
+  .teacher-welcome{padding:22px 18px;border-radius:22px!important}
+  .teacher-welcome h2{font-size:23px}
+}
