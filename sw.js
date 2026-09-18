@@ -1,8 +1,9 @@
-const CACHE='academy-shell-2026-09-18-v3';
+const CACHE='academy-shell-2026-09-18-v4';
 const CORE=[
- './','./index.html','./explore.html','./search.html',
+ './','./index.html','./offline.html','./explore.html','./search.html','./planner.html',
+ './exam-center.html','./progress.html','./library.html','./simulations.html',
  './assets/styles.css','./assets/learning.css','./assets/portal.css','./assets/hub.css',
- './assets/firebase-config.js','./assets/student-core.js','./assets/app-icon.svg','./manifest.webmanifest'
+ './assets/firebase-config.js','./assets/student-core.js','./assets/pwa.js','./assets/app-icon.svg','./manifest.webmanifest'
 ];
 
 self.addEventListener('install',event=>{
@@ -21,7 +22,10 @@ async function networkFirst(req){
   if(res&&res.ok){const copy=res.clone();caches.open(CACHE).then(c=>c.put(req,copy)).catch(()=>{})}
   return res;
  }catch{
-  return (await caches.match(req)) || (req.mode==='navigate' ? caches.match('./index.html') : Response.error());
+  const cached=await caches.match(req);
+  if(cached)return cached;
+  if(req.mode==='navigate')return caches.match('./offline.html');
+  return Response.error();
  }
 }
 
@@ -34,13 +38,11 @@ self.addEventListener('fetch',event=>{
   return;
  }
 
- // Code must prefer the newest deployed version so updates never get stuck behind the PWA cache.
  if(/\.(?:css|js|webmanifest)$/i.test(url.pathname)){
   event.respondWith(networkFirst(req));
   return;
  }
 
- // Static media can safely be cache-first.
  if(/\.(?:svg|png|jpg|jpeg|webp|gif|woff2?)$/i.test(url.pathname)){
   event.respondWith(caches.match(req).then(cached=>cached||fetch(req).then(res=>{
    if(res&&res.ok){const copy=res.clone();caches.open(CACHE).then(c=>c.put(req,copy)).catch(()=>{})}
