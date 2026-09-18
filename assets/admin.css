@@ -42,3 +42,12 @@ linear-gradient(135deg,#0f172a,#111827 45%,#172554)}
 
 .admin-mini-form{display:grid;grid-template-columns:1fr 140px 1fr auto;gap:8px;align-items:end}.admin-mini-form input,.admin-mini-form select{border:1px solid var(--admin-line);background:#f8fafc;border-radius:12px;padding:10px;outline:none;font-family:inherit}.admin-mini-form .btn{white-space:nowrap}
 @media(max-width:720px){.admin-mini-form{grid-template-columns:1fr}.admin-mini-form .btn{width:100%}}
+
+.admin-video-editor-wrap{border:1px solid var(--admin-line);background:#f8fafc;border-radius:16px;padding:13px}
+.admin-video-editor-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.admin-video-editor-head>span{font-size:10px;font-weight:900;color:#475569}
+.admin-video-editor{display:grid;gap:8px}
+.admin-video-row{display:grid;grid-template-columns:minmax(130px,.8fr) minmax(220px,1.8fr) 36px;gap:8px;align-items:center}
+.admin-video-row input{width:100%;border:1px solid var(--admin-line);background:#fff;border-radius:12px;padding:10px;outline:none;font-family:inherit}
+.admin-video-row .admin-action-btn{width:36px;height:36px}
+@media(max-width:650px){.admin-video-editor-head{align-items:flex-start;flex-direction:column}.admin-video-row{grid-template-columns:1fr 42px}.admin-video-row .lesson-video-url{grid-column:1}.admin-video-row .admin-action-btn{grid-column:2;grid-row:1/3;height:100%}}
