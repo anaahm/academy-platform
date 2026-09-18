@@ -40,10 +40,9 @@
                             database.ref('teacherProfiles/' + user.uid).once('value')
                         ]);
                         const explicitAdmin = adminSnap.val()?.isAdmin === true;
-                        const isStudentOrTeacher = studentSnap.exists() || teacherSnap.exists();
-                        if(!explicitAdmin && isStudentOrTeacher) {
+                        if(!explicitAdmin) {
                             await firebase.auth().signOut();
-                            alert('هذا الحساب ليس له صلاحية إدارة المنصة.');
+                            alert('هذا الحساب ليس له صلاحية إدارة المنصة. يجب إضافته كمدير من إعدادات Firebase.');
                             return;
                         }
                         document.getElementById('login-view').classList.add('hidden');
@@ -64,6 +63,10 @@
             `;
           html=html.slice(0,initStart)+secureInit+html.slice(toggleStart);
         }
+        html=html.replace(
+          ".catch(e => { document.getElementById('login-btn').innerText = \"تسجيل الدخول\"; alert(e.message); });",
+          ".catch(e => { document.getElementById('login-btn').innerText = \"تسجيل الدخول\"; const msg=(e.code===\"auth/invalid-login-credentials\"||e.code===\"auth/wrong-password\"||e.code===\"auth/user-not-found\")?\"البريد الإلكتروني أو كلمة المرور غير صحيحة، أو حساب الإدارة غير موجود في Firebase Authentication.\":(e.message||\"تعذر تسجيل الدخول\"); app.notify(msg,\"error\"); });"
+        );
         html=html.replace('</head>','<link rel="stylesheet" href="assets/css/admin-modern.css?v=3"></head>');
         html=html.replace('</body>','<script src="assets/js/admin-ui.js?v=3"><\/script></body>');
         document.open();document.write(html);document.close();
