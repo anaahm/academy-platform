@@ -116,7 +116,7 @@ function renderSubjectPath(c){
  });
  nodes.push('<div class="subject-path-node finish '+(subjectIsComplete()?'complete':'upcoming')+'"><span class="path-node-icon"><i class="fa-solid fa-trophy"></i></span><span class="path-node-copy"><small>النهاية</small><strong>إتمام المادة</strong><em>'+(subjectIsComplete()?'تم الإنجاز 🎉':'أكمل الوحدات')+'</em></span></div>');
  track.innerHTML=nodes.join('');
- $('[data-path-unit]').forEach(b=>b.onclick=()=>document.querySelector('[data-unit-card="'+b.dataset.pathUnit+'"]')?.scrollIntoView({behavior:'smooth',block:'start'}));
+ $$('[data-path-unit]').forEach(b=>b.onclick=()=>document.querySelector('[data-unit-card="'+b.dataset.pathUnit+'"]')?.scrollIntoView({behavior:'smooth',block:'start'}));
  const btn=$('subjectPathContinueBtn');
  if(next){
    $('subjectPathHint').textContent='خطوتك التالية: '+(next.title||'الدرس التالي')+' في '+unitName(c,next.unit||1)+'.';
@@ -255,9 +255,9 @@ function renderQuickCheck(lesson){
    '<div class="quick-check-question"><strong>'+esc(q.text||'اختر الإجابة الصحيحة')+'</strong><div class="quick-check-options">'+
    q.opts.map((o,i)=>'<button data-quick-answer="'+i+'"><span>'+(letters[i]||i+1)+'</span>'+esc(o)+'</button>').join('')+
    '</div><div class="quick-check-feedback hidden" id="quickCheckFeedback"></div></div>';
- $('[data-quick-answer]').forEach(btn=>btn.onclick=()=>{
+ $$('[data-quick-answer]').forEach(btn=>btn.onclick=()=>{
    const chosen=Number(btn.dataset.quickAnswer),correct=Number(q.correctAnswer);
-   $('[data-quick-answer]').forEach(x=>{
+   $$('[data-quick-answer]').forEach(x=>{
      x.disabled=true;
      const idx=Number(x.dataset.quickAnswer);
      x.classList.toggle('correct',idx===correct);
@@ -382,7 +382,7 @@ async function markComplete(c,id){
  updateProgress(id);renderOutline(c,state.currentLesson);toast('رائع! +50 XP وتم حفظ تقدمك 🎉');showLessonCelebration(c,id,50);
 }
 function setupQuiz(c,l){
- const qs=Array.isArray(l.questions)?l.questions:[];$('quizIntroText').textContent=qs.length?'تدريب مكوّن من '+qs.length+' سؤال على هذا الدرس.':'لا توجد أسئلة مضافة لهذا الدرس حتى الآن.';$('startQuizBtn').disabled=!qs.length;$('startQuizBtn').onclick=()=>startQuiz(qs,c,l.id);$('retryQuizBtn').onclick=()=>startQuiz(qs,c,l.id);$('reviewLessonBtn').onclick=()=>$('[data-lesson-tab]').find(b=>b.dataset.lessonTab==='explanation')?.click();
+ const qs=Array.isArray(l.questions)?l.questions:[];$('quizIntroText').textContent=qs.length?'تدريب مكوّن من '+qs.length+' سؤال على هذا الدرس.':'لا توجد أسئلة مضافة لهذا الدرس حتى الآن.';$('startQuizBtn').disabled=!qs.length;$('startQuizBtn').onclick=()=>startQuiz(qs,c,l.id);$('retryQuizBtn').onclick=()=>startQuiz(qs,c,l.id);$('reviewLessonBtn').onclick=()=>$$('[data-lesson-tab]').find(b=>b.dataset.lessonTab==='explanation')?.click();
 }
 function startQuiz(qs,c,sourceId){
  const ok=qs.filter(q=>q&&Array.isArray(q.opts)&&q.opts.length>=2);if(!ok.length){toast('لا توجد أسئلة قابلة للتشغيل حاليًا.','error');return}
