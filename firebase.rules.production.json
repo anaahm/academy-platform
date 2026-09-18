@@ -27,7 +27,9 @@
     "teacherSubmissions": {
       "$uid": {
         ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
-        ".write": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)"
+        "$submissionId": {
+          ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (auth.uid === $uid && ((!data.exists() && newData.child('status').val() === 'pending') || (data.child('status').val() === 'pending' && newData.child('status').val() === 'pending'))))"
+        }
       }
     },
 
@@ -47,6 +49,72 @@
       ".read": true,
       ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
     },
+    "simulations": {
+      ".read": true,
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "liveSessions": {
+      ".read": true,
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+    },
+
+    "leaderboardV3": {
+      ".read": "auth != null",
+      "$period": {
+        "$uid": {
+          ".write": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
+          "name": { ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 80)" },
+          "xp": { ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 0)" },
+          "quizzes": { ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 0)" },
+          "level": { ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 1)" },
+          "updatedAt": { ".validate": "!newData.exists() || newData.isNumber()" }
+        }
+      }
+    },
+
+    "contentAnalytics": {
+      ".read": "auth != null",
+      "$contentId": {
+        ".write": "auth != null",
+        "views": { ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 0)" },
+        "completions": { ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 0)" },
+        "quizAttempts": { ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 0)" },
+        "quizScoreTotal": { ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 0)" },
+        "quizAverage": { ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 0 && newData.val() <= 100)" },
+        "updatedAt": { ".validate": "!newData.exists() || newData.isNumber()" }
+      }
+    },
+
+    "community": {
+      ".read": "auth != null",
+      "forums": {
+        "$postId": {
+          ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (!data.exists() && newData.child('authorId').val() === auth.uid))",
+          "likesBy": {
+            "$uid": {
+              ".write": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
+              ".validate": "!newData.exists() || newData.val() === true"
+            }
+          },
+          "reports": {
+            "$uid": {
+              ".write": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)"
+            }
+          }
+        }
+      },
+      "studyGroups": {
+        "$groupId": {
+          ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true",
+          "members": {
+            "$uid": {
+              ".write": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)"
+            }
+          }
+        }
+      }
+    },
+
     "announcements": {
       ".read": true,
       ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
@@ -59,19 +127,11 @@
       ".read": true,
       ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
     },
-    "leaderboard": {
-      ".read": true,
-      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
-    },
-    "liveSessions": {
-      ".read": true,
-      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
-    },
-    "community": {
-      ".read": "auth != null",
-      ".write": "auth != null"
-    },
 
+    "leaderboard": {
+      ".read": false,
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+    },
     "users": {
       ".read": false,
       ".write": false
