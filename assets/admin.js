@@ -205,29 +205,42 @@ function renderSimulations(){
  const arr=values(root.simulations).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
  $('simulationsAdminGrid').innerHTML=arr.length?arr.map(s=>{
    const total=Object.values(s.counts||{}).reduce((a,n)=>a+Number(n||0),0);
-   return '<article class="admin-subject-card"><span class="section-kicker">'+esc(typeLabel(s.type))+' • '+esc(gradeLabel(s.stage,s.grade))+'</span><h3>⏱️ '+esc(s.name||'محاكي')+'</h3><p>'+Number(s.time||60)+' دقيقة • '+total+' سؤال</p><div class="admin-unit-tags"><span>عربي '+Number(s.counts?.ar||0)+'</span><span>رياضيات '+Number(s.counts?.ma||0)+'</span><span>علوم '+Number(s.counts?.sc||0)+'</span><span>إنجليزي '+Number(s.counts?.en||0)+'</span></div><div class="admin-action-row" style="margin-top:12px"><button class="admin-action-btn '+(s.isHidden?'success':'')+'" data-toggle-sim="'+s.id+'" title="إظهار/إخفاء"><i class="fa-solid fa-eye"></i></button><button class="admin-action-btn danger" data-delete-sim="'+s.id+'" title="حذف"><i class="fa-solid fa-trash"></i></button></div></article>';
+   return '<article class="admin-subject-card"><span class="section-kicker">'+esc(typeLabel(s.type))+' • '+esc(gradeLabel(s.stage,s.grade))+'</span><h3>⏱️ '+esc(s.name||'محاكي')+'</h3><p>'+Number(s.time||60)+' دقيقة • '+total+' سؤال</p><div class="admin-unit-tags"><span>عربي '+Number(s.counts?.ar||0)+'</span><span>رياضيات '+Number(s.counts?.ma||0)+'</span><span>علوم '+Number(s.counts?.sc||0)+'</span><span>إنجليزي '+Number(s.counts?.en||0)+'</span></div><div class="admin-action-row" style="margin-top:12px"><button class="admin-action-btn" data-edit-sim="'+s.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><button class="admin-action-btn '+(s.isHidden?'success':'')+'" data-toggle-sim="'+s.id+'" title="إظهار/إخفاء"><i class="fa-solid fa-eye"></i></button><button class="admin-action-btn danger" data-delete-sim="'+s.id+'" title="حذف"><i class="fa-solid fa-trash"></i></button></div></article>';
  }).join(''):empty('لا توجد محاكيات','أنشئ أول محاكي لطلابك.');
  $('[data-toggle-sim]').forEach(b=>b.onclick=()=>db.ref('simulations/'+b.dataset.toggleSim+'/isHidden').set(!root.simulations?.[b.dataset.toggleSim]?.isHidden));
  $('[data-delete-sim]').forEach(b=>b.onclick=()=>{if(confirm('حذف المحاكي؟'))db.ref('simulations/'+b.dataset.deleteSim).remove()});
+}
+function resetSimulationEditor(){editState.simulation=null;$('simulationForm').reset();$('simTime').value=60;['simAr','simMa','simSc','simEn'].forEach(id=>$(id).value=5);fillGrades($('simGrade'),$('simStage').value);if($('simulationModalTitle'))$('simulationModalTitle').textContent='إنشاء محاكي جديد'}
+function editSimulation(id){
+ const s=root.simulations?.[id];if(!s)return;editState.simulation=id;
+ $('simName').value=s.name||'';$('simType').value=s.type||'public';$('simStage').value=s.stage||'primary';fillGrades($('simGrade'),s.stage||'primary',s.grade||'1');$('simGrade').value=String(s.grade||'1');$('simTime').value=Number(s.time||60);$('simAr').value=Number(s.counts?.ar||0);$('simMa').value=Number(s.counts?.ma||0);$('simSc').value=Number(s.counts?.sc||0);$('simEn').value=Number(s.counts?.en||0);$('simHidden').checked=!!s.isHidden;if($('simulationModalTitle'))$('simulationModalTitle').textContent='تعديل المحاكي';openModal('simulationModal');
 }
 async function saveSimulation(e){
  e.preventDefault();
  const counts={ar:Number($('simAr').value||0),ma:Number($('simMa').value||0),sc:Number($('simSc').value||0),en:Number($('simEn').value||0)};
  if(Object.values(counts).reduce((a,n)=>a+n,0)<=0)return toast('حدد سؤالًا واحدًا على الأقل.','error');
- const payload={name:$('simName').value.trim(),type:$('simType').value,stage:$('simStage').value,grade:$('simGrade').value,time:Number($('simTime').value||60),counts,isLocked:false,isHidden:$('simHidden').checked,createdAt:Date.now()};
- await db.ref('simulations').push(payload);closeModal('simulationModal');e.target.reset();fillGrades($('simGrade'),$('simStage').value);toast('تم حفظ المحاكي');
+ const payload={name:$('simName').value.trim(),type:$('simType').value,stage:$('simStage').value,grade:$('simGrade').value,time:Number($('simTime').value||60),counts,isLocked:false,isHidden:$('simHidden').checked};
+ if(editState.simulation){payload.updatedAt=Date.now();await db.ref('simulations/'+editState.simulation).update(payload);toast('تم تحديث المحاكي')}else{payload.createdAt=Date.now();await db.ref('simulations').push(payload);toast('تم حفظ المحاكي')}
+ closeModal('simulationModal');resetSimulationEditor();
 }
 
 /* Files */
 function renderFiles(){
  const arr=values(root.files).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
- $('filesAdminGrid').innerHTML=arr.length?arr.map(f=>'<article class="admin-file-card"><i class="fa-solid fa-file-pdf"></i><div><strong>'+esc(f.title||'ملف')+'</strong><small>'+esc(gradeLabel(f.stage,f.grade))+' • '+esc(f.subject||'')+'</small></div><div class="admin-action-row"><a class="admin-action-btn success" href="'+cleanUrl(f.url)+'" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i></a><button class="admin-action-btn danger" data-delete-file="'+f.id+'"><i class="fa-solid fa-trash"></i></button></div></article>').join(''):empty('لا توجد ملفات','أضف ملفات أو مذكرات للمادة.');
- $$('[data-delete-file]').forEach(b=>b.onclick=()=>{if(confirm('حذف الملف من المنصة؟'))db.ref('files/'+b.dataset.deleteFile).remove()});
+ $('filesAdminGrid').innerHTML=arr.length?arr.map(f=>'<article class="admin-file-card"><i class="fa-solid fa-file-pdf"></i><div><strong>'+esc(f.title||'ملف')+'</strong><small>'+esc(gradeLabel(f.stage,f.grade))+' • '+esc(f.subject||'')+'</small></div><div class="admin-action-row"><button class="admin-action-btn" data-edit-file="'+f.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><a class="admin-action-btn success" href="'+cleanUrl(f.url)+'" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i></a><button class="admin-action-btn danger" data-delete-file="'+f.id+'"><i class="fa-solid fa-trash"></i></button></div></article>').join(''):empty('لا توجد ملفات','أضف ملفات أو مذكرات للمادة.');
+ $('[data-edit-file]').forEach(b=>b.onclick=()=>editFile(b.dataset.editFile));
+ $('[data-delete-file]').forEach(b=>b.onclick=()=>{if(confirm('حذف الملف من المنصة؟'))db.ref('files/'+b.dataset.deleteFile).remove()});
+}
+function resetFileEditor(){editState.file=null;$('fileForm').reset();fillGrades($('newFileGrade'),$('newFileStage').value);fillSubjects($('newFileSubject'),$('newFileStage').value,$('newFileGrade').value,$('newFileType').value);if($('fileModalTitle'))$('fileModalTitle').textContent='إضافة ملف'}
+function editFile(id){
+ const f=root.files?.[id];if(!f)return;editState.file=id;
+ $('newFileTitle').value=f.title||'';$('newFileUrl').value=f.url||'';$('newFileType').value=f.type||'public';$('newFileStage').value=f.stage||'primary';fillGrades($('newFileGrade'),f.stage||'primary',f.grade||'1');$('newFileGrade').value=String(f.grade||'1');fillSubjects($('newFileSubject'),f.stage||'primary',String(f.grade||'1'),f.type||'public');$('newFileSubject').value=f.subject||'';if($('fileModalTitle'))$('fileModalTitle').textContent='تعديل الملف';openModal('fileModal');
 }
 async function saveFile(e){
  e.preventDefault();
- const payload={title:$('newFileTitle').value.trim(),url:$('newFileUrl').value.trim(),type:$('newFileType').value,stage:$('newFileStage').value,grade:$('newFileGrade').value,subject:$('newFileSubject').value,createdAt:Date.now()};
- await db.ref('files').push(payload);closeModal('fileModal');e.target.reset();toast('تمت إضافة الملف');
+ const payload={title:$('newFileTitle').value.trim(),url:$('newFileUrl').value.trim(),type:$('newFileType').value,stage:$('newFileStage').value,grade:$('newFileGrade').value,subject:$('newFileSubject').value};
+ if(editState.file){payload.updatedAt=Date.now();await db.ref('files/'+editState.file).update(payload);toast('تم تحديث الملف')}else{payload.createdAt=Date.now();await db.ref('files').push(payload);toast('تمت إضافة الملف')}
+ closeModal('fileModal');resetFileEditor();
 }
 
 /* Live Sessions */
@@ -236,14 +249,21 @@ function renderLiveSessions(){
  $('liveAdminGrid').innerHTML=arr.length?arr.map(s=>{
    const cls=s.status==='live'?'rejected':s.status==='upcoming'?'info':'approved';
    const label=s.status==='live'?'مباشر':s.status==='upcoming'?'قادم':'منتهي';
-   return '<article class="admin-subject-card"><span class="status-pill '+cls+'">'+label+'</span><h3 style="margin-top:10px">📡 '+esc(s.title||'جلسة')+'</h3><p>👨‍🏫 '+esc(s.teacher||'غير محدد')+' • ⏱️ '+Number(s.duration||60)+' دقيقة</p><p>'+(s.scheduledTime?new Date(s.scheduledTime).toLocaleString('ar-EG'):'موعد غير محدد')+'</p><div class="admin-action-row" style="margin-top:12px"><a class="admin-action-btn success" href="'+cleanUrl(s.youtubeLiveUrl||s.zoomLink||'#')+'" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i></a><button class="admin-action-btn danger" data-delete-live="'+s.id+'"><i class="fa-solid fa-trash"></i></button></div></article>';
+   return '<article class="admin-subject-card"><span class="status-pill '+cls+'">'+label+'</span><h3 style="margin-top:10px">📡 '+esc(s.title||'جلسة')+'</h3><p>👨‍🏫 '+esc(s.teacher||'غير محدد')+' • ⏱️ '+Number(s.duration||60)+' دقيقة</p><p>'+(s.scheduledTime?new Date(s.scheduledTime).toLocaleString('ar-EG'):'موعد غير محدد')+'</p><div class="admin-action-row" style="margin-top:12px"><button class="admin-action-btn" data-edit-live="'+s.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><a class="admin-action-btn success" href="'+cleanUrl(s.youtubeLiveUrl||s.zoomLink||'#')+'" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i></a><button class="admin-action-btn danger" data-delete-live="'+s.id+'"><i class="fa-solid fa-trash"></i></button></div></article>';
  }).join(''):empty('لا توجد جلسات','أضف أول بث مباشر أو جلسة قادمة.');
  $('[data-delete-live]').forEach(b=>b.onclick=()=>{if(confirm('حذف الجلسة؟'))db.ref('liveSessions/'+b.dataset.deleteLive).remove()});
 }
+function toLocalDateTimeInput(ts){if(!ts)return'';const d=new Date(Number(ts));return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}
+function resetLiveEditor(){editState.live=null;$('liveForm').reset();$('liveDuration').value=60;$('liveStatus').value='upcoming';if($('liveModalTitle'))$('liveModalTitle').textContent='إضافة جلسة بث'}
+function editLiveSession(id){
+ const s=root.liveSessions?.[id];if(!s)return;editState.live=id;
+ $('liveTitle').value=s.title||'';$('liveTeacher').value=s.teacher||'';$('liveStatus').value=s.status||'upcoming';$('liveTime').value=toLocalDateTimeInput(s.scheduledTime);$('liveDuration').value=Number(s.duration||60);$('liveYoutube').value=s.youtubeLiveUrl||'';$('liveZoom').value=s.zoomLink||'';if($('liveModalTitle'))$('liveModalTitle').textContent='تعديل جلسة البث';openModal('liveModal');
+}
 async function saveLiveSession(e){
  e.preventDefault();
- const payload={title:$('liveTitle').value.trim(),teacher:$('liveTeacher').value.trim()||'غير محدد',status:$('liveStatus').value,scheduledTime:$('liveTime').value?new Date($('liveTime').value).getTime():Date.now(),duration:Number($('liveDuration').value||60),youtubeLiveUrl:$('liveYoutube').value.trim(),zoomLink:$('liveZoom').value.trim(),createdAt:Date.now()};
- await db.ref('liveSessions').push(payload);closeModal('liveModal');e.target.reset();toast('تم حفظ الجلسة');
+ const payload={title:$('liveTitle').value.trim(),teacher:$('liveTeacher').value.trim()||'غير محدد',status:$('liveStatus').value,scheduledTime:$('liveTime').value?new Date($('liveTime').value).getTime():Date.now(),duration:Number($('liveDuration').value||60),youtubeLiveUrl:$('liveYoutube').value.trim(),zoomLink:$('liveZoom').value.trim()};
+ if(editState.live){payload.updatedAt=Date.now();await db.ref('liveSessions/'+editState.live).update(payload);toast('تم تحديث الجلسة')}else{payload.createdAt=Date.now();await db.ref('liveSessions').push(payload);toast('تم حفظ الجلسة')}
+ closeModal('liveModal');resetLiveEditor();
 }
 
 /* Community */
@@ -337,7 +357,9 @@ async function startDataListener(){
 $$('[data-admin-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.adminTab));
 $$('[data-jump-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.jumpTab));
 $$('[data-close-admin-modal]').forEach(b=>b.onclick=()=>closeModal(b.dataset.closeAdminModal));
-$('openSubjectModal').onclick=()=>openModal('subjectModal');$('openLessonModal').onclick=()=>openModal('lessonModal');$('openQuizModal').onclick=()=>openModal('quizModal');$('openFileModal').onclick=()=>openModal('fileModal');$('openSimulationModal').onclick=()=>openModal('simulationModal');$('openLiveModal').onclick=()=>openModal('liveModal');
+$('openSubjectModal').onclick=()=>openModal('subjectModal');$('openLessonModal').onclick=()=>{resetLessonEditor();openModal('lessonModal')};$('openQuizModal').onclick=()=>{resetQuizEditor();openModal('quizModal')};$('openFileModal').onclick=()=>{resetFileEditor();openModal('fileModal')};$('openSimulationModal').onclick=()=>{resetSimulationEditor();openModal('simulationModal')};$('openLiveModal').onclick=()=>{resetLiveEditor();openModal('liveModal')};
+$('addLessonVideoRow').onclick=addLessonVideoRow;
+renderLessonVideosEditor([{name:'',url:''}]);
 $('subjectForm').onsubmit=saveSubject;$('lessonForm').onsubmit=saveLesson;$('quizForm').onsubmit=saveQuiz;$('fileForm').onsubmit=saveFile;$('simulationForm').onsubmit=saveSimulation;$('liveForm').onsubmit=saveLiveSession;$('studyGroupForm').onsubmit=saveStudyGroup;$('announcementForm').onsubmit=saveAnnouncement;$('settingsForm').onsubmit=saveSettings;
 $('lessonSearch').oninput=renderLessons;$('lessonFilterStage').onchange=renderLessons;$('lessonFilterType').onchange=renderLessons;$('studentSearch').oninput=renderStudents;
 $('curriculumType').onchange=renderCurriculum;$('curriculumStage').onchange=()=>{fillGrades($('curriculumGrade'),$('curriculumStage').value);renderCurriculum()};$('curriculumGrade').onchange=renderCurriculum;
