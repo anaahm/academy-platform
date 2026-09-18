@@ -1,0 +1,27 @@
+(() => {
+'use strict';
+if(!window.firebase || !firebase.apps.length)return;
+const auth=firebase.auth(),db=firebase.database();
+let uid=null,pending=0,flushing=false;
+const today=()=>new Date().toISOString().slice(0,10);
+
+async function flush(){
+ if(!uid||pending<=0||flushing)return;
+ const amount=pending;pending=0;flushing=true;
+ try{
+   await Promise.all([
+     db.ref('studentProfilesV3/'+uid+'/stats/studyMinutes').transaction(v=>Number(v||0)+amount),
+     db.ref('studentProfilesV3/'+uid+'/activityDaily/'+today()+'/minutes').transaction(v=>Number(v||0)+amount),
+     db.ref('studentProfilesV3/'+uid+'/activityDaily/'+today()+'/lastActiveAt').set(Date.now())
+   ]);
+ }catch(e){pending+=amount}
+ finally{flushing=false}
+}
+auth.onAuthStateChanged(user=>{uid=user?.uid||null});
+setInterval(()=>{
+ if(!uid||document.hidden||!document.hasFocus())return;
+ pending+=1;if(pending>=5)flush();
+},60000);
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&pending>=2)flush()});
+window.addEventListener('pagehide',()=>{if(pending>0)flush()});
+})();
