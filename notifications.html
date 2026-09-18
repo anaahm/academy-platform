@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>الإشعارات | الأكاديمية</title>
+  <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./assets/app-icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/learning.css"><link rel="stylesheet" href="./assets/hub.css">
+</head>
+<body class="feature-page">
+  <div id="toast" class="toast"></div>
+  <header class="learning-header">
+    <div class="container learning-nav">
+      <a class="brand" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-book-open"></i></span><span><strong>الأكاديمية</strong><small>مركز الإشعارات</small></span></a>
+      <div class="learning-breadcrumb"><a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><span>الإشعارات</span></div>
+      <div class="learning-user"><button class="btn btn-soft" id="markAllNotifications"><i class="fa-solid fa-check-double"></i> تعليم الكل كمقروء</button><span class="avatar" id="pageAvatar">ط</span></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="feature-hero">
+      <div class="container">
+        <div class="feature-hero-card">
+          <div><span class="section-kicker light">كل المهم في مكان واحد</span><h1>مركز الإشعارات</h1><p>تصحيح الواجبات، المواعيد، الحصص، البث، مهام المذاكرة، وإعلانات الأكاديمية.</p></div>
+          <span class="feature-hero-art">🔔</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="container feature-page-content">
+      <section class="feature-stat-grid">
+        <article><span class="feature-card-icon blue"><i class="fa-regular fa-bell"></i></span><div><strong id="notificationTotal">0</strong><small>إجمالي الإشعارات</small></div></article>
+        <article><span class="feature-card-icon amber"><i class="fa-solid fa-envelope-open-text"></i></span><div><strong id="notificationUnread">0</strong><small>غير مقروء</small></div></article>
+        <article><span class="feature-card-icon green"><i class="fa-solid fa-graduation-cap"></i></span><div><strong id="notificationAcademic">0</strong><small>دراسي</small></div></article>
+        <article><span class="feature-card-icon violet"><i class="fa-regular fa-calendar"></i></span><div><strong id="notificationSchedule">0</strong><small>مواعيد</small></div></article>
+      </section>
+
+      <section class="notification-center-layout">
+        <aside class="feature-card notification-filter-card">
+          <div class="feature-card-head"><div><span class="section-kicker">فلترة</span><h3>اعرض</h3></div><span>🎛️</span></div>
+          <div class="notification-filter-list">
+            <button class="active" data-notification-filter="all"><i class="fa-solid fa-border-all"></i> الكل <span id="filterCountAll">0</span></button>
+            <button data-notification-filter="unread"><i class="fa-regular fa-envelope"></i> غير المقروء <span id="filterCountUnread">0</span></button>
+            <button data-notification-filter="academic"><i class="fa-solid fa-graduation-cap"></i> دراسي <span id="filterCountAcademic">0</span></button>
+            <button data-notification-filter="schedule"><i class="fa-regular fa-calendar"></i> المواعيد <span id="filterCountSchedule">0</span></button>
+            <button data-notification-filter="system"><i class="fa-solid fa-bullhorn"></i> المنصة <span id="filterCountSystem">0</span></button>
+          </div>
+        </aside>
+
+        <div class="notification-center-main">
+          <div class="notification-center-head">
+            <div><span class="section-kicker">آخر التحديثات</span><h2 id="notificationListTitle">كل الإشعارات</h2></div>
+            <span id="notificationMeta">0 إشعار</span>
+          </div>
+          <div id="notificationList" class="notification-center-list"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="./assets/firebase-config.js"></script>
+  <script src="./assets/student-core.js"></script>
+  <script src="./assets/notification-engine.js"></script>
+  <script src="./assets/notifications.js"></script>
+  <script src="./assets/pwa.js"></script>
+</body>
+</html>
