@@ -60,11 +60,19 @@ function render(){
     $('lastActivity').innerHTML=`<article class="last-activity-card"><span class="section-kicker">آخر درس</span><h3>${profile.lastLessonTitle}</h3><p>${gradeLabels[profile.stage]?.[profile.grade]||''}</p><a class="btn btn-primary" href="./lesson.html?${q.toString()}">متابعة الدرس</a></article>`;
   }
 }
-function switchTab(tab){
-  $$('[data-profile-tab]').forEach(b=>b.classList.toggle('active',b.dataset.profileTab===tab));
-  $$('.profile-tab').forEach(s=>s.classList.add('hidden'));$('tab-'+tab).classList.remove('hidden');
+function switchTab(tab,updateUrl=true){
+  const allowed=['overview','account','study','saved','security'];
+  if(!allowed.includes(tab))tab='overview';
+  $('[data-profile-tab]').forEach(b=>b.classList.toggle('active',b.dataset.profileTab===tab));
+  $('.profile-tab').forEach(s=>s.classList.add('hidden'));
+  $('tab-'+tab)?.classList.remove('hidden');
+  if(updateUrl){
+    const url=new URL(location.href);
+    if(tab==='overview')url.searchParams.delete('tab');else url.searchParams.set('tab',tab);
+    history.replaceState({},'',url);
+  }
 }
-$$('[data-profile-tab]').forEach(b=>b.onclick=()=>switchTab(b.dataset.profileTab));
+$('[data-profile-tab]').forEach(b=>b.onclick=()=>switchTab(b.dataset.profileTab));
 $('studyStage').addEventListener('change',updateGradeOptions);
 $('accountForm').addEventListener('submit',async e=>{
   e.preventDefault();const name=$('profileNameInput').value.trim();if(name.length<2)return toast('اكتب اسمًا صحيحًا.','error');
@@ -80,6 +88,11 @@ $('profileLogout').onclick=logout;$('securityLogout').onclick=logout;
 $('avatarHint').onclick=()=>toast('رفع صورة شخصية هنضيفه في مرحلة التخزين لاحقًا.');
 auth.onAuthStateChanged(async u=>{
   if(!u){location.replace('./index.html');return}
-  user=u;const snap=await db.ref('studentProfilesV3/'+u.uid).once('value');profile=snap.val()||{};render();
+  user=u;
+  const snap=await db.ref('studentProfilesV3/'+u.uid).once('value');
+  profile=snap.val()||{};
+  render();
+  const requested=new URLSearchParams(location.search).get('tab')||'overview';
+  switchTab(requested,false);
 });
 })();
