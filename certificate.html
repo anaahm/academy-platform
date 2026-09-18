@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>شهادة إتمام | الأكاديمية</title>
+  <link rel="icon" href="./assets/app-icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./assets/certificate.css">
+</head>
+<body>
+  <div id="certificateLoading" class="certificate-loading">جاري التحقق من الشهادة...</div>
+  <main id="certificateApp" class="certificate-app hidden">
+    <div class="certificate-toolbar">
+      <a href="./index.html" class="cert-btn secondary"><i class="fa-solid fa-house"></i> الرئيسية</a>
+      <button id="printCertificate" class="cert-btn primary"><i class="fa-solid fa-print"></i> طباعة / حفظ PDF</button>
+    </div>
+
+    <section class="certificate-sheet" id="certificateSheet">
+      <div class="certificate-border">
+        <div class="certificate-top">
+          <span class="certificate-logo"><i class="fa-solid fa-book-open"></i></span>
+          <div><strong>الأكاديمية</strong><small>تعليم يصنع فرقًا</small></div>
+        </div>
+        <span class="certificate-kicker">شهادة إتمام</span>
+        <h1>Certificate of Completion</h1>
+        <p class="certificate-intro">تشهد الأكاديمية بأن الطالب/الطالبة</p>
+        <h2 id="certificateStudent">اسم الطالب</h2>
+        <p class="certificate-intro">قد أتم/أتمت بنجاح جميع دروس مادة</p>
+        <h3 id="certificateSubject">المادة</h3>
+        <div class="certificate-meta">
+          <div><span>المرحلة والصف</span><strong id="certificateGrade">—</strong></div>
+          <div><span>نوع التعليم</span><strong id="certificateType">—</strong></div>
+          <div><span>تاريخ الإتمام</span><strong id="certificateDate">—</strong></div>
+        </div>
+        <div class="certificate-footer">
+          <div><span class="signature-line"></span><strong>إدارة الأكاديمية</strong></div>
+          <span class="certificate-seal">🏆</span>
+          <div><span class="signature-line"></span><strong>إنجاز الطالب</strong></div>
+        </div>
+        <p class="certificate-code" id="certificateCode"></p>
+      </div>
+    </section>
+  </main>
+
+  <section id="certificateDenied" class="certificate-denied hidden">
+    <span>🔒</span><h1>الشهادة غير متاحة بعد</h1><p>الشهادة تظهر بعد إكمال 100% من دروس المادة.</p><a href="./index.html">العودة للأكاديمية</a>
+  </section>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="./assets/firebase-config.js"></script><script src="./assets/student-core.js"></script><script src="./assets/certificate.js"></script>
+</body>
+</html>
