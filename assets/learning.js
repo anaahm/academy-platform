@@ -1,9 +1,9 @@
 (() => {
 'use strict';
 
-const savedConfig=localStorage.getItem('academyFirebaseConfig');
-if(!savedConfig){ location.replace('./index.html'); return; }
-firebase.initializeApp(JSON.parse(savedConfig));
+const firebaseConfig = window.ACADEMY_FIREBASE_CONFIG || JSON.parse(localStorage.getItem('academyFirebaseConfig') || 'null');
+if(!firebaseConfig){ location.replace('./index.html'); return; }
+firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(), db=firebase.database();
 const $=id=>document.getElementById(id), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const page=document.documentElement.dataset.page, params=new URLSearchParams(location.search);
