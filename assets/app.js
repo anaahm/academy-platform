@@ -269,6 +269,11 @@
 
   function renderSmartDashboard() {
     const stats = statsFromProfile();
+    const p = state.profile || {};
+    const subjects = p.stage && p.grade ? getSubjects(p.stage, String(p.grade), p.educationType) : [];
+    const subjectProgress = p.subjectProgress || {};
+    const weakest = [...subjects].sort((a,b)=>Number(subjectProgress[a.id]||0)-Number(subjectProgress[b.id]||0))[0];
+    const weakPct = weakest ? Number(subjectProgress[weakest.id]||0) : 0;
     const achievements = [
       {emoji:'🚀',name:'البداية',ok:stats.lessons>=1},
       {emoji:'📚',name:'5 دروس',ok:stats.lessons>=5},
@@ -284,7 +289,36 @@
       if (anchor) anchor.insertAdjacentElement('afterend', shell);
     }
     const notes = buildDashboardNotifications();
+    let recommendation = '';
+    if (weakest) {
+      const q = new URLSearchParams({
+        type:p.educationType || 'public',
+        stage:p.stage,
+        grade:String(p.grade),
+        subject:weakest.id
+      });
+      const advice = weakPct === 0
+        ? 'لسه مبدأتش المادة. ابدأ بدرس واحد قصير النهارده.'
+        : weakPct < 40
+          ? 'دي أقل مادة في تقدمك حاليًا. جلسة 30 دقيقة هتعمل فرق واضح.'
+          : 'تقدمك فيها أقل من باقي المواد. راجع درسًا واحدًا وحل تدريبًا.';
+      recommendation = `
+        <article class="dashboard-smart-card smart-recommendation-card">
+          <div class="smart-recommendation-icon">${weakest.emoji || '📚'}</div>
+          <div class="smart-recommendation-copy">
+            <span class="section-kicker">توصية مخصصة ليك</span>
+            <h3>ركّز اليوم على ${safeHtml(weakest.name)}</h3>
+            <p>${safeHtml(advice)} تقدمك الحالي: <strong>${weakPct}%</strong>.</p>
+            <div class="smart-recommendation-actions">
+              <a class="btn btn-primary" href="./subject.html?${q.toString()}">ابدأ المذاكرة <i class="fa-solid fa-arrow-left"></i></a>
+              <a class="btn btn-soft" href="./planner.html">أضفها لخطة اليوم</a>
+            </div>
+          </div>
+          <div class="smart-recommendation-progress"><span>${weakPct}%</span><div class="progress"><i style="width:${Math.max(4,weakPct)}%"></i></div><small>تقدم المادة</small></div>
+        </article>`;
+    }
     shell.innerHTML = `
+      ${recommendation}
       <article class="dashboard-smart-card">
         <div class="smart-card-head"><div><span class="section-kicker">رحلتك تتحسن</span><h3>إنجازاتك</h3></div><span>🏆</span></div>
         <div class="achievement-row">
@@ -590,6 +624,8 @@
     $('dashSubjectsBtn')?.addEventListener('click', () => document.querySelector('.dashboard-section')?.scrollIntoView({behavior:'smooth'}));
     $('dashTestsBtn')?.addEventListener('click', () => location.href='./exam-center.html');
     $('dashProgressBtn')?.addEventListener('click', () => location.href='./progress.html');
+    $('dashPlannerBtn')?.addEventListener('click', () => location.href='./planner.html');
+    $('dashSimulationsBtn')?.addEventListener('click', () => location.href='./simulations.html');
     $('dashLibraryBtn')?.addEventListener('click', () => location.href='./library.html');
     $('dashLiveBtn')?.addEventListener('click', () => location.href='./live.html');
     $('dashCommunityBtn')?.addEventListener('click', () => location.href='./community.html');
