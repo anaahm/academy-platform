@@ -91,10 +91,10 @@ function unitLessonsFor(unit){
 }
 function unitIsComplete(unit){
  const list=unitLessonsFor(unit);
- return !!list.length && list.every(l=>done(l.id));
+ return !list.length || list.every(l=>done(l.id));
 }
 function subjectIsComplete(){
- return !!state.lessons.length && state.lessons.every(l=>done(l.id));
+ return !state.lessons.length || state.lessons.every(l=>done(l.id));
 }
 function renderSubjectPath(c){
  const track=$('subjectPathTrack'); if(!track)return;
@@ -163,7 +163,7 @@ function renderCurriculum(c,filter){
  const next=firstIncompleteLesson();
  const cards=[...map.entries()].sort((a,b)=>a[0]-b[0]).map(([u,d])=>{
    const items=[];
-   const unitComplete=d.lessons.length>0&&d.lessons.every(x=>done(x.id));
+   const unitComplete=!d.lessons.length||d.lessons.every(x=>done(x.id));
    if(filter!=='quizzes')d.lessons.forEach((l,i)=>{
      const complete=done(l.id),current=next?.id===l.id;
      const cls=complete?'complete':current?'current':'upcoming';
