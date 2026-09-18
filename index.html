@@ -191,10 +191,14 @@
       <aside class="dashboard-sidebar">
         <a class="brand brand-light" href="#"><span class="brand-mark"><i class="fa-solid fa-book-open"></i></span><span><strong>الأكاديمية</strong><small>مساحتك التعليمية</small></span></a>
         <nav>
-          <button class="active" data-dashboard-tab="home"><i class="fa-solid fa-house"></i> الرئيسية</button>
-          <button data-dashboard-tab="subjects"><i class="fa-solid fa-book-open"></i> موادي الدراسية</button>
-          <button data-dashboard-tab="tests"><i class="fa-regular fa-circle-check"></i> اختباراتي</button>
-          <button data-dashboard-tab="progress"><i class="fa-solid fa-chart-line"></i> متابعة التقدم</button>
+          <button class="active" id="dashHomeBtn"><i class="fa-solid fa-house"></i> الرئيسية</button>
+          <button id="dashSubjectsBtn"><i class="fa-solid fa-book-open"></i> موادي الدراسية</button>
+          <button id="dashTestsBtn"><i class="fa-regular fa-circle-check"></i> مركز الاختبارات</button>
+          <button id="dashProgressBtn"><i class="fa-solid fa-chart-line"></i> متابعة التقدم</button>
+          <button id="dashLibraryBtn"><i class="fa-solid fa-folder-open"></i> المكتبة</button>
+          <button id="dashLiveBtn"><i class="fa-solid fa-tower-broadcast"></i> البث المباشر</button>
+          <button id="dashCommunityBtn"><i class="fa-solid fa-users"></i> مجتمع الطلاب</button>
+          <button id="dashLeaderboardBtn"><i class="fa-solid fa-ranking-star"></i> الترتيب العام</button>
           <button id="exploreAllStagesSide"><i class="fa-regular fa-compass"></i> استكشف كل المراحل</button>
         </nav>
         <div class="sidebar-tip"><span>💡</span><strong>استمر كل يوم</strong><p>حتى 15 دقيقة يوميًا تصنع فرقًا.</p></div>
@@ -234,13 +238,27 @@
             </article>
             <article class="daily-goals"><div class="goal-header"><div><span class="section-kicker">خطة بسيطة</span><h3>أهدافك اليوم</h3></div><span class="target-icon">🎯</span></div><label><span><i class="fa-regular fa-circle"></i> شاهد درسًا واحدًا</span><small>10–20 دقيقة</small></label><label><span><i class="fa-regular fa-circle"></i> حل تدريبًا قصيرًا</span><small>5–10 أسئلة</small></label><label><span><i class="fa-regular fa-circle"></i> راجع خطأ واحدًا</span><small>ثبّت المعلومة</small></label></article>
           </section>
+          <section class="dashboard-services">
+            <div class="dashboard-section-head"><div><span class="section-kicker">كل أدواتك</span><h2>خدمات الأكاديمية</h2></div></div>
+            <div class="dashboard-service-grid">
+              <a class="dashboard-service-card" href="./exam-center.html"><span class="service-icon green"><i class="fa-solid fa-file-circle-question"></i></span><div><strong>مركز الاختبارات</strong><small>اختبارات الوحدات والشاملة</small></div><i class="fa-solid fa-arrow-left"></i></a>
+              <a class="dashboard-service-card" href="./simulations.html"><span class="service-icon amber"><i class="fa-solid fa-stopwatch"></i></span><div><strong>محاكيات الامتحان</strong><small>تدريب بزمن ونتيجة محفوظة</small></div><i class="fa-solid fa-arrow-left"></i></a>
+              <a class="dashboard-service-card" href="./progress.html"><span class="service-icon blue"><i class="fa-solid fa-chart-line"></i></span><div><strong>متابعة التقدم</strong><small>نتائجك ونشاطك وتحليلاتك</small></div><i class="fa-solid fa-arrow-left"></i></a>
+              <a class="dashboard-service-card" href="./library.html"><span class="service-icon rose"><i class="fa-solid fa-folder-open"></i></span><div><strong>المكتبة</strong><small>ملفات ومذكرات ومراجع</small></div><i class="fa-solid fa-arrow-left"></i></a>
+              <a class="dashboard-service-card" href="./live.html"><span class="service-icon red"><i class="fa-solid fa-tower-broadcast"></i></span><div><strong>البث المباشر</strong><small>الجلسات القادمة والمباشرة</small></div><i class="fa-solid fa-arrow-left"></i></a>
+              <a class="dashboard-service-card" href="./community.html"><span class="service-icon violet"><i class="fa-solid fa-users"></i></span><div><strong>مجتمع الطلاب</strong><small>منتدى ومجموعات دراسة</small></div><i class="fa-solid fa-arrow-left"></i></a>
+              <a class="dashboard-service-card" href="./leaderboard.html"><span class="service-icon indigo"><i class="fa-solid fa-ranking-star"></i></span><div><strong>الترتيب العام</strong><small>تحديات XP يومية وأسبوعية</small></div><i class="fa-solid fa-arrow-left"></i></a>
+              <a class="dashboard-service-card" href="./search.html"><span class="service-icon slate"><i class="fa-solid fa-magnifying-glass"></i></span><div><strong>البحث الذكي</strong><small>ابحث في كل محتوى المنصة</small></div><i class="fa-solid fa-arrow-left"></i></a>
+            </div>
+          </section>
+
         </div>
       </div>
 
       <nav class="mobile-bottom-nav">
-        <button class="active"><i class="fa-solid fa-house"></i><span>الرئيسية</span></button>
+        <button class="active" id="mobileHomeBtn"><i class="fa-solid fa-house"></i><span>الرئيسية</span></button>
         <button id="mobileSubjectsBtn"><i class="fa-solid fa-book-open"></i><span>تعلم</span></button>
-        <button><i class="fa-regular fa-circle-check"></i><span>اختباراتي</span></button>
+        <button id="mobileTestsBtn"><i class="fa-regular fa-circle-check"></i><span>اختبارات</span></button>
         <button id="mobileExploreBtn"><i class="fa-regular fa-compass"></i><span>استكشف</span></button>
         <button id="mobileProfileBtn"><i class="fa-regular fa-user"></i><span>حسابي</span></button>
       </nav>
