@@ -261,7 +261,10 @@
           <div class="admin-video-editor-head"><span>فيديوهات المدرسين</span><button class="btn btn-soft" type="button" id="addLessonVideoRow"><i class="fa-solid fa-plus"></i> إضافة مدرس/فيديو</button></div>
           <div id="lessonVideosEditor" class="admin-video-editor"></div>
         </div>
+        <label><span>صورة توضيحية — اختياري</span><input id="newLessonImage" type="url" dir="ltr" placeholder="https://..."></label>
+        <label><span>مكان الصورة</span><select id="newLessonImagePosition"><option value="top">أعلى الشرح</option><option value="bottom">أسفل الشرح</option></select></label>
         <label class="full"><span>الشرح المكتوب</span><textarea id="newLessonContent" rows="7"></textarea></label>
+        <label class="full"><span>أسئلة تدريب الدرس بصيغة JSON — اختياري</span><textarea id="newLessonQuestions" rows="8" dir="ltr" placeholder='[{"text":"السؤال","opts":["أ","ب","ج","د"],"correctAnswer":0}]'></textarea></label>
         <label class="switch-field"><span>مخفي عن الطلاب</span><div><input id="newLessonHidden" type="checkbox"><strong>مخفي</strong></div></label>
         <button class="btn btn-primary full" type="submit">نشر الدرس</button>
       </form>
