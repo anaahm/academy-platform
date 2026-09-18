@@ -95,7 +95,16 @@ $('filterEducation').onchange=render;$('filterStage').onchange=render;
 
 async function init(){
  $('searchLoading').classList.remove('hidden');$('searchEmpty').classList.add('hidden');
- try{const s=await db.ref('/').once('value');root=s.val()||{};buildIndex()}
+ try{
+   const [subjectsSnap,lessonsSnap,quizzesSnap,filesSnap]=await Promise.all([
+     db.ref('customSubjects').once('value'),
+     db.ref('lessons').once('value'),
+     db.ref('quizzes').once('value'),
+     db.ref('files').once('value')
+   ]);
+   root={customSubjects:subjectsSnap.val()||{},lessons:lessonsSnap.val()||{},quizzes:quizzesSnap.val()||{},files:filesSnap.val()||{}};
+   buildIndex();
+ }
  catch(e){console.error(e);$('searchEmpty').classList.remove('hidden');$('searchEmpty').innerHTML='<span>⚠️</span><h3>تعذر تحميل البحث</h3><p>جرّب تحديث الصفحة بعد لحظات.</p>';return}
  finally{$('searchLoading').classList.add('hidden')}
  const q=new URLSearchParams(location.search).get('q')||'';$('searchInput').value=q;
