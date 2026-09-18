@@ -42,6 +42,19 @@ function render(){
   $('profileNameInput').value=name;$('profileEmailInput').value=user.email||'';
   $('studyType').value=profile.educationType||'public';$('studyStage').value=profile.stage||'prep';updateGradeOptions();$('studyGrade').value=String(profile.grade||1);
   $('profileBadges').innerHTML=badges.map(b=>`<article class="badge-item ${b.check(profile)?'':'locked'}"><span>${b.emoji}</span><strong>${b.name}</strong><small>${b.desc}</small></article>`).join('');
+  const bookmarks=Object.entries(profile.bookmarks||{}).map(([id,b])=>({id,...b})).sort((a,b)=>(b.savedAt||0)-(a.savedAt||0));
+  const savedGrid=$('savedLessonsGrid');
+  if(savedGrid){
+    savedGrid.innerHTML=bookmarks.length?bookmarks.map(b=>{
+      const q=new URLSearchParams({type:b.type||profile.educationType||'public',stage:b.stage||profile.stage||'prep',grade:String(b.grade||profile.grade||1),subject:b.subject||'',id:b.lessonId||b.id});
+      return `<article class="saved-lesson-card"><span class="saved-lesson-icon"><i class="fa-solid fa-bookmark"></i></span><div><strong>${b.title||'درس محفوظ'}</strong><small>اضغط للرجوع إلى الدرس</small></div><div class="saved-lesson-actions"><a href="./lesson.html?${q.toString()}" title="فتح الدرس"><i class="fa-solid fa-arrow-left"></i></a><button data-remove-bookmark="${b.id}" title="إزالة"><i class="fa-solid fa-trash"></i></button></div></article>`;
+    }).join(''):'<div class="profile-empty-saved"><span>🔖</span><h3>لسه مفيش دروس محفوظة</h3><p>احفظ أي درس من علامة الحفظ داخل صفحة الدرس.</p></div>';
+    $('[data-remove-bookmark]').forEach(btn=>btn.onclick=async()=>{
+      await db.ref('studentProfilesV3/'+user.uid+'/bookmarks/'+btn.dataset.removeBookmark).remove();
+      if(profile.bookmarks)delete profile.bookmarks[btn.dataset.removeBookmark];
+      render();toast('تمت إزالة الدرس من المحفوظات.');
+    });
+  }
   if(profile.lastLessonTitle){
     const q=new URLSearchParams({type:profile.educationType,stage:profile.stage,grade:String(profile.grade),subject:profile.lastSubjectId||'',id:profile.lastLessonId||''});
     $('lastActivity').innerHTML=`<article class="last-activity-card"><span class="section-kicker">آخر درس</span><h3>${profile.lastLessonTitle}</h3><p>${gradeLabels[profile.stage]?.[profile.grade]||''}</p><a class="btn btn-primary" href="./lesson.html?${q.toString()}">متابعة الدرس</a></article>`;
