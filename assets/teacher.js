@@ -118,7 +118,7 @@ function renderTeacherAssignments(){
    const due=a.dueAt?new Date(a.dueAt).toLocaleString('ar-EG'):'بدون موعد';
    return '<article class="teacher-engagement-item"><div><strong>'+escapeHtml(a.title||'واجب')+'</strong><small>'+(stageName[a.stage]||a.stage||'')+' • صف '+(a.grade||'')+' • '+escapeHtml(a.subjectName||a.subject||'')+' • '+count+' تسليم</small><small>آخر موعد: '+escapeHtml(due)+'</small></div><div class="admin-action-row"><button class="admin-action-btn danger" data-delete-assignment="'+a.id+'" title="حذف"><i class="fa-solid fa-trash"></i></button></div></article>';
  }).join(''):'<div class="portal-empty-state"><span>📝</span><h3>لسه مفيش واجبات</h3><p>أنشئ أول واجب من النموذج.</p></div>';
- $('[data-delete-assignment]').forEach(b=>b.onclick=async()=>{if(!confirm('حذف الواجب وكل تسليماته؟'))return;await Promise.all([db.ref('assignments/'+b.dataset.deleteAssignment).remove(),db.ref('assignmentSubmissions/'+b.dataset.deleteAssignment).remove()]);toast('تم حذف الواجب')});
+ $$('[data-delete-assignment]').forEach(b=>b.onclick=async()=>{if(!confirm('حذف الواجب وكل تسليماته؟'))return;await Promise.all([db.ref('assignments/'+b.dataset.deleteAssignment).remove(),db.ref('assignmentSubmissions/'+b.dataset.deleteAssignment).remove()]);toast('تم حذف الواجب')});
 
  const rows=[];
  own.forEach(a=>Object.entries(assignmentSubmissions[a.id]||{}).forEach(([uid,s])=>rows.push({assignment:a,uid,...(s||{})})));
@@ -128,7 +128,7 @@ function renderTeacherAssignments(){
    const graded=r.status==='graded';
    return '<div class="teacher-analytics-row assignment-review-row"><div><strong>'+escapeHtml(r.studentName||'طالب')+'</strong><small>'+escapeHtml(r.assignment.title||'واجب')+' • '+(r.submittedAt?new Date(r.submittedAt).toLocaleDateString('ar-EG'):'')+'</small></div><span><b>'+(graded?Number(r.score||0)+' / '+Number(r.maxScore||r.assignment.maxScore||100):'—')+'</b><small>الدرجة</small></span><span><b>'+(graded?'مصَحح':'جديد')+'</b><small>الحالة</small></span><button class="btn '+(graded?'btn-soft':'btn-primary')+'" data-grade-assignment="'+r.assignment.id+'|'+r.uid+'">'+(graded?'تعديل التصحيح':'تصحيح')+'</button></div>';
  }).join(''):'<div class="portal-empty-state"><span>📥</span><h3>لا توجد تسليمات بعد</h3><p>تسليمات الطلاب هتظهر هنا.</p></div>';
- $('[data-grade-assignment]').forEach(b=>b.onclick=()=>openGradeSubmission(b.dataset.gradeAssignment));
+ $$('[data-grade-assignment]').forEach(b=>b.onclick=()=>openGradeSubmission(b.dataset.gradeAssignment));
 }
 async function submitTeacherAssignment(e){
  e.preventDefault();
