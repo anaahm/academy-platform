@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>محاكيات الامتحان | الأكاديمية</title>
+  <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./assets/app-icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/learning.css"><link rel="stylesheet" href="./assets/hub.css">
+</head>
+<body class="feature-page">
+  <div id="toast" class="toast"></div>
+  <header class="learning-header">
+    <div class="container learning-nav">
+      <a class="brand" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-book-open"></i></span><span><strong>الأكاديمية</strong><small>محاكيات الامتحان</small></span></a>
+      <div class="learning-breadcrumb"><a href="./exam-center.html">مركز الاختبارات</a><i class="fa-solid fa-chevron-left"></i><span>المحاكيات</span></div>
+      <span class="avatar" id="pageAvatar">ط</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="feature-hero">
+      <div class="container"><div class="feature-hero-card"><div class="feature-hero-copy"><span class="section-kicker light">تدريب أقرب للامتحان الحقيقي</span><h1>محاكيات الامتحان</h1><p>زمن محدد، أسئلة متنوعة من أكثر من مادة، ونتيجة محفوظة تساعدك تعرف مستواك الحقيقي.</p></div><span class="feature-hero-art">⏱️</span></div></div>
+    </section>
+
+    <section class="container feature-container">
+      <div class="feature-stat-row">
+        <article><span class="stat-icon amber"><i class="fa-solid fa-stopwatch"></i></span><div><strong id="simAvailable">0</strong><small>محاكي متاح</small></div></article>
+        <article><span class="stat-icon green"><i class="fa-solid fa-circle-check"></i></span><div><strong id="simAttempts">0</strong><small>محاولة مكتملة</small></div></article>
+        <article><span class="stat-icon blue"><i class="fa-solid fa-percent"></i></span><div><strong id="simBest">0%</strong><small>أفضل نتيجة</small></div></article>
+        <article><span class="stat-icon violet"><i class="fa-solid fa-star"></i></span><div><strong id="simEarnedXp">0</strong><small>XP من المحاكيات</small></div></article>
+      </div>
+      <div class="sim-grid" id="simGrid"></div>
+    </section>
+  </main>
+
+  <section class="simulation-runner hidden" id="simulationRunner">
+    <header class="sim-runner-head">
+      <div><span class="section-kicker">محاكاة جارية</span><h2 id="simRunnerTitle">المحاكي</h2></div>
+      <div style="display:flex;gap:8px;align-items:center"><span class="sim-timer" id="simTimer">00:00</span><button class="btn btn-soft" id="quitSimulation">خروج</button></div>
+    </header>
+    <div class="sim-runner-body">
+      <div id="simQuestionArea"></div>
+      <div class="sim-runner-nav" id="simRunnerNav"><button class="btn btn-soft" id="simPrev">السابق</button><button class="btn btn-primary" id="simNext">التالي</button></div>
+      <div class="sim-result hidden" id="simResult"></div>
+    </div>
+  </section>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="./assets/firebase-config.js"></script><script src="./assets/student-core.js"></script><script src="./assets/simulations.js"></script><script src="./assets/pwa.js"></script>
+</body>
+</html>
