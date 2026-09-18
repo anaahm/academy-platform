@@ -248,19 +248,23 @@
     });
 
     const first = subjects[0];
-    if (first) {
-      $('continueTitle').textContent = p.lastLessonTitle || `ابدأ أول درس في ${first.name}`;
+    const lastSubject = subjects.find(s => s.id === p.lastSubjectId) || first;
+    if (lastSubject) {
+      $('continueTitle').textContent = p.lastLessonTitle || `ابدأ أول درس في ${lastSubject.name}`;
       $('continueMeta').textContent = p.lastLessonTitle
-        ? `${first.name} • ${gradeLabels[p.stage]?.[p.grade] || ''}`
+        ? `${lastSubject.name} • ${gradeLabels[p.stage]?.[p.grade] || ''}`
         : 'اختر المادة وابدأ، وسنحفظ تقدمك تلقائيًا.';
       $('continueLearningBtn').onclick = () => {
         const q = new URLSearchParams({
           type: p.educationType,
           stage: p.stage,
           grade: String(p.grade),
-          subject: first.id
+          subject: lastSubject.id
         });
-        location.href = './subject.html?' + q.toString();
+        if (p.lastLessonId) q.set('id', p.lastLessonId);
+        location.href = p.lastLessonId
+          ? './lesson.html?' + q.toString()
+          : './subject.html?' + q.toString();
       };
     }
     renderHeaderUser();
