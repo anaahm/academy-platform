@@ -44,7 +44,7 @@ $('broadcastForm').onsubmit=async e=>{
   await db.ref('notificationBroadcasts').push(payload);
   e.target.reset();$('broadcastDays').value=7;$('broadcastActive').checked=true;updateGrades();toast('تم نشر الإشعار الموجه ✅');
 };
-const nav=$('[data-admin-tab="notifications"]');
+const nav=$$('[data-admin-tab="notifications"]')[0];
 if(nav)nav.addEventListener('click',()=>{
   setTimeout(()=>{if($('adminSectionKicker'))$('adminSectionKicker').textContent='التواصل';if($('adminSectionTitle'))$('adminSectionTitle').textContent='الإشعارات الموجهة'},0);
 });
