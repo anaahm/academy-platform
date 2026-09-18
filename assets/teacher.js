@@ -121,7 +121,7 @@ function renderTeacherAssignments(){
    const due=a.dueAt?new Date(a.dueAt).toLocaleString('ar-EG'):'بدون موعد';
    return '<article class="teacher-engagement-item"><div><strong>'+escapeHtml(a.title||'واجب')+'</strong><small>'+(stageName[a.stage]||a.stage||'')+' • صف '+(a.grade||'')+' • '+escapeHtml(a.subjectName||a.subject||'')+' • '+count+' تسليم</small><small>آخر موعد: '+escapeHtml(due)+'</small></div><div class="admin-action-row"><button class="admin-action-btn danger" data-delete-assignment="'+a.id+'" title="حذف"><i class="fa-solid fa-trash"></i></button></div></article>';
  }).join(''):'<div class="portal-empty-state"><span>📝</span><h3>لسه مفيش واجبات</h3><p>أنشئ أول واجب من النموذج.</p></div>';
- $$('[data-delete-assignment]').forEach(b=>b.onclick=async()=>{if(!(await window.AcademyUI.confirm({title:'حذف الواجب؟',message:'سيتم حذف الواجب وكل تسليمات الطلاب المرتبطة به نهائيًا.',tone:'danger',acceptText:'حذف الواجب'})))return;await Promise.all([db.ref('assignments/'+b.dataset.deleteAssignment).remove(),db.ref('assignmentSubmissions/'+b.dataset.deleteAssignment).remove()]);toast('تم حذف الواجب')});
+ $$('[data-delete-assignment]').forEach(b=>b.onclick=async()=>{if(!(await window.AcademyUI.confirm({title:'حذف الواجب؟',message:'سيتم حذف الواجب وكل تسليمات الطلاب المرتبطة به نهائيًا.',tone:'danger',acceptText:'حذف الواجب'})))return;const id=b.dataset.deleteAssignment;await db.ref('assignmentSubmissions/'+id).remove();await db.ref('assignments/'+id).remove();delete assignmentSubmissions[id];delete homeworkAssignments[id];renderTeacherAssignments();toast('تم حذف الواجب')});
 
  const rows=[];
  own.forEach(a=>Object.entries(assignmentSubmissions[a.id]||{}).forEach(([uid,s])=>rows.push({assignment:a,uid,...(s||{})})));
