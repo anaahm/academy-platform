@@ -59,6 +59,27 @@ async function requireStudent(){
 }
 async function updateProfile(uid,patch){await db.ref('studentProfilesV3/'+uid).update(patch)}
 function currentCtx(profile,subject=''){return{type:profile.educationType||'public',stage:profile.stage||'prep',grade:String(profile.grade||1),subject}}
+function leaderboardKeys(date=new Date()){
+  const iso=date.toISOString().slice(0,10);
+  const month=iso.slice(0,7);
+  const d=new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth(),date.getUTCDate()));
+  const day=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()-day+1);
+  const week=d.toISOString().slice(0,10);
+  return{daily:'daily-'+iso,weekly:'weekly-'+week,monthly:'monthly-'+month,allTime:'allTime'};
+}
+async function addLeaderboardXP(uid,name,delta=0,quizDelta=0){
+  if(!uid)return;
+  const keys=leaderboardKeys();
+  await Promise.all(Object.values(keys).map(period=>db.ref('leaderboardV3/'+period+'/'+uid).transaction(row=>{
+    row=row||{name:name||'طالب',xp:0,quizzes:0,updatedAt:0};
+    row.name=name||row.name||'طالب';row.xp=Number(row.xp||0)+Number(delta||0);row.quizzes=Number(row.quizzes||0)+Number(quizDelta||0);row.updatedAt=Date.now();return row;
+  })));
+}
+async function syncAllTimeLeaderboard(uid,profile){
+  if(!uid)return;
+  const stats=profile?.stats||{};
+  await db.ref('leaderboardV3/allTime/'+uid).update({name:profile?.name||'طالب',xp:Number(stats.totalXP||0),quizzes:Number(stats.completedQuizzes||0),level:Number(stats.level||1),updatedAt:Date.now()});
+}
 
-window.AcademyCore={auth,db,esc,safeUrl,initials,typeLabel,stageLabel,gradeLabel,lessonUrl,quizUrl,subjectUrl,toast,getProfile,subjectsFor,subjectName,requireStudent,updateProfile,currentCtx,stageNames,gradeNames,defaultSubjects};
+window.AcademyCore={auth,db,esc,safeUrl,initials,typeLabel,stageLabel,gradeLabel,lessonUrl,quizUrl,subjectUrl,toast,getProfile,subjectsFor,subjectName,requireStudent,updateProfile,currentCtx,leaderboardKeys,addLeaderboardXP,syncAllTimeLeaderboard,stageNames,gradeNames,defaultSubjects};
 })();
