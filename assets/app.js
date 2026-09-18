@@ -380,7 +380,7 @@
       </article>`;
     }).join('');
 
-    $('.dash-subject-card').forEach(card => {
+    $$('.dash-subject-card').forEach(card => {
       card.style.cursor = 'pointer';
       card.addEventListener('click', () => {
         const subjectId = card.dataset.subject;
