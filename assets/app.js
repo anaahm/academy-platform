@@ -363,6 +363,7 @@
     if(ring) ring.style.background='conic-gradient(#2563eb '+(pct*3.6)+'deg,#e8eef7 0deg)';
     if($('dailyGoalPercent')) $('dailyGoalPercent').textContent=pct+'%';
     if($('dailyGoalCount')) $('dailyGoalCount').textContent=done+' من 3 مكتمل';
+    if($('pulseChallengeState')) $('pulseChallengeState').textContent=done+' / 3';
     if($('dailyGoalMessage')) {
       $('dailyGoalMessage').textContent=done===3?'ممتاز! أنهيت تحدي اليوم بالكامل 🎉':done===2?'باقي خطوة واحدة فقط، كمّلها 💪':done===1?'بداية ممتازة، كمّل خطوتين كمان.':'ابدأ بخطوة صغيرة وخلي اليوم يتحسب لك.';
     }
@@ -411,6 +412,118 @@
       }
       document.querySelector('.dashboard-sidebar')?.classList.remove('open');
     }));
+  }
+
+  function nextWeeklyDate(dayOfWeek,time='18:00') {
+    const now=new Date(),d=new Date(now);
+    const diff=(Number(dayOfWeek)-now.getDay()+7)%7;
+    d.setDate(now.getDate()+diff);
+    const [h,m]=String(time||'18:00').split(':').map(Number);
+    d.setHours(h||0,m||0,0,0);
+    if(d.getTime()<Date.now()-60000)d.setDate(d.getDate()+7);
+    return d.getTime();
+  }
+
+  async function loadDashboardPulse() {
+    if(!state.user||!state.profile)return;
+    const p=state.profile,uid=state.user.uid,now=Date.now();
+    try{
+      const [plannerSnap,assignSnap,scheduleSnap]=await Promise.all([
+        database.ref('studentProfilesV3/'+uid+'/studyPlanner').once('value'),
+        database.ref('assignments').once('value'),
+        database.ref('scheduleEvents').once('value')
+      ]);
+      const candidates=[];
+      const today=new Date().toISOString().slice(0,10);
+
+      Object.entries(plannerSnap.val()||{}).forEach(([id,t])=>{
+        if(!t||t.done||!t.date)return;
+        const isToday=t.date===today;
+        const at=new Date(t.date+'T18:00:00').getTime();
+        if(isToday || at>=now){
+          candidates.push({
+            kind:'planner',
+            rank:isToday?0:4,
+            at,
+            title:isToday?'كمّل مهمة المذاكرة دي النهارده':'مهمة مذاكرة قادمة',
+            text:t.title||'مهمة مذاكرة',
+            href:'./planner.html'
+          });
+        }
+      });
+
+      const assignments=Object.entries(assignSnap.val()||{}).map(([id,a])=>({id,...(a||{})}))
+        .filter(a=>!a.isHidden && a.type===p.educationType && a.stage===p.stage && String(a.grade)===String(p.grade) && Number(a.dueAt||0)>=now);
+      const nearAssignments=assignments.sort((a,b)=>Number(a.dueAt||0)-Number(b.dueAt||0)).slice(0,8);
+      const submissionSnaps=await Promise.all(nearAssignments.map(a=>database.ref('assignmentSubmissions/'+a.id+'/'+uid).once('value')));
+      nearAssignments.forEach((a,i)=>{
+        const s=submissionSnaps[i].val();
+        if(s)return;
+        const diff=Number(a.dueAt)-now;
+        candidates.push({
+          kind:'assignment',
+          rank:diff<=86400000?1:3,
+          at:Number(a.dueAt),
+          title:diff<=86400000?'واجب محتاج تسليمه قريب':'عندك واجب قادم',
+          text:a.title||'واجب دراسي',
+          href:'./assignments.html'
+        });
+      });
+
+      Object.entries(scheduleSnap.val()||{}).forEach(([id,e])=>{
+        if(!e||e.isActive===false)return;
+        if(e.type&&e.type!==p.educationType)return;
+        if(e.stage&&e.stage!==p.stage)return;
+        if(e.grade&&String(e.grade)!==String(p.grade))return;
+        const at=nextWeeklyDate(e.dayOfWeek,e.time||'18:00');
+        const diff=at-now;
+        if(diff<=3*86400000){
+          candidates.push({
+            kind:'schedule',
+            rank:diff<=6*3600000?2:5,
+            at,
+            title:diff<=6*3600000?'عندك حصة قريبة':'الحصة القادمة',
+            text:(e.title||'حصة دراسية')+(e.teacher?' • '+e.teacher:''),
+            href:'./schedule.html'
+          });
+        }
+      });
+
+      candidates.sort((a,b)=>a.rank-b.rank || a.at-b.at);
+      let pick=candidates[0];
+
+      if(!pick){
+        const subjects=getSubjects(p.stage,String(p.grade),p.educationType);
+        const progress=p.subjectProgress||{};
+        const weak=[...subjects].sort((a,b)=>Number(progress[a.id]||0)-Number(progress[b.id]||0))[0];
+        if(weak){
+          const q=new URLSearchParams({type:p.educationType,stage:p.stage,grade:String(p.grade),subject:weak.id});
+          pick={title:'ابدأ خطوة خفيفة في '+weak.name,text:'مفيش التزامات عاجلة دلوقتي. درس واحد كفاية كبداية.',href:'./subject.html?'+q.toString(),at:0};
+        }
+      }
+
+      if(pick){
+        $('pulseActionTitle').textContent=pick.title;
+        $('pulseActionText').textContent=pick.text;
+        $('pulseActionBtn').onclick=()=>location.href=pick.href;
+      }else{
+        $('pulseActionTitle').textContent='أنت محدث كل شيء 🎉';
+        $('pulseActionText').textContent='استكشف مادة جديدة أو راجع درسًا قديمًا.';
+        $('pulseActionBtn').onclick=()=>location.href='./explore.html';
+      }
+
+      const next=candidates.filter(x=>x.at>=now).sort((a,b)=>a.at-b.at)[0];
+      if($('pulseNextTime')){
+        $('pulseNextTime').textContent=next
+          ? new Date(next.at).toLocaleString('ar-EG',{weekday:'short',hour:'numeric',minute:'2-digit'})
+          : 'لا يوجد موعد قريب';
+      }
+    }catch(e){
+      console.warn('Dashboard pulse failed',e);
+      if($('pulseActionTitle'))$('pulseActionTitle').textContent='ابدأ من موادك الدراسية';
+      if($('pulseActionText'))$('pulseActionText').textContent='اختر مادة وابدأ درسًا قصيرًا.';
+      if($('pulseActionBtn'))$('pulseActionBtn').onclick=()=>document.querySelector('.dashboard-section')?.scrollIntoView({behavior:'smooth'});
+    }
   }
 
   function renderDashboard() {
@@ -483,6 +596,7 @@
       };
     }
     loadDailyGoals();
+    loadDashboardPulse();
     renderSmartDashboard();
     renderHeaderUser();
   }
