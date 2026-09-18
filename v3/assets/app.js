@@ -161,6 +161,7 @@
   }
 
   function showPublicExperience() {
+    $('siteHeader').classList.remove('hidden');
     $('publicExperience').classList.remove('hidden');
     $('publicFooter').classList.remove('hidden');
     $('studentDashboard').classList.add('hidden');
@@ -174,6 +175,7 @@
       showPublicExperience();
       return;
     }
+    $('siteHeader').classList.add('hidden');
     $('publicExperience').classList.add('hidden');
     $('publicFooter').classList.add('hidden');
     $('studentDashboard').classList.remove('hidden');
