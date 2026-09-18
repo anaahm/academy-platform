@@ -1,6 +1,19 @@
 (() => {
 'use strict';
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function ensureRouteProgress(){
+  let bar=document.querySelector('.ui-route-progress');
+  if(!bar){bar=document.createElement('div');bar.className='ui-route-progress';document.body.appendChild(bar)}
+  return bar;
+}
+function startRouteProgress(){
+  const bar=ensureRouteProgress();bar.classList.add('show');bar.style.width='18%';
+  requestAnimationFrame(()=>bar.style.width='72%');
+}
+function finishRouteProgress(){
+  const bar=document.querySelector('.ui-route-progress');if(!bar)return;
+  bar.style.width='100%';setTimeout(()=>{bar.classList.remove('show');bar.style.width='0'},180);
+}
 function confirmDialog(options={}){
   const opts=typeof options==='string'?{message:options}:options;
   const title=opts.title||'هل أنت متأكد؟',message=opts.message||'',tone=opts.tone||'danger';
@@ -41,6 +54,16 @@ document.addEventListener('pointerdown',e=>{
   span.className='ui-ripple';span.style.width=span.style.height=size+'px';span.style.left=(e.clientX-r.left-size/2)+'px';span.style.top=(e.clientY-r.top-size/2)+'px';
   btn.appendChild(span);setTimeout(()=>span.remove(),520);
 },{passive:true});
-document.addEventListener('DOMContentLoaded',()=>document.body?.classList.add('ui-page-enter'));
-window.AcademyUI={confirm:confirmDialog,setButtonLoading,esc};
+document.addEventListener('DOMContentLoaded',()=>{document.body?.classList.add('ui-page-enter');finishRouteProgress()});
+document.addEventListener('click',e=>{
+  const a=e.target.closest('a[href]');if(!a)return;
+  const href=a.getAttribute('href')||'';
+  if(a.target==='_blank'||a.hasAttribute('download')||href.startsWith('#')||href.startsWith('javascript:')||href.startsWith('mailto:')||href.startsWith('tel:'))return;
+  try{
+    const url=new URL(href,location.href);
+    if(url.origin===location.origin)startRouteProgress();
+  }catch{}
+},true);
+window.addEventListener('pageshow',finishRouteProgress);
+window.AcademyUI={confirm:confirmDialog,setButtonLoading,esc,startRouteProgress,finishRouteProgress};
 })();
