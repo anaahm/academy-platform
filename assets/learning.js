@@ -127,12 +127,32 @@ function renderSubjectSide(c){
  $('exploreStagesBtn').onclick=()=>openLearningExplorer();$('exploreOtherSubjectsBtn').onclick=()=>openLearningExplorer();
 }
 
+/* Aggregate content analytics without exposing student identities */
+function trackContentEvent(id,eventName,score=null){
+ if(!id||!state.user)return;
+ const key='academy-analytics-'+eventName+'-'+id;
+ if((eventName==='views'||eventName==='completions')&&sessionStorage.getItem(key))return;
+ if(eventName==='views'||eventName==='completions')sessionStorage.setItem(key,'1');
+ db.ref('contentAnalytics/'+id).transaction(a=>{
+   a=a||{};
+   if(eventName==='views')a.views=Number(a.views||0)+1;
+   if(eventName==='completions')a.completions=Number(a.completions||0)+1;
+   if(eventName==='quiz'){
+     a.quizAttempts=Number(a.quizAttempts||0)+1;
+     a.quizScoreTotal=Number(a.quizScoreTotal||0)+Number(score||0);
+     a.quizAverage=Math.round(a.quizScoreTotal/a.quizAttempts);
+   }
+   a.updatedAt=Date.now();return a;
+ }).catch(()=>{});
+}
+
 /* lesson */
 function renderLesson(){
  const c=ctx(),quizId=params.get('quiz'); if(quizId){renderQuizOnly(c,quizId);return}
  const id=params.get('id'), lesson=state.data.lessons?.[id];
  if(!id||!lesson||lesson.isHidden){toast('الدرس غير موجود أو غير متاح.','error');setTimeout(()=>history.back(),900);return}
  state.currentLesson={id,...lesson};state.subject=subjectFor(c);filterContent(c);state.unitLessons=state.lessons.filter(l=>Number(l.unit||1)===Number(lesson.unit||1));
+ trackContentEvent(id,'views');
  if(state.user) db.ref('studentProfilesV3/'+state.user.uid).update({lastLessonTitle:lesson.title||'',lastSubjectId:c.subject,lastLessonId:id,lastActiveAt:Date.now()}).catch(()=>{});
  document.title=(lesson.title||'الدرس')+' | الأكاديمية';$('lessonTitle').textContent=lesson.title||'الدرس';$('lessonMeta').textContent=unitName(c,lesson.unit||1)+' • '+state.subject.name;
  $('lessonBreadcrumb').innerHTML='<a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><a id="backToSubjectLink" href="'+url('subject.html',c)+'">'+esc(state.subject.name)+'</a><i class="fa-solid fa-chevron-left"></i><span>'+esc(lesson.title||'الدرس')+'</span>';
@@ -204,6 +224,7 @@ async function markComplete(c,id){
  const subjectPct=progress();
  await db.ref('studentProfilesV3/'+state.user.uid+'/subjectProgress/'+c.subject).set(subjectPct);
  await db.ref('studentProfilesV3/'+state.user.uid).update({lastLessonTitle:state.currentLesson?.title||'',lastSubjectId:c.subject,lastActiveAt:Date.now()});
+ trackContentEvent(id,'completions');
  updateProgress(id);renderOutline(c,state.currentLesson);toast('رائع! +50 XP وتم حفظ تقدمك 🎉');
 }
 function setupQuiz(c,l){
@@ -224,6 +245,7 @@ async function finishQuiz(){
  const qz=state.quiz;let score=0;qz.questions.forEach((q,i)=>{if(Number(qz.answers[i])===Number(q.correctAnswer))score++});const pct=Math.round(score/qz.questions.length*100);
  $('quizEngine').classList.add('hidden');$('quizResult').classList.remove('hidden');$('resultPercent').textContent=pct+'%';$('resultRing').style.background='conic-gradient(#10b981 '+(pct*3.6)+'deg,#e5e7eb 0deg)';
  $('resultTitle').textContent=pct>=80?'ممتاز جدًا! 🌟':pct>=60?'أداء جيد 👏':'راجع الشرح وجرّب مرة أخرى';$('resultMessage').textContent='أجبت عن '+score+' من '+qz.questions.length+' إجابة بشكل صحيح.';
+ trackContentEvent(qz.sourceId,'quiz',pct);
  if(state.user){
    const gained=pct>=80?40:20;
    await db.ref('studentProfilesV3/'+state.user.uid+'/stats').transaction(s=>{s=s||{};s.completedQuizzes=(s.completedQuizzes||0)+1;s.totalXP=(s.totalXP||0)+gained;s.level=Math.floor((s.totalXP||0)/1000)+1;return s});
