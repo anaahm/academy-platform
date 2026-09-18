@@ -105,8 +105,12 @@ auth.onAuthStateChanged(async u=>{
  if(!u){showNoAccess('سجّل الدخول أولًا من المنصة، وبعدها افتح بوابة المدرس.');return}
  user=u;
  try{
-   const [t,d,s]=await Promise.all([db.ref('teacherProfiles/'+u.uid).once('value'),db.ref('/').once('value'),db.ref('teacherSubmissions/'+u.uid).once('value')]);
-   teacher=t.val();data=d.val()||{};submissions=s.val()||{};
+   const [t,subjectsSnap,s]=await Promise.all([
+     db.ref('teacherProfiles/'+u.uid).once('value'),
+     db.ref('customSubjects').once('value'),
+     db.ref('teacherSubmissions/'+u.uid).once('value')
+   ]);
+   teacher=t.val();data={customSubjects:subjectsSnap.val()||{}};submissions=s.val()||{};
    if(!teacher){showNoAccess('الحساب الحالي ليس له ملف مدرس. الإدارة لازم تضيفه كمدرس أولًا.');return}
    if(teacher.isActive===false||teacher.status==='blocked'){showNoAccess('حساب المدرس غير مفعل حاليًا. تواصل مع الإدارة.');return}
    $('teacherAccess').classList.add('hidden');$('teacherPortal').classList.remove('hidden');updateGrades();render();
