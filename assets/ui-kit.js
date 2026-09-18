@@ -37,6 +37,20 @@ function confirmDialog(options={}){
     setTimeout(()=>wrap.querySelector('.ui-confirm-accept')?.focus(),50);
   });
 }
+function showPageLoading(message='جاري تجهيز الصفحة...'){
+  let wrap=document.querySelector('.ui-page-loader');
+  if(!wrap){
+    wrap=document.createElement('div');wrap.className='ui-page-loader';
+    wrap.innerHTML='<div class="ui-page-loader-card"><span class="ui-page-loader-mark"><i class="fa-solid fa-book-open"></i></span><strong>الأكاديمية</strong><p class="ui-page-loader-text"></p><span class="ui-loader-line"><i></i></span></div>';
+    document.body.appendChild(wrap);
+  }
+  wrap.querySelector('.ui-page-loader-text').textContent=message;
+  requestAnimationFrame(()=>wrap.classList.add('show'));
+}
+function hidePageLoading(){
+  const wrap=document.querySelector('.ui-page-loader');if(!wrap)return;
+  wrap.classList.remove('show');setTimeout(()=>wrap.remove(),220);
+}
 function setButtonLoading(button,on,label='جاري التنفيذ...'){
   if(!button)return;
   if(on){
@@ -65,5 +79,5 @@ document.addEventListener('click',e=>{
   }catch{}
 },true);
 window.addEventListener('pageshow',finishRouteProgress);
-window.AcademyUI={confirm:confirmDialog,setButtonLoading,esc,startRouteProgress,finishRouteProgress};
+window.AcademyUI={confirm:confirmDialog,setButtonLoading,showPageLoading,hidePageLoading,esc,startRouteProgress,finishRouteProgress};
 })();
