@@ -455,7 +455,7 @@ async function verifyAdmin(user){
 }
 async function startDataListener(){
  if(unsubscribe)unsubscribe();
- const handler=s=>{root=s.val()||{};renderAll()};
+ const handler=s=>{root=s.val()||{};renderAll();window.AcademyUI?.hidePageLoading()};
  db.ref('/').on('value',handler);unsubscribe=()=>db.ref('/').off('value',handler);
 }
 
@@ -508,11 +508,12 @@ refreshAssignmentSubjects();
 
 auth.onAuthStateChanged(async user=>{
  currentUser=user;
- if(!user){if(unsubscribe){unsubscribe();unsubscribe=null}$('adminApp').classList.add('hidden');$('adminLogin').classList.remove('hidden');return}
+ if(!user){if(unsubscribe){unsubscribe();unsubscribe=null}window.AcademyUI?.hidePageLoading();$('adminApp').classList.add('hidden');$('adminLogin').classList.remove('hidden');return}
+ window.AcademyUI?.showPageLoading('جاري التحقق من صلاحيات الإدارة وتحميل البيانات...');
  try{
    const ok=await verifyAdmin(user);
    if(!ok){toast('هذا الحساب ليس له صلاحية مدير.','error');await auth.signOut();return}
    $('adminLogin').classList.add('hidden');$('adminApp').classList.remove('hidden');await startDataListener();
- }catch(err){console.error(err);toast('تعذر التحقق من صلاحية الإدارة.','error');await auth.signOut()}
+ }catch(err){console.error(err);window.AcademyUI?.hidePageLoading();toast('تعذر التحقق من صلاحية الإدارة.','error');await auth.signOut()}
 });
 })();
