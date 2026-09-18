@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>استكشف جميع المراحل | الأكاديمية</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/learning.css">
+</head>
+<body class="learning-body explore-page">
+  <div id="toast" class="toast"></div>
+  <header class="learning-header">
+    <div class="container learning-nav">
+      <a class="brand" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-book-open"></i></span><span><strong>الأكاديمية</strong><small>تعليم يصنع فرقًا</small></span></a>
+      <div class="learning-breadcrumb"><a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><span>استكشف جميع المراحل</span></div>
+      <a class="btn btn-soft" href="./index.html"><i class="fa-solid fa-house"></i> العودة لحسابي</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="explore-hero">
+      <div class="container explore-hero-inner">
+        <div><span class="section-kicker">المعرفة أوسع من صفك الحالي</span><h1>استكشف كل المراحل والمواد</h1><p>تصفّح أي مرحلة أو صف أو مادة بدون تغيير مرحلتك الأساسية. حسابك وتقدمك يفضلوا زي ما هم.</p></div>
+        <span class="explore-hero-art">🧭</span>
+      </div>
+    </section>
+
+    <section class="container explore-workspace">
+      <aside class="explore-sidebar">
+        <div class="explore-sidebar-title"><span class="section-kicker">اختر المسار</span><h3>نوع التعليم</h3></div>
+        <button class="explore-type active" data-type="public"><span>🏫</span><div><strong>تربية وتعليم</strong><small>المناهج العامة</small></div><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="explore-type" data-type="azhar"><span>🕌</span><div><strong>أزهر شريف</strong><small>المناهج الأزهرية</small></div><i class="fa-solid fa-chevron-left"></i></button>
+        <div class="explore-note"><i class="fa-solid fa-shield-heart"></i><div><strong>اطمئن</strong><p>الاستكشاف لا يغيّر بيانات مرحلتك الأساسية.</p></div></div>
+      </aside>
+
+      <div class="explore-main">
+        <div class="explore-toolbar">
+          <div><span class="section-kicker" id="activeTypeLabel">التعليم العام</span><h2>اختر المرحلة الدراسية</h2></div>
+          <label class="explore-page-search"><i class="fa-solid fa-magnifying-glass"></i><input id="explorePageSearch" placeholder="ابحث عن مادة..."></label>
+        </div>
+
+        <div class="explore-stage-tabs" id="exploreStageTabs">
+          <button class="active" data-stage="primary"><span>🎒</span><div><strong>ابتدائي</strong><small>6 صفوف</small></div></button>
+          <button data-stage="prep"><span>📚</span><div><strong>إعدادي</strong><small>3 صفوف</small></div></button>
+          <button data-stage="sec"><span>🎓</span><div><strong>ثانوي</strong><small>3 صفوف</small></div></button>
+        </div>
+
+        <div class="explore-grade-block">
+          <div class="explore-block-head"><h3>الصف الدراسي</h3><span id="gradeHint">اختر الصف لعرض مواده</span></div>
+          <div class="explore-grade-grid" id="exploreGradeGrid"></div>
+        </div>
+
+        <div class="explore-subject-block hidden" id="exploreSubjectBlock">
+          <div class="explore-block-head"><div><span class="section-kicker">المواد المتاحة</span><h3 id="exploreSubjectsTitle">مواد الصف</h3></div><span id="exploreSubjectCount"></span></div>
+          <div class="explore-subject-grid" id="exploreSubjectGrid"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="./assets/explore.js"></script>
+</body>
+</html>
