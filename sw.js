@@ -1,6 +1,7 @@
-const CACHE='academy-shell-2026-09-18-v4';
+const CACHE='academy-shell-2026-09-18-v5';
 const CORE=[
  './','./index.html','./offline.html','./explore.html','./search.html','./planner.html',
+ './assignments.html','./weekly-report.html','./schedule.html',
  './exam-center.html','./progress.html','./library.html','./simulations.html',
  './assets/styles.css','./assets/learning.css','./assets/portal.css','./assets/hub.css',
  './assets/firebase-config.js','./assets/student-core.js','./assets/pwa.js','./assets/app-icon.svg','./manifest.webmanifest'
