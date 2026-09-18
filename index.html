@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#0f172a">\n  <link rel="manifest" href="./manifest.webmanifest">\n  <link rel="icon" href="./assets/app-icon.svg" type="image/svg+xml">
   <title>الأكاديمية | تعلّم بثقة وتقدّم بذكاء</title>
   <meta name="description" content="منصة تعليمية عربية حديثة تجمع الدروس والاختبارات والمدرسين ومتابعة التقدم في تجربة واحدة.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -203,7 +203,7 @@
       <div class="dashboard-content">
         <header class="dashboard-topbar">
           <div><button class="dash-mobile-menu" id="dashMobileMenu"><i class="fa-solid fa-bars"></i></button><span class="dashboard-greeting">أهلًا <strong id="dashStudentName">طالبنا</strong> 👋</span><small>مستمر في رحلتك نحو التميز</small></div>
-          <div class="dashboard-actions"><label class="dash-search"><i class="fa-solid fa-magnifying-glass"></i><input placeholder="ابحث في دروسك..."></label><button class="icon-btn"><i class="fa-regular fa-bell"></i></button></div>
+          <div class="dashboard-actions"><label class="dash-search"><i class="fa-solid fa-magnifying-glass"></i><input id="dashSearchInput" placeholder="ابحث في دروسك..."></label><button class="icon-btn"><i class="fa-regular fa-bell"></i></button></div>
         </header>
 
         <div class="dashboard-page">
@@ -319,6 +319,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <script src="./assets/firebase-config.js"></script>\n  <script src="./assets/app.js"></script>
+  <script src="./assets/firebase-config.js"></script>\n  <script src="./assets/app.js"></script>\n  <script src="./assets/pwa.js"></script>
 </body>
 </html>
