@@ -29,7 +29,14 @@ $$('[data-library-scope]').forEach(b=>b.onclick=()=>{scope=b.dataset.libraryScop
 $('librarySubjectFilter').onchange=render;$('librarySearch').oninput=render;
 
 (async()=>{
- ({user,profile}=await C.requireStudent());$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
- const [s,f]=await Promise.all([C.db.ref('customSubjects').once('value'),C.db.ref('files').once('value')]);data={customSubjects:s.val()||{},files:f.val()||{}};renderFilters();render();
+ try{
+  ({user,profile}=await C.requireStudent());$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
+  window.AcademyUI?.showPageLoading('جاري تحميل المكتبة التعليمية...');
+  const [s,f]=await Promise.all([C.db.ref('customSubjects').once('value'),C.db.ref('files').once('value')]);
+  data={customSubjects:s.val()||{},files:f.val()||{}};renderFilters();render();
+ }catch(err){
+  console.error(err);C.toast('تعذر تحميل المكتبة الآن.','error');
+  $('libraryGrid').innerHTML=window.AcademyUI?.errorStateHtml('تعذر تحميل المكتبة','تحقق من الإنترنت ثم حاول مرة أخرى.','<button class="btn btn-primary" onclick="location.reload()">إعادة المحاولة</button>')||'';
+ }finally{window.AcademyUI?.hidePageLoading()}
 })();
 })();
