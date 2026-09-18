@@ -217,6 +217,9 @@
           <button id="dashCommunityBtn"><i class="fa-solid fa-users"></i> مجتمع الطلاب</button>
           <button id="dashLeaderboardBtn"><i class="fa-solid fa-ranking-star"></i> الترتيب العام</button>
           <button id="exploreAllStagesSide"><i class="fa-regular fa-compass"></i> استكشف كل المراحل</button>
+          <button id="dashProfileBtn"><i class="fa-regular fa-user"></i> حسابي وإعداداتي</button>
+          <button id="dashStudySettingsBtn"><i class="fa-solid fa-graduation-cap"></i> تغيير المرحلة والصف</button>
+          <button id="dashLogoutBtn" class="dashboard-logout-btn"><i class="fa-solid fa-arrow-right-from-bracket"></i> تسجيل الخروج</button>
         </nav>
         <div class="sidebar-tip"><span>💡</span><strong>استمر كل يوم</strong><p>حتى 15 دقيقة يوميًا تصنع فرقًا.</p></div>
       </aside>
@@ -224,13 +227,29 @@
       <div class="dashboard-content">
         <header class="dashboard-topbar">
           <div><button class="dash-mobile-menu" id="dashMobileMenu"><i class="fa-solid fa-bars"></i></button><span class="dashboard-greeting">أهلًا <strong id="dashStudentName">طالبنا</strong> 👋</span><small>مستمر في رحلتك نحو التميز</small></div>
-          <div class="dashboard-actions"><label class="dash-search"><i class="fa-solid fa-magnifying-glass"></i><input id="dashSearchInput" placeholder="ابحث في دروسك..."></label><button class="icon-btn"><i class="fa-regular fa-bell"></i></button></div>
+          <div class="dashboard-actions">
+            <label class="dash-search"><i class="fa-solid fa-magnifying-glass"></i><input id="dashSearchInput" placeholder="ابحث في دروسك..."></label>
+            <button class="icon-btn"><i class="fa-regular fa-bell"></i></button>
+            <div class="dashboard-account-wrap">
+              <button class="dashboard-account-btn" id="dashAccountBtn">
+                <span class="avatar" id="dashAccountAvatar">ط</span>
+                <span class="dashboard-account-copy"><strong id="dashAccountName">الطالب</strong><small>الحساب</small></span>
+                <i class="fa-solid fa-chevron-down"></i>
+              </button>
+              <div class="dashboard-account-menu hidden" id="dashAccountMenu">
+                <button id="dashAccountProfile"><i class="fa-regular fa-user"></i><span><strong>بيانات الحساب</strong><small>تغيير الاسم وإدارة الحساب</small></span></button>
+                <button id="dashAccountStudy"><i class="fa-solid fa-graduation-cap"></i><span><strong>المرحلة الدراسية</strong><small>تغيير المسار والمرحلة والصف</small></span></button>
+                <button onclick="location.href='./notifications.html'"><i class="fa-regular fa-bell"></i><span><strong>الإشعارات</strong><small>كل التحديثات المهمة</small></span></button>
+                <button id="dashAccountLogout" class="danger"><i class="fa-solid fa-arrow-right-from-bracket"></i><span><strong>تسجيل الخروج</strong><small>إنهاء الجلسة الحالية</small></span></button>
+              </div>
+            </div>
+          </div>
         </header>
 
         <div class="dashboard-page">
           <section class="dashboard-hero-grid">
             <article class="current-stage-card">
-              <div><span class="card-label">مرحلتك الدراسية الحالية</span><h2 id="currentGradeTitle">الصف الدراسي</h2><p id="currentEducationTitle">المسار التعليمي</p><button class="btn btn-primary" id="exploreAllStagesMain">استكشف جميع المراحل <i class="fa-solid fa-arrow-left"></i></button></div>
+              <div><span class="card-label">مرحلتك الدراسية الحالية</span><h2 id="currentGradeTitle">الصف الدراسي</h2><p id="currentEducationTitle">المسار التعليمي</p><div class="stage-card-actions"><button class="btn btn-primary" id="exploreAllStagesMain">استكشف جميع المراحل <i class="fa-solid fa-arrow-left"></i></button><button class="btn btn-soft" id="dashChangeStudyBtn"><i class="fa-solid fa-pen"></i> تغيير مرحلتي</button></div></div>
               <span class="stage-illustration">🏫</span>
             </article>
             <article class="level-card"><span class="medal-big">🏅</span><div><span class="card-label">مستواك الآن</span><h3>المستوى <span id="levelNumber">1</span></h3><div class="progress"><span id="xpProgress" style="width:20%"></span></div><small><span id="xpValue">0</span> / 1000 XP</small></div></article>
