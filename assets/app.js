@@ -216,6 +216,17 @@
       : 'أكمل إعداد الحساب';
   }
 
+  function animateDashboardNumber(id,target,duration=550){
+    const el=$(id);if(!el)return;
+    const end=Math.max(0,Number(target||0)),start=Number(el.dataset.current||0),started=performance.now();
+    const tick=now=>{
+      const t=Math.min(1,(now-started)/duration),ease=1-Math.pow(1-t,3),value=Math.round(start+(end-start)*ease);
+      el.textContent=value;el.dataset.current=String(value);
+      if(t<1)requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
   function statsFromProfile() {
     const s = state.profile?.stats || {};
     return {
@@ -541,12 +552,12 @@
     if ($('dashAccountAvatar')) $('dashAccountAvatar').textContent = initials(name);
     $('currentGradeTitle').textContent = gradeLabels[p.stage]?.[p.grade] || stageLabels[p.stage] || 'مرحلتك الدراسية';
     $('currentEducationTitle').textContent = educationLabel(p.educationType);
-    $('levelNumber').textContent = stats.level;
-    $('xpValue').textContent = stats.xp % 1000;
-    $('xpStat').textContent = stats.xp;
-    $('completedLessons').textContent = stats.lessons;
-    $('completedQuizzes').textContent = stats.quizzes;
-    $('streakValue').textContent = stats.streak;
+    animateDashboardNumber('levelNumber',stats.level,400);
+    animateDashboardNumber('xpValue',stats.xp % 1000,600);
+    animateDashboardNumber('xpStat',stats.xp,650);
+    animateDashboardNumber('completedLessons',stats.lessons,500);
+    animateDashboardNumber('completedQuizzes',stats.quizzes,500);
+    animateDashboardNumber('streakValue',stats.streak,450);
     $('xpProgress').style.width = Math.min(100, (stats.xp % 1000) / 10) + '%';
 
     const subjectProgress = p.subjectProgress || {};
