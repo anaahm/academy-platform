@@ -459,6 +459,15 @@ async function startDataListener(){
  db.ref('/').on('value',handler);unsubscribe=()=>db.ref('/').off('value',handler);
 }
 
+function initAdminCollapse(){
+ const shell=$('adminApp'),btn=$('adminCollapseBtn');if(!shell||!btn)return;
+ const apply=()=>{const collapsed=innerWidth>900&&localStorage.getItem('academyAdminCollapsed')==='1';shell.classList.toggle('admin-collapsed',collapsed)};
+ apply();
+ btn.onclick=()=>{if(innerWidth<=900)return;const next=!shell.classList.contains('admin-collapsed');shell.classList.toggle('admin-collapsed',next);localStorage.setItem('academyAdminCollapsed',next?'1':'0')};
+ $('.admin-nav button,.admin-sidebar-footer a,.admin-sidebar-footer button').forEach(el=>{if(!el.title)el.title=el.textContent.trim().replace(/\s+/g,' ')});
+ window.addEventListener('resize',apply,{passive:true});
+}
+
 /* events */
 $$('[data-admin-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.adminTab));
 $$('[data-jump-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.jumpTab));
@@ -471,6 +480,7 @@ $('subjectForm').onsubmit=saveSubject;$('lessonForm').onsubmit=saveLesson;$('qui
 $('lessonSearch').oninput=renderLessons;$('lessonFilterStage').onchange=renderLessons;$('lessonFilterType').onchange=renderLessons;$('studentSearch').oninput=renderStudents;
 $('curriculumType').onchange=renderCurriculum;$('curriculumStage').onchange=()=>{fillGrades($('curriculumGrade'),$('curriculumStage').value);renderCurriculum()};$('curriculumGrade').onchange=renderCurriculum;
 $('assignType').onchange=refreshAssignmentSubjects;$('assignStage').onchange=refreshAssignmentSubjects;$('assignGrade').onchange=refreshAssignmentSubjects;$('addAssignmentBtn').onclick=addAssignment;
+initAdminCollapse();
 $('adminMenuBtn').onclick=()=>{$('adminSidebar').classList.add('open');$('adminOverlay').classList.remove('hidden')};$('adminOverlay').onclick=()=>{$('adminSidebar').classList.remove('open');$('adminOverlay').classList.add('hidden')};
 $('adminRefreshBtn').onclick=async()=>{const s=await db.ref('/').once('value');root=s.val()||{};renderAll();toast('تم تحديث البيانات')};
 $('adminLogout').onclick=()=>auth.signOut();
