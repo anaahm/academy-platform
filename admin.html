@@ -201,7 +201,7 @@
                 <input id="studyGroupSubject" maxlength="80" placeholder="اسم المادة (اختياري)">
                 <button class="btn btn-primary" type="submit">إنشاء مجموعة</button>
               </form>
-              <div id="communityGroupsAdminList" class="admin-list admin-scroll-list" style="margin-top:14px"></div>
+              <div id="communityGroupsAdminList" class="admin-list admin-scroll-list admin-spaced-list"></div>
             </article>
           </div>
         </section>
@@ -242,7 +242,7 @@
                 <label class="full"><span>عنوان الخبر</span><input id="newsTitle" required maxlength="160"></label>
                 <label class="full"><span>المحتوى</span><textarea id="newsContent" required rows="7" maxlength="5000"></textarea></label>
                 <label class="full"><span>رابط صورة — اختياري</span><input id="newsImage" type="url" dir="ltr" placeholder="https://..."></label>
-                <div class="full" style="display:flex;gap:8px">
+                <div class="full admin-form-actions">
                   <button class="btn btn-primary" id="newsSaveBtn" type="submit">نشر الخبر</button>
                   <button class="btn btn-soft hidden" id="newsCancelEdit" type="button">إلغاء التعديل</button>
                 </div>
