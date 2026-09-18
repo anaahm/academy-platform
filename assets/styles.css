@@ -327,7 +327,7 @@ a{text-decoration:none;color:inherit}
 .sidebar-brand-copy{white-space:nowrap;overflow:hidden;transition:opacity .18s ease,width .18s ease}
 .sidebar-collapse-btn{width:34px;height:34px;flex:0 0 34px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.07);color:#cbd5e1;border-radius:11px;display:grid;place-items:center;transition:.2s}
 .sidebar-collapse-btn:hover{background:rgba(255,255,255,.14);color:#fff}
-.dashboard-nav{display:flex!important;flex-direction:column;gap:13px!important;overflow-y:auto;overflow-x:hidden;padding-left:2px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.12) transparent}
+.dashboard-nav{display:flex!important;flex:1;min-height:0;flex-direction:column;gap:13px!important;overflow-y:auto;overflow-x:hidden;padding-left:2px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.12) transparent}
 .dashboard-nav-group{display:grid;gap:5px}
 .dashboard-nav-label{font-size:7px;font-weight:900;letter-spacing:.06em;color:#64748b;padding:0 12px 4px;white-space:nowrap;text-transform:uppercase}
 .dashboard-sidebar .dashboard-nav button,.dashboard-sidebar-footer button{position:relative;border:0;background:transparent;color:#aebbd0;border-radius:12px;padding:10px 11px;text-align:right;font-weight:800;display:flex;align-items:center;gap:10px;min-height:42px;transition:background .17s ease,color .17s ease,transform .17s ease}
