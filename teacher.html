@@ -153,6 +153,20 @@
     </main>
   </section>
 
+  <div class="modal-backdrop hidden" id="teacherGradeModal">
+    <div class="modal-panel teacher-grade-modal">
+      <button class="modal-close" id="closeTeacherGradeModal"><i class="fa-solid fa-xmark"></i></button>
+      <span class="section-kicker">تصحيح الواجب</span>
+      <h2 id="gradeModalTitle">تسليم الطالب</h2>
+      <div id="gradeSubmissionPreview" class="grade-submission-preview"></div>
+      <form id="teacherGradeForm" class="teacher-submit-form">
+        <label><span>الدرجة من 100</span><input id="gradeScore" type="number" min="0" max="100" required></label>
+        <label><span>تعليق للطالب</span><textarea id="gradeFeedback" rows="4" maxlength="2000" placeholder="ملاحظة تشجيعية أو نقاط تحتاج مراجعة..."></textarea></label>
+        <button class="btn btn-primary btn-block" type="submit"><i class="fa-solid fa-check"></i> حفظ التصحيح</button>
+      </form>
+    </div>
+  </div>
+
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
