@@ -23,6 +23,47 @@
         const b64=values.join('');
         const binary=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
         let html=pako.ungzip(binary,{to:'string'});
+        const initStart=html.indexOf('init: () => {');
+        const toggleStart=html.indexOf('toggleSidebar:',initStart);
+        if(initStart>-1&&toggleStart>initStart){
+          const secureInit=`init: () => {
+                firebase.auth().onAuthStateChanged(async user => {
+                    if(!user) {
+                        document.getElementById('login-view').classList.remove('hidden');
+                        document.getElementById('panel-view').classList.add('hidden');
+                        return;
+                    }
+                    try {
+                        const [adminSnap, studentSnap, teacherSnap] = await Promise.all([
+                            database.ref('adminProfiles/' + user.uid).once('value'),
+                            database.ref('studentProfilesV3/' + user.uid).once('value'),
+                            database.ref('teacherProfiles/' + user.uid).once('value')
+                        ]);
+                        const explicitAdmin = adminSnap.val()?.isAdmin === true;
+                        const isStudentOrTeacher = studentSnap.exists() || teacherSnap.exists();
+                        if(!explicitAdmin && isStudentOrTeacher) {
+                            await firebase.auth().signOut();
+                            alert('هذا الحساب ليس له صلاحية إدارة المنصة.');
+                            return;
+                        }
+                        document.getElementById('login-view').classList.add('hidden');
+                        document.getElementById('panel-view').classList.remove('hidden');
+                        admin.fixCustomSubjectsStructure();
+                        admin.fetchData();
+                        setTimeout(() => {
+                            ['l','q','sim'].forEach(p => admin.updateHierarchy(p));
+                            admin.updateVisHierarchy();
+                        }, 800);
+                    } catch(e) {
+                        console.error('Admin access check failed', e);
+                        await firebase.auth().signOut();
+                        alert('تعذر التحقق من صلاحية الإدارة.');
+                    }
+                });
+            },
+            `;
+          html=html.slice(0,initStart)+secureInit+html.slice(toggleStart);
+        }
         html=html.replace('</head>','<link rel="stylesheet" href="assets/css/admin-modern.css?v=3"></head>');
         html=html.replace('</body>','<script src="assets/js/admin-ui.js?v=3"><\/script></body>');
         document.open();document.write(html);document.close();
