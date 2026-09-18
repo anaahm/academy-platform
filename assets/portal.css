@@ -79,3 +79,29 @@
 .stage-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 @media(max-width:900px){.dashboard-account-copy{display:none}.dashboard-account-btn{min-width:auto;padding:5px}.dashboard-account-menu{left:0;width:240px}}
 @media(max-width:640px){.dashboard-actions .dash-search{display:none}.dashboard-account-menu{position:fixed;left:12px;right:12px;top:78px;width:auto}.stage-card-actions{flex-direction:column}.stage-card-actions .btn{width:100%}}
+
+/* Collapsible teacher navigation */
+.teacher-brand-row{display:flex;align-items:center;gap:8px;margin-bottom:18px}.teacher-brand-row .brand{margin:0!important;flex:1;min-width:0}
+.teacher-collapse-btn{width:34px;height:34px;flex:0 0 34px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.07);color:#cbd5e1;border-radius:11px;display:grid;place-items:center;transition:.18s}
+.teacher-collapse-btn:hover{background:rgba(255,255,255,.14);color:#fff}
+.teacher-shell{transition:grid-template-columns .22s ease}
+.teacher-shell.teacher-collapsed{grid-template-columns:86px 1fr}
+.teacher-shell.teacher-collapsed .teacher-side{padding-left:10px;padding-right:10px}
+.teacher-shell.teacher-collapsed .teacher-brand-row{justify-content:center;flex-wrap:wrap}
+.teacher-shell.teacher-collapsed .teacher-brand-row .brand span:last-child{display:none}
+.teacher-shell.teacher-collapsed .teacher-nav button{font-size:0;justify-content:center;padding:11px}
+.teacher-shell.teacher-collapsed .teacher-nav button i{font-size:14px}
+.teacher-shell.teacher-collapsed .teacher-collapse-btn i{transform:rotate(180deg)}
+.teacher-shell.teacher-collapsed .teacher-nav button{position:relative}
+.teacher-shell.teacher-collapsed .teacher-nav button:hover:after{
+ content:attr(title);position:absolute;right:calc(100% + 10px);top:50%;transform:translateY(-50%);
+ background:#0f172a;color:#fff;border:1px solid rgba(255,255,255,.08);padding:7px 9px;border-radius:9px;font-size:8px;white-space:nowrap;z-index:120;box-shadow:0 10px 30px rgba(15,23,42,.25)
+}
+@media(max-width:900px){
+ .teacher-collapse-btn{display:none}
+ .teacher-shell.teacher-collapsed{grid-template-columns:1fr}
+ .teacher-shell.teacher-collapsed .teacher-side{padding:22px 16px}
+ .teacher-shell.teacher-collapsed .teacher-brand-row .brand span:last-child{display:initial}
+ .teacher-shell.teacher-collapsed .teacher-nav button{font-size:inherit;justify-content:flex-start;padding:12px 13px}
+ .teacher-shell.teacher-collapsed .teacher-nav button i{font-size:inherit}
+}
