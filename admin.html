@@ -60,13 +60,16 @@
         <button data-admin-tab="curriculum"><i class="fa-solid fa-layer-group"></i> المواد والوحدات</button>
         <button data-admin-tab="lessons"><i class="fa-solid fa-circle-play"></i> الدروس</button>
         <button data-admin-tab="quizzes"><i class="fa-solid fa-file-circle-question"></i> الاختبارات</button>
+        <button data-admin-tab="simulations"><i class="fa-solid fa-stopwatch"></i> المحاكيات</button>
         <button data-admin-tab="files"><i class="fa-solid fa-folder-open"></i> الملفات والمكتبة</button>
+        <button data-admin-tab="live"><i class="fa-solid fa-tower-broadcast"></i> البث المباشر</button>
 
         <span class="admin-nav-label">المستخدمون</span>
         <button data-admin-tab="teachers"><i class="fa-solid fa-chalkboard-user"></i> المدرسون والمراجعات <span id="pendingBadge" class="nav-badge hidden">0</span></button>
         <button data-admin-tab="students"><i class="fa-solid fa-user-graduate"></i> الطلاب</button>
 
         <span class="admin-nav-label">المنصة</span>
+        <button data-admin-tab="community"><i class="fa-solid fa-users"></i> المجتمع والبلاغات <span id="communityReportBadge" class="nav-badge hidden">0</span></button>
         <button data-admin-tab="announcements"><i class="fa-solid fa-bullhorn"></i> الإعلانات</button>
         <button data-admin-tab="settings"><i class="fa-solid fa-sliders"></i> الإعدادات</button>
       </nav>
@@ -134,9 +137,39 @@
           <div id="quizzesAdminList" class="admin-table-wrap"></div>
         </section>
 
+        <section class="admin-tab" id="admin-tab-simulations">
+          <div class="admin-section-head"><div><span class="section-kicker">امتحان متعدد المواد</span><h2>المحاكيات</h2><p>حدد الزمن وعدد أسئلة كل مادة لكل مرحلة وصف.</p></div><button class="btn btn-primary" id="openSimulationModal"><i class="fa-solid fa-plus"></i> محاكي جديد</button></div>
+          <div id="simulationsAdminGrid" class="admin-subject-grid"></div>
+        </section>
+
         <section class="admin-tab" id="admin-tab-files">
           <div class="admin-section-head"><div><span class="section-kicker">المكتبة</span><h2>الملفات والمراجع</h2><p>أضف روابط PDF والمذكرات والملفات المساعدة.</p></div><button class="btn btn-primary" id="openFileModal"><i class="fa-solid fa-plus"></i> ملف جديد</button></div>
           <div id="filesAdminGrid" class="admin-file-grid"></div>
+        </section>
+
+        <section class="admin-tab" id="admin-tab-live">
+          <div class="admin-section-head"><div><span class="section-kicker">الجلسات</span><h2>البث المباشر</h2><p>أضف جلسات YouTube أو Zoom وحدد حالتها وموعدها.</p></div><button class="btn btn-primary" id="openLiveModal"><i class="fa-solid fa-plus"></i> جلسة جديدة</button></div>
+          <div id="liveAdminGrid" class="admin-subject-grid"></div>
+        </section>
+
+        <section class="admin-tab" id="admin-tab-community">
+          <div class="admin-section-head"><div><span class="section-kicker">الإشراف والمراجعة</span><h2>المجتمع ومجموعات الدراسة</h2><p>راجع المنشورات والبلاغات وأنشئ مجموعات دراسة آمنة.</p></div></div>
+          <div class="admin-teacher-grid">
+            <article class="admin-card">
+              <div class="admin-card-head"><div><span class="section-kicker">المنتدى</span><h3>المنشورات والبلاغات</h3></div><span>💬</span></div>
+              <div id="communityPostsAdminList" class="admin-list admin-scroll-list"></div>
+            </article>
+            <article class="admin-card">
+              <div class="admin-card-head"><div><span class="section-kicker">مجموعات الدراسة</span><h3>المجموعات الحالية</h3></div><span>👥</span></div>
+              <form id="studyGroupForm" class="admin-mini-form">
+                <input id="studyGroupName" required maxlength="80" placeholder="اسم المجموعة">
+                <select id="studyGroupStage"><option value="">كل المراحل</option><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select>
+                <input id="studyGroupSubject" maxlength="80" placeholder="اسم المادة (اختياري)">
+                <button class="btn btn-primary" type="submit">إنشاء مجموعة</button>
+              </form>
+              <div id="communityGroupsAdminList" class="admin-list admin-scroll-list" style="margin-top:14px"></div>
+            </article>
+          </div>
         </section>
 
         <section class="admin-tab" id="admin-tab-teachers">
@@ -262,6 +295,43 @@
         <label><span>الصف</span><select id="newFileGrade"></select></label>
         <label><span>المادة</span><select id="newFileSubject"></select></label>
         <button class="btn btn-primary full" type="submit">إضافة الملف</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="simulationModal">
+    <div class="modal-panel admin-modal admin-modal-wide">
+      <button class="modal-close" data-close-admin-modal="simulationModal"><i class="fa-solid fa-xmark"></i></button>
+      <span class="section-kicker">محاكاة امتحان</span><h2>إنشاء محاكي جديد</h2>
+      <form id="simulationForm" class="admin-form">
+        <label><span>اسم المحاكي</span><input id="simName" required></label>
+        <label><span>المدة بالدقائق</span><input id="simTime" type="number" min="5" max="300" value="60"></label>
+        <label><span>نوع التعليم</span><select id="simType"><option value="public">عام</option><option value="azhar">أزهر</option></select></label>
+        <label><span>المرحلة</span><select id="simStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+        <label><span>الصف</span><select id="simGrade"></select></label>
+        <label><span>عربي</span><input id="simAr" type="number" min="0" value="5"></label>
+        <label><span>رياضيات</span><input id="simMa" type="number" min="0" value="5"></label>
+        <label><span>علوم</span><input id="simSc" type="number" min="0" value="5"></label>
+        <label><span>إنجليزي</span><input id="simEn" type="number" min="0" value="5"></label>
+        <label class="switch-field"><span>مخفي</span><div><input id="simHidden" type="checkbox"><strong>إخفاء عن الطلاب</strong></div></label>
+        <button class="btn btn-primary full" type="submit">حفظ المحاكي</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="liveModal">
+    <div class="modal-panel admin-modal admin-modal-wide">
+      <button class="modal-close" data-close-admin-modal="liveModal"><i class="fa-solid fa-xmark"></i></button>
+      <span class="section-kicker">جلسة مباشرة</span><h2>إضافة جلسة بث</h2>
+      <form id="liveForm" class="admin-form">
+        <label><span>عنوان الجلسة</span><input id="liveTitle" required></label>
+        <label><span>اسم المدرس</span><input id="liveTeacher"></label>
+        <label><span>الحالة</span><select id="liveStatus"><option value="upcoming">قادم</option><option value="live">مباشر</option><option value="ended">منتهي</option></select></label>
+        <label><span>موعد الجلسة</span><input id="liveTime" type="datetime-local"></label>
+        <label><span>المدة بالدقائق</span><input id="liveDuration" type="number" min="10" value="60"></label>
+        <label class="full"><span>رابط YouTube</span><input id="liveYoutube" type="url" dir="ltr"></label>
+        <label class="full"><span>رابط Zoom</span><input id="liveZoom" type="url" dir="ltr"></label>
+        <button class="btn btn-primary full" type="submit">حفظ الجلسة</button>
       </form>
     </div>
   </div>
