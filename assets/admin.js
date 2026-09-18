@@ -464,7 +464,7 @@ function initAdminCollapse(){
  const apply=()=>{const collapsed=innerWidth>900&&localStorage.getItem('academyAdminCollapsed')==='1';shell.classList.toggle('admin-collapsed',collapsed)};
  apply();
  btn.onclick=()=>{if(innerWidth<=900)return;const next=!shell.classList.contains('admin-collapsed');shell.classList.toggle('admin-collapsed',next);localStorage.setItem('academyAdminCollapsed',next?'1':'0')};
- $('.admin-nav button,.admin-sidebar-footer a,.admin-sidebar-footer button').forEach(el=>{if(!el.title)el.title=el.textContent.trim().replace(/\s+/g,' ')});
+ $$('.admin-nav button,.admin-sidebar-footer a,.admin-sidebar-footer button').forEach(el=>{if(!el.title)el.title=el.textContent.trim().replace(/\s+/g,' ')});
  window.addEventListener('resize',apply,{passive:true});
 }
 
