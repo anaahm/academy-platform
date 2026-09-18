@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>الواجبات | الأكاديمية</title>
+  <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./assets/app-icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/learning.css"><link rel="stylesheet" href="./assets/hub.css">
+</head>
+<body class="feature-page">
+  <div id="toast" class="toast"></div>
+  <header class="learning-header">
+    <div class="container learning-nav">
+      <a class="brand" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-book-open"></i></span><span><strong>الأكاديمية</strong><small>الواجبات والتسليم</small></span></a>
+      <div class="learning-breadcrumb"><a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><span>الواجبات</span></div>
+      <div class="learning-user"><a class="icon-btn" href="./weekly-report.html" title="تقريرك الأسبوعي"><i class="fa-solid fa-chart-column"></i></a><span class="avatar" id="pageAvatar">ط</span></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="feature-hero">
+      <div class="container">
+        <div class="feature-hero-card">
+          <div><span class="section-kicker light">تابع المطلوب وسلّم في معاده</span><h1>مركز الواجبات</h1><p>كل واجبات موادك في مكان واحد، مع حالة التسليم والدرجة وملاحظات المدرس.</p></div>
+          <span class="feature-hero-art">📝</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="container feature-page-content">
+      <section class="feature-stat-grid">
+        <article><span class="feature-card-icon blue"><i class="fa-solid fa-list-check"></i></span><div><strong id="assignmentTotal">0</strong><small>إجمالي الواجبات</small></div></article>
+        <article><span class="feature-card-icon amber"><i class="fa-solid fa-hourglass-half"></i></span><div><strong id="assignmentPending">0</strong><small>بانتظار التسليم</small></div></article>
+        <article><span class="feature-card-icon green"><i class="fa-solid fa-paper-plane"></i></span><div><strong id="assignmentSubmitted">0</strong><small>تم التسليم</small></div></article>
+        <article><span class="feature-card-icon violet"><i class="fa-solid fa-star"></i></span><div><strong id="assignmentAverage">—</strong><small>متوسط الدرجات</small></div></article>
+      </section>
+
+      <section class="feature-card">
+        <div class="feature-card-head assignment-filter-head">
+          <div><span class="section-kicker">مهماتك الدراسية</span><h2>الواجبات الحالية</h2></div>
+          <div class="feature-filter-chips">
+            <button class="active" data-assignment-filter="all">الكل</button>
+            <button data-assignment-filter="pending">مطلوب</button>
+            <button data-assignment-filter="submitted">مسلّم</button>
+            <button data-assignment-filter="graded">تم التصحيح</button>
+          </div>
+        </div>
+        <div id="assignmentList" class="assignment-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <div class="modal-backdrop hidden" id="assignmentModal">
+    <div class="modal-panel assignment-modal">
+      <button class="modal-close" id="closeAssignmentModal"><i class="fa-solid fa-xmark"></i></button>
+      <div id="assignmentModalBody"></div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="./assets/firebase-config.js"></script>
+  <script src="./assets/student-core.js"></script>
+  <script src="./assets/assignments.js"></script>
+  <script src="./assets/activity-tracker.js"></script>
+  <script src="./assets/pwa.js"></script>
+</body>
+</html>
