@@ -25,6 +25,7 @@
         <button class="active" data-teacher-tab="home"><i class="fa-solid fa-house"></i> الرئيسية</button>
         <button data-teacher-tab="content"><i class="fa-solid fa-book-open"></i> محتواي</button>
         <button data-teacher-tab="submit"><i class="fa-solid fa-circle-plus"></i> إضافة محتوى</button>
+        <button data-teacher-tab="assignments"><i class="fa-solid fa-clipboard-check"></i> الواجبات</button>
         <button data-teacher-tab="students"><i class="fa-solid fa-users"></i> الطلاب</button>
         <button data-teacher-tab="analytics"><i class="fa-solid fa-chart-line"></i> الإحصائيات</button>
       </nav>
@@ -98,6 +99,37 @@
             <div class="teacher-card-head"><div><span class="section-kicker">تفاعل مجمع</span><h3>أداء دروسك عند الطلاب</h3></div><span>👥</span></div>
             <p class="profile-muted">الأرقام مجمعة فقط ولا تعرض أسماء الطلاب أو بياناتهم الشخصية.</p>
             <div class="teacher-engagement-list" id="teacherEngagementList"></div>
+          </article>
+        </section>
+
+        <section class="teacher-tab hidden" id="teacher-tab-assignments">
+          <section class="teacher-grid">
+            <article class="teacher-card">
+              <div class="teacher-card-head"><div><span class="section-kicker">واجب جديد</span><h3>إنشاء واجب للطلاب</h3></div><span>📝</span></div>
+              <form id="teacherAssignmentForm" class="teacher-submit-form">
+                <div class="teacher-form-grid">
+                  <label><span>نوع التعليم</span><select id="assignmentEducationType"><option value="public">تعليم عام</option><option value="azhar">أزهر</option></select></label>
+                  <label><span>المرحلة</span><select id="assignmentStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+                  <label><span>الصف</span><select id="assignmentGrade"></select></label>
+                  <label><span>المادة</span><select id="assignmentSubject"></select></label>
+                  <label class="full"><span>عنوان الواجب</span><input id="assignmentTitle" required maxlength="120" placeholder="مثال: حل تدريبات الوحدة الأولى"></label>
+                  <label class="full"><span>التعليمات</span><textarea id="assignmentInstructions" rows="5" maxlength="4000" placeholder="اكتب المطلوب بوضوح..."></textarea></label>
+                  <label><span>آخر موعد</span><input id="assignmentDueAt" type="datetime-local" required></label>
+                  <label><span>الدرجة النهائية</span><input id="assignmentMaxScore" type="number" min="1" max="1000" value="100"></label>
+                </div>
+                <button class="btn btn-primary btn-block" id="teacherAssignmentSubmitBtn" type="submit"><i class="fa-solid fa-paper-plane"></i> نشر الواجب</button>
+              </form>
+            </article>
+
+            <article class="teacher-card">
+              <div class="teacher-card-head"><div><span class="section-kicker">واجباتك</span><h3>الواجبات المنشورة</h3></div><span>📚</span></div>
+              <div id="teacherAssignmentsList" class="teacher-engagement-list"></div>
+            </article>
+          </section>
+
+          <article class="teacher-card" style="margin-top:16px">
+            <div class="teacher-card-head"><div><span class="section-kicker">التسليمات</span><h3>تصحيح واجبات الطلاب</h3></div><span>✅</span></div>
+            <div id="teacherAssignmentSubmissions" class="teacher-analytics-table"></div>
           </article>
         </section>
 
