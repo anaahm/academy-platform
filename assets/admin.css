@@ -85,3 +85,6 @@ linear-gradient(135deg,#0f172a,#111827 45%,#172554)}
  .admin-shell.admin-collapsed .admin-nav button i{font-size:inherit;width:20px}
  .admin-shell.admin-collapsed .admin-sidebar-footer a,.admin-shell.admin-collapsed .admin-sidebar-footer button{font-size:11px;display:block;text-align:right}
 }
+
+.admin-spaced-list{margin-top:14px}.admin-form-actions{display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:560px){.admin-form-actions{flex-direction:column}.admin-form-actions .btn{width:100%}}
