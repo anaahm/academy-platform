@@ -674,6 +674,7 @@
 
     document.addEventListener('click', (e) => {
       if (!e.target.closest('#userChip') && !e.target.closest('#userMenu')) $('userMenu')?.classList.add('hidden');
+      if (!e.target.closest('#dashAccountBtn') && !e.target.closest('#dashAccountMenu')) $('dashAccountMenu')?.classList.add('hidden');
     });
   }
 
