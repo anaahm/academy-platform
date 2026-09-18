@@ -48,12 +48,18 @@ function subjectName(data,id,stage,grade,type){
  return subjectsFor(data,stage,String(grade),type).find(s=>s.id===id)?.name||id||'مادة';
 }
 async function requireStudent(){
- return new Promise(resolve=>{
-   auth.onAuthStateChanged(async user=>{
-     if(!user){location.replace('./index.html');return}
-     const profile=await getProfile(user.uid);
-     if(!profile?.stage||!profile?.grade){location.replace('./index.html');return}
-     resolve({user,profile});
+ window.AcademyUI?.showPageLoading('جاري تحميل حسابك وبياناتك الدراسية...');
+ return new Promise((resolve,reject)=>{
+   let off=()=>{};
+   off=auth.onAuthStateChanged(async user=>{
+     if(!user){off();location.replace('./index.html');return}
+     try{
+       const profile=await getProfile(user.uid);
+       if(!profile?.stage||!profile?.grade){off();location.replace('./index.html');return}
+       off();window.AcademyUI?.hidePageLoading();resolve({user,profile});
+     }catch(err){
+       off();window.AcademyUI?.hidePageLoading();toast('تعذر تحميل بيانات حسابك الآن.','error');reject(err);
+     }
    });
  });
 }
