@@ -64,12 +64,18 @@ function itemCard(x){
 $$('[data-schedule-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.scheduleFilter;$$('[data-schedule-filter]').forEach(x=>x.classList.toggle('active',x===b));render()});
 
 (async()=>{
- ({user,profile}=await C.requireStudent());$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
- const [s,l,p]=await Promise.all([
-   C.db.ref('scheduleEvents').once('value'),
-   C.db.ref('liveSessions').once('value'),
-   C.db.ref('studentProfilesV3/'+user.uid+'/studyPlanner').once('value')
- ]);
- scheduleEvents=s.val()||{};liveSessions=l.val()||{};planner=p.val()||{};render();
+ try{
+  ({user,profile}=await C.requireStudent());$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
+  window.AcademyUI?.showPageLoading('جاري تجهيز جدولك ومواعيدك...');
+  const [s,l,p]=await Promise.all([
+    C.db.ref('scheduleEvents').once('value'),
+    C.db.ref('liveSessions').once('value'),
+    C.db.ref('studentProfilesV3/'+user.uid+'/studyPlanner').once('value')
+  ]);
+  scheduleEvents=s.val()||{};liveSessions=l.val()||{};planner=p.val()||{};render();
+ }catch(err){
+  console.error(err);C.toast('تعذر تحميل الجدول الآن.','error');
+  $('scheduleWeek').innerHTML=window.AcademyUI?.errorStateHtml('تعذر تحميل الجدول','تحقق من الاتصال ثم حاول مرة أخرى.','<button class="btn btn-primary" onclick="location.reload()">إعادة المحاولة</button>')||'';
+ }finally{window.AcademyUI?.hidePageLoading()}
 })();
 })();
