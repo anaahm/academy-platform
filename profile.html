@@ -31,6 +31,7 @@
         <button class="active" data-profile-tab="overview"><i class="fa-solid fa-chart-pie"></i> نظرة عامة</button>
         <button data-profile-tab="account"><i class="fa-regular fa-user"></i> بيانات الحساب</button>
         <button data-profile-tab="study"><i class="fa-solid fa-graduation-cap"></i> مرحلتي الدراسية</button>
+        <button data-profile-tab="saved"><i class="fa-regular fa-bookmark"></i> محفوظاتي</button>
         <button data-profile-tab="security"><i class="fa-solid fa-shield-halved"></i> الأمان</button>
         <button id="profileLogout" class="danger"><i class="fa-solid fa-arrow-right-from-bracket"></i> تسجيل الخروج</button>
       </aside>
@@ -77,6 +78,14 @@
               <label><span>الصف</span><select id="studyGrade"></select></label>
               <button class="btn btn-primary" type="submit">تحديث المرحلة</button>
             </form>
+          </article>
+        </section>
+
+        <section class="profile-tab hidden" id="tab-saved">
+          <article class="profile-card">
+            <div class="profile-card-head"><div><span class="section-kicker">للمراجعة لاحقًا</span><h2>الدروس المحفوظة</h2></div><span>🔖</span></div>
+            <p class="profile-muted">أي درس تضغط فيه علامة الحفظ هيظهر هنا تلقائيًا.</p>
+            <div class="saved-lessons-grid" id="savedLessonsGrid"></div>
           </article>
         </section>
 
