@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>أخبار الأكاديمية</title>
+  <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./assets/app-icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/learning.css"><link rel="stylesheet" href="./assets/news.css">
+</head>
+<body class="learning-body">
+  <header class="learning-header">
+    <div class="container learning-nav">
+      <a class="brand" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-book-open"></i></span><span><strong>الأكاديمية</strong><small>الأخبار والتحديثات</small></span></a>
+      <div class="learning-breadcrumb"><a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><span>الأخبار</span></div>
+      <a class="btn btn-soft" href="./index.html"><i class="fa-solid fa-house"></i> الرئيسية</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="news-hero"><div class="container"><span class="section-kicker">كل جديد في مكان واحد</span><h1>أخبار وتحديثات الأكاديمية</h1><p>تابع المحتوى الجديد، المواعيد المهمة، وأحدث إضافات المنصة.</p></div></section>
+    <section class="container news-page">
+      <div class="news-toolbar"><label><i class="fa-solid fa-magnifying-glass"></i><input id="newsSearch" placeholder="ابحث في الأخبار..."></label><span id="newsCount">0 خبر</span></div>
+      <div class="news-grid" id="newsGrid"><div class="news-loading"></div><div class="news-loading"></div><div class="news-loading"></div></div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="./assets/firebase-config.js"></script><script src="./assets/news.js"></script><script src="./assets/pwa.js"></script>
+</body>
+</html>
