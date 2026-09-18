@@ -25,6 +25,14 @@ function injectMobileNav(){
     '<a href="./profile.html" class="'+(activeFor('profile')?'active':'')+'"><i class="fa-regular fa-user"></i><span>حسابي</span></a>';
   document.body.appendChild(nav);
 }
+function enhancePageAvatar(){
+  const avatar=document.getElementById('pageAvatar');if(!avatar)return;
+  avatar.classList.add('student-profile-shortcut');
+  avatar.setAttribute('role','link');avatar.setAttribute('tabindex','0');avatar.setAttribute('title','فتح حسابي');
+  const go=()=>location.href='./profile.html';
+  avatar.addEventListener('click',go);
+  avatar.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}});
+}
 function addBackButton(){
   const nav=document.querySelector('.learning-nav');
   if(!nav||nav.querySelector('.student-back-button')||path==='index.html')return;
@@ -36,5 +44,5 @@ function addBackButton(){
   btn.onclick=()=>history.length>1?history.back():location.href='./index.html';
   nav.prepend(btn);
 }
-document.addEventListener('DOMContentLoaded',()=>{injectMobileNav();addBackButton()});
+document.addEventListener('DOMContentLoaded',()=>{injectMobileNav();addBackButton();enhancePageAvatar()});
 })();
