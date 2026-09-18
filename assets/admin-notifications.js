@@ -3,7 +3,7 @@
 if(!document.getElementById('admin-tab-notifications'))return;
 if(!firebase.apps.length)return;
 const db=firebase.database(),auth=firebase.auth(),$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-let broadcasts={};
+let broadcasts={},listening=false;
 const esc=(v='')=>String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const typeLabel=t=>t==='azhar'?'أزهر':t==='public'?'تعليم عام':'كل المسارات';
 const stageLabel=s=>({primary:'ابتدائي',prep:'إعدادي',sec:'ثانوي'}[s]||'كل المراحل');
@@ -48,6 +48,15 @@ const nav=$('[data-admin-tab="notifications"]');
 if(nav)nav.addEventListener('click',()=>{
   setTimeout(()=>{if($('adminSectionKicker'))$('adminSectionKicker').textContent='التواصل';if($('adminSectionTitle'))$('adminSectionTitle').textContent='الإشعارات الموجهة'},0);
 });
-db.ref('notificationBroadcasts').on('value',s=>{broadcasts=s.val()||{};render()});
+auth.onAuthStateChanged(user=>{
+  const ref=db.ref('notificationBroadcasts');
+  if(!user){
+    if(listening){ref.off();listening=false}
+    broadcasts={};render();return;
+  }
+  if(listening)return;
+  listening=true;
+  ref.on('value',s=>{broadcasts=s.val()||{};render()},err=>{console.warn('Broadcast notifications read blocked',err);listening=false});
+});
 updateGrades();
 })();
