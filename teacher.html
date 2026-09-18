@@ -1,35 +1,112 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>الأكاديمية | لوحة المدرس</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>لوحة المدرس | الأكاديمية</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Cairo','sans-serif']}}}}</script>
-  <style>body{font-family:'Cairo',sans-serif;background:#f8fafc}.card{background:#fff;border:1px solid #e2e8f0;box-shadow:0 16px 45px rgba(15,23,42,.05)}.side-btn.active{background:#2563eb;color:#fff}.side-btn{transition:.2s}</style>
-  <link rel="stylesheet" href="assets/css/teacher-modern.css?v=2">
+  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/portal.css">
 </head>
-<body class="text-slate-900">
-  <div class="min-h-screen lg:flex">
-    <aside class="hidden lg:flex w-72 bg-slate-950 text-white min-h-screen p-5 flex-col fixed right-0 top-0 bottom-0">
-      <a href="index.html" class="flex items-center gap-3 p-3 mb-6"><span class="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center"><i class="fa-solid fa-graduation-cap"></i></span><div><strong class="block">الأكاديمية</strong><small class="text-slate-400">بوابة المدرس</small></div></a>
-      <nav class="space-y-2 flex-1"><button class="side-btn active w-full rounded-2xl px-4 py-3 text-right font-black"><i class="fa-solid fa-house ml-3 w-5"></i>الرئيسية</button><button class="side-btn w-full rounded-2xl px-4 py-3 text-right font-black text-slate-400 hover:bg-slate-900 hover:text-white"><i class="fa-solid fa-book ml-3 w-5"></i>دروسي</button><button class="side-btn w-full rounded-2xl px-4 py-3 text-right font-black text-slate-400 hover:bg-slate-900 hover:text-white"><i class="fa-solid fa-circle-plus ml-3 w-5"></i>إضافة محتوى</button><button class="side-btn w-full rounded-2xl px-4 py-3 text-right font-black text-slate-400 hover:bg-slate-900 hover:text-white"><i class="fa-solid fa-file-circle-question ml-3 w-5"></i>الاختبارات</button><button class="side-btn w-full rounded-2xl px-4 py-3 text-right font-black text-slate-400 hover:bg-slate-900 hover:text-white"><i class="fa-solid fa-chart-line ml-3 w-5"></i>الإحصائيات</button><button class="side-btn w-full rounded-2xl px-4 py-3 text-right font-black text-slate-400 hover:bg-slate-900 hover:text-white"><i class="fa-solid fa-user-group ml-3 w-5"></i>الطلاب</button></nav>
-      <div class="border-t border-slate-800 pt-4"><div class="flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center"><i class="fa-solid fa-user-tie"></i></span><div><p class="font-black text-sm">أ/ محمد علي</p><p class="text-[11px] text-slate-400">لغة عربية</p></div></div></div>
+<body class="teacher-v3-body">
+  <div id="toast" class="toast"></div>
+
+  <section id="teacherAccess" class="teacher-access hidden">
+    <span>👨‍🏫</span><h1>بوابة المدرس</h1>
+    <p id="teacherAccessText">يتم التحقق من حسابك وصلاحياتك...</p>
+    <div id="teacherAccessActions"><a class="btn btn-primary" href="./index.html">العودة للمنصة</a></div>
+  </section>
+
+  <section id="teacherPortal" class="teacher-shell hidden">
+    <aside class="teacher-side" id="teacherSide">
+      <a class="brand brand-light" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-book-open"></i></span><span><strong>الأكاديمية</strong><small>بوابة المدرس</small></span></a>
+      <nav class="teacher-nav">
+        <button class="active" data-teacher-tab="home"><i class="fa-solid fa-house"></i> الرئيسية</button>
+        <button data-teacher-tab="content"><i class="fa-solid fa-book-open"></i> محتواي</button>
+        <button data-teacher-tab="submit"><i class="fa-solid fa-circle-plus"></i> إضافة محتوى</button>
+        <button data-teacher-tab="students"><i class="fa-solid fa-users"></i> الطلاب</button>
+        <button data-teacher-tab="analytics"><i class="fa-solid fa-chart-line"></i> الإحصائيات</button>
+      </nav>
     </aside>
-    <main class="lg:mr-72 flex-1 min-h-screen">
-      <header class="bg-white border-b border-slate-200 sticky top-0 z-30"><div class="px-4 md:px-8 h-16 flex items-center justify-between"><div><p class="text-[11px] text-blue-600 font-black">لوحة المدرس</p><h1 class="font-black text-lg">صباح الخير، أ/ محمد 👋</h1></div><div class="flex gap-2"><a href="index.html" class="hidden md:flex items-center gap-2 border border-slate-200 px-4 py-2 rounded-xl font-black text-xs"><i class="fa-solid fa-eye"></i> عرض الأكاديمية</a><button class="w-10 h-10 bg-slate-100 rounded-xl"><i class="fa-solid fa-bell text-slate-500"></i></button></div></div></header>
-      <div class="p-4 md:p-8 max-w-7xl mx-auto">
-        <section class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4"><div class="card rounded-3xl p-5"><div class="flex justify-between"><span class="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-play"></i></span><span class="text-xs font-black text-emerald-600">+3 هذا الشهر</span></div><strong class="text-3xl block mt-5">24</strong><p class="text-sm text-slate-400 font-bold">فيديو منشور</p></div><div class="card rounded-3xl p-5"><div class="flex justify-between"><span class="w-11 h-11 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center"><i class="fa-solid fa-eye"></i></span></div><strong class="text-3xl block mt-5">18.7K</strong><p class="text-sm text-slate-400 font-bold">إجمالي المشاهدات</p></div><div class="card rounded-3xl p-5"><div class="flex justify-between"><span class="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-users"></i></span></div><strong class="text-3xl block mt-5">1,284</strong><p class="text-sm text-slate-400 font-bold">طلاب شاهدوا محتواك</p></div><div class="card rounded-3xl p-5"><div class="flex justify-between"><span class="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-star"></i></span></div><strong class="text-3xl block mt-5">4.9</strong><p class="text-sm text-slate-400 font-bold">تقييم تجريبي</p></div></section>
-        <section class="grid xl:grid-cols-[1.35fr_.65fr] gap-6 mt-6">
-          <div class="card rounded-[2rem] p-6"><div class="flex items-center justify-between mb-6"><div><p class="text-xs text-blue-600 font-black">المحتوى</p><h2 class="text-2xl font-black mt-1">آخر الدروس</h2></div><button onclick="openAddModal()" class="bg-blue-600 text-white px-5 py-3 rounded-2xl font-black text-sm"><i class="fa-solid fa-plus ml-2"></i>إضافة درس</button></div><div class="space-y-3"><div class="border border-slate-200 rounded-2xl p-4 flex items-center gap-4"><span class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-video"></i></span><div class="flex-1"><h3 class="font-black">المفعول المطلق</h3><p class="text-xs text-slate-400 font-bold mt-1">أولى إعدادي • لغة عربية • 2.3K مشاهدة</p></div><span class="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-xl text-xs font-black">منشور</span></div><div class="border border-slate-200 rounded-2xl p-4 flex items-center gap-4"><span class="w-12 h-12 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center"><i class="fa-solid fa-video"></i></span><div class="flex-1"><h3 class="font-black">المفعول لأجله</h3><p class="text-xs text-slate-400 font-bold mt-1">أولى إعدادي • لغة عربية</p></div><span class="bg-amber-50 text-amber-700 px-3 py-1.5 rounded-xl text-xs font-black">قيد المراجعة</span></div><div class="border border-slate-200 rounded-2xl p-4 flex items-center gap-4"><span class="w-12 h-12 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center"><i class="fa-solid fa-file-pen"></i></span><div class="flex-1"><h3 class="font-black">النعت</h3><p class="text-xs text-slate-400 font-bold mt-1">ثانية إعدادي • لغة عربية</p></div><span class="bg-slate-100 text-slate-600 px-3 py-1.5 rounded-xl text-xs font-black">مسودة</span></div></div></div>
-          <div class="space-y-6"><div class="card rounded-[2rem] p-6"><p class="text-xs text-violet-600 font-black">صلاحياتك الحالية</p><h2 class="text-xl font-black mt-1 mb-5">المواد والصفوف</h2><div class="space-y-3"><div class="bg-slate-50 rounded-2xl p-4"><strong>اللغة العربية</strong><p class="text-xs text-slate-400 font-bold mt-1">الأول والثاني الإعدادي</p></div><p class="text-xs leading-6 text-slate-400 font-bold">سيتم ربط هذه الصلاحيات بحساب المدرس، ولن يستطيع تعديل محتوى مدرس آخر.</p></div></div><div class="rounded-[2rem] bg-slate-950 text-white p-6"><span class="text-3xl">💡</span><h3 class="text-xl font-black mt-3">نصيحة اليوم</h3><p class="text-sm text-slate-300 font-semibold leading-7 mt-2">أضف تدريبًا قصيرًا بعد كل فيديو. الهدف هو تثبيت المعلومة، وليس زيادة عدد الأسئلة.</p></div></div>
+
+    <main class="teacher-main">
+      <header class="teacher-top">
+        <div><button id="teacherMenuBtn" class="dash-mobile-menu"><i class="fa-solid fa-bars"></i></button><h1 id="teacherTopName">أهلًا أستاذنا 👋</h1><p id="teacherTopRole">بوابة إدارة المحتوى التعليمي</p></div>
+        <div class="dashboard-actions"><a class="btn btn-soft" href="./index.html"><i class="fa-solid fa-eye"></i> عرض المنصة</a><button id="teacherLogout" class="icon-btn" title="تسجيل الخروج"><i class="fa-solid fa-arrow-right-from-bracket"></i></button></div>
+      </header>
+
+      <div class="teacher-page">
+        <section class="teacher-tab" id="teacher-tab-home">
+          <article class="teacher-welcome">
+            <div><span class="section-kicker light">مساحتك التعليمية</span><h2>مرحبًا <span id="teacherWelcomeName">أستاذنا</span> 👋</h2><p>أضف محتوى منظم، تابع ما تم اعتماده، وركّز على جودة الشرح.</p></div>
+            <span class="teacher-welcome-art">📚</span>
+          </article>
+
+          <section class="teacher-stat-grid">
+            <article><span class="stat-icon blue"><i class="fa-solid fa-video"></i></span><div><strong id="teacherApprovedCount">0</strong><small>محتوى معتمد</small></div></article>
+            <article><span class="stat-icon orange"><i class="fa-solid fa-clock"></i></span><div><strong id="teacherPendingCount">0</strong><small>قيد المراجعة</small></div></article>
+            <article><span class="stat-icon green"><i class="fa-solid fa-book-open"></i></span><div><strong id="teacherSubjectCount">0</strong><small>مواد مسندة</small></div></article>
+            <article><span class="stat-icon violet"><i class="fa-solid fa-layer-group"></i></span><div><strong id="teacherGradeCount">0</strong><small>صفوف مسندة</small></div></article>
+          </section>
+
+          <section class="teacher-grid">
+            <article class="teacher-card">
+              <div class="teacher-card-head"><div><span class="section-kicker">صلاحياتك</span><h3>المواد والصفوف المسندة</h3></div><span>🎓</span></div>
+              <div class="teacher-assignment-list" id="teacherAssignments"></div>
+            </article>
+            <article class="teacher-card">
+              <div class="teacher-card-head"><div><span class="section-kicker">آخر التحديثات</span><h3>طلباتك الأخيرة</h3></div><span>📝</span></div>
+              <div class="submission-list" id="teacherRecentSubmissions"></div>
+            </article>
+          </section>
+        </section>
+
+        <section class="teacher-tab hidden" id="teacher-tab-content">
+          <article class="teacher-card">
+            <div class="teacher-card-head"><div><span class="section-kicker">محتواك</span><h3>الدروس والفيديوهات المعتمدة</h3></div><button class="btn btn-primary" data-open-teacher-submit><i class="fa-solid fa-plus"></i> إضافة محتوى</button></div>
+            <div class="submission-list" id="teacherApprovedList"></div>
+          </article>
+        </section>
+
+        <section class="teacher-tab hidden" id="teacher-tab-submit">
+          <article class="teacher-card">
+            <div class="teacher-card-head"><div><span class="section-kicker">إرسال للمراجعة</span><h3>إضافة درس أو فيديو جديد</h3></div><span>➕</span></div>
+            <p class="profile-muted">المحتوى لن يظهر للطلاب قبل اعتماده من الإدارة.</p>
+            <form id="teacherSubmissionForm" class="teacher-form">
+              <label><span>عنوان الدرس</span><input id="teacherLessonTitle" required placeholder="مثال: المفعول المطلق"></label>
+              <label><span>رابط YouTube</span><input id="teacherVideoUrl" required type="url" placeholder="https://youtube.com/..."></label>
+              <label><span>نوع التعليم</span><select id="teacherEducationType"><option value="public">تربية وتعليم</option><option value="azhar">أزهر شريف</option></select></label>
+              <label><span>المرحلة</span><select id="teacherStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+              <label><span>الصف</span><select id="teacherGrade"></select></label>
+              <label><span>المادة</span><select id="teacherSubject"></select></label>
+              <label><span>الوحدة</span><select id="teacherUnit"><option value="1">الوحدة الأولى</option><option value="2">الوحدة الثانية</option><option value="3">الوحدة الثالثة</option><option value="4">الوحدة الرابعة</option><option value="5">الوحدة الخامسة</option><option value="6">الوحدة السادسة</option></select></label>
+              <label class="full"><span>ملاحظات للإدارة</span><textarea id="teacherNotes" placeholder="أي ملاحظات أو تفاصيل مهمة عن المحتوى..."></textarea></label>
+              <button class="btn btn-primary full" type="submit" id="teacherSubmitBtn"><i class="fa-solid fa-paper-plane"></i> إرسال للمراجعة</button>
+            </form>
+          </article>
+        </section>
+
+        <section class="teacher-tab hidden" id="teacher-tab-students">
+          <article class="teacher-card">
+            <div class="teacher-card-head"><div><span class="section-kicker">نظرة تعليمية</span><h3>طلاب محتواك</h3></div><span>👥</span></div>
+            <div class="empty-state"><span>📊</span><h3>إحصائيات الطلاب هتظهر هنا</h3><p>بعد ربط مشاهدة الدروس بالمدرس، هتشوف عدد الطلاب والتفاعل والنتائج.</p></div>
+          </article>
+        </section>
+
+        <section class="teacher-tab hidden" id="teacher-tab-analytics">
+          <article class="teacher-card">
+            <div class="teacher-card-head"><div><span class="section-kicker">التحليل</span><h3>أداء المحتوى</h3></div><span>📈</span></div>
+            <div class="empty-state"><span>🧠</span><h3>لوحة التحليلات جاهزة للربط</h3><p>هنضيف المشاهدات، نسبة إكمال الدرس، ومتوسط نتائج الاختبارات لكل محتوى.</p></div>
+          </article>
         </section>
       </div>
     </main>
-  </div>
-  <div id="addModal" class="hidden fixed inset-0 z-50 bg-slate-950/60 p-4 items-center justify-center"><div class="bg-white rounded-[2rem] max-w-2xl w-full p-6 md:p-8"><div class="flex justify-between items-center mb-6"><div><p class="text-xs text-blue-600 font-black">إضافة محتوى جديد</p><h2 class="text-2xl font-black">إرسال درس للمراجعة</h2></div><button onclick="closeAddModal()" class="w-10 h-10 bg-slate-100 rounded-xl"><i class="fa-solid fa-xmark"></i></button></div><div class="grid md:grid-cols-2 gap-4"><input class="border-2 border-slate-200 p-4 rounded-2xl font-bold outline-none focus:border-blue-500" placeholder="عنوان الدرس"><input class="border-2 border-slate-200 p-4 rounded-2xl font-bold outline-none focus:border-blue-500" placeholder="رابط YouTube" dir="ltr"><select class="border-2 border-slate-200 p-4 rounded-2xl font-bold"><option>الأول الإعدادي</option><option>الثاني الإعدادي</option></select><select class="border-2 border-slate-200 p-4 rounded-2xl font-bold"><option>اللغة العربية</option></select><textarea class="md:col-span-2 border-2 border-slate-200 p-4 rounded-2xl font-bold h-32" placeholder="ملخص أو شرح مكتوب للدرس"></textarea></div><button onclick="closeAddModal()" class="mt-6 w-full bg-blue-600 text-white py-4 rounded-2xl font-black">إرسال للمراجعة</button><p class="text-center text-xs text-slate-400 font-bold mt-3">هذه واجهة تجريبية وسيتم ربطها بقاعدة البيانات لاحقًا.</p></div></div>
-  <script>function openAddModal(){let m=document.getElementById('addModal');m.classList.remove('hidden');m.classList.add('flex')}function closeAddModal(){let m=document.getElementById('addModal');m.classList.add('hidden');m.classList.remove('flex')}</script>
+  </section>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="./assets/teacher.js"></script>
 </body>
 </html>
