@@ -8,7 +8,7 @@ const auth=firebase.auth(),db=firebase.database();
 const $=id=>document.getElementById(id), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 
 let currentUser=null,root={},unsubscribe=null;
-const editState={lesson:null,quiz:null,file:null,simulation:null,live:null};
+const editState={subject:null,lesson:null,quiz:null,file:null,simulation:null,live:null};
 const stageNames={primary:'ابتدائي',prep:'إعدادي',sec:'ثانوي'};
 const defaultSubjects={
  primary:[{id:'arabic',name:'اللغة العربية',emoji:'📖'},{id:'math',name:'الرياضيات',emoji:'🧮'},{id:'science',name:'العلوم',emoji:'🔬'},{id:'english',name:'اللغة الإنجليزية',emoji:'🇬🇧'},{id:'social',name:'الدراسات الاجتماعية',emoji:'🌍'},{id:'religion',name:'التربية الدينية',emoji:'🕌'}],
@@ -107,24 +107,53 @@ function renderCurriculum(){
  const list=subjectsFor(stage,grade,type);
  $('curriculumAdminGrid').innerHTML=list.length?list.map(s=>{
    const custom=customSubjectsFor(stage,grade,type).find(x=>x.id===s.id),units=custom?.units||s.units||[];
-   return '<article class="admin-subject-card"><span class="section-kicker">'+esc(typeLabel(type))+' • '+esc(gradeLabel(stage,grade))+'</span><h3>'+esc(s.emoji||'📚')+' '+esc(s.name)+'</h3><p>رمز المادة: '+esc(s.id)+'</p><div class="admin-unit-tags">'+(units.length?units.map((u,i)=>'<span>'+(i+1)+'. '+esc(u.name||u)+'</span>').join(''):'<span>بدون وحدات مخصصة</span>')+'</div>'+(custom?'<button class="admin-action-btn danger" data-delete-subject="'+esc(s.id)+'" title="حذف المادة" style="margin-top:12px"><i class="fa-solid fa-trash"></i></button>':'')+'</article>';
+   return '<article class="admin-subject-card"><span class="section-kicker">'+esc(typeLabel(type))+' • '+esc(gradeLabel(stage,grade))+'</span><h3>'+esc(s.emoji||'📚')+' '+esc(s.name)+'</h3><p>رمز المادة: '+esc(s.id)+'</p><div class="admin-unit-tags">'+(units.length?units.map((u,i)=>'<span>'+(i+1)+'. '+esc(u.name||u)+'</span>').join(''):'<span>بدون وحدات مخصصة</span>')+'</div>'+(custom?'<div class="admin-action-row" style="margin-top:12px"><button class="admin-action-btn" data-edit-subject="'+esc(s.id)+'" title="تعديل المادة والوحدات"><i class="fa-solid fa-pen"></i></button><button class="admin-action-btn danger" data-delete-subject="'+esc(s.id)+'" title="حذف المادة"><i class="fa-solid fa-trash"></i></button></div>':'')+'</article>';
  }).join(''):empty();
- $$('[data-delete-subject]').forEach(b=>b.onclick=()=>deleteSubject(b.dataset.deleteSubject));
+ $('[data-edit-subject]').forEach(b=>b.onclick=()=>editSubject(b.dataset.editSubject));
+ $('[data-delete-subject]').forEach(b=>b.onclick=()=>deleteSubject(b.dataset.deleteSubject));
+}
+function resetSubjectEditor(){
+ editState.subject=null;$('subjectForm').reset();
+ ['subjectType','subjectStage','subjectGrade','subjectId'].forEach(id=>{$(id).disabled=false});
+ $('subjectType').value='public';$('subjectStage').value='primary';fillGrades($('subjectGrade'),'primary');$('subjectEmoji').value='📚';
+ if($('subjectModalTitle'))$('subjectModalTitle').textContent='إضافة مادة ووحداتها';
+}
+function editSubject(id){
+ const type=$('curriculumType').value,stage=$('curriculumStage').value,grade=$('curriculumGrade').value;
+ const current=root.customSubjects?.[stage]?.[grade],arr=Array.isArray(current)?current:Object.values(current||{});
+ const s=arr.find(x=>x?.id===id&&(!x.type||x.type===type));if(!s)return;
+ editState.subject={id,type,stage,grade};
+ $('subjectType').value=type;$('subjectStage').value=stage;fillGrades($('subjectGrade'),stage,grade);$('subjectGrade').value=String(grade);
+ $('subjectId').value=s.id||id;$('subjectName').value=s.name||'';$('subjectEmoji').value=s.emoji||'📚';$('subjectUnits').value=(s.units||[]).map(u=>u?.name||u||'').filter(Boolean).join('\n');
+ ['subjectType','subjectStage','subjectGrade','subjectId'].forEach(key=>{$(key).disabled=true});
+ if($('subjectModalTitle'))$('subjectModalTitle').textContent='تعديل المادة والوحدات';openModal('subjectModal');
 }
 async function deleteSubject(id){
  if(!confirm('حذف المادة المخصصة؟'))return;
- const stage=$('curriculumStage').value,grade=$('curriculumGrade').value,arr=customSubjectsFor(stage,grade,$('curriculumType').value),next=arr.filter(x=>x.id!==id);
+ const type=$('curriculumType').value,stage=$('curriculumStage').value,grade=$('curriculumGrade').value;
+ const current=root.customSubjects?.[stage]?.[grade],arr=Array.isArray(current)?[...current]:Object.values(current||{});
+ const next=arr.filter(x=>!(x?.id===id&&(!x.type||x.type===type)));
  await db.ref('customSubjects/'+stage+'/'+grade).set(next);toast('تم حذف المادة');
 }
 async function saveSubject(e){
  e.preventDefault();
- const stage=$('subjectStage').value,grade=$('subjectGrade').value,type=$('subjectType').value;
+ const editing=editState.subject;
+ const stage=editing?.stage||$('subjectStage').value,grade=String(editing?.grade||$('subjectGrade').value),type=editing?.type||$('subjectType').value;
  const current=root.customSubjects?.[stage]?.[grade],arr=Array.isArray(current)?[...current]:Object.values(current||{});
- const id=$('subjectId').value.trim(),name=$('subjectName').value.trim();if(!id||!name)return;
- if(arr.some(x=>x?.id===id&&(!x.type||x.type===type)))return toast('رمز المادة موجود بالفعل.','error');
+ const id=editing?.id||$('subjectId').value.trim(),name=$('subjectName').value.trim();if(!id||!name)return;
  const units=$('subjectUnits').value.split('\n').map(x=>x.trim()).filter(Boolean).map(name=>({name}));
- arr.push({id,name,type,emoji:$('subjectEmoji').value.trim()||'📚',units});
- await db.ref('customSubjects/'+stage+'/'+grade).set(arr);closeModal('subjectModal');e.target.reset();toast('تمت إضافة المادة');
+ const value={id,name,type,emoji:$('subjectEmoji').value.trim()||'📚',units};
+ if(editing){
+   const idx=arr.findIndex(x=>x?.id===editing.id&&(!x.type||x.type===editing.type));
+   if(idx<0)return toast('تعذر العثور على المادة للتعديل.','error');
+   arr[idx]={...arr[idx],...value,updatedAt:Date.now()};
+   await db.ref('customSubjects/'+stage+'/'+grade).set(arr);toast('تم تحديث المادة والوحدات');
+ }else{
+   if(arr.some(x=>x?.id===id&&(!x.type||x.type===type)))return toast('رمز المادة موجود بالفعل.','error');
+   arr.push({...value,createdAt:Date.now()});
+   await db.ref('customSubjects/'+stage+'/'+grade).set(arr);toast('تمت إضافة المادة');
+ }
+ closeModal('subjectModal');resetSubjectEditor();
 }
 
 function renderLessonVideosEditor(videos){
@@ -357,7 +386,7 @@ async function startDataListener(){
 $$('[data-admin-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.adminTab));
 $$('[data-jump-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.jumpTab));
 $$('[data-close-admin-modal]').forEach(b=>b.onclick=()=>closeModal(b.dataset.closeAdminModal));
-$('openSubjectModal').onclick=()=>openModal('subjectModal');$('openLessonModal').onclick=()=>{resetLessonEditor();openModal('lessonModal')};$('openQuizModal').onclick=()=>{resetQuizEditor();openModal('quizModal')};$('openFileModal').onclick=()=>{resetFileEditor();openModal('fileModal')};$('openSimulationModal').onclick=()=>{resetSimulationEditor();openModal('simulationModal')};$('openLiveModal').onclick=()=>{resetLiveEditor();openModal('liveModal')};
+$('openSubjectModal').onclick=()=>{resetSubjectEditor();openModal('subjectModal')};$('openLessonModal').onclick=()=>{resetLessonEditor();openModal('lessonModal')};$('openQuizModal').onclick=()=>{resetQuizEditor();openModal('quizModal')};$('openFileModal').onclick=()=>{resetFileEditor();openModal('fileModal')};$('openSimulationModal').onclick=()=>{resetSimulationEditor();openModal('simulationModal')};$('openLiveModal').onclick=()=>{resetLiveEditor();openModal('liveModal')};
 $('addLessonVideoRow').onclick=addLessonVideoRow;
 renderLessonVideosEditor([{name:'',url:''}]);
 $('subjectForm').onsubmit=saveSubject;$('lessonForm').onsubmit=saveLesson;$('quizForm').onsubmit=saveQuiz;$('fileForm').onsubmit=saveFile;$('simulationForm').onsubmit=saveSimulation;$('liveForm').onsubmit=saveLiveSession;$('studyGroupForm').onsubmit=saveStudyGroup;$('announcementForm').onsubmit=saveAnnouncement;$('settingsForm').onsubmit=saveSettings;
