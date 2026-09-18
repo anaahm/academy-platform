@@ -453,6 +453,14 @@
     }));
 
     $('mobileMenuBtn').addEventListener('click', () => $('mobileMenu').classList.toggle('hidden'));
+    const dashSearchInput = $('dashSearchInput');
+    if (dashSearchInput) {
+      dashSearchInput.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        const q = dashSearchInput.value.trim();
+        if (q) location.href = './search.html?q=' + encodeURIComponent(q);
+      });
+    }
     $('userChip').addEventListener('click', () => $('userMenu').classList.toggle('hidden'));
     if (!document.getElementById('profileMenuBtn')) {
       const profileBtn = document.createElement('button');
