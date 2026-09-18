@@ -70,16 +70,22 @@ $('closeAssignmentModal').onclick=closeModal;$('assignmentModal').onclick=e=>{if
 $$('[data-assignment-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.assignmentFilter;$$('[data-assignment-filter]').forEach(x=>x.classList.toggle('active',x===b));render()});
 
 (async()=>{
-  ({user,profile}=await C.requireStudent());$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
-  const [a,subjectsSnap]=await Promise.all([C.db.ref('assignments').once('value'),C.db.ref('customSubjects').once('value')]);
-  assignments=Object.entries(a.val()||{}).map(([id,v])=>({id,...(v||{})}));data.customSubjects=subjectsSnap.val()||{};
-  const mine=matching();
-  const snaps=await Promise.all(mine.map(x=>C.db.ref('assignmentSubmissions/'+x.id+'/'+user.uid).once('value')));
-  submissions={};mine.forEach((x,i)=>{if(snaps[i].exists())submissions[x.id]=snaps[i].val()});
-  mine.forEach(x=>C.db.ref('assignmentSubmissions/'+x.id+'/'+user.uid).on('value',snap=>{
-    if(snap.exists())submissions[x.id]=snap.val();else delete submissions[x.id];
+  try{
+    ({user,profile}=await C.requireStudent());$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
+    window.AcademyUI?.showPageLoading('جاري تحميل واجباتك وتسليماتك...');
+    const [a,subjectsSnap]=await Promise.all([C.db.ref('assignments').once('value'),C.db.ref('customSubjects').once('value')]);
+    assignments=Object.entries(a.val()||{}).map(([id,v])=>({id,...(v||{})}));data.customSubjects=subjectsSnap.val()||{};
+    const mine=matching();
+    const snaps=await Promise.all(mine.map(x=>C.db.ref('assignmentSubmissions/'+x.id+'/'+user.uid).once('value')));
+    submissions={};mine.forEach((x,i)=>{if(snaps[i].exists())submissions[x.id]=snaps[i].val()});
+    mine.forEach(x=>C.db.ref('assignmentSubmissions/'+x.id+'/'+user.uid).on('value',snap=>{
+      if(snap.exists())submissions[x.id]=snap.val();else delete submissions[x.id];
+      render();
+    }));
     render();
-  }));
-  render();
-})();
+  }catch(err){
+    console.error(err);C.toast('تعذر تحميل الواجبات الآن.','error');
+    $('assignmentList').innerHTML=window.AcademyUI?.errorStateHtml('تعذر تحميل الواجبات','تحقق من الاتصال ثم حاول مرة أخرى.','<button class="btn btn-primary" onclick="location.reload()">إعادة المحاولة</button>')||'';
+  }finally{window.AcademyUI?.hidePageLoading()}
+})()
 })();
