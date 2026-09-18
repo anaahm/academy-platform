@@ -63,8 +63,8 @@ function render(){
 function switchTab(tab,updateUrl=true){
   const allowed=['overview','account','study','saved','security'];
   if(!allowed.includes(tab))tab='overview';
-  $('[data-profile-tab]').forEach(b=>b.classList.toggle('active',b.dataset.profileTab===tab));
-  $('.profile-tab').forEach(s=>s.classList.add('hidden'));
+  $$('[data-profile-tab]').forEach(b=>b.classList.toggle('active',b.dataset.profileTab===tab));
+  $$('.profile-tab').forEach(s=>s.classList.add('hidden'));
   $('tab-'+tab)?.classList.remove('hidden');
   if(updateUrl){
     const url=new URL(location.href);
@@ -72,7 +72,7 @@ function switchTab(tab,updateUrl=true){
     history.replaceState({},'',url);
   }
 }
-$('[data-profile-tab]').forEach(b=>b.onclick=()=>switchTab(b.dataset.profileTab));
+$$('[data-profile-tab]').forEach(b=>b.onclick=()=>switchTab(b.dataset.profileTab));
 $('studyStage').addEventListener('change',updateGradeOptions);
 $('accountForm').addEventListener('submit',async e=>{
   e.preventDefault();const name=$('profileNameInput').value.trim();if(name.length<2)return toast('اكتب اسمًا صحيحًا.','error');
