@@ -67,6 +67,14 @@
           ".catch(e => { document.getElementById('login-btn').innerText = \"تسجيل الدخول\"; alert(e.message); });",
           ".catch(e => { document.getElementById('login-btn').innerText = \"تسجيل الدخول\"; const msg=(e.code===\"auth/invalid-login-credentials\"||e.code===\"auth/wrong-password\"||e.code===\"auth/user-not-found\")?\"البريد الإلكتروني أو كلمة المرور غير صحيحة، أو حساب الإدارة غير موجود في Firebase Authentication.\":(e.message||\"تعذر تسجيل الدخول\"); app.notify(msg,\"error\"); });"
         );
+        html=html.replace(
+          '<button type="button" id="login-btn" onclick="app.login(event)"',
+          '<button type="button" id="login-btn" onclick="app.login(event)"'
+        );
+        html=html.replace(
+          '</div>\n        </div>\n    </div>\n\n    <!-- Main Panel -->',
+          '<button type="button" id="admin-reset-pass-btn" class="w-full mt-3 text-sm font-black text-blue-600 hover:text-blue-800" onclick="(async()=>{const email=document.getElementById(\'adm-email\').value.trim();if(!email){app.notify(\'اكتب البريد الإلكتروني أولًا\',\'error\');return}try{await firebase.auth().sendPasswordResetEmail(email);app.notify(\'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك\')}catch(e){app.notify(\'تعذر إرسال الرابط. تأكد أن البريد مسجل في Firebase Authentication\',\'error\')}})()">نسيت كلمة المرور؟</button></div>\n        </div>\n    </div>\n\n    <!-- Main Panel -->'
+        );
         html=html.replace('</head>','<link rel="stylesheet" href="assets/css/admin-modern.css?v=3"></head>');
         html=html.replace('</body>','<script src="assets/js/admin-ui.js?v=3"><\/script></body>');
         document.open();document.write(html);document.close();
