@@ -29,12 +29,7 @@ async function toggleLike(id){
  if(snap.exists())await ref.remove();else await ref.set(true);
 }
 async function reportPost(id){
- let approved=false;
- if(window.AcademyUI?.confirm){
-   approved=await window.AcademyUI.confirm({title:'إرسال بلاغ؟',message:'سيصل البلاغ إلى إدارة المنصة لمراجعة هذا المنشور.',tone:'warning',acceptText:'إرسال البلاغ'});
- }else{
-   approved=window.confirm('إرسال البلاغ إلى إدارة المنصة لمراجعة هذا المنشور؟');
- }
+ const approved=await window.AcademyUI.confirm({title:'إرسال بلاغ؟',message:'سيصل البلاغ إلى إدارة المنصة لمراجعة هذا المنشور.',tone:'warning',acceptText:'إرسال البلاغ'});
  if(!approved)return;
  await C.db.ref('community/forums/'+id+'/reports/'+user.uid).set({createdAt:Date.now()});
  C.toast('تم إرسال البلاغ للإدارة.');
