@@ -136,8 +136,9 @@ function renderLesson(){
  if(state.user) db.ref('studentProfilesV3/'+state.user.uid).update({lastLessonTitle:lesson.title||'',lastSubjectId:c.subject,lastLessonId:id,lastActiveAt:Date.now()}).catch(()=>{});
  document.title=(lesson.title||'الدرس')+' | الأكاديمية';$('lessonTitle').textContent=lesson.title||'الدرس';$('lessonMeta').textContent=unitName(c,lesson.unit||1)+' • '+state.subject.name;
  $('lessonBreadcrumb').innerHTML='<a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><a id="backToSubjectLink" href="'+url('subject.html',c)+'">'+esc(state.subject.name)+'</a><i class="fa-solid fa-chevron-left"></i><span>'+esc(lesson.title||'الدرس')+'</span>';
- renderVideo(lesson);renderExplanation(lesson);renderFiles();renderOutline(c,lesson);renderNav(c);updateProgress(id);bindTabs();setupQuiz(c,lesson);
+ renderVideo(lesson);renderExplanation(lesson);renderFiles();renderOutline(c,lesson);renderNav(c);updateProgress(id);updateBookmarkUI(id);bindTabs();setupQuiz(c,lesson);
  $('markCompleteBtn').onclick=()=>markComplete(c,id);$('markCompleteHeader').onclick=()=>markComplete(c,id);
+ if($('bookmarkLessonBtn')) $('bookmarkLessonBtn').onclick=()=>toggleBookmark(c,id);
 }
 function renderVideo(l){
  const vids=Array.isArray(l.videos)?l.videos.filter(v=>v?.url):[];
@@ -166,6 +167,30 @@ function renderNav(c){
 function bindTabs(){
  $$('[data-lesson-tab]').forEach(b=>b.onclick=()=>{$$('[data-lesson-tab]').forEach(x=>x.classList.toggle('active',x===b));$('lessonExplanationPanel').classList.toggle('hidden',b.dataset.lessonTab!=='explanation');$('lessonQuizPanel').classList.toggle('hidden',b.dataset.lessonTab!=='quiz');$('lessonResourcesPanel').classList.toggle('hidden',b.dataset.lessonTab!=='resources')});
 }
+function isBookmarked(id){return !!state.profile?.bookmarks?.[id]}
+function updateBookmarkUI(id){
+ const btn=$('bookmarkLessonBtn');if(!btn)return;
+ const saved=isBookmarked(id);
+ btn.innerHTML=saved?'<i class="fa-solid fa-bookmark"></i>':'<i class="fa-regular fa-bookmark"></i>';
+ btn.title=saved?'إزالة من المحفوظات':'حفظ للمراجعة';
+ btn.style.color=saved?'#1d4ed8':'';
+}
+async function toggleBookmark(c,id){
+ if(!state.user){toast('سجّل الدخول أولًا لحفظ الدرس.','error');return}
+ const saved=isBookmarked(id),ref=db.ref('studentProfilesV3/'+state.user.uid+'/bookmarks/'+id);
+ if(saved){
+   await ref.remove();
+   if(state.profile.bookmarks)delete state.profile.bookmarks[id];
+   toast('تمت إزالة الدرس من المحفوظات.');
+ }else{
+   const payload={lessonId:id,title:state.currentLesson?.title||'درس',subject:c.subject,type:c.type,stage:c.stage,grade:String(c.grade),savedAt:Date.now()};
+   await ref.set(payload);
+   state.profile.bookmarks=state.profile.bookmarks||{};state.profile.bookmarks[id]=payload;
+   toast('تم حفظ الدرس للمراجعة ⭐');
+ }
+ updateBookmarkUI(id);
+}
+
 function updateProgress(id){
  const complete=done(id);$('lessonProgressBar').style.width=complete?'100%':'35%';$('lessonProgressText').textContent=complete?'أحسنت! أكملت هذا الدرس ويمكنك مراجعته في أي وقت.':'شاهد الشرح ثم حل التدريب، وبعدها علّم الدرس كمكتمل.';
  $('lessonStatusIcon').classList.toggle('complete',complete);$('lessonStatusIcon').innerHTML=complete?'<i class="fa-solid fa-check"></i>':'<i class="fa-regular fa-circle"></i>';$('markCompleteBtn').innerHTML=complete?'<i class="fa-solid fa-check"></i> تم إكمال الدرس':'<i class="fa-regular fa-circle-check"></i> تعليم الدرس كمكتمل';
