@@ -37,6 +37,21 @@ function confirmDialog(options={}){
     setTimeout(()=>wrap.querySelector('.ui-confirm-accept')?.focus(),50);
   });
 }
+function showNetworkBanner(online){
+  let banner=document.querySelector('.ui-network-banner');
+  if(!banner){banner=document.createElement('div');banner.className='ui-network-banner';document.body.appendChild(banner)}
+  banner.className='ui-network-banner '+(online?'online':'offline');
+  banner.innerHTML=online?'<i class="fa-solid fa-wifi"></i><span>رجع الاتصال بالإنترنت</span>':'<i class="fa-solid fa-wifi-slash"></i><span>أنت غير متصل بالإنترنت. بعض البيانات قد لا تتحدث.</span>';
+  requestAnimationFrame(()=>banner.classList.add('show'));
+  clearTimeout(showNetworkBanner.t);
+  showNetworkBanner.t=setTimeout(()=>banner.classList.remove('show'),online?2200:5200);
+}
+function emptyStateHtml(title='لا توجد بيانات',text='',icon='fa-inbox',actionHtml=''){
+  return '<div class="ui-empty-state"><span class="ui-empty-icon"><i class="fa-solid '+esc(icon)+'"></i></span><h3>'+esc(title)+'</h3><p>'+esc(text)+'</p>'+actionHtml+'</div>';
+}
+function errorStateHtml(title='تعذر تحميل البيانات',text='حاول مرة أخرى بعد قليل.',actionHtml=''){
+  return '<div class="ui-error-state"><span class="ui-error-icon"><i class="fa-solid fa-triangle-exclamation"></i></span><h3>'+esc(title)+'</h3><p>'+esc(text)+'</p>'+actionHtml+'</div>';
+}
 function showPageLoading(message='جاري تجهيز الصفحة...'){
   let wrap=document.querySelector('.ui-page-loader');
   if(!wrap){
@@ -68,7 +83,9 @@ document.addEventListener('pointerdown',e=>{
   span.className='ui-ripple';span.style.width=span.style.height=size+'px';span.style.left=(e.clientX-r.left-size/2)+'px';span.style.top=(e.clientY-r.top-size/2)+'px';
   btn.appendChild(span);setTimeout(()=>span.remove(),520);
 },{passive:true});
-document.addEventListener('DOMContentLoaded',()=>{document.body?.classList.add('ui-page-enter');finishRouteProgress()});
+document.addEventListener('DOMContentLoaded',()=>{document.body?.classList.add('ui-page-enter');finishRouteProgress();if(!navigator.onLine)showNetworkBanner(false)});
+window.addEventListener('offline',()=>showNetworkBanner(false));
+window.addEventListener('online',()=>showNetworkBanner(true));
 document.addEventListener('click',e=>{
   const a=e.target.closest('a[href]');if(!a)return;
   const href=a.getAttribute('href')||'';
@@ -79,5 +96,5 @@ document.addEventListener('click',e=>{
   }catch{}
 },true);
 window.addEventListener('pageshow',finishRouteProgress);
-window.AcademyUI={confirm:confirmDialog,setButtonLoading,showPageLoading,hidePageLoading,esc,startRouteProgress,finishRouteProgress};
+window.AcademyUI={confirm:confirmDialog,setButtonLoading,showPageLoading,hidePageLoading,emptyStateHtml,errorStateHtml,showNetworkBanner,esc,startRouteProgress,finishRouteProgress};
 })();
