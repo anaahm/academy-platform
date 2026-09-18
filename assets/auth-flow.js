@@ -1,6 +1,8 @@
 (() => {
 'use strict';
 if(!window.firebase || !firebase.auth)return;
+const cfg=window.ACADEMY_FIREBASE_CONFIG;
+if(cfg && !firebase.apps.length) firebase.initializeApp(cfg);
 
 const form=document.getElementById('loginForm');
 if(!form || form.dataset.authBound==='true')return;
