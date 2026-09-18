@@ -3,7 +3,7 @@
 
 const firebaseConfig = window.ACADEMY_FIREBASE_CONFIG || JSON.parse(localStorage.getItem('academyFirebaseConfig') || 'null');
 if(!firebaseConfig){ location.replace('./index.html'); return; }
-firebase.initializeApp(firebaseConfig);
+if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(), db=firebase.database();
 const $=id=>document.getElementById(id), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const page=document.documentElement.dataset.page, params=new URLSearchParams(location.search);
@@ -199,6 +199,7 @@ async function markComplete(c,id){
  if(!state.user){toast('سجّل الدخول أولًا لحفظ تقدمك.','error');return} if(done(id)){toast('هذا الدرس مكتمل بالفعل ✨');return}
  const at=Date.now();await db.ref('studentProfilesV3/'+state.user.uid+'/learningProgress/'+id).update({completed:true,completedAt:at,subject:c.subject});
  await db.ref('studentProfilesV3/'+state.user.uid+'/stats').transaction(s=>{s=s||{};s.completedLessons=(s.completedLessons||0)+1;s.totalXP=(s.totalXP||0)+50;s.level=Math.floor((s.totalXP||0)/1000)+1;return s});
+ if(window.AcademyCore?.addLeaderboardXP) await window.AcademyCore.addLeaderboardXP(state.user.uid,state.profile?.name||state.user.displayName||'طالب',50,0);
  state.profile.learningProgress=state.profile.learningProgress||{};state.profile.learningProgress[id]={completed:true,completedAt:at,subject:c.subject};
  const subjectPct=progress();
  await db.ref('studentProfilesV3/'+state.user.uid+'/subjectProgress/'+c.subject).set(subjectPct);
@@ -223,7 +224,12 @@ async function finishQuiz(){
  const qz=state.quiz;let score=0;qz.questions.forEach((q,i)=>{if(Number(qz.answers[i])===Number(q.correctAnswer))score++});const pct=Math.round(score/qz.questions.length*100);
  $('quizEngine').classList.add('hidden');$('quizResult').classList.remove('hidden');$('resultPercent').textContent=pct+'%';$('resultRing').style.background='conic-gradient(#10b981 '+(pct*3.6)+'deg,#e5e7eb 0deg)';
  $('resultTitle').textContent=pct>=80?'ممتاز جدًا! 🌟':pct>=60?'أداء جيد 👏':'راجع الشرح وجرّب مرة أخرى';$('resultMessage').textContent='أجبت عن '+score+' من '+qz.questions.length+' إجابة بشكل صحيح.';
- if(state.user){await db.ref('studentProfilesV3/'+state.user.uid+'/stats').transaction(s=>{s=s||{};s.completedQuizzes=(s.completedQuizzes||0)+1;s.totalXP=(s.totalXP||0)+(pct>=80?40:20);s.level=Math.floor((s.totalXP||0)/1000)+1;return s});await db.ref('studentProfilesV3/'+state.user.uid+'/quizHistory').push({sourceId:qz.sourceId,score:pct,createdAt:Date.now()})}
+ if(state.user){
+   const gained=pct>=80?40:20;
+   await db.ref('studentProfilesV3/'+state.user.uid+'/stats').transaction(s=>{s=s||{};s.completedQuizzes=(s.completedQuizzes||0)+1;s.totalXP=(s.totalXP||0)+gained;s.level=Math.floor((s.totalXP||0)/1000)+1;return s});
+   await db.ref('studentProfilesV3/'+state.user.uid+'/quizHistory').push({sourceId:qz.sourceId,score:pct,createdAt:Date.now()});
+   if(window.AcademyCore?.addLeaderboardXP) await window.AcademyCore.addLeaderboardXP(state.user.uid,state.profile?.name||state.user.displayName||'طالب',gained,1);
+ }
 }
 function renderQuizOnly(c,id){
  const q=state.data.quizzes?.[id];if(!q||q.isHidden){toast('الاختبار غير موجود.','error');setTimeout(()=>history.back(),800);return}
