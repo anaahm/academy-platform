@@ -15,6 +15,9 @@ const defaults={
 };
 const stageName={primary:'ابتدائي',prep:'إعدادي',sec:'ثانوي'};
 
+function safeUrl(u=''){
+ try{const x=new URL(u);return ['http:','https:'].includes(x.protocol)?x.href:'#'}catch{return'#'}
+}
 function toast(msg,type='success'){
  const el=$('toast');el.textContent=msg;el.className='toast show '+type;
  clearTimeout(toast.t);toast.t=setTimeout(()=>el.className='toast',3000);
@@ -149,7 +152,7 @@ async function submitTeacherAssignment(e){
 function openGradeSubmission(key){
  const [assignmentId,uid]=key.split('|'),a=homeworkAssignments[assignmentId],s=assignmentSubmissions[assignmentId]?.[uid];if(!a||!s)return;
  activeGrade={assignmentId,uid};$('gradeModalTitle').textContent=(s.studentName||'طالب')+' • '+(a.title||'واجب');
- $('gradeSubmissionPreview').innerHTML='<div><small>إجابة الطالب</small><p>'+escapeHtml(s.answer||'لا توجد إجابة نصية')+'</p>'+(s.link?'<a href="'+escapeHtml(s.link)+'" target="_blank" rel="noopener">فتح الرابط المرفق <i class="fa-solid fa-arrow-up-right-from-square"></i></a>':'')+'</div>';
+ $('gradeSubmissionPreview').innerHTML='<div><small>إجابة الطالب</small><p>'+escapeHtml(s.answer||'لا توجد إجابة نصية')+'</p>'+(s.link?'<a href="'+escapeHtml(safeUrl(s.link))+'" target="_blank" rel="noopener">فتح الرابط المرفق <i class="fa-solid fa-arrow-up-right-from-square"></i></a>':'')+'</div>';
  const maxScore=Number(a.maxScore||100);$('gradeScore').max=maxScore;$('gradeScoreLabel').textContent='الدرجة من '+maxScore;
  $('gradeScore').value=s.status==='graded'?Number(s.score||0):'';$('gradeFeedback').value=s.feedback||'';
  $('teacherGradeModal').classList.remove('hidden');document.body.style.overflow='hidden';
