@@ -58,3 +58,5 @@
 /* Teacher assignments & grading */
 .teacher-grade-modal{max-width:720px;padding:28px}.teacher-grade-modal h2{font-size:24px;margin:5px 0 16px}.grade-submission-preview{background:#f8fafc;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:15px}.grade-submission-preview small{font-size:8px;color:#64748b}.grade-submission-preview p{font-size:10px;white-space:pre-wrap;line-height:1.8}.grade-submission-preview a{font-size:9px;color:#2563eb;font-weight:800}.assignment-review-row{grid-template-columns:minmax(180px,1fr) 90px 90px auto!important}.assignment-review-row .btn{white-space:nowrap}
 @media(max-width:720px){.assignment-review-row{grid-template-columns:1fr!important}.assignment-review-row>span{display:flex;justify-content:space-between}.teacher-grade-modal{padding:22px}}
+
+.teacher-shell .admin-action-row{display:flex;gap:6px;align-items:center}.teacher-shell .admin-action-btn{width:34px;height:34px;border:0;border-radius:10px;background:#f1f5f9;color:#475569;display:grid;place-items:center}.teacher-shell .admin-action-btn.danger{background:#fef2f2;color:#dc2626}.teacher-shell .admin-action-btn.success{background:#ecfdf5;color:#059669}
