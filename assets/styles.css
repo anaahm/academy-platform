@@ -312,3 +312,6 @@ a{text-decoration:none;color:inherit}
   .hero-copy h1{font-size:38px}.hero-actions .btn{width:100%}.dashboard-subject-grid{grid-template-columns:1fr}
   .auth-form-wrap{padding:28px 18px}.form-row{align-items:flex-start;gap:8px;flex-direction:column}
 }
+.pwa-install-button{position:fixed;left:18px;bottom:18px;z-index:120;border:0;border-radius:16px;background:linear-gradient(135deg,#1d4ed8,#312e81);color:#fff;padding:11px 15px;box-shadow:0 18px 45px rgba(30,64,175,.28);display:flex;align-items:center;gap:8px;font-family:'Cairo',sans-serif;font-size:11px;font-weight:900}
+.pwa-install-button:hover{transform:translateY(-2px)}
+@media(max-width:860px){.pwa-install-button{bottom:78px;left:12px;padding:9px 12px}.pwa-install-button span{display:none}}
