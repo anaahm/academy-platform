@@ -62,3 +62,20 @@
 .teacher-shell .admin-action-row{display:flex;gap:6px;align-items:center}.teacher-shell .admin-action-btn{width:34px;height:34px;border:0;border-radius:10px;background:#f1f5f9;color:#475569;display:grid;place-items:center}.teacher-shell .admin-action-btn.danger{background:#fef2f2;color:#dc2626}.teacher-shell .admin-action-btn.success{background:#ecfdf5;color:#059669}
 
 .notification-badge{position:absolute;top:-5px;left:-5px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#ef4444;color:#fff;font-size:8px;font-weight:900;display:grid;place-items:center;border:2px solid #fff;line-height:1}.icon-btn.has-notification-badge{position:relative}
+
+/* Student dashboard account controls */
+.dashboard-account-wrap{position:relative}
+.dashboard-account-btn{border:1px solid var(--line);background:#fff;border-radius:14px;padding:6px 9px;display:flex;align-items:center;gap:8px;color:#0f172a;min-width:150px;box-shadow:0 4px 14px rgba(15,23,42,.04)}
+.dashboard-account-btn .avatar{width:34px;height:34px;border-radius:11px;background:#e0e7ff;color:#1d4ed8;display:grid;place-items:center;font-weight:900}
+.dashboard-account-copy{display:grid;text-align:right;line-height:1.2;flex:1}.dashboard-account-copy strong{font-size:10px}.dashboard-account-copy small{font-size:7px;color:#64748b}
+.dashboard-account-btn>i{font-size:9px;color:#94a3b8}
+.dashboard-account-menu{position:absolute;left:0;top:calc(100% + 8px);width:260px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:8px;box-shadow:0 18px 50px rgba(15,23,42,.16);z-index:90}
+.dashboard-account-menu button{width:100%;border:0;background:transparent;border-radius:12px;padding:10px;display:grid;grid-template-columns:28px 1fr;gap:9px;align-items:center;text-align:right;color:#334155}
+.dashboard-account-menu button:hover{background:#f8fafc}.dashboard-account-menu button>i{width:28px;height:28px;border-radius:9px;background:#eff6ff;color:#2563eb;display:grid;place-items:center}
+.dashboard-account-menu button span{display:grid}.dashboard-account-menu button strong{font-size:9px}.dashboard-account-menu button small{font-size:7px;color:#94a3b8;margin-top:2px}
+.dashboard-account-menu button.danger{color:#b91c1c}.dashboard-account-menu button.danger>i{background:#fef2f2;color:#dc2626}
+.dashboard-logout-btn{margin-top:8px!important;background:rgba(239,68,68,.10)!important;color:#fecaca!important}
+.dashboard-logout-btn:hover{background:rgba(239,68,68,.18)!important;color:#fff!important}
+.stage-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+@media(max-width:900px){.dashboard-account-copy{display:none}.dashboard-account-btn{min-width:auto;padding:5px}.dashboard-account-menu{left:0;width:240px}}
+@media(max-width:640px){.dashboard-actions .dash-search{display:none}.dashboard-account-menu{position:fixed;left:12px;right:12px;top:78px;width:auto}.stage-card-actions{flex-direction:column}.stage-card-actions .btn{width:100%}}
