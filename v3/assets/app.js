@@ -9,6 +9,7 @@
     storageBucket: "talebyg-a2609.firebasestorage.app"
   };
 
+  localStorage.setItem('academyFirebaseConfig', JSON.stringify(firebaseConfig));
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const database = firebase.database();
@@ -232,12 +233,35 @@
       </article>`;
     }).join('');
 
+    $('.dash-subject-card').forEach(card => {
+      card.style.cursor = 'pointer';
+      card.addEventListener('click', () => {
+        const subjectId = card.dataset.subject;
+        const q = new URLSearchParams({
+          type: p.educationType,
+          stage: p.stage,
+          grade: String(p.grade),
+          subject: subjectId
+        });
+        location.href = './subject.html?' + q.toString();
+      });
+    });
+
     const first = subjects[0];
     if (first) {
       $('continueTitle').textContent = p.lastLessonTitle || `ابدأ أول درس في ${first.name}`;
       $('continueMeta').textContent = p.lastLessonTitle
         ? `${first.name} • ${gradeLabels[p.stage]?.[p.grade] || ''}`
         : 'اختر المادة وابدأ، وسنحفظ تقدمك تلقائيًا.';
+      $('continueLearningBtn').onclick = () => {
+        const q = new URLSearchParams({
+          type: p.educationType,
+          stage: p.stage,
+          grade: String(p.grade),
+          subject: first.id
+        });
+        location.href = './subject.html?' + q.toString();
+      };
     }
     renderHeaderUser();
   }
@@ -455,7 +479,7 @@
     });
 
     $('dashMobileMenu').addEventListener('click', () => document.querySelector('.dashboard-sidebar').classList.toggle('open'));
-    $('continueLearningBtn').addEventListener('click', () => document.querySelector('.dashboard-section')?.scrollIntoView({behavior:'smooth'}));
+
 
     document.addEventListener('click', (e) => {
       if (!e.target.closest('#userChip') && !e.target.closest('#userMenu')) $('userMenu')?.classList.add('hidden');
