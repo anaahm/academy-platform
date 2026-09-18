@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>البحث | الأكاديمية</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./assets/app-icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./assets/styles.css">
+  <link rel="stylesheet" href="./assets/learning.css">
+  <link rel="stylesheet" href="./assets/search.css">
+</head>
+<body class="learning-body search-body">
+  <div id="toast" class="toast"></div>
+
+  <header class="learning-header">
+    <div class="container learning-nav">
+      <a class="brand" href="./index.html">
+        <span class="brand-mark"><i class="fa-solid fa-book-open"></i></span>
+        <span><strong>الأكاديمية</strong><small>ابحث وتعلّم</small></span>
+      </a>
+      <div class="learning-breadcrumb"><a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><span>البحث</span></div>
+      <a class="btn btn-soft" href="./explore.html"><i class="fa-regular fa-compass"></i> استكشف المراحل</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="search-hero">
+      <div class="container search-hero-inner">
+        <span class="section-kicker">ابحث في المنصة كلها</span>
+        <h1>إيه اللي عايز تتعلمه؟</h1>
+        <p>ابحث باسم الدرس أو المادة أو الاختبار أو الملف، وشوف النتائج من كل المراحل.</p>
+        <form id="searchForm" class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input id="searchInput" autocomplete="off" placeholder="مثال: المفعول المطلق، المعادلات، الوحدة الأولى...">
+          <button class="btn btn-primary" type="submit">بحث</button>
+        </form>
+        <div class="search-suggestions" id="searchSuggestions">
+          <button type="button" data-suggest="لغة عربية">لغة عربية</button>
+          <button type="button" data-suggest="رياضيات">رياضيات</button>
+          <button type="button" data-suggest="علوم">علوم</button>
+          <button type="button" data-suggest="اختبار">اختبارات</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="container search-workspace">
+      <aside class="search-filters">
+        <div><span class="section-kicker">تصفية النتائج</span><h3>نوع المحتوى</h3></div>
+        <button class="active" data-search-type="all"><i class="fa-solid fa-border-all"></i> الكل <span id="countAll">0</span></button>
+        <button data-search-type="lesson"><i class="fa-solid fa-circle-play"></i> الدروس <span id="countLessons">0</span></button>
+        <button data-search-type="quiz"><i class="fa-solid fa-file-circle-question"></i> الاختبارات <span id="countQuizzes">0</span></button>
+        <button data-search-type="file"><i class="fa-solid fa-file-pdf"></i> الملفات <span id="countFiles">0</span></button>
+
+        <div class="search-filter-divider"></div>
+        <label><span>المسار</span><select id="filterEducation"><option value="">الكل</option><option value="public">تعليم عام</option><option value="azhar">أزهر</option></select></label>
+        <label><span>المرحلة</span><select id="filterStage"><option value="">كل المراحل</option><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+      </aside>
+
+      <div class="search-results-area">
+        <div class="search-results-head">
+          <div><span class="section-kicker">النتائج</span><h2 id="resultsTitle">ابدأ بالبحث</h2></div>
+          <span id="resultsMeta">0 نتيجة</span>
+        </div>
+
+        <div id="searchLoading" class="search-loading hidden">
+          <span></span><span></span><span></span>
+        </div>
+
+        <div id="searchEmpty" class="empty-state">
+          <span>🔎</span><h3>اكتب كلمة في مربع البحث</h3><p>هندور لك في الدروس والاختبارات والملفات.</p>
+        </div>
+
+        <div id="searchResults" class="search-results hidden"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="./assets/firebase-config.js"></script>
+  <script src="./assets/search.js"></script>
+  <script src="./assets/pwa.js"></script>
+</body>
+</html>
