@@ -17,7 +17,7 @@
     <div class="container learning-nav">
       <a class="brand" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-book-open"></i></span><span><strong>الأكاديمية</strong><small>مركز الإشعارات</small></span></a>
       <div class="learning-breadcrumb"><a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><span>الإشعارات</span></div>
-      <div class="learning-user"><button class="btn btn-soft" id="markAllNotifications"><i class="fa-solid fa-check-double"></i> تعليم الكل كمقروء</button><span class="avatar" id="pageAvatar">ط</span></div>
+      <div class="learning-user"><button class="btn btn-soft" id="markAllNotifications" aria-label="تعليم كل الإشعارات كمقروءة"><i class="fa-solid fa-check-double"></i> تعليم الكل كمقروء</button><span class="avatar" id="pageAvatar">ط</span></div>
     </div>
   </header>
 
@@ -42,12 +42,12 @@
       <section class="notification-center-layout">
         <aside class="feature-card notification-filter-card">
           <div class="feature-card-head"><div><span class="section-kicker">فلترة</span><h3>اعرض</h3></div><span>🎛️</span></div>
-          <div class="notification-filter-list">
-            <button class="active" data-notification-filter="all"><i class="fa-solid fa-border-all"></i> الكل <span id="filterCountAll">0</span></button>
-            <button data-notification-filter="unread"><i class="fa-regular fa-envelope"></i> غير المقروء <span id="filterCountUnread">0</span></button>
-            <button data-notification-filter="academic"><i class="fa-solid fa-graduation-cap"></i> دراسي <span id="filterCountAcademic">0</span></button>
-            <button data-notification-filter="schedule"><i class="fa-regular fa-calendar"></i> المواعيد <span id="filterCountSchedule">0</span></button>
-            <button data-notification-filter="system"><i class="fa-solid fa-bullhorn"></i> المنصة <span id="filterCountSystem">0</span></button>
+          <div class="notification-filter-list" role="tablist" aria-label="تصفية الإشعارات">
+            <button class="active" data-notification-filter="all" role="tab" aria-selected="true"><i class="fa-solid fa-border-all"></i> الكل <span id="filterCountAll">0</span></button>
+            <button data-notification-filter="unread" role="tab" aria-selected="false"><i class="fa-regular fa-envelope"></i> غير المقروء <span id="filterCountUnread">0</span></button>
+            <button data-notification-filter="academic" role="tab" aria-selected="false"><i class="fa-solid fa-graduation-cap"></i> دراسي <span id="filterCountAcademic">0</span></button>
+            <button data-notification-filter="schedule" role="tab" aria-selected="false"><i class="fa-regular fa-calendar"></i> المواعيد <span id="filterCountSchedule">0</span></button>
+            <button data-notification-filter="system" role="tab" aria-selected="false"><i class="fa-solid fa-bullhorn"></i> المنصة <span id="filterCountSystem">0</span></button>
           </div>
         </aside>
 
