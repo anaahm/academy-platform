@@ -32,7 +32,7 @@ function render(){
 $('broadcastStage').onchange=updateGrades;
 $('broadcastForm').onsubmit=async e=>{
   e.preventDefault();
-  const user=auth.currentUser;if(!user)return toast('سجل دخول الإدارة أولًا.','error');
+  const user=auth.currentUser,btn=$('broadcastSubmitBtn')||e.submitter;if(!user)return toast('سجل دخول الإدارة أولًا.','error');
   const days=Math.max(1,Math.min(30,Number($('broadcastDays').value||7)));
   const payload={
     title:$('broadcastTitle').value.trim(),text:$('broadcastText').value.trim(),
@@ -41,8 +41,12 @@ $('broadcastForm').onsubmit=async e=>{
     isActive:$('broadcastActive').checked,createdAt:Date.now(),expiresAt:Date.now()+days*86400000,createdBy:user.uid
   };
   if(!payload.title||!payload.text)return toast('أكمل عنوان الإشعار ونصه.','error');
-  await db.ref('notificationBroadcasts').push(payload);
-  e.target.reset();$('broadcastDays').value=7;$('broadcastActive').checked=true;updateGrades();toast('تم نشر الإشعار الموجه ✅');
+  window.AcademyUI?.setButtonLoading(btn,true,'نشر');
+  try{
+    await db.ref('notificationBroadcasts').push(payload);
+    e.target.reset();$('broadcastDays').value=7;$('broadcastActive').checked=true;updateGrades();toast('تم نشر الإشعار الموجه ✅');
+  }catch(err){console.error(err);toast('تعذر نشر الإشعار الآن.','error')}
+  finally{window.AcademyUI?.setButtonLoading(btn,false)}
 };
 const nav=$$('[data-admin-tab="notifications"]')[0];
 if(nav)nav.addEventListener('click',()=>{
