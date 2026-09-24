@@ -183,7 +183,12 @@
         "maxScore": {
           ".validate": "!newData.exists() || (newData.isNumber() && newData.val() > 0 && newData.val() <= 1000)"
         }
-      }
+      },
+      ".indexOn": [
+        "stage",
+        "subject",
+        "dueAt"
+      ]
     },
     "assignmentSubmissions": {
       "$assignmentId": {
