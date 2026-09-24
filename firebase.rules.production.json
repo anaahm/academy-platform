@@ -34,19 +34,34 @@
     },
     "lessons": {
       ".read": true,
-      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true",
+      ".indexOn": [
+        "subject",
+        "stage"
+      ]
     },
     "quizzes": {
       ".read": true,
-      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true",
+      ".indexOn": [
+        "subject",
+        "stage"
+      ]
     },
     "files": {
       ".read": true,
-      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true",
+      ".indexOn": [
+        "stage",
+        "subject"
+      ]
     },
     "simulations": {
       ".read": true,
-      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true",
+      ".indexOn": [
+        "stage"
+      ]
     },
     "liveSessions": {
       ".read": true,
