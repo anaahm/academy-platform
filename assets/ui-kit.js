@@ -36,6 +36,60 @@ function enhanceAccessibility(){
     });
   });
 }
+function enhanceStudentShell(){
+  if(document.body.classList.contains('admin-v3-body')||document.body.classList.contains('teacher-v3-body'))return;
+  const header=document.querySelector('.learning-header .learning-nav');
+  if(!header)return;
+
+  const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+
+  if(!header.querySelector('.student-back-button')){
+    const back=document.createElement('button');
+    back.type='button';back.className='student-back-button';back.setAttribute('aria-label','رجوع');back.title='رجوع';
+    back.innerHTML='<i class="fa-solid fa-arrow-right"></i>';
+    back.onclick=()=>{if(history.length>1)history.back();else location.href='./index.html'};
+    header.prepend(back);
+  }
+
+  let avatar=header.querySelector('#pageAvatar,.avatar');
+  if(avatar){
+    avatar.classList.add('student-profile-shortcut');
+    avatar.setAttribute('role','link');avatar.setAttribute('tabindex','0');avatar.setAttribute('aria-label','فتح حسابي');avatar.title='حسابي';
+    const openProfile=()=>location.href='./profile.html';
+    avatar.addEventListener('click',openProfile);
+    avatar.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openProfile()}});
+  }
+
+  let userWrap=header.querySelector('.learning-user');
+  if(!userWrap && avatar){
+    userWrap=document.createElement('div');userWrap.className='learning-user';
+    avatar.parentNode.insertBefore(userWrap,avatar);userWrap.appendChild(avatar);
+  }
+  if(userWrap && !userWrap.querySelector('.student-notification-shortcut')){
+    const bell=document.createElement('a');bell.className='icon-btn student-notification-shortcut';bell.href='./notifications.html';bell.title='الإشعارات';bell.setAttribute('aria-label','الإشعارات');
+    bell.innerHTML='<i class="fa-regular fa-bell"></i>';
+    userWrap.insertBefore(bell,userWrap.firstChild);
+  }
+
+  if(!document.querySelector('.student-mobile-nav')){
+    const nav=document.createElement('nav');nav.className='student-mobile-nav';nav.setAttribute('aria-label','التنقل الرئيسي للطالب');
+    const items=[
+      {key:'home',href:'./index.html',icon:'fa-house',label:'الرئيسية'},
+      {key:'subjects',href:'./explore.html',icon:'fa-book-open',label:'المواد'},
+      {key:'assignments',href:'./assignments.html',icon:'fa-clipboard-check',label:'الواجبات'},
+      {key:'tests',href:'./exam-center.html',icon:'fa-circle-check',label:'الاختبارات'},
+      {key:'profile',href:'./profile.html',icon:'fa-user',label:'حسابي'}
+    ];
+    let active='home';
+    if(['subject.html','lesson.html','explore.html','library.html'].includes(page))active='subjects';
+    else if(page==='assignments.html')active='assignments';
+    else if(['exam-center.html','simulations.html'].includes(page))active='tests';
+    else if(page==='profile.html')active='profile';
+    nav.innerHTML=items.map(x=>'<a href="'+x.href+'" class="'+(x.key===active?'active':'')+'" aria-label="'+x.label+'"><i class="fa-solid '+x.icon+'"></i><span>'+x.label+'</span></a>').join('');
+    document.body.appendChild(nav);
+  }
+}
+
 function ensureRouteProgress(){
   let bar=document.querySelector('.ui-route-progress');
   if(!bar){bar=document.createElement('div');bar.className='ui-route-progress';document.body.appendChild(bar)}
@@ -118,7 +172,7 @@ document.addEventListener('pointerdown',e=>{
   span.className='ui-ripple';span.style.width=span.style.height=size+'px';span.style.left=(e.clientX-r.left-size/2)+'px';span.style.top=(e.clientY-r.top-size/2)+'px';
   btn.appendChild(span);setTimeout(()=>span.remove(),520);
 },{passive:true});
-document.addEventListener('DOMContentLoaded',()=>{document.body?.classList.add('ui-page-enter');finishRouteProgress();enhanceAccessibility();if(!navigator.onLine)showNetworkBanner(false)});
+document.addEventListener('DOMContentLoaded',()=>{document.body?.classList.add('ui-page-enter');finishRouteProgress();enhanceAccessibility();enhanceStudentShell();if(!navigator.onLine)showNetworkBanner(false)});
 window.addEventListener('offline',()=>showNetworkBanner(false));
 window.addEventListener('online',()=>showNetworkBanner(true));
 document.addEventListener('click',e=>{
