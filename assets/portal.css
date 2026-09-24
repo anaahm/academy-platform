@@ -121,3 +121,19 @@
 }
 
 .teacher-mobile-overlay{position:fixed;inset:0;background:rgba(2,6,23,.48);backdrop-filter:blur(2px);z-index:75}
+
+/* Phase 1 portal premium polish */
+.teacher-tab:not(.hidden),.profile-tab:not(.hidden){animation:portalTabIn .22s ease both}
+@keyframes portalTabIn{from{opacity:.45;transform:translateY(5px)}to{opacity:1;transform:none}}
+.teacher-side{box-shadow:-18px 0 50px rgba(2,6,23,.10);overflow-y:auto}
+.teacher-nav button{position:relative}.teacher-nav button.active:after{content:"";position:absolute;left:10px;width:5px;height:5px;border-radius:50%;background:#60a5fa}
+.teacher-stat-grid article{position:relative;overflow:hidden}.teacher-stat-grid article:after{content:"";position:absolute;width:76px;height:76px;border-radius:50%;background:rgba(37,99,235,.035);left:-28px;bottom:-40px}
+.teacher-card-head>span{width:42px;height:42px;border-radius:14px;background:#f8fafc;display:grid;place-items:center;font-size:20px;border:1px solid #eef2f7}
+.teacher-assignment,.submission-item,.teacher-engagement-item{background:#fff}
+.teacher-form input,.teacher-form select,.teacher-form textarea{transition:border-color .16s ease,box-shadow .16s ease}
+.profile-hero{position:relative;overflow:hidden}.profile-hero:after{content:"";position:absolute;width:240px;height:240px;border-radius:50%;background:rgba(96,165,250,.09);left:-90px;top:-120px;pointer-events:none}
+.profile-hero>*{position:relative;z-index:1}
+.profile-card{transition:transform .18s ease,box-shadow .18s ease}.profile-card:hover{transform:translateY(-2px)}
+.profile-nav-card button i{width:20px;text-align:center}
+.badge-item{transition:.16s}.badge-item:not(.locked):hover{transform:translateY(-2px);border-color:#cfe0f7;background:#fff}
+@media(max-width:900px){.teacher-side{box-shadow:-24px 0 60px rgba(2,6,23,.24)}.profile-nav-card{scrollbar-width:none}.profile-nav-card::-webkit-scrollbar{display:none}}
