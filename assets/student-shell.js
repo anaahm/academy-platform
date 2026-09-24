@@ -6,7 +6,7 @@ const groups={
   home:['index.html',''],
   learn:['subject.html','lesson.html','explore.html','search.html','library.html','exam-center.html','simulations.html','community.html','leaderboard.html'],
   plan:['planner.html','schedule.html','assignments.html','weekly-report.html','progress.html'],
-  alerts:['notifications.html','live.html'],
+  alerts:['notifications.html','live.html','news.html'],
   profile:['profile.html']
 };
 function activeFor(key){return groups[key]?.includes(path)}
