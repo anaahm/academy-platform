@@ -46,7 +46,7 @@ function render(){
    return '<article class="library-card">'+
      '<span class="library-icon"><i class="fa-solid fa-file-pdf"></i></span>'+
      '<div class="library-card-copy"><h3>'+C.esc(f.title||'ملف')+'</h3><p>'+C.esc(sub)+' • '+C.esc(C.typeLabel(f.type))+' • '+C.esc(C.gradeLabel(f.stage,f.grade))+'</p></div>'+
-     (safe?'<a class="library-open" href="'+safe+'" target="_blank" rel="noopener noreferrer" aria-label="فتح '+C.esc(f.title||'الملف')+'"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>':'<span class="library-open disabled" title="الرابط غير متاح"><i class="fa-solid fa-ban"></i></span>')+
+     (safe&&safe!=='#'?'<a class="library-open" href="'+safe+'" target="_blank" rel="noopener noreferrer" aria-label="فتح '+C.esc(f.title||'الملف')+'"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>':'<span class="library-open disabled" title="الرابط غير متاح"><i class="fa-solid fa-ban"></i></span>')+
    '</article>';
  }).join(''):'<div class="feature-empty"><span>📂</span><h3>لا توجد ملفات مطابقة</h3><p>جرّب إزالة الفلتر أو اختر نطاقًا آخر.</p></div>';
 }
