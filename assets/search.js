@@ -107,7 +107,7 @@ function render(){
 }
 async function ensureCurrentIndex(){
  const stage=$('filterStage').value||'',token=++loadToken;
- if(activeScope===stage&&allResults.length)return true;
+ if(activeScope===stage&&indexCache.has(stage||'all'))return true;
  $('searchLoading').classList.remove('hidden');$('searchEmpty').classList.add('hidden');
  try{
    const items=await fetchIndex(stage);
