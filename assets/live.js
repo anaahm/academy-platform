@@ -57,8 +57,8 @@ function openSession(id,trigger){
   ?'<iframe src="'+C.esc(src)+'" title="'+C.esc(s.title||'الجلسة المباشرة')+'" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>'
   :'<div class="live-video-empty"><div><span>📡</span><strong>لا يوجد بث YouTube مضاف</strong><p>استخدم رابط الجلسة الخارجي لو كان متاحًا.</p></div></div>';
  const acts=[],zoom=C.safeUrl(s.zoomLink||''),yt=C.safeUrl(s.youtubeLiveUrl||'');
- if(zoom)acts.push('<a class="btn btn-primary" href="'+zoom+'" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-video"></i> الانضمام عبر Zoom</a>');
- if(yt)acts.push('<a class="btn btn-soft" href="'+yt+'" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-youtube"></i> فتح على YouTube</a>');
+ if(zoom&&zoom!=='#')acts.push('<a class="btn btn-primary" href="'+zoom+'" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-video"></i> الانضمام عبر Zoom</a>');
+ if(yt&&yt!=='#')acts.push('<a class="btn btn-soft" href="'+yt+'" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-youtube"></i> فتح على YouTube</a>');
  $('liveViewerActions').innerHTML=acts.join('')||'<span class="live-no-actions">لا توجد روابط جلسة متاحة حاليًا.</span>';
  $('liveViewer').classList.remove('hidden');$('liveViewer').setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
  setTimeout(()=>$('liveViewer').querySelector('.live-viewer-panel')?.focus(),30);
