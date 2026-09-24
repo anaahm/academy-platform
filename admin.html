@@ -56,7 +56,7 @@
         <div><strong id="adminName">مدير المنصة</strong><small id="adminEmailMini">Administrator</small></div>
       </div>
 
-      <nav class="admin-nav">
+      <nav class="admin-nav" aria-label="أقسام لوحة الإدارة">
         <span class="admin-nav-label">نظرة عامة</span>
         <button class="active" data-admin-tab="overview"><i class="fa-solid fa-grid-2"></i> لوحة المعلومات</button>
 
@@ -90,12 +90,15 @@
     <div class="admin-main">
       <header class="admin-topbar">
         <div class="admin-topbar-title">
-          <button id="adminMenuBtn" class="admin-menu-btn"><i class="fa-solid fa-bars"></i></button>
+          <button id="adminMenuBtn" class="admin-menu-btn" aria-label="فتح قائمة الإدارة" aria-controls="adminSidebar"><i class="fa-solid fa-bars"></i></button>
           <div><span id="adminSectionKicker">لوحة المعلومات</span><h1 id="adminSectionTitle">صباح الخير 👋</h1></div>
         </div>
         <div class="admin-top-actions">
-          <label class="admin-global-search"><i class="fa-solid fa-magnifying-glass"></i><input id="adminGlobalSearch" placeholder="ابحث في الدروس والطلاب..."></label>
-          <button class="icon-btn" id="adminRefreshBtn" title="تحديث البيانات"><i class="fa-solid fa-rotate"></i></button>
+          <div class="admin-global-search-wrap">
+            <label class="admin-global-search"><i class="fa-solid fa-magnifying-glass"></i><input id="adminGlobalSearch" type="search" autocomplete="off" aria-label="بحث سريع في لوحة الإدارة" placeholder="ابحث في الدروس والطلاب..."></label>
+            <div class="admin-search-results hidden" id="adminGlobalSearchResults" role="listbox" aria-label="نتائج البحث السريع"></div>
+          </div>
+          <button class="icon-btn" id="adminRefreshBtn" title="تحديث البيانات" aria-label="تحديث بيانات القسم الحالي"><i class="fa-solid fa-rotate"></i></button>
         </div>
       </header>
 
@@ -310,9 +313,9 @@
 
   <div id="adminOverlay" class="admin-mobile-overlay hidden"></div>
 
-  <div class="modal-backdrop hidden" id="subjectModal">
-    <div class="modal-panel admin-modal">
-      <button class="modal-close" data-close-admin-modal="subjectModal"><i class="fa-solid fa-xmark"></i></button>
+  <div class="modal-backdrop hidden" id="subjectModal" aria-hidden="true">
+    <div class="modal-panel admin-modal" role="dialog" aria-modal="true" aria-labelledby="subjectModalTitle" tabindex="-1">
+      <button class="modal-close" data-close-admin-modal="subjectModal" aria-label="إغلاق نافذة المادة"><i class="fa-solid fa-xmark"></i></button>
       <span class="section-kicker">المناهج</span><h2 id="subjectModalTitle">إضافة مادة ووحداتها</h2>
       <form id="subjectForm" class="admin-form">
         <label><span>نوع التعليم</span><select id="subjectType"><option value="public">تعليم عام</option><option value="azhar">أزهر</option></select></label>
@@ -327,9 +330,9 @@
     </div>
   </div>
 
-  <div class="modal-backdrop hidden" id="lessonModal">
-    <div class="modal-panel admin-modal admin-modal-wide">
-      <button class="modal-close" data-close-admin-modal="lessonModal"><i class="fa-solid fa-xmark"></i></button>
+  <div class="modal-backdrop hidden" id="lessonModal" aria-hidden="true">
+    <div class="modal-panel admin-modal admin-modal-wide" role="dialog" aria-modal="true" aria-labelledby="lessonModalTitle" tabindex="-1">
+      <button class="modal-close" data-close-admin-modal="lessonModal" aria-label="إغلاق نافذة الدرس"><i class="fa-solid fa-xmark"></i></button>
       <span class="section-kicker">محتوى تعليمي</span><h2 id="lessonModalTitle">إضافة درس جديد</h2>
       <form id="lessonForm" class="admin-form">
         <label><span>نوع التعليم</span><select id="newLessonType"><option value="public">عام</option><option value="azhar">أزهر</option></select></label>
@@ -352,9 +355,9 @@
     </div>
   </div>
 
-  <div class="modal-backdrop hidden" id="quizModal">
-    <div class="modal-panel admin-modal admin-modal-wide">
-      <button class="modal-close" data-close-admin-modal="quizModal"><i class="fa-solid fa-xmark"></i></button>
+  <div class="modal-backdrop hidden" id="quizModal" aria-hidden="true">
+    <div class="modal-panel admin-modal admin-modal-wide" role="dialog" aria-modal="true" aria-labelledby="quizModalTitle" tabindex="-1">
+      <button class="modal-close" data-close-admin-modal="quizModal" aria-label="إغلاق نافذة الاختبار"><i class="fa-solid fa-xmark"></i></button>
       <span class="section-kicker">اختبار جديد</span><h2 id="quizModalTitle">إنشاء اختبار</h2>
       <form id="quizForm" class="admin-form">
         <label><span>نوع التعليم</span><select id="newQuizType"><option value="public">عام</option><option value="azhar">أزهر</option></select></label>
@@ -369,9 +372,9 @@
     </div>
   </div>
 
-  <div class="modal-backdrop hidden" id="fileModal">
-    <div class="modal-panel admin-modal">
-      <button class="modal-close" data-close-admin-modal="fileModal"><i class="fa-solid fa-xmark"></i></button>
+  <div class="modal-backdrop hidden" id="fileModal" aria-hidden="true">
+    <div class="modal-panel admin-modal" role="dialog" aria-modal="true" aria-labelledby="fileModalTitle" tabindex="-1">
+      <button class="modal-close" data-close-admin-modal="fileModal" aria-label="إغلاق نافذة الملف"><i class="fa-solid fa-xmark"></i></button>
       <span class="section-kicker">المكتبة</span><h2 id="fileModalTitle">إضافة ملف</h2>
       <form id="fileForm" class="admin-form">
         <label><span>العنوان</span><input id="newFileTitle" required></label>
@@ -385,9 +388,9 @@
     </div>
   </div>
 
-  <div class="modal-backdrop hidden" id="simulationModal">
-    <div class="modal-panel admin-modal admin-modal-wide">
-      <button class="modal-close" data-close-admin-modal="simulationModal"><i class="fa-solid fa-xmark"></i></button>
+  <div class="modal-backdrop hidden" id="simulationModal" aria-hidden="true">
+    <div class="modal-panel admin-modal admin-modal-wide" role="dialog" aria-modal="true" aria-labelledby="simulationModalTitle" tabindex="-1">
+      <button class="modal-close" data-close-admin-modal="simulationModal" aria-label="إغلاق نافذة المحاكي"><i class="fa-solid fa-xmark"></i></button>
       <span class="section-kicker">محاكاة امتحان</span><h2 id="simulationModalTitle">إنشاء محاكي جديد</h2>
       <form id="simulationForm" class="admin-form">
         <label><span>اسم المحاكي</span><input id="simName" required></label>
@@ -405,9 +408,9 @@
     </div>
   </div>
 
-  <div class="modal-backdrop hidden" id="liveModal">
-    <div class="modal-panel admin-modal admin-modal-wide">
-      <button class="modal-close" data-close-admin-modal="liveModal"><i class="fa-solid fa-xmark"></i></button>
+  <div class="modal-backdrop hidden" id="liveModal" aria-hidden="true">
+    <div class="modal-panel admin-modal admin-modal-wide" role="dialog" aria-modal="true" aria-labelledby="liveModalTitle" tabindex="-1">
+      <button class="modal-close" data-close-admin-modal="liveModal" aria-label="إغلاق نافذة الجلسة"><i class="fa-solid fa-xmark"></i></button>
       <span class="section-kicker">جلسة مباشرة</span><h2 id="liveModalTitle">إضافة جلسة بث</h2>
       <form id="liveForm" class="admin-form">
         <label><span>عنوان الجلسة</span><input id="liveTitle" required></label>
