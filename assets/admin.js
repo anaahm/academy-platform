@@ -8,7 +8,8 @@ const auth=firebase.auth(),db=firebase.database();
 const $=id=>document.getElementById(id), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const askConfirm=opts=>window.AcademyUI?.confirm?window.AcademyUI.confirm(opts):(console.error('AcademyUI confirm unavailable'),Promise.resolve(false));
 
-let currentUser=null,root={},unsubscribe=null;
+let currentUser=null,root={},unsubscribe=null,currentAdminTab='overview';
+const adminPathStops=new Map(),adminPathPromises=new Map();
 const editState={subject:null,lesson:null,quiz:null,file:null,simulation:null,live:null,schedule:null,news:null};
 const stageNames={primary:'ابتدائي',prep:'إعدادي',sec:'ثانوي'};
 const defaultSubjects={
@@ -73,22 +74,108 @@ function adminName(){
  return root.adminProfiles?.[currentUser?.uid]?.name||currentUser?.displayName||'مدير المنصة';
 }
 
-function setTab(tab){
- $$('.admin-tab').forEach(s=>s.classList.toggle('active',s.id==='admin-tab-'+tab));
- $$('[data-admin-tab]').forEach(b=>b.classList.toggle('active',b.dataset.adminTab===tab));
- const meta={
-  overview:['لوحة المعلومات','صباح الخير 👋'],curriculum:['هيكل المنهج','المواد والوحدات'],lessons:['المحتوى','إدارة الدروس'],quizzes:['التقييم','إدارة الاختبارات'],simulations:['التدريب','إدارة المحاكيات'],files:['المكتبة','الملفات والمراجع'],schedule:['المواعيد','جدول الحصص'],live:['الجلسات','البث المباشر'],teachers:['فريق التدريس','المدرسون والمراجعات'],students:['المتعلمون','إدارة الطلاب'],news:['التواصل','الأخبار والتحديثات'],community:['الإشراف','المجتمع والبلاغات'],announcements:['التواصل','الإعلانات'],settings:['المنصة','الإعدادات']
- }[tab]||['الإدارة','لوحة الإدارة'];
- $('adminSectionKicker').textContent=meta[0];$('adminSectionTitle').textContent=meta[1];
- $('adminSidebar').classList.remove('open');$('adminOverlay').classList.add('hidden');
- renderTab(tab);
-}
-function renderAll(){
- $('adminName').textContent=adminName();$('adminEmailMini').textContent=currentUser?.email||'';$('adminAvatar').textContent=(adminName()[0]||'م').toUpperCase();
- renderOverview();renderCurriculum();renderLessons();renderQuizzes();renderSimulations();renderFiles();renderLiveSessions();renderScheduleEvents();renderTeachers();renderStudents();renderNews();renderCommunityAdmin();loadAnnouncement();loadSettings();updatePendingBadge();updateCommunityBadge();
+const ADMIN_CORE_PATHS=['adminProfiles','lessons','quizzes','studentProfilesV3','teacherProfiles','teacherSubmissions','community'];
+const ADMIN_TAB_PATHS={
+ overview:ADMIN_CORE_PATHS,
+ curriculum:['customSubjects'],
+ lessons:['lessons','customSubjects','teacherProfiles'],
+ quizzes:['quizzes','customSubjects'],
+ simulations:['simulations'],
+ files:['files','customSubjects'],
+ live:['liveSessions'],
+ schedule:['scheduleEvents','customSubjects'],
+ teachers:['teacherProfiles','teacherSubmissions','studentProfilesV3','customSubjects'],
+ students:['studentProfilesV3'],
+ news:['posts'],
+ community:['community'],
+ notifications:[],
+ announcements:['announcements'],
+ settings:['settings']
+};
+const adminMeta={
+ overview:['لوحة المعلومات','صباح الخير 👋'],
+ curriculum:['هيكل المنهج','المواد والوحدات'],
+ lessons:['المحتوى','إدارة الدروس'],
+ quizzes:['التقييم','إدارة الاختبارات'],
+ simulations:['التدريب','إدارة المحاكيات'],
+ files:['المكتبة','الملفات والمراجع'],
+ schedule:['المواعيد','جدول الحصص'],
+ live:['الجلسات','البث المباشر'],
+ teachers:['فريق التدريس','المدرسون والمراجعات'],
+ students:['المتعلمون','إدارة الطلاب'],
+ news:['التواصل','الأخبار والتحديثات'],
+ community:['الإشراف','المجتمع والبلاغات'],
+ notifications:['التواصل','الإشعارات الموجهة'],
+ announcements:['التواصل','الإعلانات'],
+ settings:['المنصة','الإعدادات']
+};
+function renderAdminIdentity(){
+ $('adminName').textContent=adminName();
+ $('adminEmailMini').textContent=currentUser?.email||'';
+ $('adminAvatar').textContent=(adminName()[0]||'م').toUpperCase();
 }
 function renderTab(tab){
  ({overview:renderOverview,curriculum:renderCurriculum,lessons:renderLessons,quizzes:renderQuizzes,simulations:renderSimulations,files:renderFiles,live:renderLiveSessions,schedule:renderScheduleEvents,teachers:renderTeachers,students:renderStudents,news:renderNews,community:renderCommunityAdmin,announcements:loadAnnouncement,settings:loadSettings}[tab]||(()=>{}))();
+}
+function pathsForTab(tab){
+ return [...new Set([...(ADMIN_TAB_PATHS[tab]||[]),...(tab==='overview'?ADMIN_CORE_PATHS:[])])];
+}
+function attachAdminPath(path){
+ if(adminPathPromises.has(path))return adminPathPromises.get(path);
+ const promise=new Promise(resolve=>{
+   const ref=db.ref(path);let first=true;
+   const handler=s=>{
+     root[path]=s.val()||{};
+     if(first){first=false;resolve(true);return}
+     if(path==='adminProfiles')renderAdminIdentity();
+     if(path==='teacherSubmissions')updatePendingBadge();
+     if(path==='community')updateCommunityBadge();
+     if(pathsForTab(currentAdminTab).includes(path))renderTab(currentAdminTab);
+     if(currentAdminTab==='overview'&&ADMIN_CORE_PATHS.includes(path))renderOverview();
+   };
+   const errorHandler=err=>{
+     console.error('Admin data listener failed:',path,err);
+     root[path]=root[path]||{};first=false;resolve(false);
+   };
+   ref.on('value',handler,errorHandler);
+   adminPathStops.set(path,()=>ref.off('value',handler));
+ });
+ adminPathPromises.set(path,promise);
+ return promise;
+}
+async function ensureAdminPaths(paths){
+ const list=[...new Set(paths||[])];
+ if(!list.length)return true;
+ const results=await Promise.all(list.map(attachAdminPath));
+ return results.every(Boolean);
+}
+function stopAdminListeners(){
+ adminPathStops.forEach(stop=>{try{stop()}catch{}});
+ adminPathStops.clear();adminPathPromises.clear();
+}
+async function setTab(tab,updateUrl=true){
+ if(!adminMeta[tab]&&!document.getElementById('admin-tab-'+tab))tab='overview';
+ currentAdminTab=tab;
+ $$('.admin-tab').forEach(s=>s.classList.toggle('active',s.id==='admin-tab-'+tab));
+ $$('[data-admin-tab]').forEach(b=>{
+   const active=b.dataset.adminTab===tab;
+   b.classList.toggle('active',active);
+   b.setAttribute('aria-current',active?'page':'false');
+ });
+ const meta=adminMeta[tab]||['الإدارة','لوحة الإدارة'];
+ $('adminSectionKicker').textContent=meta[0];$('adminSectionTitle').textContent=meta[1];
+ $('adminSidebar').classList.remove('open');$('adminOverlay').classList.add('hidden');
+ if(updateUrl){
+   const url=new URL(location.href);
+   if(tab==='overview')url.searchParams.delete('tab');else url.searchParams.set('tab',tab);
+   history.replaceState({},'',url);
+ }
+ const needed=pathsForTab(tab),missing=needed.filter(path=>!adminPathPromises.has(path));
+ if(missing.length)window.AcademyUI?.showPageLoading('جاري تحميل '+meta[1]+'...');
+ const ok=await ensureAdminPaths(needed);
+ renderAdminIdentity();updatePendingBadge();updateCommunityBadge();renderTab(tab);
+ if(missing.length)window.AcademyUI?.hidePageLoading();
+ if(!ok)toast('تم تحميل القسم مع تعذر قراءة جزء من البيانات.','error');
 }
 
 /* Overview */
@@ -453,44 +540,16 @@ function updatePendingBadge(){
 async function verifyAdmin(user){
  const snap=await db.ref('adminProfiles/'+user.uid).once('value');return snap.val()?.isAdmin===true;
 }
-const ADMIN_DATA_PATHS=[
- 'adminProfiles','announcements','community','customSubjects','files','lessons','liveSessions',
- 'posts','quizzes','scheduleEvents','settings','simulations','studentProfilesV3','teacherProfiles','teacherSubmissions'
-];
 async function startDataListener(){
  if(unsubscribe)unsubscribe();
- const stops=[],loaded=new Set(),failed=new Set();
- let renderTimer=null,initialReady=false;
- const scheduleRender=()=>{
-   clearTimeout(renderTimer);
-   renderTimer=setTimeout(()=>renderAll(),45);
- };
- const markReady=()=>{
-   if(loaded.size===ADMIN_DATA_PATHS.length && !initialReady){
-     initialReady=true;
-     renderAll();
-     window.AcademyUI?.hidePageLoading();
-     if(failed.size)toast('تم تحميل لوحة الإدارة مع تعذر قراءة بعض الأقسام. راجع صلاحيات Firebase.','error');
-   }
- };
- ADMIN_DATA_PATHS.forEach(path=>{
-   const ref=db.ref(path);
-   const handler=s=>{
-     root[path]=s.val()||{};
-     const first=!loaded.has(path);
-     loaded.add(path);
-     if(first)markReady();
-     else scheduleRender();
-   };
-   const errorHandler=err=>{
-     console.error('Admin data listener failed:',path,err);
-     root[path]=root[path]||{};
-     failed.add(path);loaded.add(path);markReady();
-   };
-   ref.on('value',handler,errorHandler);
-   stops.push(()=>ref.off('value',handler));
- });
- unsubscribe=()=>{clearTimeout(renderTimer);stops.forEach(stop=>stop());loaded.clear();failed.clear()};
+ stopAdminListeners();
+ const ok=await ensureAdminPaths(ADMIN_CORE_PATHS);
+ renderAdminIdentity();updatePendingBadge();updateCommunityBadge();
+ const requested=new URLSearchParams(location.search).get('tab')||'overview';
+ await setTab(requested,false);
+ window.AcademyUI?.hidePageLoading();
+ if(!ok)toast('تم تحميل لوحة الإدارة مع تعذر قراءة بعض البيانات الأساسية.','error');
+ unsubscribe=()=>stopAdminListeners();
 }
 
 function initAdminCollapse(){
@@ -517,19 +576,23 @@ $('assignType').onchange=refreshAssignmentSubjects;$('assignStage').onchange=ref
 initAdminCollapse();
 $('adminMenuBtn').onclick=()=>{$('adminSidebar').classList.add('open');$('adminOverlay').classList.remove('hidden')};$('adminOverlay').onclick=()=>{$('adminSidebar').classList.remove('open');$('adminOverlay').classList.add('hidden')};
 $('adminRefreshBtn').onclick=async()=>{
- const btn=$('adminRefreshBtn');
+ const btn=$('adminRefreshBtn'),paths=[...new Set([...ADMIN_CORE_PATHS,...pathsForTab(currentAdminTab)])];
  window.AcademyUI?.setButtonLoading(btn,true,'تحديث');
  try{
-   const snaps=await Promise.all(ADMIN_DATA_PATHS.map(path=>db.ref(path).once('value')));
-   ADMIN_DATA_PATHS.forEach((path,i)=>root[path]=snaps[i].val()||{});
-   renderAll();toast('تم تحديث البيانات');
+   const snaps=await Promise.all(paths.map(path=>db.ref(path).once('value')));
+   paths.forEach((path,i)=>root[path]=snaps[i].val()||{});
+   renderAdminIdentity();updatePendingBadge();updateCommunityBadge();renderTab(currentAdminTab);toast('تم تحديث القسم الحالي');
  }catch(err){
    console.error(err);toast('تعذر تحديث البيانات الآن.','error');
  }finally{
    window.AcademyUI?.setButtonLoading(btn,false);
  }
 };
-$('adminLogout').onclick=()=>auth.signOut();
+$('adminLogout').onclick=async()=>{
+ const ok=await askConfirm({title:'تسجيل الخروج؟',message:'سيتم إغلاق جلسة الإدارة الحالية.',tone:'warning',acceptText:'تسجيل الخروج'});
+ if(!ok)return;
+ try{await auth.signOut()}catch(err){console.error(err);toast('تعذر تسجيل الخروج الآن.','error')}
+};
 $('adminGlobalSearch').oninput=e=>{const q=e.target.value.trim();$('lessonSearch').value=q;$('studentSearch').value=q;if(q){setTab('lessons');renderLessons()}};
 if($('adminLoginForm')?.dataset.adminAuthBound!=='true'){
  $('adminLoginForm').onsubmit=async e=>{
@@ -554,7 +617,7 @@ refreshAssignmentSubjects();
 
 auth.onAuthStateChanged(async user=>{
  currentUser=user;
- if(!user){if(unsubscribe){unsubscribe();unsubscribe=null}window.AcademyUI?.hidePageLoading();$('adminApp').classList.add('hidden');$('adminLogin').classList.remove('hidden');return}
+ if(!user){if(unsubscribe){unsubscribe();unsubscribe=null}stopAdminListeners();root={};window.AcademyUI?.hidePageLoading();$('adminApp').classList.add('hidden');$('adminLogin').classList.remove('hidden');return}
  window.AcademyUI?.showPageLoading('جاري التحقق من صلاحيات الإدارة وتحميل البيانات...');
  try{
    const ok=await verifyAdmin(user);
