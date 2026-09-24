@@ -75,7 +75,7 @@ async function openNotification(key,href,btn){
   const item=items.find(x=>x.key===key);btn.disabled=true;
   try{
     if(item&&!item.read){await N.markRead(user.uid,key);item.read=true}
-    const target=C.safeUrl(href||'./index.html')||'./index.html';
+    const safe=C.safeUrl(href||'./index.html'),target=safe&&safe!=='#'?safe:'./index.html';
     location.href=target;
   }catch(err){
     console.error(err);btn.disabled=false;C.toast('تعذر فتح الإشعار الآن.','error');
