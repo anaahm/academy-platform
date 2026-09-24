@@ -22,8 +22,8 @@
   <section id="teacherPortal" class="teacher-shell hidden">
     <aside class="teacher-side" id="teacherSide">
       <div class="teacher-brand-row"><a class="brand brand-light" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-book-open"></i></span><span><strong>الأكاديمية</strong><small>بوابة المدرس</small></span></a><button class="teacher-collapse-btn" id="teacherCollapseBtn" title="طي القائمة"><i class="fa-solid fa-angles-right"></i></button></div>
-      <nav class="teacher-nav">
-        <button class="active" data-teacher-tab="home"><i class="fa-solid fa-house"></i> الرئيسية</button>
+      <nav class="teacher-nav" role="tablist" aria-label="أقسام بوابة المدرس">
+        <button class="active" data-teacher-tab="home" role="tab" aria-selected="true" aria-controls="teacher-tab-home"><i class="fa-solid fa-house"></i> الرئيسية</button>
         <button data-teacher-tab="content"><i class="fa-solid fa-book-open"></i> محتواي</button>
         <button data-teacher-tab="submit"><i class="fa-solid fa-circle-plus"></i> إضافة محتوى</button>
         <button data-teacher-tab="assignments"><i class="fa-solid fa-clipboard-check"></i> الواجبات</button>
@@ -35,14 +35,14 @@
 
     <main class="teacher-main">
       <header class="teacher-top">
-        <div><button id="teacherMenuBtn" class="dash-mobile-menu"><i class="fa-solid fa-bars"></i></button><h1 id="teacherTopName">أهلًا أستاذنا 👋</h1><p id="teacherTopRole">بوابة إدارة المحتوى التعليمي</p></div>
-        <div class="dashboard-actions"><a class="btn btn-soft" href="./index.html"><i class="fa-solid fa-eye"></i> عرض المنصة</a><button id="teacherLogout" class="icon-btn" title="تسجيل الخروج"><i class="fa-solid fa-arrow-right-from-bracket"></i></button></div>
+        <div><button id="teacherMenuBtn" class="dash-mobile-menu" aria-label="فتح قائمة المدرس" aria-controls="teacherSide"><i class="fa-solid fa-bars"></i></button><h1 id="teacherTopName">أهلًا أستاذنا 👋</h1><p id="teacherTopRole">بوابة إدارة المحتوى التعليمي</p></div>
+        <div class="dashboard-actions"><a class="btn btn-soft" href="./index.html"><i class="fa-solid fa-eye"></i> عرض المنصة</a><button id="teacherLogout" class="icon-btn" title="تسجيل الخروج" aria-label="تسجيل الخروج"><i class="fa-solid fa-arrow-right-from-bracket"></i></button></div>
       </header>
 
       <div class="teacher-page">
-        <section class="teacher-tab" id="teacher-tab-home">
+        <section class="teacher-tab" id="teacher-tab-home" role="tabpanel">
           <article class="teacher-welcome">
-            <div><span class="section-kicker light">مساحتك التعليمية</span><h2>مرحبًا <span id="teacherWelcomeName">أستاذنا</span> 👋</h2><p>أضف محتوى منظم، تابع ما تم اعتماده، وركّز على جودة الشرح.</p></div>
+            <div><span class="section-kicker light">مساحتك التعليمية</span><h2>مرحبًا <span id="teacherWelcomeName">أستاذنا</span> 👋</h2><p>أضف محتوى منظم، تابع ما تم اعتماده، وركّز على جودة الشرح.</p><div class="teacher-welcome-actions"><button class="btn teacher-welcome-primary" data-open-teacher-submit><i class="fa-solid fa-circle-plus"></i> إضافة محتوى</button><button class="btn teacher-welcome-secondary" data-teacher-tab="assignments"><i class="fa-solid fa-clipboard-check"></i> إدارة الواجبات</button></div></div>
             <span class="teacher-welcome-art">📚</span>
           </article>
 
@@ -65,14 +65,14 @@
           </section>
         </section>
 
-        <section class="teacher-tab hidden" id="teacher-tab-content">
+        <section class="teacher-tab hidden" id="teacher-tab-content" role="tabpanel">
           <article class="teacher-card">
             <div class="teacher-card-head"><div><span class="section-kicker">محتواك</span><h3>الدروس والفيديوهات المعتمدة</h3></div><button class="btn btn-primary" data-open-teacher-submit><i class="fa-solid fa-plus"></i> إضافة محتوى</button></div>
             <div class="submission-list" id="teacherApprovedList"></div>
           </article>
         </section>
 
-        <section class="teacher-tab hidden" id="teacher-tab-submit">
+        <section class="teacher-tab hidden" id="teacher-tab-submit" role="tabpanel">
           <article class="teacher-card">
             <div class="teacher-card-head"><div><span class="section-kicker">إرسال للمراجعة</span><h3>إضافة درس أو فيديو جديد</h3></div><span>➕</span></div>
             <p class="profile-muted">المحتوى لن يظهر للطلاب قبل اعتماده من الإدارة.</p>
@@ -90,7 +90,7 @@
           </article>
         </section>
 
-        <section class="teacher-tab hidden" id="teacher-tab-students">
+        <section class="teacher-tab hidden" id="teacher-tab-students" role="tabpanel">
           <section class="teacher-stat-grid">
             <article><span class="stat-icon blue"><i class="fa-solid fa-eye"></i></span><div><strong id="teacherTotalViews">0</strong><small>مشاهدة للمحتوى</small></div></article>
             <article><span class="stat-icon green"><i class="fa-solid fa-circle-check"></i></span><div><strong id="teacherTotalCompletions">0</strong><small>إكمال للدروس</small></div></article>
@@ -104,7 +104,7 @@
           </article>
         </section>
 
-        <section class="teacher-tab hidden" id="teacher-tab-assignments">
+        <section class="teacher-tab hidden" id="teacher-tab-assignments" role="tabpanel">
           <section class="teacher-grid">
             <article class="teacher-card">
               <div class="teacher-card-head"><div><span class="section-kicker">واجب جديد</span><h3>إنشاء واجب للطلاب</h3></div><span>📝</span></div>
@@ -135,7 +135,7 @@
           </article>
         </section>
 
-        <section class="teacher-tab hidden" id="teacher-tab-analytics">
+        <section class="teacher-tab hidden" id="teacher-tab-analytics" role="tabpanel">
           <section class="teacher-grid">
             <article class="teacher-card">
               <div class="teacher-card-head"><div><span class="section-kicker">أقوى محتوى</span><h3>أفضل درس حسب المشاهدات</h3></div><span>🏆</span></div>
@@ -155,16 +155,16 @@
     </main>
   </section>
 
-  <div class="modal-backdrop hidden" id="teacherGradeModal">
-    <div class="modal-panel teacher-grade-modal">
-      <button class="modal-close" id="closeTeacherGradeModal"><i class="fa-solid fa-xmark"></i></button>
+  <div class="modal-backdrop hidden" id="teacherGradeModal" aria-hidden="true">
+    <div class="modal-panel teacher-grade-modal" role="dialog" aria-modal="true" aria-labelledby="gradeModalTitle">
+      <button class="modal-close" id="closeTeacherGradeModal" aria-label="إغلاق نافذة التصحيح"><i class="fa-solid fa-xmark"></i></button>
       <span class="section-kicker">تصحيح الواجب</span>
       <h2 id="gradeModalTitle">تسليم الطالب</h2>
       <div id="gradeSubmissionPreview" class="grade-submission-preview"></div>
       <form id="teacherGradeForm" class="teacher-submit-form">
         <label><span id="gradeScoreLabel">الدرجة</span><input id="gradeScore" type="number" min="0" max="100" required></label>
         <label><span>تعليق للطالب</span><textarea id="gradeFeedback" rows="4" maxlength="2000" placeholder="ملاحظة تشجيعية أو نقاط تحتاج مراجعة..."></textarea></label>
-        <button class="btn btn-primary btn-block" type="submit"><i class="fa-solid fa-check"></i> حفظ التصحيح</button>
+        <button class="btn btn-primary btn-block" id="teacherGradeSaveBtn" type="submit"><i class="fa-solid fa-check"></i> حفظ التصحيح</button>
       </form>
     </div>
   </div>
