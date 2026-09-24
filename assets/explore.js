@@ -92,11 +92,13 @@ function renderSubjects(){
  }).join('')||'<div class="empty-state"><span>🔎</span><h3>لا توجد مادة مطابقة</h3><p>جرّب كلمة أقصر أو صفًا آخر.</p></div>';
 }
 async function loadAndRenderSubjects(){
+ const requestedStage=state.stage,requestedGrade=state.grade;
  $('exploreSubjectBlock').classList.remove('hidden');
  $('exploreSubjectGrid').innerHTML='<div class="explore-inline-loading"><i class="fa-solid fa-spinner fa-spin"></i><span>جاري تحميل محتوى المرحلة...</span></div>';
  try{
-   const data=await ensureStage(state.stage);
-   state.stageCache[state.stage]=data;
+   const data=await ensureStage(requestedStage);
+   state.stageCache[requestedStage]=data;
+   if(state.stage!==requestedStage||state.grade!==requestedGrade)return;
    renderSubjects();
  }catch(err){
    console.error(err);
