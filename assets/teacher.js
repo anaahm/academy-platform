@@ -90,9 +90,9 @@ function switchTab(tab,updateUrl=true){
    analytics:['الإحصائيات','تحليل المشاهدات والإكمال ونتائج التدريبات']
  };
  if($('teacherTopRole'))$('teacherTopRole').textContent=labels[tab]?.[1]||'بوابة إدارة المحتوى التعليمي';
- $$('[data-teacher-tab]').forEach(b=>{
+ $('.teacher-nav [data-teacher-tab]').forEach(b=>{
    const active=b.dataset.teacherTab===tab;
-   b.classList.toggle('active',active);b.setAttribute('aria-selected',active?'true':'false');
+   b.classList.toggle('active',active);b.setAttribute('aria-selected',active?'true':'false');b.tabIndex=active?0:-1;
  });
  $$('.teacher-tab').forEach(s=>s.classList.add('hidden'));
  $('teacher-tab-'+tab)?.classList.remove('hidden');
@@ -301,6 +301,17 @@ function showNoAccess(message){
  window.AcademyUI?.hidePageLoading();
  $('teacherPortal').classList.add('hidden');$('teacherAccess').classList.remove('hidden');$('teacherAccessText').textContent=message;
 }
+const teacherNavTabs=$$('.teacher-nav [data-teacher-tab]');
+teacherNavTabs.forEach((b,i)=>b.onkeydown=e=>{
+ if(!['ArrowRight','ArrowLeft','Home','End'].includes(e.key))return;
+ e.preventDefault();
+ let next=i;
+ if(e.key==='ArrowRight')next=(i-1+teacherNavTabs.length)%teacherNavTabs.length;
+ if(e.key==='ArrowLeft')next=(i+1)%teacherNavTabs.length;
+ if(e.key==='Home')next=0;
+ if(e.key==='End')next=teacherNavTabs.length-1;
+ teacherNavTabs[next].focus();switchTab(teacherNavTabs[next].dataset.teacherTab);
+});
 $$('[data-teacher-tab]').forEach(b=>b.onclick=()=>switchTab(b.dataset.teacherTab));
 $$('[data-open-teacher-submit]').forEach(b=>b.onclick=()=>switchTab('submit'));
 $('teacherStage').addEventListener('change',updateGrades);$('teacherGrade').addEventListener('change',updateSubjects);$('teacherEducationType').addEventListener('change',updateSubjects);
