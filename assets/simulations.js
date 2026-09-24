@@ -72,6 +72,9 @@ async function finish(auto){
 
 (async()=>{
  ({user,profile}=await C.requireStudent());$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
- const [s,q]=await Promise.all([C.db.ref('simulations').once('value'),C.db.ref('quizzes').once('value')]);data={simulations:s.val()||{},quizzes:q.val()||{}};renderStats();render();
+ const [s,q]=await Promise.all([
+   C.db.ref('simulations').orderByChild('stage').equalTo(profile.stage).once('value'),
+   C.db.ref('quizzes').orderByChild('stage').equalTo(profile.stage).once('value')
+ ]);data={simulations:s.val()||{},quizzes:q.val()||{}};renderStats();render();
 })();
 })();
