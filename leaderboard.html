@@ -33,13 +33,13 @@
 
     <section class="container feature-container leaderboard-shell">
       <div class="feature-toolbar">
-        <div class="feature-tabs">
-          <button class="active" data-period="daily">اليوم</button>
-          <button data-period="weekly">الأسبوع</button>
-          <button data-period="monthly">الشهر</button>
-          <button data-period="allTime">كل الوقت</button>
+        <div class="feature-tabs" role="tablist" aria-label="فترة الترتيب">
+          <button class="active" data-period="daily" role="tab" aria-selected="true">اليوم</button>
+          <button data-period="weekly" role="tab" aria-selected="false">الأسبوع</button>
+          <button data-period="monthly" role="tab" aria-selected="false">الشهر</button>
+          <button data-period="allTime" role="tab" aria-selected="false">كل الوقت</button>
         </div>
-        <div class="feature-filter"><select id="leaderLimit"><option value="20">أفضل 20</option><option value="50">أفضل 50</option><option value="100">أفضل 100</option></select></div>
+        <div class="feature-filter"><select id="leaderLimit" aria-label="عدد الطلاب المعروضين"><option value="20">أفضل 20</option><option value="50">أفضل 50</option><option value="100">أفضل 100</option></select></div>
       </div>
 
       <section class="feature-stat-row">
