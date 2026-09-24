@@ -37,7 +37,8 @@
       ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true",
       ".indexOn": [
         "subject",
-        "stage"
+        "stage",
+        "teacherId"
       ]
     },
     "quizzes": {
@@ -187,7 +188,8 @@
       ".indexOn": [
         "stage",
         "subject",
-        "dueAt"
+        "dueAt",
+        "teacherId"
       ]
     },
     "assignmentSubmissions": {
