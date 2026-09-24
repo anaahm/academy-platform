@@ -106,7 +106,10 @@ $$('[data-planner-filter]').forEach(b=>b.onclick=()=>{
    const subjects=currentSubjects();
    $('plannerSubject').innerHTML=subjects.length?subjects.map(s=>'<option value="'+C.esc(s.id)+'">'+C.esc(s.name)+'</option>').join(''):'<option value="">لا توجد مواد متاحة</option>';
    $('plannerDate').value=today();
-   C.db.ref('studentProfilesV3/'+user.uid+'/studyPlanner').on('value',snap=>{tasks=snap.val()||{};renderStats();renderTasks();renderSuggestion()},err=>{console.error(err);C.toast('تعذر مزامنة خطة المذاكرة.','error')});
+   const plannerRef=C.db.ref('studentProfilesV3/'+user.uid+'/studyPlanner');
+   const first=await plannerRef.once('value');
+   tasks=first.val()||{};renderStats();renderTasks();renderSuggestion();
+   plannerRef.on('value',snap=>{tasks=snap.val()||{};renderStats();renderTasks();renderSuggestion()},err=>{console.error(err);C.toast('تعذر مزامنة خطة المذاكرة.','error')});
  }catch(err){
    console.error(err);C.toast('تعذر تحميل مخطط المذاكرة الآن.','error');
    $('plannerTaskList').innerHTML=window.AcademyUI?.errorStateHtml('تعذر تحميل الخطة','تحقق من الاتصال ثم حاول مرة أخرى.','<button class="btn btn-primary" onclick="location.reload()">إعادة المحاولة</button>')||'';
