@@ -92,8 +92,8 @@
           </article>
           <div class="quiz-engine hidden" id="quizEngine">
             <div class="quiz-progress-head"><span id="quizProgressText">السؤال 1 من 5</span><strong id="quizScoreLive">0 نقطة</strong></div>
-            <div class="quiz-progress-track"><span id="quizProgressBar"></span></div>
-            <article class="question-card">
+            <div class="quiz-progress-track" id="quizProgressTrack" role="progressbar" aria-label="تقدم التدريب" aria-valuemin="1" aria-valuemax="1" aria-valuenow="1"><span id="quizProgressBar"></span></div>
+            <article class="question-card" aria-live="polite">
               <span class="question-number" id="questionNumber">1</span>
               <h3 id="questionText"></h3>
               <div class="question-options" id="questionOptions"></div>
