@@ -54,39 +54,54 @@ function render(){
   $('notificationMeta').textContent=list.length+' إشعار';
   $('markAllNotifications').disabled=!items.some(x=>!x.read);
   $('notificationList').innerHTML=list.length?list.map(cardHtml).join(''):'<div class="feature-empty"><span>🔕</span><h3>مفيش إشعارات هنا</h3><p>لما يكون فيه تحديث مهم هيظهر في المركز تلقائيًا.</p></div>';
-  $$('[data-toggle-read]').forEach(b=>b.onclick=()=>toggleRead(b.dataset.toggleRead));
-  $$('[data-open-notification]').forEach(b=>b.onclick=()=>openNotification(b.dataset.openNotification,b.dataset.href));
+  $$('[data-toggle-read]').forEach(b=>b.onclick=()=>toggleRead(b.dataset.toggleRead,b));
+  $$('[data-open-notification]').forEach(b=>b.onclick=()=>openNotification(b.dataset.openNotification,b.dataset.href,b));
 }
 async function reload(){
   const result=await N.loadNotifications(user);
   profile=result.profile;items=result.items;render();
 }
-async function toggleRead(key){
+async function toggleRead(key,btn){
   const item=items.find(x=>x.key===key);if(!item)return;
-  if(item.read)await N.markUnread(user.uid,key);else await N.markRead(user.uid,key);
-  await reload();
+  btn.disabled=true;
+  try{
+    if(item.read)await N.markUnread(user.uid,key);else await N.markRead(user.uid,key);
+    item.read=!item.read;render();
+  }catch(err){
+    console.error(err);btn.disabled=false;C.toast('تعذر تحديث حالة الإشعار الآن.','error');
+  }
 }
-async function openNotification(key,href){
-  const item=items.find(x=>x.key===key);
-  if(item&&!item.read)await N.markRead(user.uid,key);
-  location.href=href||'./index.html';
+async function openNotification(key,href,btn){
+  const item=items.find(x=>x.key===key);btn.disabled=true;
+  try{
+    if(item&&!item.read){await N.markRead(user.uid,key);item.read=true}
+    const target=C.safeUrl(href||'./index.html')||'./index.html';
+    location.href=target;
+  }catch(err){
+    console.error(err);btn.disabled=false;C.toast('تعذر فتح الإشعار الآن.','error');
+  }
 }
 $('markAllNotifications').onclick=async()=>{
-  await N.markAllRead(user.uid,items);
-  C.toast('تم تعليم كل الإشعارات كمقروءة ✅');
-  await reload();
+  const btn=$('markAllNotifications');
+  window.AcademyUI?.setButtonLoading(btn,true,'تعليم');
+  try{
+    await N.markAllRead(user.uid,items);
+    items.forEach(x=>x.read=true);render();C.toast('تم تعليم كل الإشعارات كمقروءة ✅');
+  }catch(err){
+    console.error(err);C.toast('تعذر تحديث كل الإشعارات الآن.','error');
+  }finally{window.AcademyUI?.setButtonLoading(btn,false)}
 };
 $$('[data-notification-filter]').forEach(b=>b.onclick=()=>{
   filter=b.dataset.notificationFilter;
-  $$('[data-notification-filter]').forEach(x=>x.classList.toggle('active',x===b));
+  $$('[data-notification-filter]').forEach(x=>{const active=x===b;x.classList.toggle('active',active);x.setAttribute('aria-selected',active?'true':'false')});
   render();
 });
 
 (async()=>{
+  window.AcademyUI?.showPageLoading('جاري جمع إشعاراتك وتحديثاتك...');
   try{
     ({user,profile}=await C.requireStudent());
     $('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
-    window.AcademyUI?.showPageLoading('جاري جمع إشعاراتك وتحديثاتك...');
     await reload();
   }catch(err){
     console.error(err);C.toast('تعذر تحميل الإشعارات الآن.','error');
