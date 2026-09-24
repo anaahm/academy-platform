@@ -596,6 +596,7 @@ function bindAdminForm(id,handler,label='حفظ'){
      toast('تعذر حفظ البيانات الآن. حاول مرة أخرى.','error');
    }finally{
      window.AcademyUI?.setButtonLoading(btn,false);
+     if(id==='newsForm'&&btn)btn.textContent=editState.news?'حفظ التعديل':'نشر الخبر';
    }
  };
 }
