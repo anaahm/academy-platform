@@ -31,21 +31,21 @@
     <section class="container explore-workspace">
       <aside class="explore-sidebar">
         <div class="explore-sidebar-title"><span class="section-kicker">اختر المسار</span><h3>نوع التعليم</h3></div>
-        <button class="explore-type active" data-type="public"><span>🏫</span><div><strong>تربية وتعليم</strong><small>المناهج العامة</small></div><i class="fa-solid fa-chevron-left"></i></button>
-        <button class="explore-type" data-type="azhar"><span>🕌</span><div><strong>أزهر شريف</strong><small>المناهج الأزهرية</small></div><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="explore-type active" data-type="public" aria-pressed="true"><span>🏫</span><div><strong>تربية وتعليم</strong><small>المناهج العامة</small></div><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="explore-type" data-type="azhar" aria-pressed="false"><span>🕌</span><div><strong>أزهر شريف</strong><small>المناهج الأزهرية</small></div><i class="fa-solid fa-chevron-left"></i></button>
         <div class="explore-note"><i class="fa-solid fa-shield-heart"></i><div><strong>اطمئن</strong><p>الاستكشاف لا يغيّر بيانات مرحلتك الأساسية.</p></div></div>
       </aside>
 
       <div class="explore-main">
         <div class="explore-toolbar">
           <div><span class="section-kicker" id="activeTypeLabel">التعليم العام</span><h2>اختر المرحلة الدراسية</h2></div>
-          <label class="explore-page-search"><i class="fa-solid fa-magnifying-glass"></i><input id="explorePageSearch" placeholder="ابحث عن مادة..."></label>
+          <label class="explore-page-search"><i class="fa-solid fa-magnifying-glass"></i><input id="explorePageSearch" type="search" aria-label="البحث عن مادة" placeholder="ابحث عن مادة..."></label>
         </div>
 
-        <div class="explore-stage-tabs" id="exploreStageTabs">
-          <button class="active" data-stage="primary"><span>🎒</span><div><strong>ابتدائي</strong><small>6 صفوف</small></div></button>
-          <button data-stage="prep"><span>📚</span><div><strong>إعدادي</strong><small>3 صفوف</small></div></button>
-          <button data-stage="sec"><span>🎓</span><div><strong>ثانوي</strong><small>3 صفوف</small></div></button>
+        <div class="explore-stage-tabs" id="exploreStageTabs" role="tablist" aria-label="المرحلة الدراسية">
+          <button class="active" data-stage="primary" role="tab" aria-selected="true"><span>🎒</span><div><strong>ابتدائي</strong><small>6 صفوف</small></div></button>
+          <button data-stage="prep" role="tab" aria-selected="false"><span>📚</span><div><strong>إعدادي</strong><small>3 صفوف</small></div></button>
+          <button data-stage="sec" role="tab" aria-selected="false"><span>🎓</span><div><strong>ثانوي</strong><small>3 صفوف</small></div></button>
         </div>
 
         <div class="explore-grade-block">
