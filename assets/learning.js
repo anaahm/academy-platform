@@ -453,7 +453,7 @@ async function markComplete(c,id){
    state.profile.learningProgress=state.profile.learningProgress||{};state.profile.learningProgress[id]={completed:true,completedAt:at,subject:c.subject};
    const subjectPct=progress();
    await db.ref('studentProfilesV3/'+state.user.uid+'/subjectProgress/'+c.subject).set(subjectPct);
-   await db.ref('studentProfilesV3/'+state.user.uid).update({lastLessonTitle:state.currentLesson?.title||'',lastSubjectId:c.subject,lastActiveAt:Date.now()});
+   await db.ref('studentProfilesV3/'+state.user.uid).update({lastLessonTitle:state.currentLesson?.title||'',lastLessonId:id,lastSubjectId:c.subject,lastActiveAt:Date.now()});
    trackContentEvent(id,'completions');
    updateProgress(id);renderOutline(c,state.currentLesson);toast('رائع! +50 XP وتم حفظ تقدمك 🎉');showLessonCelebration(c,id,50);
  }catch(err){
