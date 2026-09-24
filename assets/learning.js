@@ -478,11 +478,15 @@ function renderLearningSubjects(type,stage,grade){
 async function init(){
  window.AcademyUI?.showPageLoading(page==='lesson'?'جاري تجهيز الدرس...':'جاري تجهيز المادة...');
  try{
+   const requestedSubject=params.get('subject'),requestedStage=params.get('stage');
+   const lessonsRef=requestedSubject?db.ref('lessons').orderByChild('subject').equalTo(requestedSubject):db.ref('lessons');
+   const quizzesRef=requestedSubject?db.ref('quizzes').orderByChild('subject').equalTo(requestedSubject):db.ref('quizzes');
+   const filesRef=requestedStage?db.ref('files').orderByChild('stage').equalTo(requestedStage):db.ref('files');
    const [subjectsSnap,lessonsSnap,quizzesSnap,filesSnap]=await Promise.all([
      db.ref('customSubjects').once('value'),
-     db.ref('lessons').once('value'),
-     db.ref('quizzes').once('value'),
-     db.ref('files').once('value')
+     lessonsRef.once('value'),
+     quizzesRef.once('value'),
+     filesRef.once('value')
    ]);
    state.data={customSubjects:subjectsSnap.val()||{},lessons:lessonsSnap.val()||{},quizzes:quizzesSnap.val()||{},files:filesSnap.val()||{}};
  }catch(e){toast('تعذر تحميل المحتوى الآن.','error')}
