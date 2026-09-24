@@ -22,23 +22,23 @@
 
   <main class="container profile-page">
     <section class="profile-hero">
-      <div class="profile-avatar-wrap"><span id="profileAvatar">ط</span><button id="avatarHint" title="الصورة الشخصية ستتوفر لاحقًا"><i class="fa-solid fa-camera"></i></button></div>
+      <div class="profile-avatar-wrap"><span id="profileAvatar" aria-label="الحرف الأول من اسم الطالب">ط</span><i class="profile-online-dot" aria-hidden="true"></i></div>
       <div class="profile-hero-copy"><span class="section-kicker">ملفك الشخصي</span><h1 id="profileNameTitle">مرحبًا بك</h1><p id="profileStageTitle">رحلتك التعليمية محفوظة هنا.</p></div>
-      <div class="profile-level"><span>🏅</span><div><small>مستواك</small><strong id="profileLevel">1</strong><p><span id="profileXp">0</span> XP</p></div></div>
+      <div class="profile-level"><span>🏅</span><div><small>مستواك</small><div class="profile-level-number"><strong id="profileLevel">1</strong><em>المستوى</em></div><p><span id="profileXp">0</span> XP</p><div class="profile-level-progress" id="profileLevelProgressTrack" role="progressbar" aria-label="تقدمك للمستوى التالي" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0"><i id="profileLevelProgress"></i></div><small id="profileNextLevelText">1000 XP للمستوى التالي</small></div></div>
     </section>
 
     <section class="profile-layout">
-      <aside class="profile-nav-card">
-        <button class="active" data-profile-tab="overview"><i class="fa-solid fa-chart-pie"></i> نظرة عامة</button>
-        <button data-profile-tab="account"><i class="fa-regular fa-user"></i> بيانات الحساب</button>
-        <button data-profile-tab="study"><i class="fa-solid fa-graduation-cap"></i> مرحلتي الدراسية</button>
-        <button data-profile-tab="saved"><i class="fa-regular fa-bookmark"></i> محفوظاتي</button>
-        <button data-profile-tab="security"><i class="fa-solid fa-shield-halved"></i> الأمان</button>
+      <aside class="profile-nav-card" role="tablist" aria-label="إعدادات الحساب">
+        <button class="active" data-profile-tab="overview" role="tab" aria-selected="true" aria-controls="tab-overview"><i class="fa-solid fa-chart-pie"></i><span>نظرة عامة</span></button>
+        <button data-profile-tab="account" role="tab" aria-selected="false" aria-controls="tab-account"><i class="fa-regular fa-user"></i><span>بيانات الحساب</span></button>
+        <button data-profile-tab="study" role="tab" aria-selected="false" aria-controls="tab-study"><i class="fa-solid fa-graduation-cap"></i><span>مرحلتي الدراسية</span></button>
+        <button data-profile-tab="saved" role="tab" aria-selected="false" aria-controls="tab-saved"><i class="fa-regular fa-bookmark"></i><span>محفوظاتي</span><em class="profile-nav-count" id="profileSavedCount">0</em></button>
+        <button data-profile-tab="security" role="tab" aria-selected="false" aria-controls="tab-security"><i class="fa-solid fa-shield-halved"></i><span>الأمان</span></button>
         <button id="profileLogout" class="danger"><i class="fa-solid fa-arrow-right-from-bracket"></i> تسجيل الخروج</button>
       </aside>
 
       <div class="profile-content">
-        <section class="profile-tab" id="tab-overview">
+        <section class="profile-tab" id="tab-overview" role="tabpanel">
           <div class="profile-stat-grid">
             <article><span class="stat-icon green"><i class="fa-solid fa-check"></i></span><div><strong id="profileLessons">0</strong><small>درس مكتمل</small></div></article>
             <article><span class="stat-icon blue"><i class="fa-regular fa-circle-check"></i></span><div><strong id="profileQuizzes">0</strong><small>اختبار مكتمل</small></div></article>
@@ -58,18 +58,18 @@
           </div>
         </section>
 
-        <section class="profile-tab hidden" id="tab-account">
+        <section class="profile-tab hidden" id="tab-account" role="tabpanel">
           <article class="profile-card">
             <div class="profile-card-head"><div><span class="section-kicker">بياناتك الأساسية</span><h2>معلومات الحساب</h2></div><span>👤</span></div>
             <form id="accountForm" class="profile-form">
               <label><span>الاسم</span><div class="input-wrap"><i class="fa-regular fa-user"></i><input id="profileNameInput" required minlength="2"></div></label>
               <label><span>البريد الإلكتروني</span><div class="input-wrap locked"><i class="fa-regular fa-envelope"></i><input id="profileEmailInput" disabled></div><small>تغيير البريد سيتم من قسم الأمان لاحقًا.</small></label>
-              <button class="btn btn-primary" type="submit">حفظ التغييرات</button>
+              <div class="profile-form-actions"><small id="accountSaveStatus">لم يتم إجراء تغييرات.</small><button class="btn btn-primary" id="accountSaveBtn" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ التغييرات</button></div>
             </form>
           </article>
         </section>
 
-        <section class="profile-tab hidden" id="tab-study">
+        <section class="profile-tab hidden" id="tab-study" role="tabpanel">
           <article class="profile-card">
             <div class="profile-card-head"><div><span class="section-kicker">تخصيص تجربتك</span><h2>مرحلتك الدراسية</h2></div><span>🎓</span></div>
             <p class="profile-muted">تغيير المرحلة سيغيّر المواد التي تظهر في لوحة الطالب، لكنه لن يحذف تقدمك القديم.</p>
@@ -77,12 +77,12 @@
               <label><span>نوع التعليم</span><select id="studyType"><option value="public">تربية وتعليم</option><option value="azhar">أزهر شريف</option></select></label>
               <label><span>المرحلة</span><select id="studyStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
               <label><span>الصف</span><select id="studyGrade"></select></label>
-              <button class="btn btn-primary" type="submit">تحديث المرحلة</button>
+              <div class="profile-form-actions"><small id="studySaveStatus">المواد المعروضة تعتمد على المرحلة والصف.</small><button class="btn btn-primary" id="studySaveBtn" type="submit"><i class="fa-solid fa-graduation-cap"></i> تحديث المرحلة</button></div>
             </form>
           </article>
         </section>
 
-        <section class="profile-tab hidden" id="tab-saved">
+        <section class="profile-tab hidden" id="tab-saved" role="tabpanel">
           <article class="profile-card">
             <div class="profile-card-head"><div><span class="section-kicker">للمراجعة لاحقًا</span><h2>الدروس المحفوظة</h2></div><span>🔖</span></div>
             <p class="profile-muted">أي درس تضغط فيه علامة الحفظ هيظهر هنا تلقائيًا.</p>
@@ -90,12 +90,13 @@
           </article>
         </section>
 
-        <section class="profile-tab hidden" id="tab-security">
+        <section class="profile-tab hidden" id="tab-security" role="tabpanel">
           <div class="profile-two-col">
             <article class="profile-card">
               <div class="profile-card-head"><div><span class="section-kicker">كلمة المرور</span><h2>إعادة تعيين كلمة المرور</h2></div><span>🔐</span></div>
               <p class="profile-muted">سنرسل رابطًا آمنًا إلى بريدك لتعيين كلمة مرور جديدة.</p>
-              <button id="sendResetBtn" class="btn btn-primary">إرسال رابط إعادة التعيين</button>
+              <div class="security-email-row"><i class="fa-regular fa-envelope"></i><div><small>سيتم الإرسال إلى</small><strong id="securityEmail">—</strong></div></div>
+              <button id="sendResetBtn" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> إرسال رابط إعادة التعيين</button>
             </article>
             <article class="profile-card danger-card">
               <div class="profile-card-head"><div><span class="section-kicker">الجلسة الحالية</span><h2>تسجيل الخروج</h2></div><span>🚪</span></div>
