@@ -453,10 +453,32 @@ function updatePendingBadge(){
 async function verifyAdmin(user){
  const snap=await db.ref('adminProfiles/'+user.uid).once('value');return snap.val()?.isAdmin===true;
 }
+const ADMIN_DATA_PATHS=[
+ 'adminProfiles','announcements','community','customSubjects','files','lessons','liveSessions',
+ 'posts','quizzes','scheduleEvents','settings','simulations','studentProfilesV3','teacherProfiles','teacherSubmissions'
+];
 async function startDataListener(){
  if(unsubscribe)unsubscribe();
- const handler=s=>{root=s.val()||{};renderAll();window.AcademyUI?.hidePageLoading()};
- db.ref('/').on('value',handler);unsubscribe=()=>db.ref('/').off('value',handler);
+ const stops=[],loaded=new Set();
+ const markReady=()=>{
+   if(loaded.size===ADMIN_DATA_PATHS.length){
+     renderAll();
+     window.AcademyUI?.hidePageLoading();
+   }
+ };
+ ADMIN_DATA_PATHS.forEach(path=>{
+   const ref=db.ref(path);
+   const handler=s=>{
+     root[path]=s.val()||{};
+     const first=!loaded.has(path);
+     loaded.add(path);
+     if(first)markReady();
+     else renderAll();
+   };
+   ref.on('value',handler);
+   stops.push(()=>ref.off('value',handler));
+ });
+ unsubscribe=()=>{stops.forEach(stop=>stop());loaded.clear()};
 }
 
 function initAdminCollapse(){
@@ -482,7 +504,19 @@ $('curriculumType').onchange=renderCurriculum;$('curriculumStage').onchange=()=>
 $('assignType').onchange=refreshAssignmentSubjects;$('assignStage').onchange=refreshAssignmentSubjects;$('assignGrade').onchange=refreshAssignmentSubjects;$('addAssignmentBtn').onclick=addAssignment;
 initAdminCollapse();
 $('adminMenuBtn').onclick=()=>{$('adminSidebar').classList.add('open');$('adminOverlay').classList.remove('hidden')};$('adminOverlay').onclick=()=>{$('adminSidebar').classList.remove('open');$('adminOverlay').classList.add('hidden')};
-$('adminRefreshBtn').onclick=async()=>{const s=await db.ref('/').once('value');root=s.val()||{};renderAll();toast('تم تحديث البيانات')};
+$('adminRefreshBtn').onclick=async()=>{
+ const btn=$('adminRefreshBtn');
+ window.AcademyUI?.setButtonLoading(btn,true,'تحديث');
+ try{
+   const snaps=await Promise.all(ADMIN_DATA_PATHS.map(path=>db.ref(path).once('value')));
+   ADMIN_DATA_PATHS.forEach((path,i)=>root[path]=snaps[i].val()||{});
+   renderAll();toast('تم تحديث البيانات');
+ }catch(err){
+   console.error(err);toast('تعذر تحديث البيانات الآن.','error');
+ }finally{
+   window.AcademyUI?.setButtonLoading(btn,false);
+ }
+};
 $('adminLogout').onclick=()=>auth.signOut();
 $('adminGlobalSearch').oninput=e=>{const q=e.target.value.trim();$('lessonSearch').value=q;$('studentSearch').value=q;if(q){setTab('lessons');renderLessons()}};
 if($('adminLoginForm')?.dataset.adminAuthBound!=='true'){
