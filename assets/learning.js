@@ -490,8 +490,9 @@ async function finishQuiz(){
    await db.ref('studentProfilesV3/'+state.user.uid+'/quizHistory').push({
      sourceId:qz.sourceId,
      sourceType:state.currentLesson?'lesson':'quiz',
-     title:state.currentLesson?.title||'اختبار',
+     title:state.currentQuiz?.name||state.currentLesson?.title||'اختبار',
      subject:qz.c?.subject||'',
+     unit:Number(state.currentQuiz?.unit||state.currentLesson?.unit||0),
      score:pct,
      correct:score,
      total:qz.questions.length,
@@ -503,6 +504,7 @@ async function finishQuiz(){
 }
 function renderQuizOnly(c,id){
  const q=state.data.quizzes?.[id];if(!q||q.isHidden){toast('الاختبار غير موجود.','error');setTimeout(()=>history.back(),800);return}
+ state.currentQuiz={id,...q};
  filterContent(c);
  const unit=Number(q.unit||0);
  const unlocked=unit===0?subjectIsComplete():unitIsComplete(unit);
