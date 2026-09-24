@@ -170,3 +170,5 @@ button.subject-path-node:hover{transform:translateY(-2px);box-shadow:0 10px 25px
  .subject-path-track{grid-template-columns:1fr}.unit-head{gap:10px}.unit-progress-rich{width:100%;text-align:right}
  .unit-head{flex-wrap:wrap}.quick-check-head{align-items:flex-start}.lesson-quick-check{padding:14px}
 }
+
+#subjectProgressBar,#weeklyProgressBar,#quizProgressBar{width:0%}#lessonProgressBar{width:25%}
