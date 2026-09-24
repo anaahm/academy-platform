@@ -28,17 +28,17 @@
 
     <section class="container feature-container">
       <div class="feature-toolbar">
-        <div class="feature-tabs"><button class="active" data-community-tab="forums">المنتدى</button><button data-community-tab="groups">مجموعات الدراسة</button></div>
-        <button class="btn btn-primary" id="togglePostForm"><i class="fa-solid fa-plus"></i> منشور جديد</button>
+        <div class="feature-tabs" role="tablist" aria-label="أقسام المجتمع"><button class="active" data-community-tab="forums" role="tab" aria-selected="true">المنتدى</button><button data-community-tab="groups" role="tab" aria-selected="false">مجموعات الدراسة</button></div>
+        <button class="btn btn-primary" id="togglePostForm" aria-expanded="false" aria-controls="newPostForm"><i class="fa-solid fa-plus"></i> منشور جديد</button>
       </div>
 
       <div class="community-layout">
         <div>
           <form id="newPostForm" class="community-post new-post-form hidden">
             <span class="section-kicker">شارك بشكل محترم ومفيد</span>
-            <input id="postTitle" required maxlength="120" placeholder="عنوان المنشور">
-            <textarea id="postContent" required maxlength="1200" placeholder="اكتب سؤالك أو فكرتك التعليمية..."></textarea>
-            <div class="community-form-actions"><button class="btn btn-primary" type="submit">نشر</button><button class="btn btn-soft" type="button" id="cancelPost">إلغاء</button></div>
+            <label><span>عنوان المنشور</span><input id="postTitle" required minlength="3" maxlength="120" placeholder="عنوان واضح ومختصر"></label>
+            <label><span>المحتوى</span><textarea id="postContent" required minlength="5" maxlength="1200" placeholder="اكتب سؤالك أو فكرتك التعليمية..."></textarea><small class="community-char-count"><span id="postCharCount">0</span> / 1200</small></label>
+            <div class="community-form-actions"><button class="btn btn-primary" id="communityPostSubmitBtn" type="submit"><i class="fa-solid fa-paper-plane"></i> نشر</button><button class="btn btn-soft" type="button" id="cancelPost">إلغاء</button></div>
           </form>
 
           <div class="community-feed" id="forumFeed"></div>
