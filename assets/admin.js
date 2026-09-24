@@ -487,15 +487,28 @@ function refreshAssignmentSubjects(){
  fillGrades($('assignGrade'),$('assignStage').value);fillSubjects($('assignSubject'),$('assignStage').value,$('assignGrade').value,$('assignType').value);
 }
 async function addAssignment(){
- const uid=$('assignTeacher').value;if(!uid)return toast('لا يوجد مدرس محدد.','error');
+ const uid=$('assignTeacher').value,btn=$('addAssignmentBtn');if(!uid)return toast('لا يوجد مدرس محدد.','error');
  const payload={type:$('assignType').value,stage:$('assignStage').value,grade:$('assignGrade').value,subject:$('assignSubject').value,subjectName:$('assignSubject').selectedOptions[0]?.textContent||'',createdAt:Date.now()};
- await db.ref('teacherProfiles/'+uid+'/assignments').push(payload);toast('تم إسناد المادة للمدرس');
+ if(!payload.subject)return toast('اختر مادة صحيحة أولًا.','error');
+ const teacherProfile=root.teacherProfiles?.[uid]||{};
+ const existing=Array.isArray(teacherProfile.assignments)?teacherProfile.assignments:Object.values(teacherProfile.assignments||{});
+ if(existing.some(a=>a?.type===payload.type&&a?.stage===payload.stage&&String(a?.grade)===String(payload.grade)&&a?.subject===payload.subject)){
+   return toast('هذه المادة مسندة لهذا المدرس بالفعل.','error');
+ }
+ window.AcademyUI?.setButtonLoading(btn,true,'إسناد');
+ try{
+   await db.ref('teacherProfiles/'+uid+'/assignments').push(payload);toast('تم إسناد المادة للمدرس');
+ }catch(err){console.error(err);toast('تعذر إسناد المادة الآن.','error')}
+ finally{window.AcademyUI?.setButtonLoading(btn,false)}
 }
 async function approveSubmission(key){
  const [uid,id]=key.split('|'),s=root.teacherSubmissions?.[uid]?.[id];if(!s)return;
- const ref=db.ref('lessons').push();
- await ref.set({title:s.title||'درس',content:'',type:s.type||'public',stage:s.stage||'prep',grade:String(s.grade||1),subject:s.subject||'',unit:Number(s.unit||1),videos:s.videoUrl?[{name:s.teacherName||root.teacherProfiles?.[uid]?.name||'المدرس',url:s.videoUrl,teacherId:uid}]:[],questions:[],isLocked:false,isHidden:false,teacherId:uid,teacherSubmissionId:id,createdAt:Date.now()});
- await db.ref('teacherSubmissions/'+uid+'/'+id).update({status:'approved',lessonId:ref.key,reviewedAt:Date.now()});toast('تم اعتماد المحتوى ونشره');
+ if((s.status||'pending')!=='pending')return toast('تمت مراجعة هذا الطلب بالفعل.','error');
+ try{
+   const ref=db.ref('lessons').push();
+   await ref.set({title:s.title||'درس',content:'',type:s.type||'public',stage:s.stage||'prep',grade:String(s.grade||1),subject:s.subject||'',unit:Number(s.unit||1),videos:s.videoUrl?[{name:s.teacherName||root.teacherProfiles?.[uid]?.name||'المدرس',url:s.videoUrl,teacherId:uid}]:[],questions:[],isLocked:false,isHidden:false,teacherId:uid,teacherSubmissionId:id,createdAt:Date.now()});
+   await db.ref('teacherSubmissions/'+uid+'/'+id).update({status:'approved',lessonId:ref.key,reviewedAt:Date.now()});toast('تم اعتماد المحتوى ونشره');
+ }catch(err){console.error(err);toast('تعذر اعتماد المحتوى الآن.','error')}
 }
 
 /* Students */
@@ -570,6 +583,23 @@ function initAdminCollapse(){
  window.addEventListener('resize',apply,{passive:true});
 }
 
+function bindAdminForm(id,handler,label='حفظ'){
+ const form=$(id);if(!form)return;
+ form.onsubmit=async e=>{
+   e.preventDefault();
+   const btn=e.submitter||form.querySelector('button[type="submit"]');
+   window.AcademyUI?.setButtonLoading(btn,true,label);
+   try{
+     await handler(e);
+   }catch(err){
+     console.error('Admin form failed:',id,err);
+     toast('تعذر حفظ البيانات الآن. حاول مرة أخرى.','error');
+   }finally{
+     window.AcademyUI?.setButtonLoading(btn,false);
+   }
+ };
+}
+
 /* events */
 $$('[data-admin-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.adminTab));
 $$('[data-jump-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.jumpTab));
@@ -583,8 +613,18 @@ document.addEventListener('keydown',e=>{
 $('openSubjectModal').onclick=()=>{resetSubjectEditor();openModal('subjectModal')};$('openLessonModal').onclick=()=>{resetLessonEditor();openModal('lessonModal')};$('openQuizModal').onclick=()=>{resetQuizEditor();openModal('quizModal')};$('openFileModal').onclick=()=>{resetFileEditor();openModal('fileModal')};$('openSimulationModal').onclick=()=>{resetSimulationEditor();openModal('simulationModal')};$('openLiveModal').onclick=()=>{resetLiveEditor();openModal('liveModal')};
 $('addLessonVideoRow').onclick=addLessonVideoRow;
 renderLessonVideosEditor([{name:'',url:''}]);
-$('newsForm').onsubmit=saveNews;$('newsCancelEdit').onclick=resetNewsEditor;
-$('subjectForm').onsubmit=saveSubject;$('lessonForm').onsubmit=saveLesson;$('quizForm').onsubmit=saveQuiz;$('fileForm').onsubmit=saveFile;$('simulationForm').onsubmit=saveSimulation;$('liveForm').onsubmit=saveLiveSession;$('scheduleEventForm').onsubmit=saveScheduleEvent;$('studyGroupForm').onsubmit=saveStudyGroup;$('announcementForm').onsubmit=saveAnnouncement;$('settingsForm').onsubmit=saveSettings;
+bindAdminForm('newsForm',saveNews,'نشر');
+$('newsCancelEdit').onclick=resetNewsEditor;
+bindAdminForm('subjectForm',saveSubject,'حفظ المادة');
+bindAdminForm('lessonForm',saveLesson,'حفظ الدرس');
+bindAdminForm('quizForm',saveQuiz,'حفظ الاختبار');
+bindAdminForm('fileForm',saveFile,'حفظ الملف');
+bindAdminForm('simulationForm',saveSimulation,'حفظ المحاكي');
+bindAdminForm('liveForm',saveLiveSession,'حفظ الجلسة');
+bindAdminForm('scheduleEventForm',saveScheduleEvent,'حفظ الموعد');
+bindAdminForm('studyGroupForm',saveStudyGroup,'إنشاء المجموعة');
+bindAdminForm('announcementForm',saveAnnouncement,'حفظ الإعلان');
+bindAdminForm('settingsForm',saveSettings,'حفظ الإعدادات');
 $('lessonSearch').oninput=renderLessons;$('lessonFilterStage').onchange=renderLessons;$('lessonFilterType').onchange=renderLessons;$('studentSearch').oninput=renderStudents;
 $('curriculumType').onchange=renderCurriculum;$('curriculumStage').onchange=()=>{fillGrades($('curriculumGrade'),$('curriculumStage').value);renderCurriculum()};$('curriculumGrade').onchange=renderCurriculum;
 $('assignType').onchange=refreshAssignmentSubjects;$('assignStage').onchange=refreshAssignmentSubjects;$('assignGrade').onchange=refreshAssignmentSubjects;$('addAssignmentBtn').onclick=addAssignment;
