@@ -223,7 +223,10 @@
     },
     "scheduleEvents": {
       ".read": "auth != null",
-      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true",
+      ".indexOn": [
+        "stage"
+      ]
     },
     "notificationBroadcasts": {
       ".read": "auth != null",
