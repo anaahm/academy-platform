@@ -412,3 +412,5 @@ a{text-decoration:none;color:inherit}
 .pulse-mini-cards small,.pulse-mini-cards strong{display:block}.pulse-mini-cards small{font-size:7px;color:#94a3b8}.pulse-mini-cards strong{font-size:9px;margin-top:2px}
 @media(max-width:900px){.dashboard-action-pulse{grid-template-columns:1fr}.pulse-mini-cards{grid-template-columns:1fr 1fr}}
 @media(max-width:560px){.pulse-main-card{grid-template-columns:auto 1fr}.pulse-main-card .btn{grid-column:1/-1;width:100%}.pulse-mini-cards{grid-template-columns:1fr}.dashboard-action-pulse{margin-top:0}}
+
+.preview-progress-68{width:68%}#xpProgress{width:20%}
