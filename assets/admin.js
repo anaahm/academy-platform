@@ -459,11 +459,18 @@ const ADMIN_DATA_PATHS=[
 ];
 async function startDataListener(){
  if(unsubscribe)unsubscribe();
- const stops=[],loaded=new Set();
+ const stops=[],loaded=new Set(),failed=new Set();
+ let renderTimer=null,initialReady=false;
+ const scheduleRender=()=>{
+   clearTimeout(renderTimer);
+   renderTimer=setTimeout(()=>renderAll(),45);
+ };
  const markReady=()=>{
-   if(loaded.size===ADMIN_DATA_PATHS.length){
+   if(loaded.size===ADMIN_DATA_PATHS.length && !initialReady){
+     initialReady=true;
      renderAll();
      window.AcademyUI?.hidePageLoading();
+     if(failed.size)toast('تم تحميل لوحة الإدارة مع تعذر قراءة بعض الأقسام. راجع صلاحيات Firebase.','error');
    }
  };
  ADMIN_DATA_PATHS.forEach(path=>{
@@ -473,12 +480,17 @@ async function startDataListener(){
      const first=!loaded.has(path);
      loaded.add(path);
      if(first)markReady();
-     else renderAll();
+     else scheduleRender();
    };
-   ref.on('value',handler);
+   const errorHandler=err=>{
+     console.error('Admin data listener failed:',path,err);
+     root[path]=root[path]||{};
+     failed.add(path);loaded.add(path);markReady();
+   };
+   ref.on('value',handler,errorHandler);
    stops.push(()=>ref.off('value',handler));
  });
- unsubscribe=()=>{stops.forEach(stop=>stop());loaded.clear()};
+ unsubscribe=()=>{clearTimeout(renderTimer);stops.forEach(stop=>stop());loaded.clear();failed.clear()};
 }
 
 function initAdminCollapse(){
