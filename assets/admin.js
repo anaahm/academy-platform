@@ -603,6 +603,12 @@ function bindAdminForm(id,handler,label='حفظ'){
 /* events */
 $$('[data-admin-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.adminTab));
 $$('[data-jump-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.jumpTab));
+$$('[data-admin-quick]').forEach(b=>b.onclick=async()=>{
+ const action=b.dataset.adminQuick;
+ if(action==='lesson'){await setTab('lessons');resetLessonEditor();openModal('lessonModal')}
+ else if(action==='quiz'){await setTab('quizzes');resetQuizEditor();openModal('quizModal')}
+ else if(action==='teachers'){await setTab('teachers')}
+});
 $$('[data-close-admin-modal]').forEach(b=>b.onclick=()=>closeModal(b.dataset.closeAdminModal));
 $$('.modal-backdrop[id]').forEach(modal=>modal.addEventListener('click',e=>{if(e.target===modal)closeModal(modal.id)}));
 document.addEventListener('keydown',e=>{
