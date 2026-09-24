@@ -41,17 +41,21 @@
       </div>
 
       <div class="feature-toolbar">
-        <div class="feature-tabs">
-          <button class="active" data-exam-filter="all">كل الاختبارات</button>
-          <button data-exam-filter="unit">اختبارات الوحدات</button>
-          <button data-exam-filter="comprehensive">شاملة</button>
-          <button data-exam-filter="history">سجل النتائج</button>
+        <div class="feature-tabs" role="tablist" aria-label="أقسام مركز الاختبارات">
+          <button class="active" data-exam-filter="all" role="tab" aria-selected="true">كل الاختبارات</button>
+          <button data-exam-filter="unit" role="tab" aria-selected="false">اختبارات الوحدات</button>
+          <button data-exam-filter="comprehensive" role="tab" aria-selected="false">شاملة</button>
+          <button data-exam-filter="history" role="tab" aria-selected="false">سجل النتائج</button>
         </div>
-        <div class="feature-filter"><select id="examSubjectFilter"><option value="">كل المواد</option></select></div>
+        <div class="feature-filter exam-filter-group">
+          <label class="exam-search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="examSearchInput" type="search" placeholder="ابحث عن اختبار..." aria-label="البحث عن اختبار"></label>
+          <select id="examSubjectFilter" aria-label="تصفية حسب المادة"><option value="">كل المواد</option></select>
+        </div>
       </div>
 
       <div class="exam-layout">
         <div>
+          <div class="exam-list-head"><span id="examResultCount">0 اختبار</span><small id="examListHint">اختر اختبارًا مناسبًا وابدأ عندما تكون جاهزًا.</small></div>
           <div class="exam-list" id="examList"></div>
           <div id="examHistoryFull" class="hidden"></div>
         </div>
