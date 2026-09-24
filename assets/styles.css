@@ -618,3 +618,42 @@ a{text-decoration:none;color:inherit}
   .dashboard-subject-grid{grid-template-columns:1fr}
   .dash-subject-card{min-height:145px}
 }
+
+/* Phase 1 student shell final polish */
+.student-profile-shortcut{cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}
+.student-profile-shortcut:hover{transform:translateY(-1px);box-shadow:0 6px 14px rgba(37,99,235,.12)}
+.student-profile-shortcut:focus-visible{outline:3px solid rgba(37,99,235,.18);outline-offset:2px}
+.student-back-button{
+  width:38px;height:38px;flex:0 0 38px;border:1px solid #e5eaf1;background:#fff;color:#475569;
+  border-radius:11px;display:grid;place-items:center;transition:.15s
+}
+.student-back-button:hover{background:#f8fafc;color:#1d4ed8;border-color:#bfdbfe}
+.student-mobile-nav{
+  display:none;position:fixed;right:10px;left:10px;bottom:10px;z-index:145;
+  grid-template-columns:repeat(5,1fr);gap:3px;padding:5px;
+  background:rgba(255,255,255,.94);backdrop-filter:blur(18px);
+  border:1px solid rgba(226,232,240,.92);border-radius:18px;
+  box-shadow:0 15px 40px rgba(15,23,42,.14)
+}
+.student-mobile-nav a{
+  min-height:48px;border-radius:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;text-decoration:none;color:#64748b;font-size:6px;font-weight:900;transition:.15s
+}
+.student-mobile-nav a i{font-size:14px}
+.student-mobile-nav a:hover{background:#f8fafc;color:#334155}
+.student-mobile-nav a.active,.student-mobile-nav a[aria-current="page"]{
+  background:linear-gradient(180deg,#eff6ff,#f8fbff);color:#1d4ed8
+}
+.student-mobile-nav a.active i,.student-mobile-nav a[aria-current="page"] i{transform:translateY(-1px)}
+@media(max-width:760px){
+  .student-mobile-nav{display:grid}
+  body:not(.admin-v3-body):not(.teacher-v3-body){padding-bottom:78px}
+  .learning-header .learning-nav{gap:8px}
+  .learning-breadcrumb{min-width:0}
+  .learning-breadcrumb span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:36vw}
+}
+@media(max-width:420px){
+  .student-mobile-nav{right:6px;left:6px;bottom:6px;border-radius:16px}
+  .student-mobile-nav a{min-height:46px}
+  .student-back-button{width:35px;height:35px;flex-basis:35px}
+}
