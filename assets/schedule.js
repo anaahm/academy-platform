@@ -86,11 +86,17 @@ $$('[data-schedule-filter]').forEach(b=>b.onclick=()=>{
    const scheduleRef=C.db.ref('scheduleEvents').orderByChild('stage').equalTo(profile.stage);
    const liveRef=C.db.ref('liveSessions');
    const plannerRef=C.db.ref('studentProfilesV3/'+user.uid+'/studyPlanner');
-   let ready=0,failed=false;
-   const done=()=>{ready++;if(ready===3){render();window.AcademyUI?.hidePageLoading();if(failed)C.toast('تم تحميل الجدول مع تعذر مزامنة جزء من البيانات.','error')}};
-   scheduleRef.on('value',s=>{scheduleEvents=s.val()||{};if(ready>=3)render();else done()},err=>{console.error(err);failed=true;scheduleEvents={};done()});
-   liveRef.on('value',s=>{liveSessions=s.val()||{};if(ready>=3)render();else done()},err=>{console.error(err);failed=true;liveSessions={};done()});
-   plannerRef.on('value',s=>{planner=s.val()||{};if(ready>=3)render();else done()},err=>{console.error(err);failed=true;planner={};done()});
+   const ready=new Set();let failed=false;
+   const done=key=>{
+     ready.add(key);
+     if(ready.size===3){
+       render();window.AcademyUI?.hidePageLoading();
+       if(failed)C.toast('تم تحميل الجدول مع تعذر مزامنة جزء من البيانات.','error');
+     }
+   };
+   scheduleRef.on('value',s=>{scheduleEvents=s.val()||{};if(ready.has('schedule'))render();else done('schedule')},err=>{console.error(err);failed=true;scheduleEvents={};done('schedule')});
+   liveRef.on('value',s=>{liveSessions=s.val()||{};if(ready.has('live'))render();else done('live')},err=>{console.error(err);failed=true;liveSessions={};done('live')});
+   plannerRef.on('value',s=>{planner=s.val()||{};if(ready.has('planner'))render();else done('planner')},err=>{console.error(err);failed=true;planner={};done('planner')});
  }catch(err){
    console.error(err);C.toast('تعذر تحميل الجدول الآن.','error');
    $('scheduleWeek').innerHTML=window.AcademyUI?.errorStateHtml('تعذر تحميل الجدول','تحقق من الاتصال ثم حاول مرة أخرى.','<button class="btn btn-primary" onclick="location.reload()">إعادة المحاولة</button>')||'';
