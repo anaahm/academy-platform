@@ -38,7 +38,7 @@
         <p>ابحث باسم الدرس أو المادة أو الاختبار أو الملف، وشوف النتائج من كل المراحل.</p>
         <form id="searchForm" class="search-box">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <input id="searchInput" autocomplete="off" placeholder="مثال: المفعول المطلق، المعادلات، الوحدة الأولى...">
+          <input id="searchInput" type="search" autocomplete="off" aria-label="البحث في محتوى المنصة" placeholder="مثال: المفعول المطلق، المعادلات، الوحدة الأولى...">
           <button class="btn btn-primary" type="submit">بحث</button>
         </form>
         <div class="search-suggestions" id="searchSuggestions">
@@ -51,12 +51,12 @@
     </section>
 
     <section class="container search-workspace">
-      <aside class="search-filters">
+      <aside class="search-filters" aria-label="فلاتر نتائج البحث">
         <div><span class="section-kicker">تصفية النتائج</span><h3>نوع المحتوى</h3></div>
-        <button class="active" data-search-type="all"><i class="fa-solid fa-border-all"></i> الكل <span id="countAll">0</span></button>
-        <button data-search-type="lesson"><i class="fa-solid fa-circle-play"></i> الدروس <span id="countLessons">0</span></button>
-        <button data-search-type="quiz"><i class="fa-solid fa-file-circle-question"></i> الاختبارات <span id="countQuizzes">0</span></button>
-        <button data-search-type="file"><i class="fa-solid fa-file-pdf"></i> الملفات <span id="countFiles">0</span></button>
+        <button class="active" data-search-type="all" aria-pressed="true"><i class="fa-solid fa-border-all"></i> الكل <span id="countAll">0</span></button>
+        <button data-search-type="lesson" aria-pressed="false"><i class="fa-solid fa-circle-play"></i> الدروس <span id="countLessons">0</span></button>
+        <button data-search-type="quiz" aria-pressed="false"><i class="fa-solid fa-file-circle-question"></i> الاختبارات <span id="countQuizzes">0</span></button>
+        <button data-search-type="file" aria-pressed="false"><i class="fa-solid fa-file-pdf"></i> الملفات <span id="countFiles">0</span></button>
 
         <div class="search-filter-divider"></div>
         <label><span>المسار</span><select id="filterEducation"><option value="">الكل</option><option value="public">تعليم عام</option><option value="azhar">أزهر</option></select></label>
@@ -66,10 +66,10 @@
       <div class="search-results-area">
         <div class="search-results-head">
           <div><span class="section-kicker">النتائج</span><h2 id="resultsTitle">ابدأ بالبحث</h2></div>
-          <span id="resultsMeta">0 نتيجة</span>
+          <span id="resultsMeta" aria-live="polite">0 نتيجة</span>
         </div>
 
-        <div id="searchLoading" class="search-loading hidden">
+        <div id="searchLoading" class="search-loading hidden" role="status" aria-label="جاري تحميل نتائج البحث">
           <span></span><span></span><span></span>
         </div>
 
