@@ -105,7 +105,13 @@
       <main class="admin-page">
         <section class="admin-tab active" id="admin-tab-overview">
           <div class="admin-hero">
-            <div><span class="section-kicker light">مركز التحكم</span><h2>كل الأكاديمية تحت عينك</h2><p>تابع النمو والمحتوى والمراجعات من مكان واحد.</p></div>
+            <div><span class="section-kicker light">مركز التحكم</span><h2>كل الأكاديمية تحت عينك</h2><p>تابع النمو والمحتوى والمراجعات من مكان واحد.</p>
+              <div class="admin-hero-actions">
+                <button class="btn admin-hero-primary" type="button" data-admin-quick="lesson"><i class="fa-solid fa-circle-plus"></i> درس جديد</button>
+                <button class="btn admin-hero-secondary" type="button" data-admin-quick="quiz"><i class="fa-solid fa-file-circle-question"></i> اختبار جديد</button>
+                <button class="btn admin-hero-secondary" type="button" data-admin-quick="teachers"><i class="fa-solid fa-user-check"></i> مراجعات المدرسين</button>
+              </div>
+            </div>
             <span class="admin-hero-art">📊</span>
           </div>
           <div class="admin-stat-grid" id="overviewStats"></div>
@@ -273,7 +279,7 @@
                 <label><span>مدة الإشعار بالأيام</span><input id="broadcastDays" type="number" min="1" max="30" value="7"></label>
                 <label><span>رابط الإجراء — اختياري</span><input id="broadcastHref" placeholder="./exam-center.html أو https://..."></label>
                 <label class="switch-field full"><span>الحالة</span><div><input id="broadcastActive" type="checkbox" checked><strong>نشط</strong></div></label>
-                <button class="btn btn-primary full" type="submit"><i class="fa-solid fa-paper-plane"></i> نشر الإشعار</button>
+                <button class="btn btn-primary full" id="broadcastSubmitBtn" type="submit"><i class="fa-solid fa-paper-plane"></i> نشر الإشعار</button>
               </form>
             </article>
             <article class="admin-card">
