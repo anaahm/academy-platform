@@ -33,13 +33,13 @@
 
     <section class="container feature-container">
       <div class="feature-toolbar">
-        <div class="feature-tabs">
-          <button class="active" data-live-filter="live">مباشر الآن</button>
-          <button data-live-filter="upcoming">القادمة</button>
-          <button data-live-filter="ended">المنتهية</button>
-          <button data-live-filter="all">الكل</button>
+        <div class="feature-tabs" role="tablist" aria-label="حالة الجلسات">
+          <button class="active" data-live-filter="live" role="tab" aria-selected="true">مباشر الآن</button>
+          <button data-live-filter="upcoming" role="tab" aria-selected="false">القادمة</button>
+          <button data-live-filter="ended" role="tab" aria-selected="false">المنتهية</button>
+          <button data-live-filter="all" role="tab" aria-selected="false">الكل</button>
         </div>
-        <div class="feature-filter"><input id="liveSearch" placeholder="ابحث باسم الجلسة أو المدرس..."></div>
+        <div class="feature-filter"><input id="liveSearch" type="search" aria-label="البحث في الجلسات" placeholder="ابحث باسم الجلسة أو المدرس..."></div>
       </div>
 
       <div class="feature-stat-row">
@@ -53,9 +53,9 @@
     </section>
   </main>
 
-  <div class="live-viewer hidden" id="liveViewer">
-    <div class="live-viewer-panel">
-      <div class="live-viewer-head"><div><span class="section-kicker">مشاهدة الجلسة</span><h3 id="liveViewerTitle">الجلسة</h3></div><button class="modal-close static" id="closeLiveViewer"><i class="fa-solid fa-xmark"></i></button></div>
+  <div class="live-viewer hidden" id="liveViewer" aria-hidden="true">
+    <div class="live-viewer-panel" role="dialog" aria-modal="true" aria-labelledby="liveViewerTitle" tabindex="-1">
+      <div class="live-viewer-head"><div><span class="section-kicker">مشاهدة الجلسة</span><h3 id="liveViewerTitle">الجلسة</h3></div><button class="modal-close static" id="closeLiveViewer" aria-label="إغلاق نافذة الجلسة"><i class="fa-solid fa-xmark"></i></button></div>
       <div class="live-video" id="liveVideo"></div>
       <div class="live-viewer-actions-row" id="liveViewerActions"></div>
     </div>
