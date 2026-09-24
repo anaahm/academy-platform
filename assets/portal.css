@@ -380,3 +380,264 @@
   .profile-form-actions .btn{width:100%;min-width:0}
   .saved-lesson-card{grid-template-columns:minmax(0,1fr) 36px}
 }
+
+/* Phase 1 teacher premium polish */
+.teacher-v3-body{
+  background:
+    radial-gradient(circle at 12% 0%,rgba(59,130,246,.045),transparent 24%),
+    radial-gradient(circle at 88% 9%,rgba(124,58,237,.035),transparent 22%),
+    #f5f7fb;
+}
+.teacher-shell{grid-template-columns:250px minmax(0,1fr)}
+.teacher-side{
+  padding:18px 13px;
+  background:linear-gradient(180deg,#0b1220 0%,#111c39 54%,#172554 100%)!important;
+  border-left:1px solid rgba(255,255,255,.055)
+}
+.teacher-brand-row{padding:2px 3px 12px;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:12px}
+.teacher-nav{gap:4px}
+.teacher-nav button{
+  position:relative;min-height:44px;padding:10px 11px;border-radius:11px;
+  color:#aebbd0;font-size:9px;transition:.16s
+}
+.teacher-nav button>i{
+  width:27px;height:27px;border-radius:8px;background:rgba(255,255,255,.055);
+  display:grid;place-items:center;font-size:11px
+}
+.teacher-nav button:hover{background:rgba(255,255,255,.07);color:#fff;transform:translateX(-2px)}
+.teacher-nav button.active{
+  background:linear-gradient(135deg,rgba(59,130,246,.22),rgba(79,70,229,.13))!important;
+  color:#fff;box-shadow:inset -3px 0 #60a5fa
+}
+.teacher-nav button.active>i{background:rgba(96,165,250,.16);color:#bfdbfe}
+
+.teacher-main{background:transparent}
+.teacher-top{
+  min-height:76px;height:auto;padding:10px 22px;
+  background:rgba(255,255,255,.91)!important;backdrop-filter:blur(18px);
+  box-shadow:0 7px 24px rgba(15,23,42,.03)
+}
+.teacher-top>div:first-child{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.teacher-top>div:first-child h1{font-size:18px;letter-spacing:-.015em}
+.teacher-top>div:first-child p{width:100%;margin-right:48px;margin-top:-7px}
+.teacher-top .dashboard-actions{gap:7px}
+.teacher-top .btn{min-height:40px}
+.teacher-top .icon-btn{width:40px;height:40px}
+
+.teacher-page{padding:22px;max-width:1380px}
+.teacher-tab{animation:teacherTabIn .18s ease}
+@keyframes teacherTabIn{from{opacity:.72;transform:translateY(3px)}to{opacity:1;transform:none}}
+
+.teacher-welcome{
+  position:relative;overflow:hidden;border-radius:24px;padding:25px 27px;
+  background:linear-gradient(135deg,#0f172a 0%,#172554 58%,#1d4ed8 145%);
+  box-shadow:0 18px 48px rgba(30,58,138,.15)
+}
+.teacher-welcome:before{
+  content:"";position:absolute;width:240px;height:240px;border-radius:50%;
+  left:-100px;top:-135px;background:rgba(96,165,250,.1)
+}
+.teacher-welcome:after{
+  content:"";position:absolute;width:130px;height:130px;border-radius:32px;
+  left:100px;bottom:-92px;background:rgba(255,255,255,.04);transform:rotate(24deg)
+}
+.teacher-welcome>div,.teacher-welcome-art{position:relative;z-index:1}
+.teacher-welcome h2{font-size:29px;letter-spacing:-.02em}
+.teacher-welcome p{font-size:10px;line-height:1.8;max-width:650px}
+.teacher-welcome-art{font-size:62px;filter:drop-shadow(0 13px 18px rgba(0,0,0,.14))}
+.teacher-welcome-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
+.teacher-welcome-actions .btn{min-height:40px;border-radius:12px}
+.teacher-welcome-primary{background:#fff!important;color:#1d4ed8!important;border-color:#fff!important}
+.teacher-welcome-secondary{background:rgba(255,255,255,.10)!important;color:#fff!important;border-color:rgba(255,255,255,.14)!important}
+
+.teacher-stat-grid{gap:10px;margin-top:13px}
+.teacher-stat-grid article{
+  min-height:76px;padding:13px 14px;border-radius:17px;
+  box-shadow:0 7px 22px rgba(15,23,42,.035)
+}
+.teacher-stat-grid article:hover{transform:translateY(-2px);border-color:#d7e1ee}
+.teacher-stat-grid .stat-icon{width:40px;height:40px;border-radius:12px}
+.teacher-stat-grid strong{font-size:18px}
+.teacher-stat-grid small{font-size:8px!important}
+
+.teacher-grid{gap:13px;margin-top:14px}
+.teacher-card{
+  border-radius:19px;padding:18px;
+  box-shadow:0 8px 26px rgba(15,23,42,.04)!important
+}
+.teacher-card:hover{transform:none!important}
+.teacher-card-head{margin-bottom:12px}
+.teacher-card-head h3{font-size:18px;letter-spacing:-.01em;line-height:1.45}
+.teacher-card-head>span{font-size:24px}
+.teacher-spaced-card{margin-top:13px}
+
+.teacher-assignment-list,.submission-list{gap:7px}
+.teacher-assignment,.submission-item{
+  border-radius:13px;padding:10px 11px;
+  background:linear-gradient(180deg,#fff,#fcfdff)
+}
+.teacher-assignment{
+  display:grid;grid-template-columns:34px minmax(0,1fr) 18px;gap:9px
+}
+.teacher-assignment>span{
+  width:34px;height:34px;border-radius:10px;background:#eff6ff;
+  display:grid;place-items:center;font-size:17px
+}
+.teacher-assigned-check{color:#10b981;font-size:11px}
+.teacher-assignment strong{font-size:9px}
+.teacher-assignment small{font-size:7px!important;margin-top:2px}
+.submission-item h4{font-size:10px}
+.submission-item p{font-size:7px!important;line-height:1.6}
+.status-pill{font-size:7px!important;padding:4px 7px}
+
+.teacher-form,.teacher-form-grid{gap:10px}
+.teacher-form label>span,.teacher-submit-form label>span,.teacher-form-grid label>span{
+  display:block;font-size:8px;font-weight:900;color:#475569;margin-bottom:5px
+}
+.teacher-form input,.teacher-form select,.teacher-form textarea,
+.teacher-submit-form input,.teacher-submit-form select,.teacher-submit-form textarea,
+.teacher-form-grid input,.teacher-form-grid select,.teacher-form-grid textarea{
+  min-height:43px;border:1px solid #dbe3ee;background:#fff;border-radius:12px;
+  padding:10px 11px;outline:0;font-family:'Cairo',sans-serif;
+  transition:border-color .16s ease,box-shadow .16s ease
+}
+.teacher-form textarea,.teacher-submit-form textarea,.teacher-form-grid textarea{min-height:110px;resize:vertical}
+.teacher-form input:focus,.teacher-form select:focus,.teacher-form textarea:focus,
+.teacher-submit-form input:focus,.teacher-submit-form select:focus,.teacher-submit-form textarea:focus,
+.teacher-form-grid input:focus,.teacher-form-grid select:focus,.teacher-form-grid textarea:focus{
+  border-color:#93c5fd;box-shadow:0 0 0 4px rgba(59,130,246,.08)
+}
+.teacher-form button[type="submit"],.teacher-submit-form button[type="submit"]{min-height:44px;border-radius:12px}
+.teacher-form button:disabled,.teacher-submit-form button:disabled{opacity:.5}
+
+.teacher-engagement-list{gap:7px;margin-top:11px}
+.teacher-engagement-item{
+  border-radius:13px;padding:10px 11px;background:#fff;
+  box-shadow:0 4px 14px rgba(15,23,42,.02)
+}
+.teacher-engagement-item:hover{background:#f8fbff;border-color:#d5e2f1}
+.teacher-engagement-item strong{font-size:9px}
+.teacher-engagement-item small{font-size:7px!important;line-height:1.6}
+.teacher-mini-progress{height:6px}
+.teacher-highlight-metric{
+  min-height:110px;border-radius:15px;margin-top:8px;
+  box-shadow:inset 0 1px 0 #fff
+}
+.teacher-highlight-metric strong{font-size:22px}
+.teacher-highlight-metric span{font-size:8px}
+
+.teacher-analytics-table{gap:7px}
+.teacher-analytics-row{
+  border-radius:13px;padding:10px 11px;background:#fff;
+  box-shadow:0 4px 14px rgba(15,23,42,.02)
+}
+.teacher-analytics-row>div strong{font-size:9px}
+.teacher-analytics-row>div small,.teacher-analytics-row>span small{font-size:6px}
+.teacher-analytics-row>span b{font-size:11px}
+
+.teacher-homework-card{
+  display:grid;grid-template-columns:minmax(0,1fr) auto 34px;gap:10px;align-items:center;
+  border:1px solid #e4eaf1;border-radius:14px;padding:11px;background:#fff;
+  transition:.15s
+}
+.teacher-homework-card:hover{border-color:#d2deed;box-shadow:0 7px 20px rgba(15,23,42,.04)}
+.teacher-homework-card.closed{background:#fafafa}
+.teacher-homework-main{
+  display:grid;grid-template-columns:38px minmax(0,1fr);gap:9px;align-items:center;min-width:0
+}
+.teacher-homework-icon{
+  width:38px;height:38px;border-radius:11px;background:#eff6ff;color:#2563eb;
+  display:grid;place-items:center
+}
+.teacher-homework-card.closed .teacher-homework-icon{background:#f1f5f9;color:#64748b}
+.teacher-homework-title-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.teacher-homework-title-row strong{font-size:9px}
+.teacher-homework-main small{display:block;font-size:7px;color:#64748b;margin-top:2px}
+.teacher-homework-metrics{display:flex;gap:5px}
+.teacher-homework-metrics span{
+  min-width:48px;text-align:center;background:#f8fafc;border:1px solid #eef2f7;
+  border-radius:10px;padding:5px
+}
+.teacher-homework-metrics span b,.teacher-homework-metrics span small{display:block}
+.teacher-homework-metrics span b{font-size:10px}
+.teacher-homework-metrics span small{font-size:6px;color:#94a3b8}
+.teacher-homework-metrics span.has-new{background:#eff6ff;border-color:#dbeafe}
+.teacher-homework-metrics span.has-new b{color:#1d4ed8}
+
+.assignment-review-row.new-submission{
+  border-color:#bfdbfe;background:linear-gradient(90deg,#eff6ff,#fff)
+}
+.assignment-review-row.graded{background:#fbfefc}
+.teacher-student-title{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+
+.teacher-grade-modal{
+  width:min(720px,calc(100vw - 28px));max-height:88vh;overflow:auto;
+  border-radius:21px;padding:24px
+}
+.teacher-grade-modal h2{font-size:22px;line-height:1.45}
+.grade-submission-preview{
+  border-radius:14px;padding:13px;background:linear-gradient(180deg,#f8fafc,#fff)
+}
+.grade-preview-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.grade-preview-meta>span:not(.status-pill){font-size:7px;color:#64748b}
+.grade-submission-preview p{max-height:260px;overflow:auto;line-height:1.9}
+.grade-submission-preview a{display:inline-flex;align-items:center;gap:5px}
+
+.teacher-access{
+  margin:70px auto;border-radius:24px;padding:30px;
+  box-shadow:0 18px 48px rgba(15,23,42,.08)
+}
+.teacher-access>span{font-size:50px}
+.teacher-access h1{font-size:25px}
+.portal-empty-state.compact{padding:24px 14px}
+.portal-empty-state.compact span{font-size:32px}
+
+@media(max-width:1100px){
+  .teacher-shell{grid-template-columns:225px minmax(0,1fr)}
+}
+@media(max-width:900px){
+  .teacher-shell{grid-template-columns:1fr}
+  .teacher-side{
+    width:min(285px,86vw);padding:16px 12px;
+    box-shadow:-20px 0 55px rgba(15,23,42,.22)
+  }
+  .teacher-collapse-btn{display:none}
+  .teacher-top{min-height:68px;padding:8px 14px}
+  .teacher-top>div:first-child p{margin-right:46px}
+  .teacher-page{padding:16px}
+  .teacher-grid{grid-template-columns:1fr}
+  .teacher-homework-card{grid-template-columns:minmax(0,1fr) auto 34px}
+}
+@media(max-width:650px){
+  .teacher-top>div:first-child h1{font-size:15px}
+  .teacher-top>div:first-child p{font-size:7px!important;max-width:55vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .teacher-top .dashboard-actions .btn{width:40px;padding:0;display:grid;place-items:center;font-size:0}
+  .teacher-top .dashboard-actions .btn i{font-size:12px}
+  .teacher-welcome{padding:20px;border-radius:20px;align-items:flex-start}
+  .teacher-welcome h2{font-size:24px}
+  .teacher-welcome p{font-size:8px}
+  .teacher-welcome-art{font-size:43px}
+  .teacher-welcome-actions{flex-direction:column}
+  .teacher-welcome-actions .btn{width:100%}
+  .teacher-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .teacher-stat-grid article{min-height:66px;padding:10px}
+  .teacher-stat-grid .stat-icon{width:35px;height:35px;border-radius:10px}
+  .teacher-card{padding:14px;border-radius:16px}
+  .teacher-card-head h3{font-size:16px}
+  .teacher-form,.teacher-form-grid{grid-template-columns:1fr!important}
+  .teacher-form .full,.teacher-form-grid .full{grid-column:auto!important}
+  .teacher-homework-card{grid-template-columns:1fr 34px}
+  .teacher-homework-metrics{grid-column:1/-1;grid-row:2;justify-content:stretch}
+  .teacher-homework-metrics span{flex:1}
+  .assignment-review-row{min-width:0!important;grid-template-columns:1fr!important}
+  .assignment-review-row>span{display:flex!important;justify-content:space-between;text-align:right!important}
+  .assignment-review-row .btn{width:100%}
+  .teacher-grade-modal{width:calc(100vw - 16px);padding:18px;border-radius:18px}
+}
+@media(max-width:420px){
+  .teacher-page{padding:12px}
+  .teacher-welcome-art{display:none}
+  .teacher-stat-grid{grid-template-columns:1fr 1fr}
+  .teacher-stat-grid article{gap:8px}
+  .teacher-homework-card{padding:9px}
+}
