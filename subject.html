@@ -47,7 +47,7 @@
             </div>
             <div class="subject-progress-wrap">
               <div class="subject-progress-meta"><span>تقدمك في المادة</span><strong id="subjectProgressText">0%</strong></div>
-              <div class="subject-progress-track"><span id="subjectProgressBar"></span></div>
+              <div class="subject-progress-track" id="subjectProgressTrack" role="progressbar" aria-label="تقدمك في المادة" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="subjectProgressBar"></span></div>
               <a class="subject-certificate-btn hidden" id="subjectCertificateBtn" href="./certificate.html"><i class="fa-solid fa-award"></i> شهادة إتمام المادة</a>
             </div>
           </div>
@@ -55,6 +55,7 @@
             <article><span class="stat-badge blue"><i class="fa-solid fa-circle-play"></i></span><div><strong id="lessonCount">0</strong><small>درس</small></div></article>
             <article><span class="stat-badge green"><i class="fa-solid fa-circle-check"></i></span><div><strong id="completedCount">0</strong><small>مكتمل</small></div></article>
             <article><span class="stat-badge violet"><i class="fa-solid fa-file-circle-question"></i></span><div><strong id="quizCount">0</strong><small>اختبار</small></div></article>
+            <article class="subject-next-stat"><span class="stat-badge amber"><i class="fa-solid fa-forward-step"></i></span><div><strong id="nextLessonStat">—</strong><small>خطوتك التالية</small></div></article>
           </div>
         </div>
       </div>
@@ -74,10 +75,10 @@
       <div class="curriculum-column">
         <div class="learning-section-head">
           <div><span class="section-kicker">مسارك داخل المادة</span><h2>الوحدات والدروس</h2><p>ابدأ من أول درس أو أكمل من حيث توقفت.</p></div>
-          <div class="curriculum-tools">
-            <button class="filter-chip active" data-content-filter="all">الكل</button>
-            <button class="filter-chip" data-content-filter="lessons">الدروس</button>
-            <button class="filter-chip" data-content-filter="quizzes">الاختبارات</button>
+          <div class="curriculum-tools" role="tablist" aria-label="تصفية محتوى المادة">
+            <button class="filter-chip active" data-content-filter="all" role="tab" aria-selected="true">الكل</button>
+            <button class="filter-chip" data-content-filter="lessons" role="tab" aria-selected="false">الدروس</button>
+            <button class="filter-chip" data-content-filter="quizzes" role="tab" aria-selected="false">الاختبارات</button>
           </div>
         </div>
 
