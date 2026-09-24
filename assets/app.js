@@ -17,6 +17,7 @@
     dbData: {},
     explorer: { type: 'all', stage: null, tab: 'stages', search: '' }
   };
+  let baseDataPromise = null;
 
   const stageLabels = {
     primary: 'المرحلة الابتدائية',
@@ -165,6 +166,7 @@
   }
 
   function showPublicExperience() {
+    window.AcademyUI?.hidePageLoading();
     $('siteHeader').classList.remove('hidden');
     $('publicExperience').classList.remove('hidden');
     $('publicFooter').classList.remove('hidden');
@@ -186,6 +188,7 @@
     $('guestNavActions').classList.add('hidden');
     $('userNavActions').classList.remove('hidden');
     renderDashboard();
+    window.AcademyUI?.hidePageLoading();
     window.scrollTo({top:0});
   }
 
@@ -906,7 +909,10 @@
       return;
     }
 
+    window.AcademyUI?.showPageLoading('جاري تجهيز مساحتك التعليمية...');
     try {
+      if(!baseDataPromise) baseDataPromise=loadDatabaseSnapshot();
+      await baseDataPromise;
       state.profile = await loadProfile(user.uid);
       await updateDailyActivity(user.uid);
       state.profile = await loadProfile(user.uid);
@@ -927,7 +933,8 @@
 
   async function init() {
     bindEvents();
-    await loadDatabaseSnapshot();
+    if(!baseDataPromise) baseDataPromise=loadDatabaseSnapshot();
+    await baseDataPromise;
     renderPublicNews();
     renderExplorerStages();
     renderExplorerSubjects();
