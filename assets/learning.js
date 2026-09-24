@@ -474,7 +474,8 @@ function startQuiz(qs,c,sourceId){
 function renderQuestion(){
  const qz=state.quiz,i=state.quizIndex,q=qz.questions[i],total=qz.questions.length,letters=['أ','ب','ج','د','هـ'];
  $('quizProgressText').textContent='السؤال '+(i+1)+' من '+total;$('quizProgressBar').style.width=((i+1)/total*100)+'%';$('questionNumber').textContent=i+1;$('questionText').textContent=q.text||'';
- $('questionOptions').innerHTML=(q.opts||[]).map((o,j)=>'<button class="quiz-option-v3 '+(qz.answers[i]===j?'selected':'')+'" data-a="'+j+'"><span class="opt-letter">'+(letters[j]||j+1)+'</span><span>'+esc(o)+'</span></button>').join('');
+ $('quizProgressTrack')?.setAttribute('aria-valuemax',String(total));$('quizProgressTrack')?.setAttribute('aria-valuenow',String(i+1));
+ $('questionOptions').innerHTML=(q.opts||[]).map((o,j)=>'<button class="quiz-option-v3 '+(qz.answers[i]===j?'selected':'')+'" data-a="'+j+'" aria-pressed="'+(qz.answers[i]===j?'true':'false')+'"><span class="opt-letter">'+(letters[j]||j+1)+'</span><span>'+esc(o)+'</span></button>').join('');
  $$('[data-a]').forEach(b=>b.onclick=()=>{qz.answers[i]=Number(b.dataset.a);renderQuestion()});$('prevQuestionBtn').disabled=i===0;$('nextQuestionBtn').textContent=i===total-1?'إنهاء التدريب':'التالي';
  $('prevQuestionBtn').onclick=()=>{if(state.quizIndex>0){state.quizIndex--;renderQuestion()}};$('nextQuestionBtn').onclick=()=>{if(qz.answers[i]===null){toast('اختر إجابة أولًا.','error');return}if(i===total-1)finishQuiz();else{state.quizIndex++;renderQuestion()}};
 }
