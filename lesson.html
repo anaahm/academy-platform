@@ -26,8 +26,8 @@
         <a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><a id="backToSubjectLink" href="./index.html">المادة</a><i class="fa-solid fa-chevron-left"></i><span>الدرس</span>
       </div>
       <div class="learning-user">
-        <button class="icon-btn" id="bookmarkLessonBtn" title="حفظ للمراجعة"><i class="fa-regular fa-bookmark"></i></button>
-        <button class="icon-btn" id="markCompleteHeader" title="تعليم كمكتمل"><i class="fa-regular fa-circle-check"></i></button>
+        <button class="icon-btn" id="bookmarkLessonBtn" title="حفظ للمراجعة" aria-label="حفظ الدرس للمراجعة" aria-pressed="false"><i class="fa-regular fa-bookmark"></i></button>
+        <button class="icon-btn" id="markCompleteHeader" title="تعليم كمكتمل" aria-label="تعليم الدرس كمكتمل" aria-pressed="false"><i class="fa-regular fa-circle-check"></i></button>
         <span class="avatar" id="learningAvatar">ط</span>
       </div>
     </div>
@@ -41,6 +41,11 @@
             <span class="lesson-meta" id="lessonMeta">الوحدة الأولى • المادة</span>
             <h1 id="lessonTitle">جاري تحميل الدرس...</h1>
             <p id="lessonSubtitle">اختر المدرس المناسب لك، وشاهد الشرح، ثم اختبر نفسك.</p>
+            <div class="lesson-context-row">
+              <span><i class="fa-solid fa-list-ol"></i><strong id="lessonPositionText">الدرس —</strong></span>
+              <span><i class="fa-solid fa-circle-play"></i><strong id="lessonVideoCount">0 فيديو</strong></span>
+              <span><i class="fa-solid fa-bullseye"></i><strong id="lessonQuestionCount">0 سؤال</strong></span>
+            </div>
           </div>
           <div class="lesson-actions">
             <button class="btn btn-soft" id="previousLessonBtn"><i class="fa-solid fa-arrow-right"></i> السابق</button>
@@ -62,14 +67,14 @@
           </div>
         </article>
 
-        <nav class="lesson-tabs" id="lessonTabs">
-          <button class="active" data-lesson-tab="explanation"><i class="fa-solid fa-book-open"></i> الشرح</button>
-          <button data-lesson-tab="quiz"><i class="fa-solid fa-bullseye"></i> التدريب</button>
-          <button data-lesson-tab="resources"><i class="fa-solid fa-paperclip"></i> المرفقات</button>
-          <button data-lesson-tab="notes"><i class="fa-regular fa-note-sticky"></i> ملاحظاتي</button>
+        <nav class="lesson-tabs" id="lessonTabs" role="tablist" aria-label="محتوى الدرس">
+          <button class="active" id="tabExplanation" data-lesson-tab="explanation" role="tab" aria-selected="true" aria-controls="lessonExplanationPanel" tabindex="0"><i class="fa-solid fa-book-open"></i> الشرح</button>
+          <button id="tabQuiz" data-lesson-tab="quiz" role="tab" aria-selected="false" aria-controls="lessonQuizPanel" tabindex="-1"><i class="fa-solid fa-bullseye"></i> التدريب</button>
+          <button id="tabResources" data-lesson-tab="resources" role="tab" aria-selected="false" aria-controls="lessonResourcesPanel" tabindex="-1"><i class="fa-solid fa-paperclip"></i> المرفقات</button>
+          <button id="tabNotes" data-lesson-tab="notes" role="tab" aria-selected="false" aria-controls="lessonNotesPanel" tabindex="-1"><i class="fa-regular fa-note-sticky"></i> ملاحظاتي</button>
         </nav>
 
-        <section class="lesson-tab-panel" id="lessonExplanationPanel">
+        <section class="lesson-tab-panel" id="lessonExplanationPanel" role="tabpanel" aria-labelledby="tabExplanation">
           <article class="explanation-card">
             <div class="content-heading"><span class="content-icon"><i class="fa-solid fa-book-open"></i></span><div><span class="section-kicker">ملخص وشرح</span><h2>شرح الدرس</h2></div></div>
             <div class="lesson-image hidden" id="lessonTopImageWrap"><img id="lessonTopImage" alt=""></div>
@@ -79,7 +84,7 @@
           </article>
         </section>
 
-        <section class="lesson-tab-panel hidden" id="lessonQuizPanel">
+        <section class="lesson-tab-panel hidden" id="lessonQuizPanel" role="tabpanel" aria-labelledby="tabQuiz">
           <article class="quiz-intro-card" id="quizIntro">
             <span class="quiz-hero-icon">🎯</span>
             <div><span class="section-kicker">ثبّت المعلومة</span><h2>اختبر فهمك للدرس</h2><p id="quizIntroText">تدريب قصير يساعدك على معرفة ما أتقنته وما يحتاج مراجعة.</p></div>
@@ -104,14 +109,14 @@
           </article>
         </section>
 
-        <section class="lesson-tab-panel hidden" id="lessonResourcesPanel">
+        <section class="lesson-tab-panel hidden" id="lessonResourcesPanel" role="tabpanel" aria-labelledby="tabResources">
           <article class="resources-card">
             <div class="content-heading"><span class="content-icon"><i class="fa-solid fa-paperclip"></i></span><div><span class="section-kicker">كل ما يخص الدرس</span><h2>المرفقات والملفات</h2></div></div>
             <div id="lessonResources" class="resource-list"></div>
           </article>
         </section>
 
-        <section class="lesson-tab-panel hidden" id="lessonNotesPanel">
+        <section class="lesson-tab-panel hidden" id="lessonNotesPanel" role="tabpanel" aria-labelledby="tabNotes">
           <article class="lesson-notes-card">
             <div class="content-heading"><span class="content-icon"><i class="fa-regular fa-note-sticky"></i></span><div><span class="section-kicker">مساحتك الخاصة</span><h2>ملاحظاتي على الدرس</h2></div></div>
             <p class="lesson-notes-help">اكتب الكلمات المهمة، سؤال عايز ترجع له، أو ملخصك الشخصي. الملاحظات محفوظة في حسابك أنت فقط.</p>
@@ -124,14 +129,14 @@
       <aside class="lesson-sidebar">
         <article class="lesson-progress-card">
           <div class="sidebar-card-head"><div><span class="section-kicker">تقدمك</span><h3>إنجاز الدرس</h3></div><span id="lessonStatusIcon" class="lesson-status-icon"><i class="fa-regular fa-circle"></i></span></div>
-          <div class="lesson-progress-track"><span id="lessonProgressBar"></span></div>
+          <div class="lesson-progress-track" id="lessonProgressTrack" role="progressbar" aria-label="تقدم الدرس" aria-valuemin="0" aria-valuemax="100" aria-valuenow="35"><span id="lessonProgressBar"></span></div>
           <p id="lessonProgressText">ابدأ بمشاهدة الفيديو أو قراءة الشرح.</p>
           <div class="lesson-xp-reward"><span><i class="fa-solid fa-bolt"></i></span><div><small>مكافأة الإكمال</small><strong>+50 XP</strong></div></div>
           <button class="btn btn-primary btn-block" id="markCompleteBtn"><i class="fa-regular fa-circle-check"></i> تعليم الدرس كمكتمل</button>
         </article>
 
         <article class="lesson-outline-card">
-          <div class="sidebar-card-head"><div><span class="section-kicker">داخل الوحدة</span><h3 id="outlineUnitTitle">دروس الوحدة</h3></div><span>📚</span></div>
+          <div class="sidebar-card-head"><div><span class="section-kicker">داخل الوحدة</span><h3 id="outlineUnitTitle">دروس الوحدة</h3><small id="outlineProgressText">—</small></div><span>📚</span></div>
           <div class="lesson-outline" id="lessonOutline"></div>
         </article>
 
