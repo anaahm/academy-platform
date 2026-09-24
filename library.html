@@ -28,13 +28,13 @@
 
     <section class="container feature-container">
       <div class="feature-toolbar">
-        <div class="feature-tabs">
-          <button class="active" data-library-scope="mine">مرحلتي</button>
-          <button data-library-scope="all">كل المراحل</button>
+        <div class="feature-tabs" role="tablist" aria-label="نطاق المكتبة">
+          <button class="active" data-library-scope="mine" role="tab" aria-selected="true">مرحلتي</button>
+          <button data-library-scope="all" role="tab" aria-selected="false">كل المراحل</button>
         </div>
         <div class="feature-filter">
-          <select id="librarySubjectFilter"><option value="">كل المواد</option></select>
-          <input id="librarySearch" placeholder="ابحث باسم الملف...">
+          <select id="librarySubjectFilter" aria-label="تصفية المكتبة حسب المادة"><option value="">كل المواد</option></select>
+          <input id="librarySearch" type="search" aria-label="البحث في المكتبة" placeholder="ابحث باسم الملف...">
         </div>
       </div>
 
