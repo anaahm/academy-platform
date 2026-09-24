@@ -44,7 +44,10 @@ $('examSubjectFilter').onchange=render;
  ({user,profile}=await C.requireStudent());
  $('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
  $('examHeroText').textContent=C.gradeLabel(profile.stage,profile.grade)+' • '+C.typeLabel(profile.educationType)+' — اختبارات مناسبة لمرحلتك.';
- const [s,q]=await Promise.all([C.db.ref('customSubjects').once('value'),C.db.ref('quizzes').once('value')]);
+ const [s,q]=await Promise.all([
+   C.db.ref('customSubjects').once('value'),
+   C.db.ref('quizzes').orderByChild('stage').equalTo(profile.stage).once('value')
+ ]);
  data={customSubjects:s.val()||{},quizzes:q.val()||{}};renderSubjects();render();
 })();
 })();
