@@ -90,7 +90,7 @@ function switchTab(tab,updateUrl=true){
    analytics:['الإحصائيات','تحليل المشاهدات والإكمال ونتائج التدريبات']
  };
  if($('teacherTopRole'))$('teacherTopRole').textContent=labels[tab]?.[1]||'بوابة إدارة المحتوى التعليمي';
- $('.teacher-nav [data-teacher-tab]').forEach(b=>{
+ $$('.teacher-nav [data-teacher-tab]').forEach(b=>{
    const active=b.dataset.teacherTab===tab;
    b.classList.toggle('active',active);b.setAttribute('aria-selected',active?'true':'false');b.tabIndex=active?0:-1;
  });
