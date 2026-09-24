@@ -42,21 +42,26 @@
       <section class="feature-card">
         <div class="feature-card-head assignment-filter-head">
           <div><span class="section-kicker">مهماتك الدراسية</span><h2>الواجبات الحالية</h2></div>
-          <div class="feature-filter-chips">
-            <button class="active" data-assignment-filter="all">الكل</button>
-            <button data-assignment-filter="pending">مطلوب</button>
-            <button data-assignment-filter="submitted">مسلّم</button>
-            <button data-assignment-filter="graded">تم التصحيح</button>
+          <div class="assignment-toolbar-actions">
+            <label class="assignment-search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="assignmentSearchInput" type="search" placeholder="ابحث عن واجب أو مادة..." aria-label="البحث في الواجبات"></label>
+            <div class="feature-filter-chips" role="tablist" aria-label="تصفية الواجبات">
+              <button class="active" data-assignment-filter="all" role="tab" aria-selected="true">الكل</button>
+              <button data-assignment-filter="pending" role="tab" aria-selected="false">مطلوب</button>
+              <button data-assignment-filter="overdue" role="tab" aria-selected="false">متأخر</button>
+              <button data-assignment-filter="submitted" role="tab" aria-selected="false">مسلّم</button>
+              <button data-assignment-filter="graded" role="tab" aria-selected="false">تم التصحيح</button>
+            </div>
           </div>
         </div>
+        <div class="assignment-list-summary"><strong id="assignmentResultCount">0 واجب</strong><span id="assignmentListHint">كل المطلوب منك مرتب حسب أقرب موعد.</span></div>
         <div id="assignmentList" class="assignment-list"></div>
       </section>
     </section>
   </main>
 
-  <div class="modal-backdrop hidden" id="assignmentModal">
-    <div class="modal-panel assignment-modal">
-      <button class="modal-close" id="closeAssignmentModal"><i class="fa-solid fa-xmark"></i></button>
+  <div class="modal-backdrop hidden" id="assignmentModal" aria-hidden="true">
+    <div class="modal-panel assignment-modal" role="dialog" aria-modal="true" aria-labelledby="assignmentModalTitle" tabindex="-1">
+      <button class="modal-close" id="closeAssignmentModal" aria-label="إغلاق تفاصيل الواجب"><i class="fa-solid fa-xmark"></i></button>
       <div id="assignmentModalBody"></div>
     </div>
   </div>
