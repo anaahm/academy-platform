@@ -29,7 +29,15 @@
           <div><span class="section-kicker light">نظّم وقتك بدل ما تذاكر عشوائي</span><h1>مخطط المذاكرة الشخصي</h1><p>حدد مهامك اليومية، رتّب الأولويات، واتبع خطة واقعية مرتبطة بموادك وتقدمك.</p></div>
           <span class="feature-hero-art">🗓️</span>
         </div>
-      </div>
+      </div></section>
+
+    <section class="container learning-tools-nav-wrap">
+      <nav class="learning-tools-nav" aria-label="أدوات تنظيم ومتابعة الدراسة">
+        <a class="" href="./progress.html"><i class="fa-solid fa-chart-line"></i><span>التقدم</span></a>
+        <a class="active" href="./planner.html"><i class="fa-solid fa-list-check"></i><span>المخطط</span></a>
+        <a class="" href="./schedule.html"><i class="fa-regular fa-calendar-days"></i><span>الجدول</span></a>
+        <a class="" href="./weekly-report.html"><i class="fa-solid fa-chart-column"></i><span>التقرير الأسبوعي</span></a>
+      </nav>
     </section>
 
     <section class="container feature-page-content">
@@ -56,11 +64,11 @@
 
           <article class="feature-card planner-list-card">
             <div class="feature-card-head"><div><span class="section-kicker">خطة التنفيذ</span><h2>مهامك</h2></div>
-              <div class="feature-filter-chips">
-                <button class="active" data-planner-filter="all">الكل</button>
-                <button data-planner-filter="today">اليوم</button>
-                <button data-planner-filter="pending">المتبقي</button>
-                <button data-planner-filter="done">مكتمل</button>
+              <div class="feature-filter-chips" role="tablist" aria-label="تصفية مهام المذاكرة">
+                <button class="active" data-planner-filter="all" role="tab" aria-selected="true">الكل</button>
+                <button data-planner-filter="today" role="tab" aria-selected="false">اليوم</button>
+                <button data-planner-filter="pending" role="tab" aria-selected="false">المتبقي</button>
+                <button data-planner-filter="done" role="tab" aria-selected="false">مكتمل</button>
               </div>
             </div>
             <div id="plannerTaskList" class="planner-task-list"></div>
