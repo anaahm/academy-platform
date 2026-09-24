@@ -548,6 +548,10 @@
     const greetingEl=document.querySelector('.dashboard-greeting');
     if(greetingEl) greetingEl.childNodes[0].textContent=greeting+' ';
     $('dashStudentName').textContent = name;
+    if($('dashTodayLabel')){
+      const today=new Intl.DateTimeFormat('ar-EG',{weekday:'long',day:'numeric',month:'long'}).format(new Date());
+      $('dashTodayLabel').textContent=today+' • كل خطوة صغيرة بتفرق';
+    }
     if ($('dashAccountName')) $('dashAccountName').textContent = name;
     if ($('dashAccountAvatar')) $('dashAccountAvatar').textContent = initials(name);
     $('currentGradeTitle').textContent = gradeLabels[p.stage]?.[p.grade] || stageLabels[p.stage] || 'مرحلتك الدراسية';
@@ -558,33 +562,31 @@
     animateDashboardNumber('completedLessons',stats.lessons,500);
     animateDashboardNumber('completedQuizzes',stats.quizzes,500);
     animateDashboardNumber('streakValue',stats.streak,450);
-    $('xpProgress').style.width = Math.min(100, (stats.xp % 1000) / 10) + '%';
+    const levelXp=stats.xp % 1000;
+    $('xpProgress').style.width = Math.min(100, levelXp / 10) + '%';
+    $('xpProgressTrack')?.setAttribute('aria-valuenow',String(levelXp));
 
     const subjectProgress = p.subjectProgress || {};
-    $('dashboardSubjects').innerHTML = subjects.map((s, i) => {
+    $('dashboardSubjects').innerHTML = subjects.map((s) => {
       const progress = Math.max(0, Math.min(100, Number(subjectProgress[s.id] || 0)));
-      return `<article class="dash-subject-card" data-subject="${s.id}">
-        <span class="emoji">${s.emoji}</span>
-        <h3>${s.name}</h3>
-        <p>${progress ? 'أكمل من حيث توقفت' : 'ابدأ أول درس في المادة'}</p>
-        <div class="progress"><span style="width:${progress}%"></span></div>
-        <footer><span>${progress}% مكتمل</span><strong>فتح المادة ←</strong></footer>
-      </article>`;
-    }).join('');
-
-    $$('.dash-subject-card').forEach(card => {
-      card.style.cursor = 'pointer';
-      card.addEventListener('click', () => {
-        const subjectId = card.dataset.subject;
-        const q = new URLSearchParams({
-          type: p.educationType,
-          stage: p.stage,
-          grade: String(p.grade),
-          subject: subjectId
-        });
-        location.href = './subject.html?' + q.toString();
+      const q = new URLSearchParams({
+        type: p.educationType,
+        stage: p.stage,
+        grade: String(p.grade),
+        subject: s.id
       });
-    });
+      const status = progress >= 100 ? 'مكتملة' : progress > 0 ? 'قيد التعلّم' : 'جاهزة للبدء';
+      return `<a class="dash-subject-card" href="./subject.html?${q.toString()}" aria-label="فتح مادة ${safeHtml(s.name)}">
+        <div class="dash-subject-card-head">
+          <span class="emoji">${safeHtml(s.emoji || '📚')}</span>
+          <span class="subject-status ${progress >= 100 ? 'complete' : progress > 0 ? 'active' : ''}">${status}</span>
+        </div>
+        <h3>${safeHtml(s.name)}</h3>
+        <p>${progress ? 'أكمل من حيث توقفت' : 'ابدأ أول درس في المادة'}</p>
+        <div class="progress" role="progressbar" aria-label="تقدمك في ${safeHtml(s.name)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}"><span style="width:${progress}%"></span></div>
+        <footer><span>${progress}% مكتمل</span><strong>فتح المادة <i class="fa-solid fa-arrow-left"></i></strong></footer>
+      </a>`;
+    }).join('');
 
     const first = subjects[0];
     const lastSubject = subjects.find(s => s.id === p.lastSubjectId) || first;
@@ -709,13 +711,13 @@
 
     $('mobileMenuBtn').addEventListener('click', () => $('mobileMenu').classList.toggle('hidden'));
     const dashSearchInput = $('dashSearchInput');
-    if (dashSearchInput) {
-      dashSearchInput.addEventListener('keydown', (e) => {
-        if (e.key !== 'Enter') return;
-        const q = dashSearchInput.value.trim();
-        if (q) location.href = './search.html?q=' + encodeURIComponent(q);
-      });
-    }
+    const dashSearchForm = $('dashSearchForm');
+    dashSearchForm?.addEventListener('submit',e=>{
+      e.preventDefault();
+      const q=dashSearchInput?.value.trim()||'';
+      if(q)location.href='./search.html?q='+encodeURIComponent(q);
+      else dashSearchInput?.focus();
+    });
     $('userChip').addEventListener('click', () => $('userMenu').classList.toggle('hidden'));
     if (!document.getElementById('profileMenuBtn')) {
       const profileBtn = document.createElement('button');
@@ -726,11 +728,7 @@
     }
     $('mobileProfileBtn')?.addEventListener('click', () => location.href='./profile.html');
     $('notificationBtn')?.addEventListener('click', (e) => { e.stopPropagation(); showNotificationPopover(); });
-    const dashBell = document.querySelector('.dashboard-actions .icon-btn');
-    if (dashBell) {
-      dashBell.id = 'dashNotificationBtn';
-      dashBell.addEventListener('click', (e) => { e.stopPropagation(); showNotificationPopover(); });
-    }
+    $('dashNotificationBtn')?.addEventListener('click', (e) => { e.stopPropagation(); showNotificationPopover(); });
     $('goDashboardBtn').addEventListener('click', showDashboard);
     $('exploreFromMenu').addEventListener('click', () => location.href='./explore.html');
     $('logoutBtn').addEventListener('click', async () => { await auth.signOut(); $('userMenu').classList.add('hidden'); });
