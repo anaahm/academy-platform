@@ -119,3 +119,5 @@
   .teacher-welcome{padding:22px 18px;border-radius:22px!important}
   .teacher-welcome h2{font-size:23px}
 }
+
+.teacher-mobile-overlay{position:fixed;inset:0;background:rgba(2,6,23,.48);backdrop-filter:blur(2px);z-index:75}
