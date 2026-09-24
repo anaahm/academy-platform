@@ -81,6 +81,15 @@ function initTeacherCollapse(){
 function switchTab(tab,updateUrl=true){
  const allowed=['home','content','submit','assignments','students','analytics'];
  if(!allowed.includes(tab))tab='home';
+ const labels={
+   home:['الرئيسية','ملخص عملك التعليمي اليوم'],
+   content:['محتواي','الدروس والفيديوهات المنشورة باسمك'],
+   submit:['إضافة محتوى','أرسل درسًا جديدًا لمراجعة الإدارة'],
+   assignments:['الواجبات','إنشاء الواجبات ومتابعة تسليمات الطلاب'],
+   students:['تفاعل الطلاب','إحصائيات مجمعة لأداء محتواك'],
+   analytics:['الإحصائيات','تحليل المشاهدات والإكمال ونتائج التدريبات']
+ };
+ if($('teacherTopRole'))$('teacherTopRole').textContent=labels[tab]?.[1]||'بوابة إدارة المحتوى التعليمي';
  $$('[data-teacher-tab]').forEach(b=>{
    const active=b.dataset.teacherTab===tab;
    b.classList.toggle('active',active);b.setAttribute('aria-selected',active?'true':'false');
@@ -156,20 +165,44 @@ function ownHomework(){
 function renderTeacherAssignments(){
  const own=ownHomework(),list=$('teacherAssignmentsList');
  if(list)list.innerHTML=own.length?own.map(a=>{
-   const count=Object.keys(assignmentSubmissions[a.id]||{}).length;
-   const due=a.dueAt?new Date(a.dueAt).toLocaleString('ar-EG'):'بدون موعد';
-   return '<article class="teacher-engagement-item"><div><strong>'+escapeHtml(a.title||'واجب')+'</strong><small>'+(stageName[a.stage]||a.stage||'')+' • صف '+(a.grade||'')+' • '+escapeHtml(a.subjectName||a.subject||'')+' • '+count+' تسليم</small><small>آخر موعد: '+escapeHtml(due)+'</small></div><div class="admin-action-row"><button class="admin-action-btn danger" data-delete-assignment="'+a.id+'" title="حذف"><i class="fa-solid fa-trash"></i></button></div></article>';
+   const rows=Object.values(assignmentSubmissions[a.id]||{}),count=rows.length,graded=rows.filter(s=>s?.status==='graded').length,newCount=Math.max(0,count-graded);
+   const dueAt=Number(a.dueAt||0),isPast=!!dueAt&&Date.now()>dueAt,due=dueAt?new Date(dueAt).toLocaleString('ar-EG'):'بدون موعد';
+   return '<article class="teacher-homework-card '+(isPast?'closed':'active')+'">'+
+     '<div class="teacher-homework-main"><span class="teacher-homework-icon"><i class="fa-solid fa-clipboard-check"></i></span><div><div class="teacher-homework-title-row"><strong>'+escapeHtml(a.title||'واجب')+'</strong><span class="status-pill '+(isPast?'rejected':'approved')+'">'+(isPast?'انتهى الموعد':'نشط')+'</span></div>'+
+     '<small>'+(stageName[a.stage]||a.stage||'')+' • صف '+(a.grade||'')+' • '+escapeHtml(a.subjectName||a.subject||'')+'</small>'+
+     '<small><i class="fa-regular fa-calendar"></i> '+escapeHtml(due)+'</small></div></div>'+
+     '<div class="teacher-homework-metrics"><span><b>'+count+'</b><small>تسليم</small></span><span class="'+(newCount?'has-new':'')+'"><b>'+newCount+'</b><small>جديد</small></span><span><b>'+graded+'</b><small>مصحح</small></span></div>'+
+     '<button class="admin-action-btn danger" data-delete-assignment="'+a.id+'" title="حذف الواجب" aria-label="حذف '+escapeHtml(a.title||'الواجب')+'"><i class="fa-solid fa-trash"></i></button>'+
+   '</article>';
  }).join(''):'<div class="portal-empty-state"><span>📝</span><h3>لسه مفيش واجبات</h3><p>أنشئ أول واجب من النموذج.</p></div>';
- $$('[data-delete-assignment]').forEach(b=>b.onclick=async()=>{if(!(await window.AcademyUI.confirm({title:'حذف الواجب؟',message:'سيتم حذف الواجب وكل تسليمات الطلاب المرتبطة به نهائيًا.',tone:'danger',acceptText:'حذف الواجب'})))return;const id=b.dataset.deleteAssignment;await db.ref('assignmentSubmissions/'+id).remove();await db.ref('assignments/'+id).remove();delete assignmentSubmissions[id];delete homeworkAssignments[id];renderTeacherAssignments();toast('تم حذف الواجب')});
+
+ $$('[data-delete-assignment]').forEach(b=>b.onclick=async()=>{
+   if(!(await window.AcademyUI.confirm({title:'حذف الواجب؟',message:'سيتم حذف الواجب وكل تسليمات الطلاب المرتبطة به نهائيًا.',tone:'danger',acceptText:'حذف الواجب'})))return;
+   const id=b.dataset.deleteAssignment;b.disabled=true;
+   try{
+     await db.ref('assignmentSubmissions/'+id).remove();
+     await db.ref('assignments/'+id).remove();
+     delete assignmentSubmissions[id];delete homeworkAssignments[id];renderTeacherAssignments();toast('تم حذف الواجب');
+   }catch(err){console.error(err);b.disabled=false;toast('تعذر حذف الواجب الآن.','error')}
+ });
 
  const rows=[];
  own.forEach(a=>Object.entries(assignmentSubmissions[a.id]||{}).forEach(([uid,s])=>rows.push({assignment:a,uid,...(s||{})})));
- rows.sort((a,b)=>(b.submittedAt||0)-(a.submittedAt||0));
+ rows.sort((a,b)=>{
+   const ag=a.status==='graded'?1:0,bg=b.status==='graded'?1:0;
+   return ag-bg||(b.submittedAt||0)-(a.submittedAt||0);
+ });
  const box=$('teacherAssignmentSubmissions');
  if(box)box.innerHTML=rows.length?rows.map(r=>{
-   const graded=r.status==='graded';
-   return '<div class="teacher-analytics-row assignment-review-row"><div><strong>'+escapeHtml(r.studentName||'طالب')+'</strong><small>'+escapeHtml(r.assignment.title||'واجب')+' • '+(r.submittedAt?new Date(r.submittedAt).toLocaleDateString('ar-EG'):'')+'</small></div><span><b>'+(graded?Number(r.score||0)+' / '+Number(r.maxScore||r.assignment.maxScore||100):'—')+'</b><small>الدرجة</small></span><span><b>'+(graded?'مصَحح':'جديد')+'</b><small>الحالة</small></span><button class="btn '+(graded?'btn-soft':'btn-primary')+'" data-grade-assignment="'+r.assignment.id+'|'+r.uid+'">'+(graded?'تعديل التصحيح':'تصحيح')+'</button></div>';
- }).join(''):'<div class="portal-empty-state"><span>📥</span><h3>لا توجد تسليمات بعد</h3><p>تسليمات الطلاب هتظهر هنا.</p></div>';
+   const graded=r.status==='graded',late=r.late===true||(!r.late&&r.assignment.dueAt&&Number(r.submittedAt||0)>Number(r.assignment.dueAt));
+   const submitted=r.submittedAt?new Date(r.submittedAt).toLocaleString('ar-EG'):'بدون وقت';
+   return '<div class="teacher-analytics-row assignment-review-row '+(graded?'graded':'new-submission')+'">'+
+     '<div><div class="teacher-student-title"><strong>'+escapeHtml(r.studentName||'طالب')+'</strong>'+(late?'<span class="status-pill rejected">متأخر</span>':'')+'</div><small>'+escapeHtml(r.assignment.title||'واجب')+'</small><small>'+escapeHtml(submitted)+'</small></div>'+
+     '<span><b>'+(graded?Number(r.score||0)+' / '+Number(r.maxScore||r.assignment.maxScore||100):'—')+'</b><small>الدرجة</small></span>'+
+     '<span><b>'+(graded?'مصحح':'جديد')+'</b><small>الحالة</small></span>'+
+     '<button class="btn '+(graded?'btn-soft':'btn-primary')+'" data-grade-assignment="'+r.assignment.id+'|'+r.uid+'">'+(graded?'تعديل التصحيح':'تصحيح الآن')+'</button>'+
+   '</div>';
+ }).join(''):'<div class="portal-empty-state"><span>📥</span><h3>لا توجد تسليمات بعد</h3><p>تسليمات الطلاب هتظهر هنا، والجديد سيظهر أولًا.</p></div>';
  $$('[data-grade-assignment]').forEach(b=>b.onclick=()=>openGradeSubmission(b.dataset.gradeAssignment,b));
 }
 async function submitTeacherAssignment(e){
@@ -234,7 +267,7 @@ function render(){
  $('teacherSubjectCount').textContent=new Set(assignments.map(a=>a.subject).filter(Boolean)).size||teacher.subjectCount||0;
  $('teacherGradeCount').textContent=new Set(assignments.map(a=>(a.stage||'')+'-'+(a.grade||'')).filter(x=>x!=='-')).size||teacher.gradeCount||0;
 
- $('teacherAssignments').innerHTML=assignments.length?assignments.map(a=>'<article class="teacher-assignment"><span>📘</span><div><strong>'+(a.subjectName||a.subject||'مادة مسندة')+'</strong><small>'+(a.type==='azhar'?'أزهر':'تعليم عام')+' • '+(stageName[a.stage]||a.stage||'كل المراحل')+' • '+(a.grade?'صف '+a.grade:'كل الصفوف')+'</small></div></article>').join(''):'<p class="profile-muted">لم تحدد الإدارة موادًا بعينها بعد.</p>';
+ $('teacherAssignments').innerHTML=assignments.length?assignments.map(a=>'<article class="teacher-assignment"><span>📘</span><div><strong>'+escapeHtml(a.subjectName||a.subject||'مادة مسندة')+'</strong><small>'+(a.type==='azhar'?'أزهر':'تعليم عام')+' • '+escapeHtml(stageName[a.stage]||a.stage||'كل المراحل')+' • '+(a.grade?'صف '+escapeHtml(a.grade):'كل الصفوف')+'</small></div><i class="fa-solid fa-circle-check teacher-assigned-check"></i></article>').join(''):'<div class="portal-empty-state compact"><span>🔒</span><h3>لا توجد مواد مسندة بعد</h3><p>لن تتمكن من إرسال محتوى أو واجبات حتى تسند الإدارة مادة لحسابك.</p></div>';
  renderSubmissionList('teacherRecentSubmissions',subs.slice(0,5));
  if($('teacherApprovedList')){
    $('teacherApprovedList').innerHTML=lessons.length?lessons.map(l=>'<article class="submission-item"><div><h4>'+escapeHtml(l.title||'درس')+'</h4><p>'+(stageName[l.stage]||l.stage||'')+' • صف '+(l.grade||'')+' • '+(l.subject||'')+'</p></div><span class="status-pill approved">منشور</span></article>').join(''):'<p class="profile-muted">لا يوجد محتوى منشور حتى الآن.</p>';
