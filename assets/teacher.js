@@ -64,7 +64,7 @@ function switchTab(tab){
  $$('[data-teacher-tab]').forEach(b=>b.classList.toggle('active',b.dataset.teacherTab===tab));
  $$('.teacher-tab').forEach(s=>s.classList.add('hidden'));
  $('teacher-tab-'+tab).classList.remove('hidden');
- if(innerWidth<900)$('teacherSide').classList.remove('open');
+ if(innerWidth<900){$('teacherSide').classList.remove('open');$('teacherOverlay')?.classList.add('hidden')}
 }
 function statusLabel(s){
  return s==='approved'?'معتمد':s==='rejected'?'مرفوض':'قيد المراجعة';
@@ -226,7 +226,8 @@ $('teacherGradeForm')?.addEventListener('submit',saveGrade);
 $('closeTeacherGradeModal')?.addEventListener('click',closeGradeModal);
 $('teacherGradeModal')?.addEventListener('click',e=>{if(e.target===$('teacherGradeModal'))closeGradeModal()});
 initTeacherCollapse();
-$('teacherMenuBtn').onclick=()=>$('teacherSide').classList.toggle('open');
+$('teacherMenuBtn').onclick=()=>{$('teacherSide').classList.add('open');$('teacherOverlay')?.classList.remove('hidden')};
+$('teacherOverlay')?.addEventListener('click',()=>{$('teacherSide').classList.remove('open');$('teacherOverlay').classList.add('hidden')});
 $('teacherLogout').onclick=async()=>{await auth.signOut();location.replace('./index.html')};
 
 auth.onAuthStateChanged(async u=>{
