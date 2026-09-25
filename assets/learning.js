@@ -38,7 +38,7 @@ function getSubjects(stage,grade,type){
  const list=[...(defaults[stage]||[])], custom=state.data.customSubjects?.[stage]?.[grade];
  if(Array.isArray(custom)) custom.forEach(s=>{
    if(!s?.id||!s?.name||(s.type&&s.type!==type))return;
-   const item={id:s.id,name:s.name,emoji:s.emoji||'⭐',units:s.units||[]}, i=list.findIndex(x=>x.id===s.id);
+   const item={id:s.id,name:s.name,emoji:s.emoji||'⭐',imageUrl:s.imageUrl||'',units:s.units||[]}, i=list.findIndex(x=>x.id===s.id);
    if(i>=0)list[i]={...list[i],...item}; else list.push(item);
  });
  return list;
@@ -139,7 +139,18 @@ function renderSubject(){
  state.subject=subjectFor(c);filterContent(c);
  const pct=progress(), complete=state.lessons.filter(l=>done(l.id)).length,next=firstIncompleteLesson();
  document.title=state.subject.name+' | الأكاديمية';
- $('subjectTitle').textContent=state.subject.name;$('subjectEmoji').textContent=state.subject.emoji||'📚';
+ $('subjectTitle').textContent=state.subject.name;
+ const hero=document.querySelector('.subject-hero-card'),rawImage=state.subject.imageUrl||'',safeImage=(()=>{try{if(!rawImage)return'';const u=new URL(rawImage,location.href);return ['http:','https:'].includes(u.protocol)?u.href:''}catch{return''}})();
+ if($('subjectEmoji')){
+   $('subjectEmoji').innerHTML=safeImage?'<img src="'+esc(safeImage)+'" alt="" loading="lazy">':esc(state.subject.emoji||'📚');
+   $('subjectEmoji').classList.toggle('has-subject-image',!!safeImage);
+ }
+ if(hero){
+   hero.classList.toggle('has-custom-subject-image',!!safeImage);
+   hero.style.backgroundImage=safeImage?'linear-gradient(90deg,rgba(4,34,102,.98) 0%,rgba(4,74,180,.92) 46%,rgba(4,77,179,.54) 72%,rgba(3,45,118,.38) 100%),url("'+safeImage.replace(/"/g,'%22')+'")':'';
+   hero.style.backgroundSize=safeImage?'cover':'';
+   hero.style.backgroundPosition=safeImage?'center':'';
+ }
  $('subjectStageLabel').textContent=(c.type==='azhar'?'التعليم الأزهري':'التعليم العام')+' • '+(grades[c.stage]?.[c.grade]||stages[c.stage]?.name||'');
  $('subjectDescription').textContent='منهج '+state.subject.name+' مرتب في وحدات ودروس، مع اختبارات وتدريبات لمتابعة تقدمك.';
  $('subjectProgressText').textContent=pct+'%';$('subjectProgressBar').style.width=pct+'%';
