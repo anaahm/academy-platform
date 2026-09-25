@@ -11,7 +11,7 @@ function ensureFirebase(){
   return{auth:firebase.auth(),db:firebase.database()};
 }
 function cleanKey(v=''){return String(v).replace(/[.#$\[\]\/]/g,'-').slice(0,180)}
-function dateKey(ts){return new Date(ts).toISOString().slice(0,10)}
+function dateKey(ts){const d=new Date(ts);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function matchesStudent(item,profile){
   return item?.isActive!==false &&
     (!item.type||item.type===profile.educationType) &&
