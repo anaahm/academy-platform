@@ -199,7 +199,11 @@
     $('userNavActions').classList.remove('hidden');
     renderDashboard();
     window.AcademyUI?.hidePageLoading();
-    window.scrollTo({top:0});
+    if(location.hash==='#studentSubjects'){
+      requestAnimationFrame(()=>document.getElementById('studentSubjects')?.scrollIntoView({behavior:'smooth',block:'start'}));
+    }else{
+      window.scrollTo({top:0});
+    }
   }
 
   function renderPublicNews() {
@@ -424,18 +428,17 @@
   function initDashboardSidebar() {
     const shell=$('studentDashboard');
     if(!shell)return;
-    const saved=localStorage.getItem('academySidebarCollapsed')==='1';
-    shell.classList.toggle('sidebar-collapsed',saved);
-    $('sidebarCollapseBtn')?.addEventListener('click',()=>{
-      shell.classList.toggle('sidebar-collapsed');
-      localStorage.setItem('academySidebarCollapsed',shell.classList.contains('sidebar-collapsed')?'1':'0');
-    });
+    shell.classList.remove('sidebar-collapsed');
+    localStorage.removeItem('academySidebarCollapsed');
     $('dashboardMoreToggle')?.addEventListener('click',()=>{
-      $('dashboardMoreMenu')?.classList.toggle('hidden');
-      $('dashboardMoreToggle')?.classList.toggle('open');
+      const menu=$('dashboardMoreMenu'),toggle=$('dashboardMoreToggle');
+      const opening=menu?.classList.contains('hidden');
+      menu?.classList.toggle('hidden');
+      toggle?.classList.toggle('open',!!opening);
+      toggle?.setAttribute('aria-expanded',opening?'true':'false');
     });
     $$('[data-nav-label]').forEach(btn=>btn.addEventListener('click',()=>{
-      if(btn.id==='dashHomeBtn'||btn.id==='dashSubjectsBtn'){
+      if(btn.id==='dashHomeBtn'||btn.id==='dashSubjectsBtn'||btn.id==='dashPlannerBtn'){
         $$('[data-nav-label]').forEach(x=>x.classList.remove('active'));
         btn.classList.add('active');
       }
@@ -557,7 +560,6 @@
   function renderDashboard() {
     const p = state.profile;
     const name = p.name || state.user.displayName || 'طالبنا';
-    const stats = statsFromProfile();
     const subjects = getSubjects(p.stage, String(p.grade), p.educationType);
 
     const hour = new Date().getHours();
@@ -573,16 +575,6 @@
     if ($('dashAccountAvatar')) $('dashAccountAvatar').textContent = initials(name);
     $('currentGradeTitle').textContent = gradeLabels[p.stage]?.[p.grade] || stageLabels[p.stage] || 'مرحلتك الدراسية';
     $('currentEducationTitle').textContent = educationLabel(p.educationType);
-    animateDashboardNumber('levelNumber',stats.level,400);
-    animateDashboardNumber('xpValue',stats.xp % 1000,600);
-    animateDashboardNumber('xpStat',stats.xp,650);
-    animateDashboardNumber('completedLessons',stats.lessons,500);
-    animateDashboardNumber('completedQuizzes',stats.quizzes,500);
-    animateDashboardNumber('streakValue',stats.streak,450);
-    const levelXp=stats.xp % 1000;
-    $('xpProgress').style.width = Math.min(100, levelXp / 10) + '%';
-    $('xpProgressTrack')?.setAttribute('aria-valuenow',String(levelXp));
-
     $('dashboardSubjects').innerHTML = subjects.map((s) => {
       const progress = Math.max(0, Math.min(100, subjectProgressOf(p,s.id)));
       const q = new URLSearchParams({
@@ -591,16 +583,14 @@
         grade: String(p.grade),
         subject: s.id
       });
-      const status = progress >= 100 ? 'مكتملة' : progress > 0 ? 'قيد التعلّم' : 'جاهزة للبدء';
-      return `<a class="dash-subject-card" href="./subject.html?${q.toString()}" aria-label="فتح مادة ${safeHtml(s.name)}">
-        <div class="dash-subject-card-head">
-          <span class="emoji">${safeHtml(s.emoji || '📚')}</span>
-          <span class="subject-status ${progress >= 100 ? 'complete' : progress > 0 ? 'active' : ''}">${status}</span>
+      return `<a class="dash-subject-card simple-subject-card" href="./subject.html?${q.toString()}" aria-label="فتح مادة ${safeHtml(s.name)}">
+        <span class="emoji">${safeHtml(s.emoji || '📚')}</span>
+        <div class="simple-subject-copy">
+          <h3>${safeHtml(s.name)}</h3>
+          <div class="progress" role="progressbar" aria-label="تقدمك في ${safeHtml(s.name)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}"><span style="width:${progress}%"></span></div>
+          <small>${progress ? progress+'% مكتمل' : 'ابدأ المادة'}</small>
         </div>
-        <h3>${safeHtml(s.name)}</h3>
-        <p>${progress ? 'أكمل من حيث توقفت' : 'ابدأ أول درس في المادة'}</p>
-        <div class="progress" role="progressbar" aria-label="تقدمك في ${safeHtml(s.name)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}"><span style="width:${progress}%"></span></div>
-        <footer><span>${progress}% مكتمل</span><strong>فتح المادة <i class="fa-solid fa-arrow-left"></i></strong></footer>
+        <i class="fa-solid fa-arrow-left simple-subject-arrow"></i>
       </a>`;
     }).join('');
 
@@ -624,9 +614,7 @@
           : './subject.html?' + q.toString();
       };
     }
-    loadDailyGoals();
     loadDashboardPulse();
-    renderSmartDashboard();
     renderHeaderUser();
   }
 
@@ -848,9 +836,9 @@
 
     $('openExplorerPublic').addEventListener('click', () => openExplorer());
     $('openSubjectsExplorer').addEventListener('click', () => { openExplorer(); switchExplorerTab('subjects'); });
-    $('exploreAllStagesMain').addEventListener('click', () => location.href='./explore.html');
+    $('exploreAllStagesMain')?.addEventListener('click', () => location.href='./explore.html');
     $('dashHomeBtn')?.addEventListener('click', () => window.scrollTo({top:0,behavior:'smooth'}));
-    $('dashSubjectsBtn')?.addEventListener('click', () => document.querySelector('.dashboard-section')?.scrollIntoView({behavior:'smooth'}));
+    $('dashSubjectsBtn')?.addEventListener('click', () => document.getElementById('studentSubjects')?.scrollIntoView({behavior:'smooth'}));
     $('dashTestsBtn')?.addEventListener('click', () => location.href='./exam-center.html');
     $('dashProgressBtn')?.addEventListener('click', () => location.href='./progress.html');
     $('dashPlannerBtn')?.addEventListener('click', () => location.href='./planner.html');
@@ -859,12 +847,16 @@
     $('dashLiveBtn')?.addEventListener('click', () => location.href='./live.html');
     $('dashCommunityBtn')?.addEventListener('click', () => location.href='./community.html');
     $('dashLeaderboardBtn')?.addEventListener('click', () => location.href='./leaderboard.html');
-    $('exploreAllStagesSide').addEventListener('click', () => location.href='./explore.html');
-    $('exploreSubjectsDash').addEventListener('click', () => location.href='./explore.html');
-    $('mobileExploreBtn').addEventListener('click', () => location.href='./explore.html');
-    $('mobileSubjectsBtn').addEventListener('click', () => document.querySelector('.dashboard-section')?.scrollIntoView({behavior:'smooth'}));
+    $('exploreAllStagesSide')?.addEventListener('click', () => location.href='./explore.html');
+    $('exploreSubjectsDash')?.addEventListener('click', () => location.href='./explore.html');
+    $('mobileExploreBtn')?.addEventListener('click', () => location.href='./explore.html');
+    $('mobileSubjectsBtn')?.addEventListener('click', () => document.getElementById('studentSubjects')?.scrollIntoView({behavior:'smooth'}));
     $('mobileTestsBtn')?.addEventListener('click', () => location.href='./exam-center.html');
     $('mobileHomeBtn')?.addEventListener('click', () => window.scrollTo({top:0,behavior:'smooth'}));
+    $('openMoreServices')?.addEventListener('click',()=>{
+      const sidebar=$('dashboardSidebar'),menu=$('dashboardMoreMenu'),toggle=$('dashboardMoreToggle');
+      sidebar?.classList.add('open');menu?.classList.remove('hidden');toggle?.classList.add('open');toggle?.setAttribute('aria-expanded','true');
+    });
     $('closeExplorer').addEventListener('click', closeExplorer);
     $('explorerBackdrop').addEventListener('click', closeExplorer);
 
