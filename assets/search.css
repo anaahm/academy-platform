@@ -87,3 +87,64 @@
   .search-result-icon{width:42px!important;height:42px!important}
   .search-result-open{grid-column:2!important}
 }
+
+/* Premium 3D search page 2026 */
+.search-hero{
+  background:
+    radial-gradient(circle at 82% 8%,rgba(70,151,255,.12),transparent 27%),
+    linear-gradient(180deg,#fff,#f4f8ff)!important;
+  border-bottom:1px solid #e1e9f5!important
+}
+.search-hero h1{color:#102458;text-shadow:0 2px 0 rgba(255,255,255,.9)}
+.search-box{
+  border:1px solid #d7e4f4!important;
+  background:linear-gradient(145deg,#fff,#f7faff)!important;
+  box-shadow:0 15px 35px rgba(31,73,139,.11),inset 0 1px 0 #fff!important
+}
+.search-box>i{
+  width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
+  background:linear-gradient(145deg,#eaf4ff,#d9ebff);color:#1478f2!important;
+  box-shadow:0 6px 13px rgba(31,73,139,.08),inset 0 1px 0 #fff
+}
+.search-suggestions button{
+  border:1px solid #dce6f4!important;background:linear-gradient(145deg,#fff,#f4f8ff)!important;
+  box-shadow:0 5px 11px rgba(31,73,139,.055),inset 0 1px 0 #fff!important;
+  transition:transform .15s ease,box-shadow .15s ease!important
+}
+.search-suggestions button:hover{
+  transform:translateY(-2px)!important;box-shadow:0 9px 17px rgba(31,73,139,.09)!important
+}
+.search-results-area{min-width:0}
+.search-result-card{
+  position:relative;overflow:hidden;
+  border:1px solid #dfe8f5!important;
+  background:
+    radial-gradient(circle at 93% 8%,rgba(80,146,255,.07),transparent 27%),
+    linear-gradient(145deg,#fff,#f8fbff)!important;
+  box-shadow:0 9px 21px rgba(31,73,139,.065),inset 0 1px 0 #fff!important
+}
+.search-result-card:hover{
+  transform:translateY(-4px)!important;
+  box-shadow:0 16px 31px rgba(31,73,139,.12),inset 0 1px 0 #fff!important
+}
+.search-result-icon{
+  position:relative;overflow:hidden;
+  border:1px solid rgba(255,255,255,.72)!important;
+  box-shadow:0 8px 16px rgba(31,73,139,.13),inset 0 2px 0 rgba(255,255,255,.38),inset 0 -3px 5px rgba(26,65,127,.10)!important;
+  transition:transform .17s ease
+}
+.search-result-card:hover .search-result-icon{transform:translateY(-3px) rotate(-4deg) scale(1.04)}
+.search-result-icon.lesson{background:linear-gradient(145deg,#55aaff,#1e72e9)!important;color:#fff!important}
+.search-result-icon.quiz{background:linear-gradient(145deg,#3dd7aa,#0da37d)!important;color:#fff!important}
+.search-result-icon.file{background:linear-gradient(145deg,#ff7584,#e44357)!important;color:#fff!important}
+.search-result-open{
+  border:1px solid #d8e5f4!important;background:linear-gradient(145deg,#fff,#eaf4ff)!important;
+  box-shadow:0 5px 11px rgba(31,73,139,.075),inset 0 1px 0 #fff!important;
+  transition:transform .15s ease!important
+}
+.search-result-open:hover{transform:translateY(-2px) translateX(-2px)}
+.search-result-tags span{
+  background:linear-gradient(145deg,#fff,#f2f6fb)!important;
+  border:1px solid #e1e8f2!important;box-shadow:inset 0 1px 0 #fff
+}
+.search-loading span{box-shadow:inset 0 1px 0 #fff,0 6px 15px rgba(31,73,139,.04)}
