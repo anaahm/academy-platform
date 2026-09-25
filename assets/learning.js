@@ -22,6 +22,7 @@ const defaults={
 };
 const esc=(v='')=>String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const initials=(n='طالب')=>(n.trim()[0]||'ط').toUpperCase();
+const safeUrl=(u='')=>{try{const x=new URL(u,location.href);return ['http:','https:'].includes(x.protocol)?x.href:''}catch{return''}};
 const localDateKey=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const quizXpTarget=score=>Number(score)>=80?40:20;
 
@@ -334,7 +335,12 @@ function renderExplanation(l){
  if(l.imageUrl){const top=l.imagePosition==='top',w=$(top?'lessonTopImageWrap':'lessonBottomImageWrap'),im=$(top?'lessonTopImage':'lessonBottomImage');im.src=l.imageUrl;im.alt=l.title||'';w.classList.remove('hidden')}
 }
 function renderFiles(){
- $('lessonResources').innerHTML=state.files.length?state.files.map(f=>'<article class="resource-item"><i class="fa-solid fa-file-pdf"></i><div><strong>'+esc(f.title||'ملف')+'</strong><small>ملف مساعد للمادة</small></div><a href="'+esc(f.url||'#')+'" target="_blank" rel="noopener">فتح الملف <i class="fa-solid fa-arrow-up-right-from-square"></i></a></article>').join(''):'<div class="empty-state"><span>📎</span><h3>لا توجد مرفقات لهذه المادة حاليًا</h3></div>';
+ $('lessonResources').innerHTML=state.files.length?state.files.map(f=>{
+   const href=safeUrl(f.url||'');
+   return '<article class="resource-item"><i class="fa-solid fa-file-pdf"></i><div><strong>'+esc(f.title||'ملف')+'</strong><small>ملف مساعد للمادة</small></div>'+
+     (href?'<a href="'+esc(href)+'" target="_blank" rel="noopener noreferrer">فتح الملف <i class="fa-solid fa-arrow-up-right-from-square"></i></a>':'<span class="resource-link-disabled"><i class="fa-solid fa-ban"></i> الرابط غير متاح</span>')+
+   '</article>';
+ }).join(''):'<div class="empty-state"><span>📎</span><h3>لا توجد مرفقات لهذه المادة حاليًا</h3></div>';
 }
 function renderOutline(c,l){
  $('outlineUnitTitle').textContent=unitName(c,l.unit||1);
