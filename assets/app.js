@@ -260,6 +260,14 @@
     return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   }
 
+  function safeDashboardImage(value='') {
+    if(!value)return '';
+    try {
+      const url=new URL(value,location.href);
+      return ['http:','https:'].includes(url.protocol)?url.href:'';
+    } catch { return ''; }
+  }
+
   async function updateDailyActivity(uid) {
     const now=new Date(),yesterdayDate=new Date(now);
     yesterdayDate.setDate(now.getDate()-1);
@@ -389,22 +397,24 @@
   }
 
   function renderDailyGoals(goals = {}) {
-    const keys=['lesson','quiz','review'];
+    const keys=['lesson','assignment','quiz','review'];
     const done=keys.filter(k=>goals?.[k]).length;
     const pct=Math.round(done/keys.length*100);
     const ring=$('dailyGoalRing');
-    if(ring) ring.style.background='conic-gradient(#2563eb '+(pct*3.6)+'deg,#e8eef7 0deg)';
+    if(ring) ring.style.background='conic-gradient(#10b981 '+(pct*3.6)+'deg,#e8eef7 0deg)';
     if($('dailyGoalPercent')) $('dailyGoalPercent').textContent=pct+'%';
-    if($('dailyGoalCount')) $('dailyGoalCount').textContent=done+' من 3 مكتمل';
-    if($('pulseChallengeState')) $('pulseChallengeState').textContent=done+' / 3';
+    if($('dailyGoalCount')) $('dailyGoalCount').textContent=done+' من 4 مكتملة';
+    if($('pulseChallengeState')) $('pulseChallengeState').textContent=done+' / 4';
+    if($('dailyGoalProgress')) $('dailyGoalProgress').style.width=pct+'%';
     if($('dailyGoalMessage')) {
-      $('dailyGoalMessage').textContent=done===3?'ممتاز! أنهيت تحدي اليوم بالكامل 🎉':done===2?'باقي خطوة واحدة فقط، كمّلها 💪':done===1?'بداية ممتازة، كمّل خطوتين كمان.':'ابدأ بخطوة صغيرة وخلي اليوم يتحسب لك.';
+      $('dailyGoalMessage').textContent=done===4?'ممتاز! أنهيت أهداف اليوم بالكامل 🎉':done===3?'باقي خطوة واحدة فقط، كمّلها 💪':done?'بداية ممتازة، استمر.':'ابدأ بخطوة صغيرة وخلي اليوم يتحسب لك.';
     }
     $$('[data-daily-goal]').forEach(btn=>{
       const key=btn.dataset.dailyGoal,complete=!!goals?.[key];
       btn.classList.toggle('completed',complete);
+      btn.setAttribute('aria-pressed',complete?'true':'false');
       const icon=btn.querySelector('.goal-state');
-      if(icon) icon.className=complete?'fa-solid fa-circle-check goal-state':'fa-regular fa-circle goal-state';
+      if(icon) icon.className=complete?'fa-solid fa-square-check goal-state':'fa-regular fa-square goal-state';
     });
   }
 
@@ -560,22 +570,38 @@
   function renderDashboard() {
     const p = state.profile;
     const name = p.name || state.user.displayName || 'طالبنا';
+    const stats = statsFromProfile();
     const subjects = getSubjects(p.stage, String(p.grade), p.educationType);
+    const settings = state.dbData.settings || {};
 
     const hour = new Date().getHours();
-    const greeting = hour < 12 ? 'صباح الخير' : hour < 18 ? 'أهلًا' : 'مساء الخير';
-    const greetingEl=document.querySelector('.dashboard-greeting');
-    if(greetingEl) greetingEl.childNodes[0].textContent=greeting+' ';
-    $('dashStudentName').textContent = name;
-    if($('dashTodayLabel')){
-      const today=new Intl.DateTimeFormat('ar-EG',{weekday:'long',day:'numeric',month:'long'}).format(new Date());
-      $('dashTodayLabel').textContent=today+' • كل خطوة صغيرة بتفرق';
-    }
-    if ($('dashAccountName')) $('dashAccountName').textContent = name;
-    if ($('dashAccountAvatar')) $('dashAccountAvatar').textContent = initials(name);
+    const greeting = hour < 12 ? 'صباح الخير' : hour < 18 ? 'مرحبًا' : 'مساء الخير';
+    if($('dashStudentName')) $('dashStudentName').textContent = name;
+    if($('heroStudentName')) $('heroStudentName').textContent = name;
+    if($('dashTodayLabel')) $('dashTodayLabel').textContent = settings.dashboardProfileSubtitle || 'طالب مجتهد يصنع الفرق';
+    if($('dashAccountAvatar')) $('dashAccountAvatar').textContent = initials(name);
+    if($('dashboardBrandName')) $('dashboardBrandName').textContent = settings.siteName || 'الأكاديمية';
+
     $('currentGradeTitle').textContent = gradeLabels[p.stage]?.[p.grade] || stageLabels[p.stage] || 'مرحلتك الدراسية';
     $('currentEducationTitle').textContent = educationLabel(p.educationType);
-    $('dashboardSubjects').innerHTML = subjects.map((s) => {
+
+    const hero=$('dashboardHero');
+    const customHero=safeDashboardImage(settings.dashboardHeroUrl||'');
+    if(hero){
+      hero.style.backgroundImage = customHero
+        ? `linear-gradient(90deg,rgba(7,35,111,.98) 0%,rgba(11,64,171,.88) 30%,rgba(8,41,119,.14) 58%,rgba(5,29,86,.04) 100%),url("${customHero}")`
+        : '';
+    }
+    if($('dashboardHeroSubtitle')) $('dashboardHeroSubtitle').textContent = settings.dashboardHeroSubtitle || 'كل يوم هو فرصة جديدة للتعلم وتقترب من أهدافك';
+
+    animateDashboardNumber('completedLessons',stats.lessons,500);
+    animateDashboardNumber('completedQuizzes',stats.quizzes,520);
+    animateDashboardNumber('streakValue',stats.streak,480);
+    animateDashboardNumber('xpStat',stats.xp,620);
+    if($('streakSideValue')) $('streakSideValue').textContent=stats.streak;
+
+    const palettes=['subject-pink','subject-blue','subject-green','subject-gold','subject-purple','subject-teal'];
+    $('dashboardSubjects').innerHTML = subjects.slice(0,6).map((s,index) => {
       const progress = Math.max(0, Math.min(100, subjectProgressOf(p,s.id)));
       const q = new URLSearchParams({
         type: p.educationType,
@@ -583,25 +609,23 @@
         grade: String(p.grade),
         subject: s.id
       });
-      return `<a class="dash-subject-card simple-subject-card" href="./subject.html?${q.toString()}" aria-label="فتح مادة ${safeHtml(s.name)}">
-        <span class="emoji">${safeHtml(s.emoji || '📚')}</span>
-        <div class="simple-subject-copy">
-          <h3>${safeHtml(s.name)}</h3>
-          <div class="progress" role="progressbar" aria-label="تقدمك في ${safeHtml(s.name)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}"><span style="width:${progress}%"></span></div>
-          <small>${progress ? progress+'% مكتمل' : 'ابدأ المادة'}</small>
-        </div>
-        <i class="fa-solid fa-arrow-left simple-subject-arrow"></i>
+      return `<a class="ref-subject-card ${palettes[index%palettes.length]}" href="./subject.html?${q.toString()}" aria-label="فتح مادة ${safeHtml(s.name)}">
+        <div class="ref-subject-art"><span>${safeHtml(s.emoji || '📚')}</span><i></i></div>
+        <h3>${safeHtml(s.name)}</h3>
+        <div class="ref-subject-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}"><span style="width:${progress}%"></span></div>
+        <div class="ref-subject-footer"><small>${progress}%</small><strong>ادخل المادة <i class="fa-solid fa-chevron-left"></i></strong></div>
       </a>`;
     }).join('');
 
     const first = subjects[0];
     const lastSubject = subjects.find(s => s.id === p.lastSubjectId) || first;
     if (lastSubject) {
+      if($('continueSubjectName')) $('continueSubjectName').textContent=lastSubject.name;
       $('continueTitle').textContent = p.lastLessonTitle || `ابدأ أول درس في ${lastSubject.name}`;
       $('continueMeta').textContent = p.lastLessonTitle
         ? `${lastSubject.name} • ${gradeLabels[p.stage]?.[p.grade] || ''}`
         : 'اختر المادة وابدأ، وسنحفظ تقدمك تلقائيًا.';
-      $('continueLearningBtn').onclick = () => {
+      const go=() => {
         const q = new URLSearchParams({
           type: p.educationType,
           stage: p.stage,
@@ -609,11 +633,13 @@
           subject: lastSubject.id
         });
         if (p.lastLessonId) q.set('id', p.lastLessonId);
-        location.href = p.lastLessonId
-          ? './lesson.html?' + q.toString()
-          : './subject.html?' + q.toString();
+        location.href = p.lastLessonId ? './lesson.html?' + q.toString() : './subject.html?' + q.toString();
       };
+      $('continueLearningBtn').onclick=go;
+      $('continuePlayBtn')?.addEventListener('click',go,{once:true});
     }
+
+    loadDailyGoals();
     loadDashboardPulse();
     renderHeaderUser();
   }
@@ -848,6 +874,7 @@
     $('dashCommunityBtn')?.addEventListener('click', () => location.href='./community.html');
     $('dashLeaderboardBtn')?.addEventListener('click', () => location.href='./leaderboard.html');
     $('exploreAllStagesSide')?.addEventListener('click', () => location.href='./explore.html');
+    $('sidebarExplorePromo')?.addEventListener('click', () => location.href='./explore.html');
     $('exploreSubjectsDash')?.addEventListener('click', () => location.href='./explore.html');
     $('mobileExploreBtn')?.addEventListener('click', () => location.href='./explore.html');
     $('mobileSubjectsBtn')?.addEventListener('click', () => document.getElementById('studentSubjects')?.scrollIntoView({behavior:'smooth'}));
@@ -893,8 +920,9 @@
       const firstIncomplete=$$('[data-daily-goal]').find(btn=>!btn.classList.contains('completed'));
       const key=firstIncomplete?.dataset.dailyGoal||'lesson';
       if(key==='lesson') $('continueLearningBtn')?.click();
+      else if(key==='assignment') location.href='./assignments.html';
       else if(key==='quiz') location.href='./exam-center.html';
-      else location.href='./progress.html';
+      else location.href='./planner.html';
     });
 
 
