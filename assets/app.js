@@ -257,8 +257,10 @@
   }
 
   async function updateDailyActivity(uid) {
-    const today = new Date().toISOString().slice(0,10);
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+    const now=new Date(),yesterdayDate=new Date(now);
+    yesterdayDate.setDate(now.getDate()-1);
+    const today = localDateKey(now);
+    const yesterday = localDateKey(yesterdayDate);
     await database.ref('studentProfilesV3/' + uid).transaction(profile => {
       if (!profile) return profile;
       profile.activity = profile.activity || {};
@@ -374,8 +376,12 @@
     }),0);
   }
 
+  function localDateKey(date=new Date()) {
+    return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+  }
+
   function todayKey() {
-    return new Date().toISOString().slice(0,10);
+    return localDateKey();
   }
 
   function renderDailyGoals(goals = {}) {
