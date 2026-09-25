@@ -736,3 +736,34 @@ article:hover>.stat-icon,.feature-card:hover .feature-card-icon,.library-card:ho
 @media(prefers-reduced-motion:reduce){
   .feature-card:hover .feature-card-icon,.feature-stat-row article:hover .stat-icon,.feature-stat-grid article:hover .feature-card-icon{animation:none!important}
 }
+
+/* Layout overlap safety layer 2026 */
+img,video,iframe,svg{max-width:100%}
+img,video{height:auto}
+.feature-page main,.learning-body main,.profile-page,.search-workspace,.news-page,.teacher-main,.admin-main{min-width:0}
+.feature-page .container,.learning-body .container,.search-body .container{min-width:0}
+.feature-page [class*="grid"],.learning-body [class*="grid"],.profile-page [class*="grid"]{min-width:0}
+.feature-page [class*="grid"]>*,.learning-body [class*="grid"]>*,.profile-page [class*="grid"]>*{min-width:0}
+.feature-page [class*="layout"]>*,.learning-body [class*="layout"]>*,.profile-page [class*="layout"]>*{min-width:0}
+.feature-card-head>*,.admin-card-head>*,.teacher-card-head>*,.learning-section-head>*,.search-results-head>*{min-width:0}
+.feature-card h1,.feature-card h2,.feature-card h3,
+.teacher-card h1,.teacher-card h2,.teacher-card h3,
+.profile-card h1,.profile-card h2,.profile-card h3,
+.analytics-card h1,.analytics-card h2,.analytics-card h3{
+  overflow-wrap:anywhere
+}
+button,a,input,select,textarea{max-width:100%}
+@media(max-width:760px){
+  .feature-page main,.learning-body main{overflow-x:clip}
+  .feature-toolbar{position:relative!important;top:auto!important}
+  .feature-filter{display:flex;flex-wrap:wrap!important}
+  .feature-filter input,.feature-filter select{flex:1 1 150px;min-width:0!important}
+  .learning-breadcrumb{max-width:48vw;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .learning-breadcrumb>*{flex:0 0 auto}
+}
+@media(max-width:520px){
+  .learning-breadcrumb{display:none!important}
+  .learning-nav{gap:7px!important}
+  .learning-user{margin-right:auto}
+  .feature-card-head,.admin-card-head,.teacher-card-head{gap:8px!important}
+}
