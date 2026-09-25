@@ -176,6 +176,8 @@ async function submitAssignment(e){
   try{
     await C.db.ref('assignmentSubmissions/'+activeAssignment.id+'/'+user.uid).set(payload);
     submissions[activeAssignment.id]=payload;
+    const nowDate=new Date(),goalDate=nowDate.getFullYear()+'-'+String(nowDate.getMonth()+1).padStart(2,'0')+'-'+String(nowDate.getDate()).padStart(2,'0');
+    C.db.ref('studentProfilesV3/'+user.uid+'/dailyGoals/'+goalDate+'/assignment').set(true).catch(err=>console.warn('Daily assignment goal update failed',err));
     C.toast(current?'تم تحديث التسليم بنجاح ✅':'تم تسليم الواجب بنجاح ✅');
     closeModal();render();
   }catch(err){
