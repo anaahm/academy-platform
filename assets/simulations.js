@@ -58,23 +58,41 @@ $('quitSimulation').onclick=async()=>{const ok=await window.AcademyUI.confirm({t
 function closeRunner(){clearInterval(timer);$('simulationRunner').classList.add('hidden');document.body.style.overflow='';current=null}
 
 async function finish(auto){
- if(!current)return;clearInterval(timer);
- let correct=0;current.questions.forEach((q,i)=>{if(Number(answers[i])===Number(q.correctAnswer))correct++});
- const score=Math.round(correct/current.questions.length*100),xp=score>=80?100:score>=60?60:30,answered=answers.filter(x=>x!==null).length;
- const rec={simulationId:current.sim.id,name:current.sim.name||'محاكي',score,correct,total:current.questions.length,answered,xp,createdAt:Date.now(),autoFinished:!!auto};
- const ref=C.db.ref('studentProfilesV3/'+user.uid+'/simulationHistory').push();await ref.set(rec);
- await C.db.ref('studentProfilesV3/'+user.uid+'/stats').transaction(s=>{s=s||{};s.completedSimulations=(s.completedSimulations||0)+1;s.totalXP=(s.totalXP||0)+xp;s.level=Math.floor((s.totalXP||0)/1000)+1;return s});
- await C.addLeaderboardXP(user.uid,profile.name||user.displayName||'طالب',xp,0);
- profile.simulationHistory=profile.simulationHistory||{};profile.simulationHistory[ref.key]=rec;
- $('simQuestionArea').classList.add('hidden');$('simRunnerNav').classList.add('hidden');$('simResult').classList.remove('hidden');$('simResult').innerHTML='<div class="big-score">'+score+'%</div><h2>'+(score>=80?'ممتاز جدًا 🌟':score>=60?'أداء جيد 👏':'راجع المواد وحاول مرة أخرى')+'</h2><p>إجابات صحيحة: '+correct+' من '+current.questions.length+' • أجبت عن '+answered+' سؤال • +'+xp+' XP</p><button class="btn btn-primary" id="closeResult">العودة للمحاكيات</button>';
- $('closeResult').onclick=()=>{closeRunner();renderStats();render()};
+ if(!current||current.finishing)return;
+ current.finishing=true;clearInterval(timer);$('simNext').disabled=true;
+ try{
+   let correct=0;current.questions.forEach((q,i)=>{if(Number(answers[i])===Number(q.correctAnswer))correct++});
+   const score=Math.round(correct/current.questions.length*100),target=score>=80?100:score>=60?60:30,answered=answers.filter(x=>x!==null).length;
+   const prior=history().filter(x=>x.simulationId===current.sim.id),firstAttempt=!prior.length;
+   const priorTarget=prior.length?Math.max(...prior.map(x=>Number(x.score||0)>=80?100:Number(x.score||0)>=60?60:30)):0;
+   const gained=Math.max(0,target-priorTarget);
+   const rec={simulationId:current.sim.id,name:current.sim.name||'محاكي',score,correct,total:current.questions.length,answered,xp:gained,createdAt:Date.now(),autoFinished:!!auto};
+   const ref=C.db.ref('studentProfilesV3/'+user.uid+'/simulationHistory').push();await ref.set(rec);
+   await C.db.ref('studentProfilesV3/'+user.uid+'/stats').transaction(s=>{s=s||{};s.completedSimulations=(s.completedSimulations||0)+(firstAttempt?1:0);s.totalXP=(s.totalXP||0)+gained;s.level=Math.floor((s.totalXP||0)/1000)+1;return s});
+   if(gained)await C.addLeaderboardXP(user.uid,profile.name||user.displayName||'طالب',gained,0);
+   profile.simulationHistory=profile.simulationHistory||{};profile.simulationHistory[ref.key]=rec;
+   $('simQuestionArea').classList.add('hidden');$('simRunnerNav').classList.add('hidden');$('simResult').classList.remove('hidden');
+   const xpText=gained?(' • +'+gained+' XP'):' • لا نقاط إضافية لهذه الدرجة';
+   $('simResult').innerHTML='<div class="big-score">'+score+'%</div><h2>'+(score>=80?'ممتاز جدًا 🌟':score>=60?'أداء جيد 👏':'راجع المواد وحاول مرة أخرى')+'</h2><p>إجابات صحيحة: '+correct+' من '+current.questions.length+' • أجبت عن '+answered+' سؤال'+xpText+'</p><button class="btn btn-primary" id="closeResult">العودة للمحاكيات</button>';
+   $('closeResult').onclick=()=>{closeRunner();renderStats();render()};
+ }catch(err){
+   console.error(err);C.toast('تعذر حفظ نتيجة المحاكاة الآن. حاول مرة أخرى.','error');
+   if(current)current.finishing=false;$('simNext').disabled=false;
+ }
 }
 
 (async()=>{
- ({user,profile}=await C.requireStudent());$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
- const [s,q]=await Promise.all([
-   C.db.ref('simulations').orderByChild('stage').equalTo(profile.stage).once('value'),
-   C.db.ref('quizzes').orderByChild('stage').equalTo(profile.stage).once('value')
- ]);data={simulations:s.val()||{},quizzes:q.val()||{}};renderStats();render();
+ window.AcademyUI?.showPageLoading('جاري تجهيز المحاكيات...');
+ try{
+   ({user,profile}=await C.requireStudent());$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
+   const [s,q]=await Promise.all([
+     C.db.ref('simulations').orderByChild('stage').equalTo(profile.stage).once('value'),
+     C.db.ref('quizzes').orderByChild('stage').equalTo(profile.stage).once('value')
+   ]);
+   data={simulations:s.val()||{},quizzes:q.val()||{}};renderStats();render();
+ }catch(err){
+   console.error(err);C.toast('تعذر تحميل المحاكيات الآن.','error');
+   $('simGrid').innerHTML=window.AcademyUI?.errorStateHtml('تعذر تحميل المحاكيات','تحقق من الاتصال ثم حاول مرة أخرى.','<button class="btn btn-primary" onclick="location.reload()">إعادة المحاولة</button>')||'';
+ }finally{window.AcademyUI?.hidePageLoading()}
 })();
 })();
