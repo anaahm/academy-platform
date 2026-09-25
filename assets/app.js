@@ -453,8 +453,8 @@
     try{
       const [plannerSnap,assignSnap,scheduleSnap]=await Promise.all([
         database.ref('studentProfilesV3/'+uid+'/studyPlanner').once('value'),
-        database.ref('assignments').once('value'),
-        database.ref('scheduleEvents').once('value')
+        database.ref('assignments').orderByChild('stage').equalTo(p.stage).once('value'),
+        database.ref('scheduleEvents').orderByChild('stage').equalTo(p.stage).once('value')
       ]);
       const candidates=[];
       const today=todayKey();
