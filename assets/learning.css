@@ -1039,3 +1039,147 @@ button.curriculum-item{cursor:pointer}
   .explore-stage-tabs{display:flex!important;overflow-x:auto}
   .explore-stage-tabs button{min-width:145px}
 }
+
+/* Vivid learning layer 2026 */
+.subject-hero-card{
+  background:
+    radial-gradient(circle at 86% 10%,rgba(91,196,255,.38),transparent 27%),
+    radial-gradient(circle at 18% 110%,rgba(126,70,255,.25),transparent 32%),
+    linear-gradient(135deg,#083a97 0%,#0877f7 58%,#0d9cf0 100%)!important
+}
+.subject-mini-label{
+  color:#dff4ff!important;
+  background:rgba(255,255,255,.13)!important;
+  border:1px solid rgba(255,255,255,.22)!important;
+  padding:5px 9px!important;border-radius:999px!important
+}
+.subject-hero-stats article:nth-child(1){background:linear-gradient(145deg,#eaf5ff,#cce6ff)!important}
+.subject-hero-stats article:nth-child(2){background:linear-gradient(145deg,#e7fff7,#c8f6e6)!important}
+.subject-hero-stats article:nth-child(3){background:linear-gradient(145deg,#f6edff,#e3ceff)!important}
+.subject-hero-stats article:nth-child(4){background:linear-gradient(145deg,#fff8df,#ffe5a1)!important}
+.subject-hero-stats strong{font-size:20px!important;color:#102458!important}
+.subject-hero-stats small{font-weight:800!important;color:#51658c!important}
+.stat-badge.blue{background:linear-gradient(145deg,#2c9dff,#0868e4)!important;color:#fff!important}
+.stat-badge.green{background:linear-gradient(145deg,#27d5a3,#00a77a)!important;color:#fff!important}
+.stat-badge.violet{background:linear-gradient(145deg,#a05cff,#7134e2)!important;color:#fff!important}
+.stat-badge.amber{background:linear-gradient(145deg,#ffbc35,#f27c14)!important;color:#fff!important}
+
+.subject-path-card{
+  background:
+    radial-gradient(circle at 92% 0,rgba(60,148,255,.12),transparent 29%),
+    linear-gradient(145deg,#fff,#f4f9ff)!important
+}
+.subject-path-track>*{
+  border-color:#cfe0f4!important
+}
+.subject-path-track>*:nth-child(4n+1){background:linear-gradient(145deg,#edf7ff,#d9ecff)!important}
+.subject-path-track>*:nth-child(4n+2){background:linear-gradient(145deg,#edfff9,#d3f8ea)!important}
+.subject-path-track>*:nth-child(4n+3){background:linear-gradient(145deg,#f7efff,#e8d8ff)!important}
+.subject-path-track>*:nth-child(4n+4){background:linear-gradient(145deg,#fff8e6,#ffeab6)!important}
+
+.unit-card{
+  border-color:#d6e3f3!important;
+  box-shadow:0 13px 28px rgba(31,73,139,.09),inset 0 1px 0 #fff!important
+}
+.unit-card:nth-child(4n+1):before{background:linear-gradient(90deg,#0d8dff,#00c5ff)!important}
+.unit-card:nth-child(4n+2):before{background:linear-gradient(90deg,#00bf8d,#34dcb1)!important}
+.unit-card:nth-child(4n+3):before{background:linear-gradient(90deg,#7a3ff2,#b05cff)!important}
+.unit-card:nth-child(4n+4):before{background:linear-gradient(90deg,#ff8a18,#ffc12c)!important}
+
+.curriculum-item{
+  min-height:72px!important;
+}
+.curriculum-item .lesson-number,.curriculum-item .item-icon{
+  width:42px!important;height:42px!important;border-radius:12px!important;
+  background:linear-gradient(145deg,#eaf4ff,#d6e8ff)!important;
+  color:#0b72ed!important;font-weight:900!important
+}
+.curriculum-item.complete .lesson-number,.curriculum-item.complete .item-icon{
+  background:linear-gradient(145deg,#d9fff1,#aaf0d6)!important;color:#008b67!important
+}
+.curriculum-item.locked .lesson-number,.curriculum-item.locked .item-icon{
+  background:linear-gradient(145deg,#f3f5f8,#e4e9f0)!important;color:#95a1b5!important
+}
+.curriculum-item h3,.curriculum-item strong{font-weight:900!important;color:#14285a!important}
+.curriculum-item p,.curriculum-item small{color:#6c7d9e!important}
+
+.lesson-heading{
+  background:
+    radial-gradient(circle at 92% 0,rgba(36,143,255,.10),transparent 32%),
+    linear-gradient(145deg,#fff,#f5faff)!important
+}
+.lesson-context-row span:nth-child(1){background:linear-gradient(145deg,#edf6ff,#dbeeff)!important;color:#0b6ee6!important}
+.lesson-context-row span:nth-child(2){background:linear-gradient(145deg,#edfff9,#d4f8eb)!important;color:#009b74!important}
+.lesson-context-row span:nth-child(3){background:linear-gradient(145deg,#f8f0ff,#e8d7ff)!important;color:#7b3ee8!important}
+
+.video-theater{
+  background:
+    radial-gradient(circle at 20% 0,rgba(28,120,255,.28),transparent 30%),
+    radial-gradient(circle at 100% 100%,rgba(104,55,255,.20),transparent 34%),
+    linear-gradient(145deg,#06183f,#092b67)!important
+}
+.teacher-choice:nth-child(4n+1) .teacher-mini-avatar{background:linear-gradient(145deg,#289aff,#0867df)!important}
+.teacher-choice:nth-child(4n+2) .teacher-mini-avatar{background:linear-gradient(145deg,#29d6a4,#00a87c)!important}
+.teacher-choice:nth-child(4n+3) .teacher-mini-avatar{background:linear-gradient(145deg,#a25cff,#7135df)!important}
+.teacher-choice:nth-child(4n+4) .teacher-mini-avatar{background:linear-gradient(145deg,#ffb933,#f27d14)!important}
+
+.lesson-tabs button:nth-child(1).active{background:linear-gradient(145deg,#2598ff,#0870eb)!important}
+.lesson-tabs button:nth-child(2).active{background:linear-gradient(145deg,#2bd5a4,#00a87b)!important}
+.lesson-tabs button:nth-child(3).active{background:linear-gradient(145deg,#9d5bff,#7032df)!important}
+.lesson-tabs button:nth-child(4).active{background:linear-gradient(145deg,#ffb533,#f27d15)!important}
+
+.explanation-card{
+  background:
+    radial-gradient(circle at 94% 0,rgba(31,137,255,.08),transparent 27%),
+    linear-gradient(145deg,#fff,#f7fbff)!important
+}
+.resources-card{
+  background:
+    radial-gradient(circle at 94% 0,rgba(126,65,247,.09),transparent 27%),
+    linear-gradient(145deg,#fff,#faf7ff)!important
+}
+.lesson-notes-card{
+  background:
+    radial-gradient(circle at 94% 0,rgba(255,169,34,.09),transparent 27%),
+    linear-gradient(145deg,#fff,#fffaf2)!important
+}
+.quiz-engine,.quiz-intro-card,.quiz-result{
+  background:
+    radial-gradient(circle at 94% 0,rgba(0,189,137,.09),transparent 27%),
+    linear-gradient(145deg,#fff,#f5fffb)!important
+}
+.quiz-option-v3{
+  min-height:54px!important;
+}
+.quiz-option-v3:hover{
+  border-color:#8bbef2!important;
+  background:linear-gradient(145deg,#f4f9ff,#eaf4ff)!important
+}
+.quiz-option-v3.selected{
+  border-color:#55a5f7!important;
+  background:linear-gradient(145deg,#e8f5ff,#d7ebff)!important;
+  box-shadow:0 9px 18px rgba(20,111,229,.13),inset 0 1px 0 #fff!important
+}
+
+.explore-hero-inner{
+  background:
+    radial-gradient(circle at 82% 14%,rgba(77,200,255,.36),transparent 29%),
+    radial-gradient(circle at 15% 110%,rgba(128,69,255,.24),transparent 33%),
+    linear-gradient(135deg,#083997,#0876f4 60%,#0d9bea)!important
+}
+.explore-type.active{
+  background:linear-gradient(145deg,#e8f5ff,#d1e8ff)!important;border-color:#73b6f7!important
+}
+.explore-stage-tabs button:nth-child(1).active{background:linear-gradient(145deg,#e8f5ff,#cfe8ff)!important;color:#0b6ee4!important}
+.explore-stage-tabs button:nth-child(2).active{background:linear-gradient(145deg,#edfff8,#d0f7e8)!important;color:#009a72!important}
+.explore-stage-tabs button:nth-child(3).active{background:linear-gradient(145deg,#f7efff,#e4d2ff)!important;color:#793ee5!important}
+.explore-subject-card:nth-child(5n+1){background:linear-gradient(145deg,#fff1f5,#ffd5e1)!important}
+.explore-subject-card:nth-child(5n+2){background:linear-gradient(145deg,#edf7ff,#d6ebff)!important}
+.explore-subject-card:nth-child(5n+3){background:linear-gradient(145deg,#edfff8,#d0f7e8)!important}
+.explore-subject-card:nth-child(5n+4){background:linear-gradient(145deg,#fff9e7,#ffe8aa)!important}
+.explore-subject-card:nth-child(5n+5){background:linear-gradient(145deg,#f7efff,#e5d3ff)!important}
+
+@media(max-width:520px){
+  .curriculum-item{min-height:66px!important}
+  .curriculum-item .lesson-number,.curriculum-item .item-icon{width:38px!important;height:38px!important}
+}
