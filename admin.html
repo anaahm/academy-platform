@@ -308,6 +308,23 @@
               <label><span>اسم المنصة</span><input id="settingSiteName" placeholder="الأكاديمية"></label>
               <label><span>رقم واتساب للدعم</span><input id="settingWhatsapp" dir="ltr" placeholder="201xxxxxxxxx"></label>
               <label class="full"><span>رابط الشعار</span><input id="settingLogo" dir="ltr" placeholder="https://..."></label>
+
+              <div class="full admin-dashboard-cover-settings">
+                <div class="admin-cover-settings-head">
+                  <div>
+                    <span class="section-kicker">واجهة الطالب</span>
+                    <h3>غلاف لوحة الطالب</h3>
+                    <p>اترك الرابط فارغًا لاستخدام الغلاف الافتراضي الموجود داخل المنصة.</p>
+                  </div>
+                  <button class="btn btn-soft" type="button" id="resetDashboardHero"><i class="fa-solid fa-rotate-left"></i> استعادة الافتراضي</button>
+                </div>
+                <div class="admin-cover-preview" id="settingDashboardHeroPreview" role="img" aria-label="معاينة غلاف لوحة الطالب">
+                  <span>معاينة الغلاف</span>
+                </div>
+                <label><span>رابط صورة الغلاف</span><input id="settingDashboardHero" type="url" dir="ltr" placeholder="https://example.com/cover.jpg"></label>
+              </div>
+
+              <label class="full"><span>النص أسفل الترحيب في الغلاف</span><input id="settingDashboardHeroSubtitle" maxlength="140" placeholder="كل يوم هو فرصة جديدة للتعلم وتقترب من أهدافك"></label>
               <label class="full"><span>نبذة عن المنصة</span><textarea id="settingAbout"></textarea></label>
               <button class="btn btn-primary full" type="submit">حفظ الإعدادات</button>
             </form>
