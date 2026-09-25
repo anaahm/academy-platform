@@ -21,9 +21,9 @@ function render(){
  $('progressMinutes').textContent=stats.studyMinutes||0;
  $('progressStreak').textContent=stats.streak||0;
 
- const subjects=C.subjectsFor(data,profile.stage,String(profile.grade),profile.educationType),sp=profile.subjectProgress||{};
+ const subjects=C.subjectsFor(data,profile.stage,String(profile.grade),profile.educationType);
  $('subjectProgressList').innerHTML=subjects.length?subjects.map(s=>{
-   const p=Math.max(0,Math.min(100,Number(sp[s.id]||0)));
+   const p=Math.max(0,Math.min(100,C.subjectProgressValue(profile,s.id)));
    return '<a class="subject-progress-row" href="'+subjectHref(s.id)+'" aria-label="'+C.esc(s.name)+'، تقدم '+p+' بالمئة">'+
      '<strong>'+C.esc((s.emoji||'📚')+' '+s.name)+'</strong>'+
      '<div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+p+'"><span style="width:'+p+'%"></span></div>'+
