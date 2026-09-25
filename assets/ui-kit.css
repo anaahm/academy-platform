@@ -605,3 +605,33 @@ article:hover>.stat-icon,.feature-card:hover .feature-card-icon,.library-card:ho
   .feature-hero-art,.explore-hero-art,.ui-page-loader-mark{animation:none!important}
   .btn,.icon-btn,.feature-card,.profile-card,.teacher-card,.unit-card,.community-post,.feature-stat-row article{transition:none!important}
 }
+
+/* Premium 3D student mobile sheet refinement */
+.student-more-sheet{
+  border:1px solid rgba(255,255,255,.9)!important;
+  background:
+    radial-gradient(circle at 90% 0,rgba(68,148,255,.09),transparent 28%),
+    linear-gradient(145deg,#fff,#f5f9ff)!important;
+  box-shadow:0 28px 75px rgba(17,52,111,.27),inset 0 1px 0 #fff!important
+}
+.student-more-close{
+  border:1px solid #dce6f3!important;background:linear-gradient(145deg,#fff,#edf4fb)!important;
+  box-shadow:0 6px 13px rgba(31,73,139,.09),inset 0 1px 0 #fff!important
+}
+.student-more-grid a{
+  position:relative;overflow:hidden;
+  border:1px solid #dfe8f4!important;background:linear-gradient(145deg,#fff,#f7faff)!important;
+  box-shadow:0 7px 16px rgba(31,73,139,.06),inset 0 1px 0 #fff!important;
+  transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease!important
+}
+.student-more-grid a:hover{
+  transform:translateY(-3px)!important;border-color:#cbdcf0!important;
+  box-shadow:0 12px 23px rgba(31,73,139,.105),inset 0 1px 0 #fff!important
+}
+.student-more-grid>a>i{
+  background:linear-gradient(145deg,#2b98ff,#0e65dc)!important;color:#fff!important;
+  border:1px solid rgba(255,255,255,.65);
+  box-shadow:0 7px 14px rgba(20,105,220,.18),inset 0 2px 0 rgba(255,255,255,.34),inset 0 -3px 5px rgba(8,67,151,.12)!important;
+  transition:transform .17s ease
+}
+.student-more-grid a:hover>i{transform:translateY(-3px) rotate(-4deg)}
