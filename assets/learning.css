@@ -1183,3 +1183,133 @@ button.curriculum-item{cursor:pointer}
   .curriculum-item{min-height:66px!important}
   .curriculum-item .lesson-number,.curriculum-item .item-icon{width:38px!important;height:38px!important}
 }
+
+/* High contrast subject hero and custom images 2026 */
+.subject-hero-card{
+  min-height:360px!important;
+  grid-template-columns:minmax(0,1.45fr) minmax(290px,.55fr)!important;
+  gap:34px!important;
+  padding:38px!important;
+  background:
+    radial-gradient(circle at 88% 14%,rgba(83,178,255,.44),transparent 27%),
+    linear-gradient(135deg,#0747b8 0%,#0b74ea 58%,#19a6ee 100%)!important;
+}
+.subject-hero-card.has-custom-subject-image{
+  background-blend-mode:normal!important;
+}
+.subject-hero-copy{align-self:center}
+.subject-mini-label{
+  background:rgba(255,255,255,.18)!important;
+  color:#fff!important;
+  border:1px solid rgba(255,255,255,.42)!important;
+  font-size:12px!important;
+  padding:8px 13px!important;
+  box-shadow:0 6px 15px rgba(0,39,110,.16),inset 0 1px 0 rgba(255,255,255,.34)!important;
+  text-shadow:0 1px 2px rgba(0,34,95,.22)
+}
+.subject-title-row{gap:19px!important;margin:18px 0 26px!important}
+.subject-big-emoji{
+  width:88px!important;height:88px!important;border-radius:24px!important;
+  font-size:43px!important;overflow:hidden!important;
+  background:linear-gradient(145deg,#fff,#dfeeff)!important;
+  box-shadow:0 18px 30px rgba(2,40,107,.28),inset 0 2px 0 #fff!important
+}
+.subject-big-emoji img{width:100%;height:100%;object-fit:cover;display:block}
+.subject-title-row h1{
+  color:#fff!important;font-size:46px!important;font-weight:900!important;
+  text-shadow:0 4px 14px rgba(0,35,99,.30)!important;letter-spacing:-.02em
+}
+.subject-title-row p{
+  color:#fff!important;font-size:15px!important;font-weight:700!important;line-height:1.85!important;
+  text-shadow:0 2px 7px rgba(0,34,95,.30)!important;max-width:760px
+}
+.subject-progress-meta{
+  color:#fff!important;font-size:13px!important;font-weight:900!important;
+  text-shadow:0 2px 6px rgba(0,34,95,.25)!important
+}
+.subject-progress-meta strong{color:#fff!important;font-size:13px!important}
+.subject-progress-track{
+  height:12px!important;background:rgba(255,255,255,.28)!important;
+  border:1px solid rgba(255,255,255,.26)!important;
+  box-shadow:inset 0 2px 5px rgba(0,31,92,.20),0 1px 0 rgba(255,255,255,.16)!important
+}
+.subject-progress-track>span{
+  background:linear-gradient(90deg,#45f1d2 0%,#5fe8ff 50%,#9f85ff 100%)!important;
+  box-shadow:0 0 18px rgba(86,231,255,.45)!important
+}
+.subject-certificate-btn{
+  color:#0a438f!important;background:#fff!important;
+  font-size:10px!important;font-weight:900!important;padding:8px 13px!important;
+}
+
+.subject-hero-stats{gap:14px!important}
+.subject-hero-stats article{
+  min-height:82px!important;padding:14px 16px!important;
+  border-radius:20px!important;
+  background:linear-gradient(145deg,#fff,#edf5ff)!important;
+  border:1px solid rgba(255,255,255,.86)!important;
+  box-shadow:0 15px 28px rgba(0,43,116,.18),inset 0 2px 0 #fff!important
+}
+.subject-hero-stats article:nth-child(1){background:linear-gradient(145deg,#dcedff,#f5faff)!important}
+.subject-hero-stats article:nth-child(2){background:linear-gradient(145deg,#d4fff1,#f2fffb)!important}
+.subject-hero-stats article:nth-child(3){background:linear-gradient(145deg,#eadbff,#f9f4ff)!important}
+.subject-hero-stats article:nth-child(4){background:linear-gradient(145deg,#ffe7aa,#fff8df)!important}
+.subject-hero-stats strong{
+  color:#102458!important;font-size:24px!important;font-weight:900!important;
+  line-height:1.15!important;text-shadow:none!important
+}
+.subject-hero-stats small{
+  color:#3e527b!important;font-size:10px!important;font-weight:900!important
+}
+.subject-next-stat strong{
+  font-size:14px!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;
+  line-height:1.5!important
+}
+.stat-badge{
+  width:52px!important;height:52px!important;border-radius:16px!important;
+  color:#fff!important;font-size:17px!important
+}
+.stat-badge.blue{background:linear-gradient(145deg,#2fa0ff,#0d69df)!important}
+.stat-badge.green{background:linear-gradient(145deg,#25d1a1,#06a27a)!important}
+.stat-badge.violet{background:linear-gradient(145deg,#a263ff,#7436df)!important}
+.stat-badge.amber{background:linear-gradient(145deg,#ffb52a,#f18412)!important}
+
+.resume-card,.weekly-card,.explore-card{
+  color:#102458!important
+}
+.resume-card h3,.weekly-card h3,.explore-card h3{font-size:18px!important;color:#102458!important;font-weight:900!important}
+.resume-card p,.weekly-card p,.explore-card p{font-size:11px!important;color:#4e6388!important;font-weight:700!important;line-height:1.8!important}
+.section-kicker{color:#186fd8!important;font-weight:900!important}
+.resume-icon{
+  width:54px!important;height:54px!important;border-radius:17px!important;
+  background:linear-gradient(145deg,#2d9cff,#0c65dc)!important;color:#fff!important;
+  box-shadow:0 11px 21px rgba(20,105,220,.22),inset 0 2px 0 rgba(255,255,255,.35)!important
+}
+.weekly-card .sidebar-card-head>span{font-size:28px;filter:drop-shadow(0 8px 8px rgba(123,88,0,.16))}
+.weekly-progress{font-size:11px!important}.weekly-progress strong{color:#102458!important}.weekly-progress span{color:#53698e!important}
+.mini-progress{height:9px!important;background:#e7edf6!important}.mini-progress span{background:linear-gradient(90deg,#20c79a,#188af1)!important}
+
+.explorer-subject-item .emoji img{
+  width:100%;height:100%;object-fit:cover;border-radius:12px;display:block
+}
+.explorer-subject-item.has-image .emoji{padding:0!important;overflow:hidden!important}
+
+@media(max-width:980px){
+  .subject-hero-card{grid-template-columns:1fr!important;min-height:auto!important}
+  .subject-hero-stats{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+}
+@media(max-width:720px){
+  .subject-hero-card{padding:22px!important}
+  .subject-title-row h1{font-size:34px!important}
+  .subject-title-row p{font-size:12px!important}
+  .subject-hero-stats{grid-template-columns:1fr 1fr!important}
+}
+@media(max-width:480px){
+  .subject-hero-card{padding:17px!important}
+  .subject-big-emoji{width:68px!important;height:68px!important;border-radius:19px!important}
+  .subject-title-row h1{font-size:28px!important}
+  .subject-title-row p{font-size:11px!important}
+  .subject-hero-stats article{min-height:72px!important;padding:11px!important}
+  .subject-hero-stats strong{font-size:20px!important}
+  .subject-next-stat strong{font-size:12px!important}
+}
