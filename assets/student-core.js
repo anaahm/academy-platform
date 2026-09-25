@@ -26,6 +26,15 @@ const gradeLabel=(s,g)=>gradeNames[s]?.[g]||'';
 const lessonUrl=(ctx,id)=>'./lesson.html?'+new URLSearchParams({type:ctx.type,stage:ctx.stage,grade:String(ctx.grade),subject:ctx.subject,id}).toString();
 const quizUrl=(ctx,id)=>'./lesson.html?'+new URLSearchParams({type:ctx.type,stage:ctx.stage,grade:String(ctx.grade),subject:ctx.subject,quiz:id}).toString();
 const subjectUrl=ctx=>'./subject.html?'+new URLSearchParams({type:ctx.type,stage:ctx.stage,grade:String(ctx.grade),subject:ctx.subject}).toString();
+const localDateKey=(date=new Date())=>date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+function subjectProgressValue(profile,subject,ctx={}){
+ const type=ctx.type||profile?.educationType||'public',stage=ctx.stage||profile?.stage||'prep',grade=String(ctx.grade||profile?.grade||1);
+ const contextual=profile?.subjectProgressV3?.[type]?.[stage]?.[grade]?.[subject];
+ return contextual===undefined||contextual===null?Number(profile?.subjectProgress?.[subject]||0):Number(contextual||0);
+}
+function subjectProgressPath(ctx,subject){
+ return 'subjectProgressV3/'+(ctx.type||'public')+'/'+(ctx.stage||'prep')+'/'+String(ctx.grade||1)+'/'+subject;
+}
 
 function toast(msg,type='success'){
  let el=document.getElementById('toast');
@@ -66,11 +75,10 @@ async function requireStudent(){
 async function updateProfile(uid,patch){await db.ref('studentProfilesV3/'+uid).update(patch)}
 function currentCtx(profile,subject=''){return{type:profile.educationType||'public',stage:profile.stage||'prep',grade:String(profile.grade||1),subject}}
 function leaderboardKeys(date=new Date()){
-  const iso=date.toISOString().slice(0,10);
-  const month=iso.slice(0,7);
-  const d=new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth(),date.getUTCDate()));
-  const day=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()-day+1);
-  const week=d.toISOString().slice(0,10);
+  const d=new Date(date);d.setHours(12,0,0,0);
+  const iso=localDateKey(d),month=iso.slice(0,7);
+  const monday=new Date(d),day=(monday.getDay()+6)%7;monday.setDate(monday.getDate()-day);
+  const week=localDateKey(monday);
   return{daily:'daily-'+iso,weekly:'weekly-'+week,monthly:'monthly-'+month,allTime:'allTime'};
 }
 async function addLeaderboardXP(uid,name,delta=0,quizDelta=0){
@@ -87,5 +95,5 @@ async function syncAllTimeLeaderboard(uid,profile){
   await db.ref('leaderboardV3/allTime/'+uid).update({name:profile?.name||'طالب',xp:Number(stats.totalXP||0),quizzes:Number(stats.completedQuizzes||0),level:Number(stats.level||1),updatedAt:Date.now()});
 }
 
-window.AcademyCore={auth,db,esc,safeUrl,initials,typeLabel,stageLabel,gradeLabel,lessonUrl,quizUrl,subjectUrl,toast,getProfile,subjectsFor,subjectName,requireStudent,updateProfile,currentCtx,leaderboardKeys,addLeaderboardXP,syncAllTimeLeaderboard,stageNames,gradeNames,defaultSubjects};
+window.AcademyCore={auth,db,esc,safeUrl,initials,typeLabel,stageLabel,gradeLabel,lessonUrl,quizUrl,subjectUrl,toast,getProfile,subjectsFor,subjectName,requireStudent,updateProfile,currentCtx,localDateKey,subjectProgressValue,subjectProgressPath,leaderboardKeys,addLeaderboardXP,syncAllTimeLeaderboard,stageNames,gradeNames,defaultSubjects};
 })();
