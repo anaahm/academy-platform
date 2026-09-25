@@ -346,7 +346,9 @@
         <label><span>الصف</span><select id="subjectGrade"></select></label>
         <label><span>اسم المادة</span><input id="subjectName" required></label>
         <label><span>رمز المادة</span><input id="subjectId" required placeholder="مثال: arabic_plus"></label>
-        <label><span>الإيموجي</span><input id="subjectEmoji" value="📚"></label>
+        <label><span>الإيموجي الافتراضي</span><input id="subjectEmoji" value="📚"></label>
+        <label class="full"><span>صورة المادة — اختياري</span><input id="subjectImageUrl" type="url" dir="ltr" placeholder="https://example.com/subject-cover.jpg"></label>
+        <div class="full admin-subject-image-preview" id="subjectImagePreview" role="img" aria-label="معاينة صورة المادة"><span>سيظهر التصميم التلقائي عند عدم إضافة صورة</span></div>
         <label class="full"><span>الوحدات — كل وحدة في سطر</span><textarea id="subjectUnits" placeholder="الوحدة الأولى&#10;الوحدة الثانية"></textarea></label>
         <button class="btn btn-primary full" type="submit">حفظ المادة</button>
       </form>
