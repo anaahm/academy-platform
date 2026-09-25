@@ -1,15 +1,15 @@
-const CACHE='academy-shell-2026-09-25-v27';
+const CACHE='academy-shell-2026-09-25-v28';
 const CORE=[
  './','./index.html','./offline.html',
  './explore.html','./search.html','./news.html','./subject.html','./lesson.html','./profile.html',
  './exam-center.html','./simulations.html','./progress.html','./planner.html','./assignments.html','./weekly-report.html','./schedule.html',
- './library.html','./live.html','./community.html','./leaderboard.html','./notifications.html','./certificate.html',
- './assets/styles.css','./assets/learning.css','./assets/portal.css','./assets/hub.css','./assets/search.css','./assets/news.css','./assets/certificate.css','./assets/ui-kit.css',
+ './library.html','./live.html','./community.html','./leaderboard.html','./notifications.html','./certificate.html','./admin.html','./teacher.html',
+ './assets/styles.css','./assets/learning.css','./assets/portal.css','./assets/hub.css','./assets/search.css','./assets/news.css','./assets/certificate.css','./assets/admin.css','./assets/ui-kit.css',
  './assets/ui-kit.js','./assets/student-shell.js','./assets/firebase-config.js','./assets/auth-flow.js','./assets/student-core.js',
  './assets/app.js','./assets/learning.js','./assets/explore.js','./assets/search.js','./assets/news.js','./assets/profile.js',
  './assets/exam-center.js','./assets/simulations.js','./assets/progress.js','./assets/planner.js','./assets/assignments.js','./assets/weekly-report.js','./assets/schedule.js',
  './assets/library.js','./assets/live.js','./assets/community.js','./assets/leaderboard.js','./assets/notification-engine.js','./assets/notifications.js','./assets/notification-widget.js',
- './assets/activity-tracker.js','./assets/pwa.js','./assets/dashboard-hero.jpg','./assets/app-icon.svg','./manifest.webmanifest'
+ './assets/activity-tracker.js','./assets/teacher.js','./assets/pwa.js','./assets/dashboard-hero.jpg','./assets/app-icon.svg','./manifest.webmanifest'
 ];
 
 self.addEventListener('install',event=>{
