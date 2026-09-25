@@ -48,7 +48,7 @@ function subjectsFor(data,stage,grade,type){
  const list=[...(defaultSubjects[stage]||[])],custom=data?.customSubjects?.[stage]?.[grade],arr=Array.isArray(custom)?custom:Object.values(custom||{});
  arr.forEach(s=>{
    if(!s?.id||!s?.name||(s.type&&s.type!==type))return;
-   const i=list.findIndex(x=>x.id===s.id),item={id:s.id,name:s.name,emoji:s.emoji||'📚',units:s.units||[]};
+   const i=list.findIndex(x=>x.id===s.id),item={id:s.id,name:s.name,emoji:s.emoji||'📚',imageUrl:s.imageUrl||'',units:s.units||[]};
    if(i>=0)list[i]={...list[i],...item};else list.push(item);
  });
  return list;
