@@ -798,3 +798,86 @@
   .teacher-grid{grid-template-columns:1fr!important}
   .teacher-stat-grid,.profile-stat-grid{grid-template-columns:1fr 1fr!important}
 }
+
+/* Vivid portal layer 2026 */
+.profile-hero{
+  background:
+    radial-gradient(circle at 85% 10%,rgba(80,204,255,.38),transparent 28%),
+    radial-gradient(circle at 12% 110%,rgba(126,66,255,.24),transparent 33%),
+    linear-gradient(135deg,#083a96,#0878f4 58%,#0ca0ee)!important
+}
+.profile-avatar-wrap{width:96px!important;height:96px!important}
+.profile-stat-grid article:nth-child(4n+1){background:linear-gradient(145deg,#eef7ff,#d9ebff)!important;border-color:#b9dcff!important}
+.profile-stat-grid article:nth-child(4n+2){background:linear-gradient(145deg,#effff9,#cff7e8)!important;border-color:#9ce9d0!important}
+.profile-stat-grid article:nth-child(4n+3){background:linear-gradient(145deg,#fff9e7,#ffe7aa)!important;border-color:#ffd36e!important}
+.profile-stat-grid article:nth-child(4n+4){background:linear-gradient(145deg,#f8efff,#e7d3ff)!important;border-color:#d1b0ff!important}
+.profile-card:nth-child(4n+1){
+  background:
+    radial-gradient(circle at 92% 0,rgba(31,139,255,.09),transparent 27%),
+    linear-gradient(145deg,#fff,#f4f9ff)!important
+}
+.profile-card:nth-child(4n+2){
+  background:
+    radial-gradient(circle at 92% 0,rgba(0,188,134,.09),transparent 27%),
+    linear-gradient(145deg,#fff,#f4fff9)!important
+}
+.profile-card:nth-child(4n+3){
+  background:
+    radial-gradient(circle at 92% 0,rgba(128,64,244,.09),transparent 27%),
+    linear-gradient(145deg,#fff,#faf5ff)!important
+}
+.profile-card:nth-child(4n+4){
+  background:
+    radial-gradient(circle at 92% 0,rgba(255,174,34,.10),transparent 27%),
+    linear-gradient(145deg,#fff,#fffaf1)!important
+}
+.profile-nav-card button:nth-child(6n+1) i{color:#0b7cf2}
+.profile-nav-card button:nth-child(6n+2) i{color:#00a979}
+.profile-nav-card button:nth-child(6n+3) i{color:#7b40e7}
+.profile-nav-card button:nth-child(6n+4) i{color:#ee8616}
+.profile-nav-card button:nth-child(6n+5) i{color:#e83e5b}
+.profile-nav-card button:nth-child(6n+6) i{color:#0796a0}
+.profile-nav-card button.active i{color:#fff!important}
+.badge-grid>*:nth-child(4n+1){background:linear-gradient(145deg,#eef7ff,#ddecff)!important}
+.badge-grid>*:nth-child(4n+2){background:linear-gradient(145deg,#effff9,#d9f8ec)!important}
+.badge-grid>*:nth-child(4n+3){background:linear-gradient(145deg,#f8f1ff,#eadcff)!important}
+.badge-grid>*:nth-child(4n+4){background:linear-gradient(145deg,#fff9e9,#ffeabb)!important}
+
+.teacher-welcome{
+  background:
+    radial-gradient(circle at 86% 10%,rgba(79,202,255,.37),transparent 28%),
+    radial-gradient(circle at 14% 110%,rgba(129,65,255,.24),transparent 32%),
+    linear-gradient(135deg,#083995,#0877f3 58%,#0b9fee)!important
+}
+.teacher-stat-grid article:nth-child(4n+1){background:linear-gradient(145deg,#eef7ff,#d7eaff)!important;border-color:#b7daff!important}
+.teacher-stat-grid article:nth-child(4n+2){background:linear-gradient(145deg,#fff5ea,#ffdeb4)!important;border-color:#ffc98d!important}
+.teacher-stat-grid article:nth-child(4n+3){background:linear-gradient(145deg,#effff9,#cef7e7)!important;border-color:#9be9d0!important}
+.teacher-stat-grid article:nth-child(4n+4){background:linear-gradient(145deg,#f8efff,#e7d3ff)!important;border-color:#cfafff!important}
+.teacher-card:nth-child(4n+1){
+  background:
+    radial-gradient(circle at 92% 0,rgba(31,139,255,.08),transparent 27%),
+    linear-gradient(145deg,#fff,#f4f9ff)!important
+}
+.teacher-card:nth-child(4n+2){
+  background:
+    radial-gradient(circle at 92% 0,rgba(0,188,134,.08),transparent 27%),
+    linear-gradient(145deg,#fff,#f4fff9)!important
+}
+.teacher-card:nth-child(4n+3){
+  background:
+    radial-gradient(circle at 92% 0,rgba(128,64,244,.08),transparent 27%),
+    linear-gradient(145deg,#fff,#faf5ff)!important
+}
+.teacher-card:nth-child(4n+4){
+  background:
+    radial-gradient(circle at 92% 0,rgba(255,174,34,.09),transparent 27%),
+    linear-gradient(145deg,#fff,#fffaf1)!important
+}
+.teacher-homework-card:nth-child(4n+1){border-right:4px solid #1688f7!important}
+.teacher-homework-card:nth-child(4n+2){border-right:4px solid #00ad7d!important}
+.teacher-homework-card:nth-child(4n+3){border-right:4px solid #7b40e7!important}
+.teacher-homework-card:nth-child(4n+4){border-right:4px solid #ee8717!important}
+
+@media(max-width:700px){
+  .profile-avatar-wrap{width:80px!important;height:80px!important}
+}
