@@ -563,7 +563,8 @@ function renderDashboardHeroSettingPreview(){
  const preview=$('settingDashboardHeroPreview');if(!preview)return;
  const value=$('settingDashboardHero')?.value.trim()||'';
  const safe=safeAdminImageUrl(value);
- preview.style.backgroundImage='linear-gradient(90deg,rgba(7,35,111,.88),rgba(11,64,171,.34),rgba(6,28,85,.04)),url("'+esc(safe||'./assets/dashboard-hero.jpg')+'")';
+ const image=(safe||'./assets/dashboard-hero.jpg').replace(/"/g,'%22');
+ preview.style.backgroundImage='linear-gradient(90deg,rgba(7,35,111,.88),rgba(11,64,171,.34),rgba(6,28,85,.04)),url("'+image+'")';
  preview.classList.toggle('custom',!!safe);
  preview.querySelector('span').textContent=safe?'معاينة الغلاف المخصص':'الغلاف الافتراضي';
 }
