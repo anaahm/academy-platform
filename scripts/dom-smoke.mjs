@@ -43,7 +43,7 @@ async function check(file,role='student',failurePath=''){
  const user=role==='guest'?null:{uid:'tester',displayName:'اختبار',email:'test@example.test',updateProfile:async()=>{},reload:async()=>{}};
  const auth={currentUser:user,onAuthStateChanged:fn=>{callbacks.push(fn);return ()=>{}},setPersistence:async()=>{},signInWithEmailAndPassword:async()=>{auth.currentUser={uid:'tester',email:'test@example.test'};for(const fn of callbacks)await fn(auth.currentUser);return {user:auth.currentUser}},sendPasswordResetEmail:async()=>{},signOut:async()=>{auth.currentUser=null;for(const fn of callbacks)await fn(null)}};
  const secondaryApps=[];
- w.firebase={apps:[],initializeApp:(_config,name)=>{if(name){const secondaryAuth={setPersistence:async()=>{},createUserWithEmailAndPassword:async(email,password)=>{assert.ok(password.length>=8);return {user:{uid:'newTeacher',email,delete:async()=>{}}}},signOut:async()=>{}};const app={auth:()=>secondaryAuth,delete:async()=>{}};secondaryApps.push(app);return app}w.firebase.apps.push({});return {auth:()=>auth}},auth:Object.assign(()=>auth,{Auth:{Persistence:{LOCAL:'local',NONE:'none'}},EmailAuthProvider:{credential:()=>({})}}),database:Object.assign(()=>({ref}),{ServerValue:{TIMESTAMP:Date.now(),increment:n=>n}})};
+ w.firebase={apps:[],initializeApp:(_config,name)=>{if(name==='teacher-portal'){const app={name,auth:()=>auth,database:()=>({ref})};w.firebase.apps.push(app);return app}if(name){const secondaryAuth={setPersistence:async()=>{},createUserWithEmailAndPassword:async(email,password)=>{assert.ok(password.length>=8);return {user:{uid:'newTeacher',email,delete:async()=>{}}}},signOut:async()=>{}};const app={name,auth:()=>secondaryAuth,delete:async()=>{}};secondaryApps.push(app);return app}w.firebase.apps.push({name:'[DEFAULT]'});return {auth:()=>auth}},auth:Object.assign(()=>auth,{Auth:{Persistence:{LOCAL:'local',NONE:'none'}},EmailAuthProvider:{credential:()=>({})}}),database:Object.assign(()=>({ref}),{ServerValue:{TIMESTAMP:Date.now(),increment:n=>n}})};
  const unhandled=e=>errors.push(String(e?.stack||e));process.on('unhandledRejection',unhandled);
  try{
   for(const script of w.document.querySelectorAll('script[src]')){
@@ -88,8 +88,13 @@ async function check(file,role='student',failurePath=''){
    assert.equal(get('teacherProfiles/newTeacher/name'),'مدرس جديد');assert.equal(get('teacherProfiles/newTeacher/email'),'newteacher@example.test');
    assert.equal(JSON.stringify(database).includes('long-secure-password'),false,'teacher password never stored in database');
    assert.equal(auth.currentUser?.uid,'tester','admin session stays active');assert.equal(secondaryApps.length,1);
+   auth.currentUser={uid:'newTeacher',email:'newteacher@example.test'};
+   for(const cb of [...callbacks])await cb(auth.currentUser);
+   assert.equal(auth.currentUser.uid,'newTeacher','admin page must not sign out a teacher in another tab');
+   assert.equal(w.document.getElementById('adminApp').classList.contains('hidden'),true,'admin view stays protected');
   }
   if(file==='teacher.html'){
+   assert.ok(w.firebase.apps.some(app=>app.name==='teacher-portal'),'teacher portal uses its own Firebase auth session');
    if(role==='guest'){
     assert.equal(w.document.getElementById('teacherLoginForm').classList.contains('hidden'),false);
     w.document.getElementById('teacherLoginEmail').value='test@example.test';w.document.getElementById('teacherLoginPassword').value='correct-password';

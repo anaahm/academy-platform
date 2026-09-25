@@ -38,14 +38,15 @@ async function showForUser(user){
   try{
     const ok=await isAdmin(user);
     if(!ok){
-      notify('هذا الحساب ليس له صلاحية مدير.','error');
-      await auth.signOut();
+      app?.classList.add('hidden');login?.classList.remove('hidden');
+      notify('هذا الحساب ليس له صلاحية مدير. سجّل الدخول بحساب الإدارة إذا أردت فتح اللوحة.','error');
       return false;
     }
     login?.classList.add('hidden');app?.classList.remove('hidden');
     return true;
   }catch(err){
     console.error('Admin permission check failed',err);
+    app?.classList.add('hidden');login?.classList.remove('hidden');
     notify('تعذر التحقق من صلاحية الإدارة. راجع اتصال Firebase وقواعد قاعدة البيانات.','error');
     return false;
   }

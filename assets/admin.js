@@ -825,12 +825,15 @@ refreshAssignmentSubjects();
 
 auth.onAuthStateChanged(async user=>{
  currentUser=user;
- if(!user){if(unsubscribe){unsubscribe();unsubscribe=null}stopAdminListeners();root={};window.AcademyUI?.hidePageLoading();$('adminApp').classList.add('hidden');$('adminLogin').classList.remove('hidden');return}
+ if(unsubscribe){unsubscribe();unsubscribe=null}
+ stopAdminListeners();root={};
+ if(!user){window.AcademyUI?.hidePageLoading();$('adminApp').classList.add('hidden');$('adminLogin').classList.remove('hidden');return}
  window.AcademyUI?.showPageLoading('جاري التحقق من صلاحيات الإدارة وتحميل البيانات...');
  try{
    const ok=await verifyAdmin(user);
-   if(!ok){toast('هذا الحساب ليس له صلاحية مدير.','error');await auth.signOut();return}
+   if(auth.currentUser?.uid!==user.uid)return;
+   if(!ok){window.AcademyUI?.hidePageLoading();$('adminApp').classList.add('hidden');$('adminLogin').classList.remove('hidden');toast('هذا الحساب ليس له صلاحية مدير.','error');return}
    $('adminLogin').classList.add('hidden');$('adminApp').classList.remove('hidden');await startDataListener();
- }catch(err){console.error(err);window.AcademyUI?.hidePageLoading();toast('تعذر التحقق من صلاحية الإدارة.','error');await auth.signOut()}
+ }catch(err){console.error(err);window.AcademyUI?.hidePageLoading();$('adminApp').classList.add('hidden');$('adminLogin').classList.remove('hidden');toast('تعذر التحقق من صلاحية الإدارة.','error')}
 });
 })();

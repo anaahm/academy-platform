@@ -3,8 +3,9 @@
 
 const firebaseConfig = window.ACADEMY_FIREBASE_CONFIG || JSON.parse(localStorage.getItem('academyFirebaseConfig') || 'null');
 if(!firebaseConfig){location.replace('./index.html');return}
-if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth(),db=firebase.database();
+// Keep the teacher's session separate from the admin/student session in other tabs.
+const teacherApp=firebase.apps.find(app=>app.name==='teacher-portal')||firebase.initializeApp(firebaseConfig,'teacher-portal');
+const auth=teacherApp.auth(),db=teacherApp.database();
 const $=id=>document.getElementById(id), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 let user=null,teacher=null,data={},submissions={},analytics={},homeworkAssignments={},assignmentSubmissions={},activeGrade=null,gradeModalTrigger=null;
 const unavailableSubmissions=new Set();
