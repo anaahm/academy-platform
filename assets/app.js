@@ -601,7 +601,7 @@
     if($('streakSideValue')) $('streakSideValue').textContent=stats.streak;
 
     const palettes=['subject-pink','subject-blue','subject-green','subject-gold','subject-purple','subject-teal'];
-    $('dashboardSubjects').innerHTML = subjects.slice(0,6).map((s,index) => {
+    $('dashboardSubjects').innerHTML = subjects.slice(0,5).map((s,index) => {
       const progress = Math.max(0, Math.min(100, subjectProgressOf(p,s.id)));
       const q = new URLSearchParams({
         type: p.educationType,
@@ -636,7 +636,7 @@
         location.href = p.lastLessonId ? './lesson.html?' + q.toString() : './subject.html?' + q.toString();
       };
       $('continueLearningBtn').onclick=go;
-      $('continuePlayBtn')?.addEventListener('click',go,{once:true});
+      if($('continuePlayBtn')) $('continuePlayBtn').onclick=go;
     }
 
     loadDailyGoals();
