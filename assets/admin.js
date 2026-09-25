@@ -552,8 +552,46 @@ function loadAnnouncement(){
  if(a.expiry)$('announcementDays').value=Math.max(1,Math.ceil((a.expiry-Date.now())/86400000));
 }
 async function saveAnnouncement(e){e.preventDefault();const days=Math.max(1,Number($('announcementDays').value||3));await db.ref('announcements').set({text:$('announcementText').value.trim(),isActive:$('announcementActive').checked,expiry:Date.now()+days*86400000,updatedAt:Date.now()});toast('تم حفظ الإعلان')}
-function loadSettings(){const s=root.settings||{};$('settingSiteName').value=s.siteName||'الأكاديمية';$('settingWhatsapp').value=s.whatsapp||'';$('settingLogo').value=s.siteLogo||'';$('settingAbout').value=s.aboutText||''}
-async function saveSettings(e){e.preventDefault();await db.ref('settings').update({siteName:$('settingSiteName').value.trim(),whatsapp:$('settingWhatsapp').value.trim(),siteLogo:$('settingLogo').value.trim(),aboutText:$('settingAbout').value.trim(),updatedAt:Date.now()});toast('تم حفظ الإعدادات')}
+function safeAdminImageUrl(value=''){
+ try{
+   if(!value)return'';
+   const u=new URL(value,location.href);
+   return ['http:','https:'].includes(u.protocol)?u.href:'';
+ }catch{return''}
+}
+function renderDashboardHeroSettingPreview(){
+ const preview=$('settingDashboardHeroPreview');if(!preview)return;
+ const value=$('settingDashboardHero')?.value.trim()||'';
+ const safe=safeAdminImageUrl(value);
+ preview.style.backgroundImage='linear-gradient(90deg,rgba(7,35,111,.88),rgba(11,64,171,.34),rgba(6,28,85,.04)),url("'+esc(safe||'./assets/dashboard-hero.jpg')+'")';
+ preview.classList.toggle('custom',!!safe);
+ preview.querySelector('span').textContent=safe?'معاينة الغلاف المخصص':'الغلاف الافتراضي';
+}
+function loadSettings(){
+ const s=root.settings||{};
+ $('settingSiteName').value=s.siteName||'الأكاديمية';
+ $('settingWhatsapp').value=s.whatsapp||'';
+ $('settingLogo').value=s.siteLogo||'';
+ $('settingDashboardHero').value=s.dashboardHeroUrl||'';
+ $('settingDashboardHeroSubtitle').value=s.dashboardHeroSubtitle||'كل يوم هو فرصة جديدة للتعلم وتقترب من أهدافك';
+ $('settingAbout').value=s.aboutText||'';
+ renderDashboardHeroSettingPreview();
+}
+async function saveSettings(e){
+ e.preventDefault();
+ const heroValue=$('settingDashboardHero').value.trim();
+ if(heroValue&&!safeAdminImageUrl(heroValue))return toast('رابط صورة الغلاف غير صحيح.','error');
+ await db.ref('settings').update({
+   siteName:$('settingSiteName').value.trim(),
+   whatsapp:$('settingWhatsapp').value.trim(),
+   siteLogo:$('settingLogo').value.trim(),
+   dashboardHeroUrl:heroValue,
+   dashboardHeroSubtitle:$('settingDashboardHeroSubtitle').value.trim()||'كل يوم هو فرصة جديدة للتعلم وتقترب من أهدافك',
+   aboutText:$('settingAbout').value.trim(),
+   updatedAt:Date.now()
+ });
+ toast('تم حفظ الإعدادات وتحديث غلاف لوحة الطالب');
+}
 
 /* Pending + auth */
 function updatePendingBadge(){
@@ -632,6 +670,12 @@ bindAdminForm('scheduleEventForm',saveScheduleEvent,'حفظ الموعد');
 bindAdminForm('studyGroupForm',saveStudyGroup,'إنشاء المجموعة');
 bindAdminForm('announcementForm',saveAnnouncement,'حفظ الإعلان');
 bindAdminForm('settingsForm',saveSettings,'حفظ الإعدادات');
+$('settingDashboardHero')?.addEventListener('input',renderDashboardHeroSettingPreview);
+$('resetDashboardHero')?.addEventListener('click',()=>{
+  $('settingDashboardHero').value='';
+  renderDashboardHeroSettingPreview();
+  toast('تم اختيار الغلاف الافتراضي. اضغط حفظ الإعدادات لتطبيقه.');
+});
 $('lessonSearch').oninput=renderLessons;$('lessonFilterStage').onchange=renderLessons;$('lessonFilterType').onchange=renderLessons;$('studentSearch').oninput=renderStudents;
 $('curriculumType').onchange=renderCurriculum;$('curriculumStage').onchange=()=>{fillGrades($('curriculumGrade'),$('curriculumStage').value);renderCurriculum()};$('curriculumGrade').onchange=renderCurriculum;
 $('assignType').onchange=refreshAssignmentSubjects;$('assignStage').onchange=refreshAssignmentSubjects;$('assignGrade').onchange=refreshAssignmentSubjects;$('addAssignmentBtn').onclick=addAssignment;
