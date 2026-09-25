@@ -34,9 +34,9 @@
       <form id="adminLoginForm" class="admin-login-card" action="javascript:void(0)">
         <span class="admin-mini-logo"><i class="fa-solid fa-crown"></i></span>
         <h2>تسجيل دخول الإدارة</h2>
-        <p>استخدم حساب المدير المعتمد في Firebase.</p>
-        <label><span>البريد الإلكتروني</span><div class="input-wrap"><i class="fa-regular fa-envelope"></i><input id="adminEmail" type="email" required placeholder="admin@example.com"></div></label>
-        <label><span>كلمة المرور</span><div class="input-wrap"><i class="fa-solid fa-lock"></i><input id="adminPassword" type="password" required minlength="6" placeholder="••••••••"></div></label>
+        <p>استخدم بريد وكلمة مرور حساب المدير الأصلي. حساب المدرس الذي أنشأته لا يفتح لوحة الإدارة.</p>
+        <label><span>البريد الإلكتروني</span><div class="input-wrap"><i class="fa-regular fa-envelope"></i><input id="adminEmail" type="email" required autocomplete="username" placeholder="admin@example.com"></div></label>
+        <label><span>كلمة المرور</span><div class="input-wrap"><i class="fa-solid fa-lock"></i><input id="adminPassword" type="password" required minlength="6" autocomplete="current-password" placeholder="••••••••"></div></label>
         <button class="btn btn-primary btn-block btn-lg" id="adminLoginBtn" type="submit">دخول لوحة الإدارة</button>
         <button class="link-btn admin-reset-link" id="adminResetPassword" type="button">نسيت كلمة المرور؟</button>
       </form>
@@ -468,7 +468,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="./assets/firebase-config.js"></script>
-  <script src="./assets/admin-auth-flow.js?v=32"></script>
+  <script src="./assets/admin-auth-flow.js?v=33"></script>
   <script src="./assets/admin.js?v=32"></script>
   <script src="./assets/admin-notifications.js"></script>
 </body>

@@ -21,13 +21,18 @@ function messageFor(error){
   const code=error?.code||'';
   const map={
     'auth/invalid-email':'صيغة البريد الإلكتروني غير صحيحة.',
-    'auth/user-not-found':'لا يوجد حساب بهذا البريد.',
-    'auth/wrong-password':'كلمة المرور غير صحيحة.',
+    'auth/user-not-found':'البريد الإلكتروني أو كلمة المرور غير صحيحة. استخدم حساب المدير.',
+    'auth/wrong-password':'البريد الإلكتروني أو كلمة المرور غير صحيحة. استخدم حساب المدير.',
+    'auth/invalid-credential':'البريد الإلكتروني أو كلمة المرور غير صحيحة. استخدم حساب المدير.',
     'auth/invalid-login-credentials':'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
     'auth/too-many-requests':'محاولات كثيرة. انتظر قليلًا ثم حاول مرة أخرى.',
     'auth/network-request-failed':'تعذر الاتصال بالإنترنت.'
   };
-  return map[code]||error?.message||'تعذر تسجيل الدخول.';
+  if(map[code])return map[code];
+  // Some Firebase SDK versions return raw REST JSON under auth/internal-error.
+  if(/INVALID_LOGIN_CREDENTIALS|INVALID_PASSWORD|EMAIL_NOT_FOUND/i.test(String(error?.message||'')))
+    return 'البريد الإلكتروني أو كلمة المرور غير صحيحة. استخدم حساب المدير الأصلي، أو اضغط «نسيت كلمة المرور؟».';
+  return 'تعذر تسجيل الدخول. حاول مرة أخرى، وإذا استمر الخطأ تحقق من إعدادات Firebase Authentication.';
 }
 async function isAdmin(user){
   const snap=await db.ref('adminProfiles/'+user.uid).once('value');
