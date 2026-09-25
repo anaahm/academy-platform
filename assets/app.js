@@ -120,9 +120,9 @@
       custom.forEach(s => {
         if (!s || !s.id || !s.name) return;
         if (s.type && s.type !== type) return;
-        if (!base.some(x => x.id === s.id)) {
-          base.push({ id:s.id, name:s.name, emoji:s.emoji || '⭐' });
-        }
+        const item={id:s.id,name:s.name,emoji:s.emoji||'⭐',imageUrl:s.imageUrl||'',units:s.units||[]};
+        const i=base.findIndex(x=>x.id===s.id);
+        if(i>=0)base[i]={...base[i],...item};else base.push(item);
       });
     }
     return base;
@@ -609,8 +609,9 @@
         grade: String(p.grade),
         subject: s.id
       });
-      return `<a class="ref-subject-card ${palettes[index%palettes.length]}" href="./subject.html?${q.toString()}" aria-label="فتح مادة ${safeHtml(s.name)}">
-        <div class="ref-subject-art"><span>${safeHtml(s.emoji || '📚')}</span><i></i></div>
+      const subjectImage=safeDashboardImage(s.imageUrl||'');
+      return `<a class="ref-subject-card ${palettes[index%palettes.length]} ${subjectImage?'has-image':''}" href="./subject.html?${q.toString()}" aria-label="فتح مادة ${safeHtml(s.name)}">
+        <div class="ref-subject-art">${subjectImage?'<img src="'+safeHtml(subjectImage)+'" alt="" loading="lazy">':'<span>'+safeHtml(s.emoji || '📚')+'</span>'}<i></i></div>
         <h3>${safeHtml(s.name)}</h3>
         <div class="ref-subject-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}"><span style="width:${progress}%"></span></div>
         <div class="ref-subject-footer"><small>${progress}%</small><strong>ادخل المادة <i class="fa-solid fa-chevron-left"></i></strong></div>
@@ -672,7 +673,11 @@
     Object.entries(customSubjects).forEach(([stage, grades]) => {
       Object.values(grades || {}).forEach(arr => {
         if (!Array.isArray(arr)) return;
-        arr.forEach(s => { if (s?.id && s?.name && !seen.has(s.id)) seen.set(s.id,{id:s.id,name:s.name,emoji:s.emoji||'⭐'}); });
+        arr.forEach(s => {
+          if(!s?.id||!s?.name)return;
+          const item={id:s.id,name:s.name,emoji:s.emoji||'⭐',imageUrl:s.imageUrl||''};
+          seen.set(s.id,{...(seen.get(s.id)||{}),...item});
+        });
       });
     });
     return [...seen.values()];
@@ -683,11 +688,13 @@
     const items = subjects || allExplorerSubjects();
     $('explorerSubjectList').innerHTML = items
       .filter(s => !query || s.name.toLowerCase().includes(query))
-      .map(s => `<article class="explorer-subject-item">
-        <span class="emoji">${s.emoji || '📚'}</span>
+      .map(s => {
+        const subjectImage=safeDashboardImage(s.imageUrl||'');
+        return `<article class="explorer-subject-item ${subjectImage?'has-image':''}">
+        <span class="emoji">${subjectImage?'<img src="'+safeHtml(subjectImage)+'" alt="" loading="lazy">':safeHtml(s.emoji || '📚')}</span>
         <div><strong>${s.name}</strong><small>${context || 'متاحة في مراحل مختلفة حسب المنهج'}</small></div>
         <button aria-label="فتح المادة"><i class="fa-solid fa-arrow-left"></i></button>
-      </article>`).join('') || '<p>لا توجد مواد مطابقة.</p>';
+      </article>`;}).join('') || '<p>لا توجد مواد مطابقة.</p>';
   }
 
   function switchExplorerTab(tab) {
