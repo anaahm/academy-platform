@@ -201,41 +201,28 @@
     </section>
 
     <section id="studentDashboard" class="dashboard-shell hidden">
-      <aside class="dashboard-sidebar" id="dashboardSidebar">
+      <aside class="dashboard-sidebar simple-dashboard-sidebar" id="dashboardSidebar">
         <div class="sidebar-brand-row">
           <a class="brand brand-light" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-book-open"></i></span><span class="sidebar-brand-copy"><strong>الأكاديمية</strong><small>مساحتك التعليمية</small></span></a>
-          <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="طي القائمة"><i class="fa-solid fa-angles-right"></i></button>
         </div>
 
-        <nav class="dashboard-nav">
-          <div class="dashboard-nav-group">
-            <span class="dashboard-nav-label">الرئيسية</span>
-            <button class="active" id="dashHomeBtn" data-nav-label="الرئيسية"><i class="fa-solid fa-house"></i><span>الرئيسية</span></button>
-          </div>
-
-          <div class="dashboard-nav-group">
-            <span class="dashboard-nav-label">تعلّم</span>
-            <button id="dashSubjectsBtn" data-nav-label="موادي الدراسية"><i class="fa-solid fa-book-open"></i><span>موادي الدراسية</span></button>
-            <button id="dashTestsBtn" data-nav-label="مركز الاختبارات"><i class="fa-regular fa-circle-check"></i><span>مركز الاختبارات</span></button>
-            <button id="dashAssignmentsBtn" onclick="location.href='./assignments.html'" data-nav-label="الواجبات"><i class="fa-solid fa-clipboard-check"></i><span>الواجبات</span></button>
-          </div>
-
-          <div class="dashboard-nav-group">
-            <span class="dashboard-nav-label">خطتي</span>
-            <button id="dashScheduleBtn" onclick="location.href='./schedule.html'" data-nav-label="جدولي"><i class="fa-regular fa-calendar-days"></i><span>جدولي</span></button>
-            <button id="dashPlannerBtn" data-nav-label="مخطط المذاكرة"><i class="fa-regular fa-calendar-check"></i><span>مخطط المذاكرة</span></button>
-            <button id="dashProgressBtn" data-nav-label="متابعة التقدم"><i class="fa-solid fa-chart-line"></i><span>متابعة التقدم</span></button>
-            <button id="dashWeeklyReportBtn" onclick="location.href='./weekly-report.html'" data-nav-label="التقرير الأسبوعي"><i class="fa-solid fa-chart-column"></i><span>التقرير الأسبوعي</span></button>
-          </div>
+        <nav class="dashboard-nav simple-dashboard-nav" aria-label="التنقل الرئيسي للطالب">
+          <button class="active" id="dashHomeBtn" data-nav-label="الرئيسية"><i class="fa-solid fa-house"></i><span>الرئيسية</span></button>
+          <button id="dashSubjectsBtn" data-nav-label="موادي"><i class="fa-solid fa-book-open"></i><span>موادي</span></button>
+          <button id="dashPlannerBtn" data-nav-label="خطتي"><i class="fa-regular fa-calendar-check"></i><span>خطتي</span></button>
+          <button id="dashAssignmentsBtn" onclick="location.href='./assignments.html'" data-nav-label="الواجبات"><i class="fa-solid fa-clipboard-check"></i><span>الواجبات</span></button>
 
           <div class="dashboard-nav-group dashboard-more-group">
-            <button class="dashboard-more-toggle" id="dashboardMoreToggle"><i class="fa-solid fa-grid-2"></i><span>أدوات إضافية</span><i class="fa-solid fa-chevron-down more-chevron"></i></button>
+            <button class="dashboard-more-toggle" id="dashboardMoreToggle" aria-expanded="false"><i class="fa-solid fa-ellipsis"></i><span>المزيد</span><i class="fa-solid fa-chevron-down more-chevron"></i></button>
             <div class="dashboard-more-menu hidden" id="dashboardMoreMenu">
-              <button id="dashSimulationsBtn" data-nav-label="المحاكيات"><i class="fa-solid fa-stopwatch"></i><span>المحاكيات</span></button>
+              <button id="dashTestsBtn" data-nav-label="الاختبارات"><i class="fa-regular fa-circle-check"></i><span>الاختبارات</span></button>
+              <button id="dashScheduleBtn" onclick="location.href='./schedule.html'" data-nav-label="الجدول"><i class="fa-regular fa-calendar-days"></i><span>الجدول</span></button>
+              <button id="dashProgressBtn" data-nav-label="التقدم"><i class="fa-solid fa-chart-line"></i><span>التقدم</span></button>
               <button id="dashLibraryBtn" data-nav-label="المكتبة"><i class="fa-solid fa-folder-open"></i><span>المكتبة</span></button>
               <button id="dashLiveBtn" data-nav-label="البث المباشر"><i class="fa-solid fa-tower-broadcast"></i><span>البث المباشر</span></button>
-              <button id="dashCommunityBtn" data-nav-label="مجتمع الطلاب"><i class="fa-solid fa-users"></i><span>مجتمع الطلاب</span></button>
-              <button id="dashLeaderboardBtn" data-nav-label="الترتيب العام"><i class="fa-solid fa-ranking-star"></i><span>الترتيب العام</span></button>
+              <button id="dashSimulationsBtn" data-nav-label="المحاكيات"><i class="fa-solid fa-stopwatch"></i><span>المحاكيات</span></button>
+              <button id="dashCommunityBtn" data-nav-label="المجتمع"><i class="fa-solid fa-users"></i><span>المجتمع</span></button>
+              <button id="dashLeaderboardBtn" data-nav-label="المتصدرون"><i class="fa-solid fa-ranking-star"></i><span>المتصدرون</span></button>
               <button id="exploreAllStagesSide" data-nav-label="استكشف المراحل"><i class="fa-regular fa-compass"></i><span>استكشف المراحل</span></button>
             </div>
           </div>
@@ -243,119 +230,81 @@
 
         <div class="dashboard-sidebar-footer">
           <button id="dashProfileBtn" data-nav-label="حسابي"><i class="fa-regular fa-user"></i><span>حسابي</span></button>
-          <button id="dashStudySettingsBtn" data-nav-label="المرحلة والصف"><i class="fa-solid fa-graduation-cap"></i><span>المرحلة والصف</span></button>
           <button id="dashLogoutBtn" class="dashboard-logout-btn" data-nav-label="تسجيل الخروج"><i class="fa-solid fa-arrow-right-from-bracket"></i><span>تسجيل الخروج</span></button>
         </div>
       </aside>
-
       <div class="dashboard-content">
-        <header class="dashboard-topbar">
-          <div class="dashboard-welcome"><button class="dash-mobile-menu" id="dashMobileMenu" aria-label="فتح القائمة"><i class="fa-solid fa-bars"></i></button><div><span class="dashboard-greeting">أهلًا <strong id="dashStudentName">طالبنا</strong> 👋</span><small id="dashTodayLabel">مستمر في رحلتك نحو التميز</small></div></div>
-          <div class="dashboard-actions">
-            <form class="dash-search" id="dashSearchForm" role="search">
-              <i class="fa-solid fa-magnifying-glass"></i>
-              <input id="dashSearchInput" placeholder="ابحث في دروسك..." aria-label="البحث في محتوى المنصة">
-              <button type="submit" class="dash-search-submit" aria-label="بحث"><i class="fa-solid fa-arrow-left"></i></button>
-            </form>
+        <header class="dashboard-topbar simple-dashboard-topbar">
+          <div class="dashboard-welcome">
+            <button class="dash-mobile-menu" id="dashMobileMenu" aria-label="فتح القائمة"><i class="fa-solid fa-bars"></i></button>
+            <div><span class="dashboard-greeting">أهلًا <strong id="dashStudentName">طالبنا</strong> 👋</span><small id="dashTodayLabel">جاهز تكمل من مكانك؟</small></div>
+          </div>
+          <div class="dashboard-actions simple-top-actions">
+            <a class="icon-btn" href="./search.html" aria-label="البحث" title="البحث"><i class="fa-solid fa-magnifying-glass"></i></a>
             <button class="icon-btn" id="dashNotificationBtn" aria-label="الإشعارات" title="الإشعارات"><i class="fa-regular fa-bell"></i></button>
-            <div class="dashboard-account-wrap">
-              <button class="dashboard-account-btn" id="dashAccountBtn">
-                <span class="avatar" id="dashAccountAvatar">ط</span>
-                <span class="dashboard-account-copy"><strong id="dashAccountName">الطالب</strong><small>الحساب</small></span>
-                <i class="fa-solid fa-chevron-down"></i>
-              </button>
-              <div class="dashboard-account-menu hidden" id="dashAccountMenu">
-                <button id="dashAccountProfile"><i class="fa-regular fa-user"></i><span><strong>بيانات الحساب</strong><small>تغيير الاسم وإدارة الحساب</small></span></button>
-                <button id="dashAccountStudy"><i class="fa-solid fa-graduation-cap"></i><span><strong>المرحلة الدراسية</strong><small>تغيير المسار والمرحلة والصف</small></span></button>
-                <button onclick="location.href='./notifications.html'"><i class="fa-regular fa-bell"></i><span><strong>الإشعارات</strong><small>كل التحديثات المهمة</small></span></button>
-                <button id="dashAccountLogout" class="danger"><i class="fa-solid fa-arrow-right-from-bracket"></i><span><strong>تسجيل الخروج</strong><small>إنهاء الجلسة الحالية</small></span></button>
-              </div>
-            </div>
+            <a class="simple-account-avatar" href="./profile.html" aria-label="حسابي" title="حسابي"><span class="avatar" id="dashAccountAvatar">ط</span></a>
           </div>
         </header>
 
-        <div class="dashboard-page">
-          <section class="dashboard-hero-grid">
-            <article class="current-stage-card">
-              <div><span class="card-label">مرحلتك الدراسية الحالية</span><h2 id="currentGradeTitle">الصف الدراسي</h2><p id="currentEducationTitle">المسار التعليمي</p><div class="stage-card-actions"><button class="btn btn-primary" id="exploreAllStagesMain">استكشف جميع المراحل <i class="fa-solid fa-arrow-left"></i></button><button class="btn btn-soft" id="dashChangeStudyBtn"><i class="fa-solid fa-pen"></i> تغيير مرحلتي</button></div></div>
-              <span class="stage-illustration">🏫</span>
-            </article>
-            <article class="level-card"><span class="medal-big">🏅</span><div><span class="card-label">مستواك الآن</span><h3>المستوى <span id="levelNumber">1</span></h3><div class="progress dashboard-xp-progress" id="xpProgressTrack" role="progressbar" aria-label="تقدم المستوى" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0"><span id="xpProgress"></span></div><small><span id="xpValue">0</span> / 1000 XP</small></div></article>
+        <div class="dashboard-page simple-student-home">
+          <section class="simple-home-heading">
+            <div>
+              <span class="simple-eyebrow">مساحتك التعليمية</span>
+              <h1>جاهز تكمل؟</h1>
+              <p><strong id="currentGradeTitle">الصف الدراسي</strong><span>•</span><span id="currentEducationTitle">المسار التعليمي</span></p>
+            </div>
+            <button class="simple-text-action" id="dashChangeStudyBtn"><i class="fa-solid fa-pen"></i> تعديل مرحلتي</button>
           </section>
 
-          <section class="quick-stats">
-            <article><span class="stat-icon green"><i class="fa-solid fa-check"></i></span><div><strong id="completedLessons">0</strong><small>درس مكتمل</small></div></article>
-            <article><span class="stat-icon blue"><i class="fa-regular fa-circle-check"></i></span><div><strong id="completedQuizzes">0</strong><small>اختبار مكتمل</small></div></article>
-            <article><span class="stat-icon orange"><i class="fa-solid fa-fire"></i></span><div><strong id="streakValue">0</strong><small>أيام متتالية</small></div></article>
-            <article><span class="stat-icon violet"><i class="fa-solid fa-star"></i></span><div><strong id="xpStat">0</strong><small>نقطة خبرة</small></div></article>
-          </section>
-
-          <section class="dashboard-action-pulse" id="dashboardActionPulse">
-            <article class="pulse-main-card">
-              <span class="pulse-live-dot"></span>
-              <div class="pulse-copy">
-                <span class="section-kicker">ماذا تفعل الآن؟</span>
-                <h3 id="pulseActionTitle">جاري تجهيز الخطوة الأنسب ليك...</h3>
-                <p id="pulseActionText">هنختارها حسب مهامك ومواعيدك وتقدمك.</p>
+          <section class="simple-focus-grid">
+            <article class="simple-continue-card">
+              <span class="simple-focus-icon primary"><i class="fa-solid fa-play"></i></span>
+              <div class="simple-focus-copy">
+                <span class="simple-card-label">تابع من حيث توقفت</span>
+                <h2 id="continueTitle">اختر أول مادة وابدأ رحلتك</h2>
+                <p id="continueMeta">سنحفظ تقدمك تلقائيًا.</p>
               </div>
-              <button class="btn btn-primary" id="pulseActionBtn">ابدأ الآن <i class="fa-solid fa-arrow-left"></i></button>
+              <button class="btn btn-primary" id="continueLearningBtn">متابعة <i class="fa-solid fa-arrow-left"></i></button>
             </article>
-            <div class="pulse-mini-cards">
-              <article><span class="pulse-mini-icon blue"><i class="fa-regular fa-calendar"></i></span><div><small>القادم</small><strong id="pulseNextTime">—</strong></div></article>
-              <article><span class="pulse-mini-icon amber"><i class="fa-solid fa-bolt"></i></span><div><small>تحدي اليوم</small><strong id="pulseChallengeState">0 / 3</strong></div></article>
+
+            <article class="simple-today-card">
+              <span class="simple-focus-icon soft"><i class="fa-regular fa-calendar"></i></span>
+              <div class="simple-focus-copy">
+                <span class="simple-card-label">اليوم</span>
+                <h3 id="pulseActionTitle">جاري تجهيز أهم خطوة ليك...</h3>
+                <p id="pulseActionText">هنعرض المطلوب الأهم فقط.</p>
+                <small>القادم: <strong id="pulseNextTime">—</strong></small>
+              </div>
+              <button class="simple-link-button" id="pulseActionBtn">ابدأ</button>
+            </article>
+          </section>
+
+          <section class="dashboard-section simple-subjects-section" id="studentSubjects">
+            <div class="simple-section-head">
+              <div><span class="simple-eyebrow">التعلّم</span><h2>موادك</h2></div>
+              <button class="simple-text-action" id="exploreSubjectsDash">استكشف باقي المواد <i class="fa-solid fa-arrow-left"></i></button>
+            </div>
+            <div class="dashboard-subject-grid simple-subject-grid" id="dashboardSubjects"></div>
+          </section>
+
+          <section class="simple-today-links">
+            <div class="simple-section-head">
+              <div><span class="simple-eyebrow">اختصارات</span><h2>محتاج تعمل إيه؟</h2></div>
+            </div>
+            <div class="simple-quick-grid">
+              <a href="./assignments.html"><span><i class="fa-solid fa-clipboard-check"></i></span><strong>الواجبات</strong><small>المطلوب منك</small></a>
+              <a href="./schedule.html"><span><i class="fa-regular fa-calendar-days"></i></span><strong>الجدول</strong><small>حصصك ومواعيدك</small></a>
+              <a href="./planner.html"><span><i class="fa-regular fa-calendar-check"></i></span><strong>خطتي</strong><small>نظّم مذاكرتك</small></a>
+              <a href="./exam-center.html"><span><i class="fa-regular fa-circle-check"></i></span><strong>الاختبارات</strong><small>اختبر نفسك</small></a>
             </div>
           </section>
 
-          <section class="dashboard-section">
-            <div class="dashboard-section-head"><div><span class="section-kicker">مصممة لك</span><h2>موادك الدراسية</h2></div><button class="text-btn" id="exploreSubjectsDash">استكشف مواد أخرى <i class="fa-solid fa-arrow-left"></i></button></div>
-            <div class="dashboard-subject-grid" id="dashboardSubjects"></div>
+          <section class="simple-more-strip">
+            <div><span class="simple-more-icon"><i class="fa-solid fa-grid-2"></i></span><div><strong>أدوات إضافية</strong><small>المكتبة، البث، المجتمع، التقدم والمزيد.</small></div></div>
+            <button class="btn btn-soft" id="openMoreServices">عرض المزيد</button>
           </section>
-
-          <section class="dashboard-bottom-grid">
-            <article class="continue-card">
-              <div class="continue-thumb"><div class="play-button"><i class="fa-solid fa-play"></i></div><span>درس مقترح لك</span></div>
-              <div class="continue-info"><span class="card-label">ابدأ التعلم</span><h3 id="continueTitle">اختر أول مادة وابدأ رحلتك</h3><p id="continueMeta">سنقترح لك الدروس المناسبة حسب مرحلتك.</p><button class="btn btn-primary" id="continueLearningBtn">ابدأ الآن</button></div>
-            </article>
-            <article class="daily-goals interactive-daily-goals">
-              <div class="goal-header">
-                <div><span class="section-kicker">تحدي اليوم</span><h3>3 خطوات صغيرة</h3><p id="dailyGoalMessage">كمّل خطوة واحدة وابدأ سلسلة إنجازك.</p></div>
-                <div class="daily-goal-ring" id="dailyGoalRing"><strong id="dailyGoalPercent">0%</strong></div>
-              </div>
-              <button class="daily-goal-item" data-daily-goal="lesson"><span class="goal-check"><i class="fa-solid fa-play"></i></span><div><strong>شاهد درسًا واحدًا</strong><small>10–20 دقيقة</small></div><i class="fa-regular fa-circle goal-state"></i></button>
-              <button class="daily-goal-item" data-daily-goal="quiz"><span class="goal-check"><i class="fa-solid fa-list-check"></i></span><div><strong>حل تدريبًا قصيرًا</strong><small>5–10 أسئلة</small></div><i class="fa-regular fa-circle goal-state"></i></button>
-              <button class="daily-goal-item" data-daily-goal="review"><span class="goal-check"><i class="fa-solid fa-rotate"></i></span><div><strong>راجع خطأ واحدًا</strong><small>ثبّت المعلومة</small></div><i class="fa-regular fa-circle goal-state"></i></button>
-              <div class="daily-goal-footer"><span id="dailyGoalCount">0 من 3 مكتمل</span><button class="text-btn" id="dailyQuickStart">ابدأ أسرع خطوة <i class="fa-solid fa-arrow-left"></i></button></div>
-            </article>
-          </section>
-          <section class="dashboard-services">
-            <div class="dashboard-section-head"><div><span class="section-kicker">كل أدواتك</span><h2>خدمات الأكاديمية</h2></div></div>
-            <div class="dashboard-service-grid">
-              <a class="dashboard-service-card" href="./exam-center.html"><span class="service-icon green"><i class="fa-solid fa-file-circle-question"></i></span><div><strong>مركز الاختبارات</strong><small>اختبارات الوحدات والشاملة</small></div><i class="fa-solid fa-arrow-left"></i></a>
-              <a class="dashboard-service-card" href="./simulations.html"><span class="service-icon amber"><i class="fa-solid fa-stopwatch"></i></span><div><strong>محاكيات الامتحان</strong><small>تدريب بزمن ونتيجة محفوظة</small></div><i class="fa-solid fa-arrow-left"></i></a>
-              <a class="dashboard-service-card" href="./progress.html"><span class="service-icon blue"><i class="fa-solid fa-chart-line"></i></span><div><strong>متابعة التقدم</strong><small>نتائجك ونشاطك وتحليلاتك</small></div><i class="fa-solid fa-arrow-left"></i></a>
-              <a class="dashboard-service-card" href="./library.html"><span class="service-icon rose"><i class="fa-solid fa-folder-open"></i></span><div><strong>المكتبة</strong><small>ملفات ومذكرات ومراجع</small></div><i class="fa-solid fa-arrow-left"></i></a>
-              <a class="dashboard-service-card" href="./live.html"><span class="service-icon red"><i class="fa-solid fa-tower-broadcast"></i></span><div><strong>البث المباشر</strong><small>الجلسات القادمة والمباشرة</small></div><i class="fa-solid fa-arrow-left"></i></a>
-              <a class="dashboard-service-card" href="./community.html"><span class="service-icon violet"><i class="fa-solid fa-users"></i></span><div><strong>مجتمع الطلاب</strong><small>منتدى ومجموعات دراسة</small></div><i class="fa-solid fa-arrow-left"></i></a>
-              <a class="dashboard-service-card" href="./leaderboard.html"><span class="service-icon indigo"><i class="fa-solid fa-ranking-star"></i></span><div><strong>الترتيب العام</strong><small>تحديات XP يومية وأسبوعية</small></div><i class="fa-solid fa-arrow-left"></i></a>
-              <a class="dashboard-service-card" href="./planner.html"><span class="service-icon blue"><i class="fa-regular fa-calendar-check"></i></span><div><strong>مخطط المذاكرة</strong><small>نظّم مهامك اليومية والأسبوعية</small></div><i class="fa-solid fa-arrow-left"></i></a>
-              <a class="dashboard-service-card" href="./assignments.html"><span class="service-icon green"><i class="fa-solid fa-clipboard-check"></i></span><div><strong>الواجبات</strong><small>تابع المطلوب وسلّم للمدرس</small></div><i class="fa-solid fa-arrow-left"></i></a>
-              <a class="dashboard-service-card" href="./schedule.html"><span class="service-icon violet"><i class="fa-regular fa-calendar-days"></i></span><div><strong>جدولي الذكي</strong><small>حصصك والبث ومهام المذاكرة</small></div><i class="fa-solid fa-arrow-left"></i></a>
-              <a class="dashboard-service-card" href="./weekly-report.html"><span class="service-icon orange"><i class="fa-solid fa-chart-column"></i></span><div><strong>التقرير الأسبوعي</strong><small>تحليل أسبوعك وخطة التحسن</small></div><i class="fa-solid fa-arrow-left"></i></a>
-              <a class="dashboard-service-card" href="./notifications.html"><span class="service-icon red"><i class="fa-regular fa-bell"></i></span><div><strong>مركز الإشعارات</strong><small>الواجبات والمواعيد والتحديثات</small></div><i class="fa-solid fa-arrow-left"></i></a>
-              <a class="dashboard-service-card" href="./search.html"><span class="service-icon slate"><i class="fa-solid fa-magnifying-glass"></i></span><div><strong>البحث الذكي</strong><small>ابحث في كل محتوى المنصة</small></div><i class="fa-solid fa-arrow-left"></i></a>
-            </div>
-          </section>
-
         </div>
       </div>
-
-      <nav class="mobile-bottom-nav">
-        <button class="active" id="mobileHomeBtn"><i class="fa-solid fa-house"></i><span>الرئيسية</span></button>
-        <button id="mobileSubjectsBtn"><i class="fa-solid fa-book-open"></i><span>تعلم</span></button>
-        <button id="mobileTestsBtn"><i class="fa-regular fa-circle-check"></i><span>اختبارات</span></button>
-        <button id="mobileExploreBtn"><i class="fa-regular fa-compass"></i><span>استكشف</span></button>
-        <button id="mobileProfileBtn"><i class="fa-regular fa-user"></i><span>حسابي</span></button>
-      </nav>
     </section>
   </main>
 
