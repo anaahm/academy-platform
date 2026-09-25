@@ -70,7 +70,7 @@ function itemCard(x){
  const time=new Date(x.at).toLocaleTimeString('ar-EG',{hour:'numeric',minute:'2-digit'});
  const href=x.kind==='class'?(x.url?C.safeUrl(x.url):''):x.url;
  const external=href&&href.startsWith('http');
- const open=href?'<a class="schedule-open" href="'+href+'" '+(external?'target="_blank" rel="noopener noreferrer"':'')+' aria-label="فتح '+C.esc(x.title)+'"><i class="fa-solid fa-arrow-up-left-from-square"></i></a>':'';
+ const open=href?'<a class="schedule-open" href="'+C.esc(href)+'" '+(external?'target="_blank" rel="noopener noreferrer"':'')+' aria-label="فتح '+C.esc(x.title)+'"><i class="fa-solid fa-arrow-up-left-from-square"></i></a>':'';
  return '<article class="schedule-item '+x.kind+' '+(x.done?'done':'')+'"><span class="schedule-kind-icon"><i class="fa-solid '+kindIcon(x.kind)+'"></i></span><div><span class="schedule-time">'+time+' • '+x.duration+' د</span><h4>'+C.esc(x.title)+'</h4><p>'+kindLabel(x.kind)+(x.teacher?' • '+C.esc(x.teacher):'')+(x.done?' • مكتملة':'')+'</p></div>'+open+'</article>';
 }
 $$('[data-schedule-filter]').forEach(b=>b.onclick=()=>{

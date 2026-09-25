@@ -322,7 +322,7 @@ async function saveLesson(e){
    questions=JSON.parse($('newLessonQuestions').value.trim()||'[]');
    if(!Array.isArray(questions))throw new Error();
  }catch{return toast('صيغة JSON لأسئلة الدرس غير صحيحة.','error')}
- questions=questions.filter(q=>q?.text&&Array.isArray(q.opts)&&q.opts.length>=2&&Number.isInteger(Number(q.correctAnswer)));
+ try{questions=window.AcademyUtils.validateQuestions(questions)}catch(err){return toast(err.message,'error')}
  const payload={type:$('newLessonType').value,stage:$('newLessonStage').value,grade:$('newLessonGrade').value,subject:$('newLessonSubject').value,unit:Number($('newLessonUnit').value||1),title:$('newLessonTitle').value.trim(),content:$('newLessonContent').value.trim(),imageUrl:$('newLessonImage').value.trim(),imagePosition:$('newLessonImagePosition').value,videos,questions,isLocked:existing?.isLocked||false,isHidden:$('newLessonHidden').checked};
  if(editState.lesson){payload.updatedAt=Date.now();await db.ref('lessons/'+editState.lesson).update(payload);toast('تم تحديث الدرس')}
  else{payload.createdAt=Date.now();await db.ref('lessons').push(payload);toast('تم نشر الدرس')}
@@ -344,7 +344,8 @@ function editQuiz(id){
 async function saveQuiz(e){
  e.preventDefault();let questions=[];
  try{questions=JSON.parse($('newQuizQuestions').value.trim()||'[]');if(!Array.isArray(questions))throw new Error()}catch{return toast('صيغة JSON للأسئلة غير صحيحة.','error')}
- questions=questions.filter(q=>q?.text&&Array.isArray(q.opts)&&q.opts.length>=2&&Number.isInteger(Number(q.correctAnswer)));
+ try{questions=window.AcademyUtils.validateQuestions(questions)}catch(err){return toast(err.message,'error')}
+ if(!questions.length)return toast('أضف سؤالًا صحيحًا واحدًا على الأقل.','error');
  const payload={type:$('newQuizType').value,stage:$('newQuizStage').value,grade:$('newQuizGrade').value,subject:$('newQuizSubject').value,unit:Number($('newQuizUnit').value||0),name:$('newQuizName').value.trim(),questions,isHidden:editState.quiz?!!root.quizzes?.[editState.quiz]?.isHidden:false};
  if(editState.quiz){payload.updatedAt=Date.now();await db.ref('quizzes/'+editState.quiz).update(payload);toast('تم تحديث الاختبار')}else{payload.createdAt=Date.now();await db.ref('quizzes').push(payload);toast('تم حفظ الاختبار')}
  closeModal('quizModal');resetQuizEditor();

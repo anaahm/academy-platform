@@ -2,7 +2,7 @@
 'use strict';
 if(!window.AcademyNotifications)return;
 const auth=firebase.auth();
-let currentUser=null,timer=null;
+let currentUser=null,timer=null,refreshing=false;
 
 function setBadge(button,count){
   if(!button)return;
@@ -20,13 +20,15 @@ function addCenterLink(){
   }
 }
 async function refresh(){
-  if(!currentUser)return;
+  if(!currentUser||refreshing||document.hidden||!navigator.onLine)return;
+  const uid=currentUser.uid;refreshing=true;
   try{
     const result=await window.AcademyNotifications.loadNotifications(currentUser);
+    if(currentUser?.uid!==uid)return;
     setBadge(document.getElementById('notificationBtn'),result.unread);
     setBadge(document.getElementById('dashNotificationBtn'),result.unread);
     addCenterLink();
-  }catch(e){console.warn('Notification badge update failed',e)}
+  }catch(e){console.warn('Notification badge update failed',e)}finally{refreshing=false}
 }
 document.addEventListener('click',e=>{
   const btn=e.target.closest('#notificationBtn,#dashNotificationBtn');

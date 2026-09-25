@@ -92,7 +92,7 @@ function renderSubjects(){
  $('exploreSubjectGrid').innerHTML=subjects.map(s=>{
    const counts=countContent(s.id);
    const image=safeImageUrl(s.imageUrl||'');
-   return '<a class="explore-subject-card '+(image?'has-image':'')+'" href="'+subjectUrl(s.id)+'"><span class="explore-subject-emoji">'+(image?'<img src="'+esc(image)+'" alt="" loading="lazy">':esc(s.emoji||'📚'))+'</span><div><h3>'+esc(s.name)+'</h3><p>'+counts.lessons+' درس • '+counts.quizzes+' اختبار</p></div><span class="explore-open"><i class="fa-solid fa-arrow-left"></i></span></a>';
+   return '<a class="explore-subject-card '+(image?'has-image':'')+'" href="'+subjectUrl(s.id)+'"><span class="explore-subject-emoji">'+(image?'<img data-subject-image data-fallback="'+esc(s.emoji||'📚')+'" src="'+esc(image)+'" alt="" loading="lazy">':esc(s.emoji||'📚'))+'</span><div><h3>'+esc(s.name)+'</h3><p>'+counts.lessons+' درس • '+counts.quizzes+' اختبار</p></div><span class="explore-open"><i class="fa-solid fa-arrow-left"></i></span></a>';
  }).join('')||'<div class="empty-state"><span>🔎</span><h3>لا توجد مادة مطابقة</h3><p>جرّب كلمة أقصر أو صفًا آخر.</p></div>';
 }
 async function loadAndRenderSubjects(){

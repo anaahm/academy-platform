@@ -24,7 +24,7 @@
       "$uid": {
         ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
         "$submissionId": {
-          ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (auth.uid === $uid && ((!data.exists() && newData.child('status').val() === 'pending') || (data.child('status').val() === 'pending' && newData.child('status').val() === 'pending'))))"
+          ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (auth.uid === $uid && root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true && ((!data.exists() && newData.child('status').val() === 'pending') || (data.child('status').val() === 'pending' && newData.child('status').val() === 'pending'))))"
         }
       }
     },
@@ -221,7 +221,9 @@
           "gradedBy": {
             ".validate": "!newData.exists() || newData.isString()"
           }
-        }
+        },
+        ".read": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (root.child('assignments').child($assignmentId).child('teacherId').val() === auth.uid && root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true))",
+        ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (root.child('assignments').child($assignmentId).child('teacherId').val() === auth.uid && root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true && !newData.exists()))"
       }
     },
     "scheduleEvents": {

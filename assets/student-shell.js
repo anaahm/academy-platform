@@ -1,5 +1,7 @@
 (() => {
 'use strict';
+window.AcademyStudentShell=true;
+let moreCleanup=null;
 
 const path=(location.pathname.split('/').pop()||'index.html').toLowerCase();
 const groups={
@@ -12,6 +14,7 @@ const groups={
 function activeFor(key){return groups[key]?.includes(path)}
 
 function closeMore(){
+  moreCleanup?.();moreCleanup=null;
   const backdrop=document.querySelector('.student-more-backdrop');
   const sheet=document.querySelector('.student-more-sheet');
   if(!backdrop||!sheet)return;
@@ -53,6 +56,7 @@ function openMore(trigger){
     if(e.key==='Escape'){closeMore();document.removeEventListener('keydown',onKey);setTimeout(()=>trigger?.focus(),0)}
   };
   document.addEventListener('keydown',onKey);
+  moreCleanup=()=>{document.removeEventListener('keydown',onKey);if(trigger?.isConnected)trigger.focus()};
 }
 
 function injectMobileNav(){
@@ -75,11 +79,11 @@ function injectMobileNav(){
 function injectIndexNavWhenReady(){
   const dash=document.getElementById('studentDashboard');
   if(!dash){injectMobileNav();return}
-  if(!dash.classList.contains('hidden')){injectMobileNav();return}
-  const observer=new MutationObserver(()=>{
-    if(!dash.classList.contains('hidden')){injectMobileNav();observer.disconnect()}
-  });
-  observer.observe(dash,{attributes:true,attributeFilter:['class']});
+  const sync=()=>{
+    if(!dash.classList.contains('hidden'))injectMobileNav();
+    else{document.querySelector('.student-mobile-nav')?.remove();closeMore()}
+  };
+  sync();new MutationObserver(sync).observe(dash,{attributes:true,attributeFilter:['class']});
 }
 function enhancePageAvatar(){
   const avatar=document.getElementById('pageAvatar');if(!avatar||avatar.dataset.profileShortcut==='1')return;

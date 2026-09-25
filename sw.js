@@ -1,9 +1,10 @@
-const CACHE='academy-shell-2026-09-25-v28';
+const CACHE='academy-shell-2026-09-25-v29';
 const CORE=[
  './','./index.html','./offline.html',
  './explore.html','./search.html','./news.html','./subject.html','./lesson.html','./profile.html',
  './exam-center.html','./simulations.html','./progress.html','./planner.html','./assignments.html','./weekly-report.html','./schedule.html',
  './library.html','./live.html','./community.html','./leaderboard.html','./notifications.html','./certificate.html','./admin.html','./teacher.html',
+ './assets/experience.css','./assets/academy-utils.js',
  './assets/styles.css','./assets/learning.css','./assets/portal.css','./assets/hub.css','./assets/search.css','./assets/news.css','./assets/certificate.css','./assets/admin.css','./assets/ui-kit.css',
  './assets/ui-kit.js','./assets/student-shell.js','./assets/firebase-config.js','./assets/auth-flow.js','./assets/student-core.js',
  './assets/app.js','./assets/learning.js','./assets/explore.js','./assets/search.js','./assets/news.js','./assets/profile.js',
@@ -13,12 +14,11 @@ const CORE=[
 ];
 
 self.addEventListener('install',event=>{
- event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).catch(()=>{}));
- self.skipWaiting();
+ event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()));
 });
 
 self.addEventListener('activate',event=>{
- event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
+ event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('academy-shell-')&&k!==CACHE).map(k=>caches.delete(k)))));
  self.clients.claim();
 });
 

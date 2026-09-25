@@ -22,7 +22,7 @@ const defaults={
 };
 const esc=(v='')=>String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const initials=(n='طالب')=>(n.trim()[0]||'ط').toUpperCase();
-const safeUrl=(u='')=>{try{const x=new URL(u,location.href);return ['http:','https:'].includes(x.protocol)?x.href:''}catch{return''}};
+const safeUrl=(u='')=>window.AcademyUtils.safeUrl(u);
 const localDateKey=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const quizXpTarget=score=>Number(score)>=80?40:20;
 
@@ -142,7 +142,7 @@ function renderSubject(){
  $('subjectTitle').textContent=state.subject.name;
  const hero=document.querySelector('.subject-hero-card'),rawImage=state.subject.imageUrl||'',safeImage=(()=>{try{if(!rawImage)return'';const u=new URL(rawImage,location.href);return ['http:','https:'].includes(u.protocol)?u.href:''}catch{return''}})();
  if($('subjectEmoji')){
-   $('subjectEmoji').innerHTML=safeImage?'<img src="'+esc(safeImage)+'" alt="" loading="lazy">':esc(state.subject.emoji||'📚');
+   $('subjectEmoji').innerHTML=safeImage?'<img data-subject-image data-fallback="'+esc(state.subject.emoji||'📚')+'" src="'+esc(safeImage)+'" alt="" loading="lazy">':esc(state.subject.emoji||'📚');
    $('subjectEmoji').classList.toggle('has-subject-image',!!safeImage);
  }
  if(hero){
@@ -449,7 +449,7 @@ async function toggleBookmark(c,id){
 }
 
 function updateProgress(id){
- const complete=done(id),value=complete?100:35;
+ const complete=done(id),value=complete?100:0;
  $('lessonProgressBar').style.width=value+'%';$('lessonProgressText').textContent=complete?'أحسنت! أكملت هذا الدرس ويمكنك مراجعته في أي وقت.':'شاهد الشرح ثم حل التدريب، وبعدها علّم الدرس كمكتمل.';
  $('lessonProgressTrack')?.setAttribute('aria-valuenow',String(value));
  $('lessonStatusIcon').classList.toggle('complete',complete);$('lessonStatusIcon').innerHTML=complete?'<i class="fa-solid fa-check"></i>':'<i class="fa-regular fa-circle"></i>';
@@ -458,46 +458,52 @@ function updateProgress(id){
  $('markCompleteHeader').setAttribute('aria-pressed',complete?'true':'false');
  $('markCompleteHeader').title=complete?'الدرس مكتمل':'تعليم كمكتمل';
 }
+let completingLesson=false;
 async function markComplete(c,id){
  if(!state.user){toast('سجّل الدخول أولًا لحفظ تقدمك.','error');return}
- if(done(id)){toast('هذا الدرس مكتمل بالفعل ✨');return}
+ if(completingLesson||done(id))return;
+ completingLesson=true;
  const btn=$('markCompleteBtn'),head=$('markCompleteHeader');
  window.AcademyUI?.setButtonLoading(btn,true,'حفظ التقدم');if(head)head.disabled=true;
  try{
-   const at=Date.now();
-   await db.ref('studentProfilesV3/'+state.user.uid+'/learningProgress/'+id).update({completed:true,completedAt:at,subject:c.subject});
-   await db.ref('studentProfilesV3/'+state.user.uid+'/dailyGoals/'+localDateKey()+'/lesson').set(true);
-   await db.ref('studentProfilesV3/'+state.user.uid+'/stats').transaction(s=>{s=s||{};s.completedLessons=(s.completedLessons||0)+1;s.totalXP=(s.totalXP||0)+50;s.level=Math.floor((s.totalXP||0)/1000)+1;return s});
-   if(window.AcademyCore?.addLeaderboardXP)await window.AcademyCore.addLeaderboardXP(state.user.uid,state.profile?.name||state.user.displayName||'طالب',50,0);
-   state.profile.learningProgress=state.profile.learningProgress||{};state.profile.learningProgress[id]={completed:true,completedAt:at,subject:c.subject};
-   const subjectPct=progress(),contextPath='studentProfilesV3/'+state.user.uid+'/subjectProgressV3/'+c.type+'/'+c.stage+'/'+String(c.grade)+'/'+c.subject;
-   await db.ref(contextPath).set(subjectPct);
-   state.profile.subjectProgressV3=state.profile.subjectProgressV3||{};
-   state.profile.subjectProgressV3[c.type]=state.profile.subjectProgressV3[c.type]||{};
-   state.profile.subjectProgressV3[c.type][c.stage]=state.profile.subjectProgressV3[c.type][c.stage]||{};
-   state.profile.subjectProgressV3[c.type][c.stage][String(c.grade)]=state.profile.subjectProgressV3[c.type][c.stage][String(c.grade)]||{};
-   state.profile.subjectProgressV3[c.type][c.stage][String(c.grade)][c.subject]=subjectPct;
-   const isOwnContext=c.type===(state.profile.educationType||'public')&&c.stage===state.profile.stage&&String(c.grade)===String(state.profile.grade);
-   if(isOwnContext){
-     await db.ref('studentProfilesV3/'+state.user.uid+'/subjectProgress/'+c.subject).set(subjectPct);
-     state.profile.subjectProgress=state.profile.subjectProgress||{};state.profile.subjectProgress[c.subject]=subjectPct;
+   const at=Date.now(),date=localDateKey();
+   const result=await db.ref('studentProfilesV3/'+state.user.uid).transaction(profile=>{
+     if(!profile)return;
+     if(profile.learningProgress?.[id]?.completed)return;
+     profile.learningProgress=profile.learningProgress||{};
+     profile.learningProgress[id]={completed:true,completedAt:at,subject:c.subject};
+     profile.dailyGoals=profile.dailyGoals||{};profile.dailyGoals[date]=profile.dailyGoals[date]||{};profile.dailyGoals[date].lesson=true;
+     const stats=profile.stats=profile.stats||{};
+     stats.completedLessons=Number(stats.completedLessons||0)+1;stats.totalXP=Number(stats.totalXP||0)+50;stats.level=Math.floor(stats.totalXP/1000)+1;
+     const pct=state.lessons.length?Math.round(state.lessons.filter(l=>profile.learningProgress[l.id]?.completed).length/state.lessons.length*100):0;
+     const progress=profile.subjectProgressV3=profile.subjectProgressV3||{};
+     progress[c.type]=progress[c.type]||{};progress[c.type][c.stage]=progress[c.type][c.stage]||{};
+     progress[c.type][c.stage][c.grade]=progress[c.type][c.stage][c.grade]||{};progress[c.type][c.stage][c.grade][c.subject]=pct;
+     if(c.type===(profile.educationType||'public')&&c.stage===profile.stage&&String(c.grade)===String(profile.grade)){
+       profile.subjectProgress=profile.subjectProgress||{};profile.subjectProgress[c.subject]=pct;
+     }
+     Object.assign(profile,{lastLessonTitle:state.currentLesson?.title||'',lastLessonId:id,lastSubjectId:c.subject,lastActiveAt:at});
+     return profile;
+   });
+   state.profile=result.snapshot.val()||state.profile;
+   if(!result.committed){toast('هذا الدرس مكتمل بالفعل.');return}
+   if(window.AcademyCore?.addLeaderboardXP){
+     try{await window.AcademyCore.addLeaderboardXP(state.user.uid,state.profile.name||'طالب',50,0)}
+     catch(err){console.warn('Leaderboard sync deferred',err);toast('حُفظ تقدمك؛ تعذر تحديث ترتيبك الآن.','error')}
    }
-   await db.ref('studentProfilesV3/'+state.user.uid).update({lastLessonTitle:state.currentLesson?.title||'',lastLessonId:id,lastSubjectId:c.subject,lastActiveAt:Date.now()});
-   trackContentEvent(id,'completions');
-   updateProgress(id);renderOutline(c,state.currentLesson);toast('رائع! +50 XP وتم حفظ تقدمك 🎉');showLessonCelebration(c,id,50);
- }catch(err){
-   console.error(err);toast('تعذر حفظ تقدم الدرس الآن. حاول مرة أخرى.','error');
- }finally{
-   if(window.AcademyUI)window.AcademyUI.setButtonLoading(btn,false);else if(btn)btn.disabled=false;
-   if(head)head.disabled=done(id);
-   updateProgress(id);
+   trackContentEvent(id,'completions');renderOutline(c,state.currentLesson);
+   toast('رائع! +50 XP وتم حفظ تقدمك 🎉');showLessonCelebration(c,id,50);
+ }catch(err){console.error(err);toast('تعذر حفظ تقدم الدرس الآن. حاول مرة أخرى.','error')}
+ finally{
+   completingLesson=false;window.AcademyUI?.setButtonLoading(btn,false);
+   if(head)head.disabled=done(id);updateProgress(id);
  }
 }
 function setupQuiz(c,l){
  const qs=Array.isArray(l.questions)?l.questions:[];$('quizIntroText').textContent=qs.length?'تدريب مكوّن من '+qs.length+' سؤال على هذا الدرس.':'لا توجد أسئلة مضافة لهذا الدرس حتى الآن.';$('startQuizBtn').disabled=!qs.length;$('startQuizBtn').onclick=()=>startQuiz(qs,c,l.id);$('retryQuizBtn').onclick=()=>startQuiz(qs,c,l.id);$('reviewLessonBtn').onclick=()=>$$('[data-lesson-tab]').find(b=>b.dataset.lessonTab==='explanation')?.click();
 }
 function startQuiz(qs,c,sourceId){
- const ok=qs.filter(q=>q&&Array.isArray(q.opts)&&q.opts.length>=2);if(!ok.length){toast('لا توجد أسئلة قابلة للتشغيل حاليًا.','error');return}
+ let ok;try{ok=window.AcademyUtils.validateQuestions(qs)}catch(err){toast(err.message,'error');return}if(!ok.length){toast('لا توجد أسئلة قابلة للتشغيل حاليًا.','error');return}
  state.quiz={questions:ok,answers:new Array(ok.length).fill(null),c,sourceId};state.quizIndex=0;$('quizIntro').classList.add('hidden');$('quizResult').classList.add('hidden');$('quizEngine').classList.remove('hidden');renderQuestion();
 }
 function renderQuestion(){
@@ -518,29 +524,27 @@ async function finishQuiz(){
  trackContentEvent(qz.sourceId,'quiz',pct);
  if(!state.user)return;
  try{
-   const history=Object.values(state.profile?.quizHistory||{}).filter(x=>x?.sourceId===qz.sourceId);
-   const firstAttempt=!history.length;
-   const previousTarget=history.length?Math.max(...history.map(x=>quizXpTarget(Number(x.score||0)))):0;
-   const target=quizXpTarget(pct),gained=Math.max(0,target-previousTarget),quizDelta=firstAttempt?1:0;
-   const rec={
-     sourceId:qz.sourceId,sourceType:state.currentLesson?'lesson':'quiz',
-     title:state.currentQuiz?.name||state.currentLesson?.title||'اختبار',
-     subject:qz.c?.subject||'',unit:Number(state.currentQuiz?.unit||state.currentLesson?.unit||0),
-     score:pct,correct:score,total:qz.questions.length,xp:gained,createdAt:Date.now()
-   };
-   const ref=db.ref('studentProfilesV3/'+state.user.uid+'/quizHistory').push();
-   await ref.set(rec);
-   await db.ref('studentProfilesV3/'+state.user.uid+'/stats').transaction(s=>{
-     s=s||{};s.completedQuizzes=(s.completedQuizzes||0)+quizDelta;s.totalXP=(s.totalXP||0)+gained;s.level=Math.floor((s.totalXP||0)/1000)+1;return s;
+   const attemptId=qz.attemptId||(qz.attemptId=db.ref('studentProfilesV3/'+state.user.uid+'/quizHistory').push().key),at=Date.now();
+   const result=await db.ref('studentProfilesV3/'+state.user.uid).transaction(profile=>{
+     if(!profile||profile.quizHistory?.[attemptId])return;
+     const history=Object.values(profile.quizHistory||{}).filter(x=>x?.sourceId===qz.sourceId);
+     const previous=history.length?Math.max(...history.map(x=>quizXpTarget(Number(x.score||0)))):0;
+     const gained=Math.max(0,quizXpTarget(pct)-previous),quizDelta=history.length?0:1;
+     profile.quizHistory=profile.quizHistory||{};
+     profile.quizHistory[attemptId]={sourceId:qz.sourceId,sourceType:state.currentLesson?'lesson':'quiz',title:state.currentQuiz?.name||state.currentLesson?.title||'اختبار',subject:qz.c?.subject||'',unit:Number(state.currentQuiz?.unit||state.currentLesson?.unit||0),score:pct,correct:score,total:qz.questions.length,xp:gained,quizDelta,createdAt:at};
+     const stats=profile.stats=profile.stats||{};
+     stats.completedQuizzes=Number(stats.completedQuizzes||0)+quizDelta;stats.totalXP=Number(stats.totalXP||0)+gained;stats.level=Math.floor(stats.totalXP/1000)+1;
+     const day=localDateKey();profile.dailyGoals=profile.dailyGoals||{};profile.dailyGoals[day]=profile.dailyGoals[day]||{};profile.dailyGoals[day].quiz=true;
+     return profile;
    });
-   await db.ref('studentProfilesV3/'+state.user.uid+'/dailyGoals/'+localDateKey()+'/quiz').set(true);
-   if(window.AcademyCore?.addLeaderboardXP&&(gained||quizDelta))await window.AcademyCore.addLeaderboardXP(state.user.uid,state.profile?.name||state.user.displayName||'طالب',gained,quizDelta);
-   state.profile.quizHistory=state.profile.quizHistory||{};state.profile.quizHistory[ref.key]=rec;
-   state.profile.stats=state.profile.stats||{};
-   state.profile.stats.completedQuizzes=Number(state.profile.stats.completedQuizzes||0)+quizDelta;
-   state.profile.stats.totalXP=Number(state.profile.stats.totalXP||0)+gained;
-   if(gained>0)toast('أضفنا +'+gained+' XP لتحسن نتيجتك ✨');
-   else if(!firstAttempt)toast('تم حفظ المحاولة. نقاط هذا المستوى حصلت عليها بالفعل.');
+   state.profile=result.snapshot.val()||state.profile;
+   if(!result.committed)return;
+   const rec=state.profile.quizHistory[attemptId];
+   if(window.AcademyCore?.addLeaderboardXP&&(rec.xp||rec.quizDelta)){
+     try{await window.AcademyCore.addLeaderboardXP(state.user.uid,state.profile.name||'طالب',rec.xp,rec.quizDelta)}
+     catch(err){console.warn('Leaderboard sync deferred',err)}
+   }
+   toast(rec.xp>0?'أضفنا +'+rec.xp+' XP لتحسن نتيجتك ✨':'تم حفظ المحاولة؛ نقاط هذا المستوى حصلت عليها بالفعل.');
  }catch(err){
    console.error(err);toast('تم حساب النتيجة لكن تعذر حفظ المحاولة الآن.','error');
  }

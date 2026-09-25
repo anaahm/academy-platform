@@ -7,6 +7,7 @@ if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(),db=firebase.database();
 const $=id=>document.getElementById(id), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 let user=null,teacher=null,data={},submissions={},analytics={},homeworkAssignments={},assignmentSubmissions={},activeGrade=null,gradeModalTrigger=null;
+const unavailableSubmissions=new Set();
 
 const defaults={
  primary:[{id:'arabic',name:'اللغة العربية'},{id:'math',name:'الرياضيات'},{id:'science',name:'العلوم'},{id:'english',name:'اللغة الإنجليزية'},{id:'social',name:'الدراسات الاجتماعية'},{id:'religion',name:'التربية الدينية'}],
@@ -171,7 +172,7 @@ function renderTeacherAssignments(){
      '<div class="teacher-homework-main"><span class="teacher-homework-icon"><i class="fa-solid fa-clipboard-check"></i></span><div><div class="teacher-homework-title-row"><strong>'+escapeHtml(a.title||'واجب')+'</strong><span class="status-pill '+(isPast?'rejected':'approved')+'">'+(isPast?'انتهى الموعد':'نشط')+'</span></div>'+
      '<small>'+(stageName[a.stage]||a.stage||'')+' • صف '+(a.grade||'')+' • '+escapeHtml(a.subjectName||a.subject||'')+'</small>'+
      '<small><i class="fa-regular fa-calendar"></i> '+escapeHtml(due)+'</small></div></div>'+
-     '<div class="teacher-homework-metrics"><span><b>'+count+'</b><small>تسليم</small></span><span class="'+(newCount?'has-new':'')+'"><b>'+newCount+'</b><small>جديد</small></span><span><b>'+graded+'</b><small>مصحح</small></span></div>'+
+     '<div class="teacher-homework-metrics"><span><b>'+(unavailableSubmissions.has(a.id)?'—':count)+'</b><small>تسليم</small></span><span class="'+(newCount?'has-new':'')+'"><b>'+(unavailableSubmissions.has(a.id)?'—':newCount)+'</b><small>جديد</small></span><span><b>'+(unavailableSubmissions.has(a.id)?'—':graded)+'</b><small>مصحح</small></span></div>'+
      '<button class="admin-action-btn danger" data-delete-assignment="'+a.id+'" title="حذف الواجب" aria-label="حذف '+escapeHtml(a.title||'الواجب')+'"><i class="fa-solid fa-trash"></i></button>'+
    '</article>';
  }).join(''):'<div class="portal-empty-state"><span>📝</span><h3>لسه مفيش واجبات</h3><p>أنشئ أول واجب من النموذج.</p></div>';
@@ -180,8 +181,7 @@ function renderTeacherAssignments(){
    if(!(await window.AcademyUI.confirm({title:'حذف الواجب؟',message:'سيتم حذف الواجب وكل تسليمات الطلاب المرتبطة به نهائيًا.',tone:'danger',acceptText:'حذف الواجب'})))return;
    const id=b.dataset.deleteAssignment;b.disabled=true;
    try{
-     await db.ref('assignmentSubmissions/'+id).remove();
-     await db.ref('assignments/'+id).remove();
+     await db.ref().update({['assignmentSubmissions/'+id]:null,['assignments/'+id]:null});
      delete assignmentSubmissions[id];delete homeworkAssignments[id];renderTeacherAssignments();toast('تم حذف الواجب');
    }catch(err){console.error(err);b.disabled=false;toast('تعذر حذف الواجب الآن.','error')}
  });
@@ -203,6 +203,7 @@ function renderTeacherAssignments(){
      '<button class="btn '+(graded?'btn-soft':'btn-primary')+'" data-grade-assignment="'+r.assignment.id+'|'+r.uid+'">'+(graded?'تعديل التصحيح':'تصحيح الآن')+'</button>'+
    '</div>';
  }).join(''):'<div class="portal-empty-state"><span>📥</span><h3>لا توجد تسليمات بعد</h3><p>تسليمات الطلاب هتظهر هنا، والجديد سيظهر أولًا.</p></div>';
+ if(box&&unavailableSubmissions.size)box.insertAdjacentHTML('afterbegin',window.AcademyUI.errorStateHtml('بعض التسليمات غير متاحة','تعذر تحميل تسليمات '+unavailableSubmissions.size+' واجب. أعد المحاولة بعد التحقق من الاتصال والصلاحيات.','<button class="btn btn-soft" onclick="location.reload()">إعادة المحاولة</button>'));
  $$('[data-grade-assignment]').forEach(b=>b.onclick=()=>openGradeSubmission(b.dataset.gradeAssignment,b));
 }
 async function submitTeacherAssignment(e){
@@ -341,7 +342,7 @@ auth.onAuthStateChanged(async u=>{
    const t=await db.ref('teacherProfiles/'+u.uid).once('value');
    teacher=t.val();
    if(!teacher){showNoAccess('الحساب الحالي ليس له ملف مدرس. الإدارة لازم تضيفه كمدرس أولًا.');return}
-   if(teacher.isActive===false||teacher.status==='blocked'){showNoAccess('حساب المدرس غير مفعل حاليًا. تواصل مع الإدارة.');return}
+   if(teacher.isActive!==true||teacher.status==='blocked'){showNoAccess('حساب المدرس غير مفعل حاليًا. تواصل مع الإدارة.');return}
 
    const [subjectsSnap,submissionSnap,directLessonsSnap,homeworkSnap]=await Promise.all([
      db.ref('customSubjects').once('value'),
@@ -362,11 +363,12 @@ auth.onAuthStateChanged(async u=>{
 
    const lessonIds=Object.keys(lessons),ownIds=Object.keys(homeworkAssignments);
    const [metricSnaps,submissionSnaps]=await Promise.all([
-     Promise.all(lessonIds.map(id=>db.ref('contentAnalytics/'+id).once('value'))),
-     Promise.all(ownIds.map(id=>db.ref('assignmentSubmissions/'+id).once('value')))
+     Promise.allSettled(lessonIds.map(id=>db.ref('contentAnalytics/'+id).once('value'))),
+     Promise.allSettled(ownIds.map(id=>db.ref('assignmentSubmissions/'+id).once('value')))
    ]);
-   analytics={};lessonIds.forEach((id,i)=>analytics[id]=metricSnaps[i].val()||{});
-   assignmentSubmissions={};ownIds.forEach((id,i)=>assignmentSubmissions[id]=submissionSnaps[i].val()||{});
+   analytics={};lessonIds.forEach((id,i)=>{if(metricSnaps[i].status==='fulfilled')analytics[id]=metricSnaps[i].value.val()||{}});
+   assignmentSubmissions={};unavailableSubmissions.clear();ownIds.forEach((id,i)=>{if(submissionSnaps[i].status==='fulfilled')assignmentSubmissions[id]=submissionSnaps[i].value.val()||{};else unavailableSubmissions.add(id)});
+   if(unavailableSubmissions.size)toast('تم فتح البوابة، لكن تعذر تحميل بعض تسليمات الواجبات.','error');
 
    $('teacherAccess').classList.add('hidden');$('teacherPortal').classList.remove('hidden');
    updateGrades();updateAssignmentGrades();render();

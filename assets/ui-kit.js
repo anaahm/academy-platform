@@ -47,12 +47,12 @@ function enhanceStudentShell(){
     const back=document.createElement('button');
     back.type='button';back.className='student-back-button';back.setAttribute('aria-label','رجوع');back.title='رجوع';
     back.innerHTML='<i class="fa-solid fa-arrow-right"></i>';
-    back.onclick=()=>{if(history.length>1)history.back();else location.href='./index.html'};
+    back.onclick=()=>{if(document.referrer&&new URL(document.referrer).origin===location.origin&&history.length>1)history.back();else location.href='./index.html'};
     header.prepend(back);
   }
 
   let avatar=header.querySelector('#pageAvatar,.avatar');
-  if(avatar){
+  if(avatar&&!window.AcademyStudentShell){
     avatar.classList.add('student-profile-shortcut');
     avatar.setAttribute('role','link');avatar.setAttribute('tabindex','0');avatar.setAttribute('aria-label','فتح حسابي');avatar.title='حسابي';
     const openProfile=()=>location.href='./profile.html';
@@ -71,7 +71,7 @@ function enhanceStudentShell(){
     userWrap.insertBefore(bell,userWrap.firstChild);
   }
 
-  if(!document.querySelector('.student-mobile-nav')){
+  if(!window.AcademyStudentShell&&!document.querySelector('.student-mobile-nav')){
     const nav=document.createElement('nav');nav.className='student-mobile-nav';nav.setAttribute('aria-label','التنقل الرئيسي للطالب');
     const items=[
       {key:'home',href:'./index.html',icon:'fa-house',label:'الرئيسية'},
@@ -103,27 +103,34 @@ function finishRouteProgress(){
   const bar=document.querySelector('.ui-route-progress');if(!bar)return;
   bar.style.width='100%';setTimeout(()=>{bar.classList.remove('show');bar.style.width='0'},180);
 }
+let closeActiveConfirm=null;
 function confirmDialog(options={}){
   const opts=typeof options==='string'?{message:options}:options;
-  const title=opts.title||'هل أنت متأكد؟',message=opts.message||'',tone=opts.tone||'danger';
-  const acceptText=opts.acceptText||'تأكيد',cancelText=opts.cancelText||'إلغاء';
-  const icon=opts.icon||({danger:'fa-triangle-exclamation',warning:'fa-circle-exclamation',success:'fa-circle-check'}[tone]||'fa-circle-question');
+  closeActiveConfirm?.(false);
   return new Promise(resolve=>{
-    const old=document.querySelector('.ui-confirm-backdrop');if(old)old.remove();
+    const trigger=document.activeElement,previousOverflow=document.body.style.overflow;
     const wrap=document.createElement('div');wrap.className='ui-confirm-backdrop';
-    wrap.innerHTML='<div class="ui-confirm-card '+esc(tone)+'" role="dialog" aria-modal="true" aria-labelledby="uiConfirmTitle">'+
-      '<div class="ui-confirm-icon"><i class="fa-solid '+esc(icon)+'"></i></div>'+
-      '<h3 id="uiConfirmTitle">'+esc(title)+'</h3><p>'+esc(message)+'</p>'+
-      '<div class="ui-confirm-actions"><button class="ui-confirm-cancel">'+esc(cancelText)+'</button><button class="ui-confirm-accept">'+esc(acceptText)+'</button></div></div>';
+    wrap.innerHTML='<div class="ui-confirm-card" role="dialog" aria-modal="true" aria-labelledby="uiConfirmTitle" aria-describedby="uiConfirmMessage">'+
+      '<div class="ui-confirm-icon"><i class="fa-solid fa-circle-question"></i></div>'+
+      '<h3 id="uiConfirmTitle">'+esc(opts.title||'هل أنت متأكد؟')+'</h3><p id="uiConfirmMessage">'+esc(opts.message||'')+'</p>'+
+      '<div class="ui-confirm-actions"><button class="ui-confirm-cancel">'+esc(opts.cancelText||'إلغاء')+'</button><button class="ui-confirm-accept">'+esc(opts.acceptText||'تأكيد')+'</button></div></div>';
+    wrap.querySelector('.ui-confirm-card').classList.add(['danger','warning','success'].includes(opts.tone)?opts.tone:'danger');
     document.body.appendChild(wrap);document.body.style.overflow='hidden';
-    requestAnimationFrame(()=>wrap.classList.add('show'));
-    const finish=value=>{wrap.classList.remove('show');document.body.style.overflow='';setTimeout(()=>wrap.remove(),180);resolve(value)};
-    wrap.querySelector('.ui-confirm-cancel').onclick=()=>finish(false);
-    wrap.querySelector('.ui-confirm-accept').onclick=()=>finish(true);
+    let finished=false;
+    const finish=value=>{
+      if(finished)return;finished=true;document.removeEventListener('keydown',key);
+      wrap.remove();document.body.style.overflow=previousOverflow;closeActiveConfirm=null;
+      if(trigger?.isConnected)trigger.focus();resolve(value);
+    };
+    const cancel=wrap.querySelector('.ui-confirm-cancel'),accept=wrap.querySelector('.ui-confirm-accept');
+    const key=e=>{
+      if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();finish(false)}
+      if(e.key==='Tab'){e.preventDefault();(document.activeElement===cancel?accept:cancel).focus()}
+    };
+    closeActiveConfirm=finish;cancel.onclick=()=>finish(false);accept.onclick=()=>finish(true);
     wrap.onclick=e=>{if(e.target===wrap)finish(false)};
-    const key=e=>{if(e.key==='Escape'){document.removeEventListener('keydown',key);finish(false)}};
-    document.addEventListener('keydown',key,{once:true});
-    setTimeout(()=>wrap.querySelector('.ui-confirm-accept')?.focus(),50);
+    document.addEventListener('keydown',key);
+    requestAnimationFrame(()=>{if(!finished){wrap.classList.add('show');cancel.focus()}});
   });
 }
 function showNetworkBanner(online){
@@ -142,6 +149,7 @@ function errorStateHtml(title='تعذر تحميل البيانات',text='حا�
   return '<div class="ui-error-state"><span class="ui-error-icon"><i class="fa-solid fa-triangle-exclamation"></i></span><h3>'+esc(title)+'</h3><p>'+esc(text)+'</p>'+actionHtml+'</div>';
 }
 function showPageLoading(message='جاري تجهيز الصفحة...'){
+  clearTimeout(hidePageLoading.timer);
   let wrap=document.querySelector('.ui-page-loader');
   if(!wrap){
     wrap=document.createElement('div');wrap.className='ui-page-loader';
@@ -153,7 +161,7 @@ function showPageLoading(message='جاري تجهيز الصفحة...'){
 }
 function hidePageLoading(){
   const wrap=document.querySelector('.ui-page-loader');if(!wrap)return;
-  wrap.classList.remove('show');setTimeout(()=>wrap.remove(),220);
+  wrap.classList.remove('show');clearTimeout(hidePageLoading.timer);hidePageLoading.timer=setTimeout(()=>wrap.remove(),220);
 }
 function setButtonLoading(button,on,label='جاري التنفيذ...'){
   if(!button)return;
@@ -166,7 +174,7 @@ function setButtonLoading(button,on,label='جاري التنفيذ...'){
 }
 document.addEventListener('pointerdown',e=>{
   const btn=e.target.closest('.btn,button,.icon-btn');
-  if(!btn||btn.disabled||btn.classList.contains('no-ripple'))return;
+  if(!btn||btn.disabled||btn.classList.contains('no-ripple')||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   btn.classList.add('ui-ripple-host');
   const r=btn.getBoundingClientRect(),size=Math.max(r.width,r.height)*.65,span=document.createElement('span');
   span.className='ui-ripple';span.style.width=span.style.height=size+'px';span.style.left=(e.clientX-r.left-size/2)+'px';span.style.top=(e.clientY-r.top-size/2)+'px';
@@ -178,12 +186,40 @@ window.addEventListener('online',()=>showNetworkBanner(true));
 document.addEventListener('click',e=>{
   const a=e.target.closest('a[href]');if(!a)return;
   const href=a.getAttribute('href')||'';
-  if(a.target==='_blank'||a.hasAttribute('download')||href.startsWith('#')||href.startsWith('javascript:')||href.startsWith('mailto:')||href.startsWith('tel:'))return;
+  if(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey||e.button!==0||a.target==='_blank'||a.hasAttribute('download')||href.startsWith('#')||href.startsWith('javascript:')||href.startsWith('mailto:')||href.startsWith('tel:'))return;
   try{
     const url=new URL(href,location.href);
     if(url.origin===location.origin)startRouteProgress();
   }catch{}
 },true);
 window.addEventListener('pageshow',finishRouteProgress);
+
+function imageFallback(img){
+  if(!(img instanceof HTMLImageElement)||!img.matches('[data-subject-image]'))return;
+  const fallback=document.createElement('span');fallback.textContent=img.dataset.fallback||'📚';
+  img.closest('.has-image')?.classList.remove('has-image');img.replaceWith(fallback);
+}
+document.addEventListener('error',e=>imageFallback(e.target),true);
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('img[data-subject-image]').forEach(img=>{if(img.complete&&!img.naturalWidth)imageFallback(img)});
+  const target=document.querySelector('main');
+  if(target){
+    if(!target.id)target.id='mainContent';target.setAttribute('tabindex','-1');
+    const skip=document.createElement('a');skip.className='ui-skip-link';skip.href='#'+target.id;skip.textContent='تخطي إلى المحتوى';document.body.prepend(skip);
+  }
+});
+// Trap keyboard focus inside the topmost open dialog, including dynamically inserted dialogs.
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Tab')return;
+  const dialogs=[...document.querySelectorAll('[role="dialog"]')].filter(d=>d.getClientRects().length&&!d.closest('.hidden'));
+  const dialog=dialogs[dialogs.length-1];if(!dialog)return;
+  const nodes=[...dialog.querySelectorAll('button,a[href],input,select,textarea,[tabindex]')].filter(x=>!x.disabled&&x.tabIndex>=0&&x.getClientRects().length);
+  if(!nodes.length){e.preventDefault();dialog.setAttribute('tabindex','-1');dialog.focus();return}
+  const first=nodes[0],last=nodes[nodes.length-1];
+  if(!dialog.contains(document.activeElement)){e.preventDefault();first.focus()}
+  else if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+});
+
 window.AcademyUI={confirm:confirmDialog,setButtonLoading,showPageLoading,hidePageLoading,emptyStateHtml,errorStateHtml,showNetworkBanner,esc,startRouteProgress,finishRouteProgress};
 })();

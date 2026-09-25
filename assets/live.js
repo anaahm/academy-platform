@@ -3,16 +3,7 @@
 const C=window.AcademyCore,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 let user,profile,sessions=[],filter='live',viewerTrigger=null;
 
-function embed(url=''){
- try{
-  const u=new URL(url);let id='';
-  if(u.hostname.includes('youtu.be'))id=u.pathname.replace('/','').split('/')[0];
-  else if(u.pathname.includes('/live/'))id=u.pathname.split('/live/')[1]?.split('/')[0];
-  else if(u.pathname.includes('/embed/'))return url;
-  else id=u.searchParams.get('v')||'';
-  return id?'https://www.youtube.com/embed/'+encodeURIComponent(id)+'?rel=0':'';
- }catch{return''}
-}
+function embed(url=''){return window.AcademyUtils.youtubeEmbed(url)}
 function matchesStudent(s){
  return s&&s.isHidden!==true&&
    (!s.type||s.type===profile.educationType)&&
@@ -57,13 +48,14 @@ function openSession(id,trigger){
   ?'<iframe src="'+C.esc(src)+'" title="'+C.esc(s.title||'الجلسة المباشرة')+'" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>'
   :'<div class="live-video-empty"><div><span>📡</span><strong>لا يوجد بث YouTube مضاف</strong><p>استخدم رابط الجلسة الخارجي لو كان متاحًا.</p></div></div>';
  const acts=[],zoom=C.safeUrl(s.zoomLink||''),yt=C.safeUrl(s.youtubeLiveUrl||'');
- if(zoom&&zoom!=='#')acts.push('<a class="btn btn-primary" href="'+zoom+'" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-video"></i> الانضمام عبر Zoom</a>');
- if(yt&&yt!=='#')acts.push('<a class="btn btn-soft" href="'+yt+'" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-youtube"></i> فتح على YouTube</a>');
+ if(zoom&&zoom!=='#')acts.push('<a class="btn btn-primary" href="'+C.esc(zoom)+'" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-video"></i> الانضمام عبر Zoom</a>');
+ if(yt&&yt!=='#')acts.push('<a class="btn btn-soft" href="'+C.esc(yt)+'" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-youtube"></i> فتح على YouTube</a>');
  $('liveViewerActions').innerHTML=acts.join('')||'<span class="live-no-actions">لا توجد روابط جلسة متاحة حاليًا.</span>';
  $('liveViewer').classList.remove('hidden');$('liveViewer').setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
  setTimeout(()=>$('liveViewer').querySelector('.live-viewer-panel')?.focus(),30);
 }
 function closeViewer(){
+ $('liveVideo').replaceChildren();
  $('liveViewer').classList.add('hidden');$('liveViewer').setAttribute('aria-hidden','true');document.body.style.overflow='';
  const target=viewerTrigger;viewerTrigger=null;setTimeout(()=>target?.focus(),30);
 }

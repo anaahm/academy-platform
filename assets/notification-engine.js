@@ -13,7 +13,7 @@ function ensureFirebase(){
 function cleanKey(v=''){return String(v).replace(/[.#$\[\]\/]/g,'-').slice(0,180)}
 function dateKey(ts){const d=new Date(ts);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function matchesStudent(item,profile){
-  return item?.isActive!==false &&
+  return item?.isActive!==false && item?.isHidden!==true &&
     (!item.type||item.type===profile.educationType) &&
     (!item.stage||item.stage===profile.stage) &&
     (!item.grade||String(item.grade)===String(profile.grade));
@@ -40,7 +40,7 @@ async function loadNotifications(user,profileInput){
   const profile=profileInput||((await db.ref('studentProfilesV3/'+user.uid).once('value')).val()||{});
   const reads=profile.notificationReads||{};
   const [assignSnap,liveSnap,scheduleSnap,annSnap,broadcastSnap]=await Promise.all([
-    db.ref('assignments').once('value'),
+    db.ref('assignments').orderByChild('stage').equalTo(profile.stage).once('value'),
     db.ref('liveSessions').once('value'),
     db.ref('scheduleEvents').once('value'),
     db.ref('announcements').once('value'),
@@ -72,7 +72,7 @@ async function loadNotifications(user,profileInput){
     }
   });
 
-  const live=Object.entries(liveSnap.val()||{}).map(([id,v])=>({id,...(v||{})}));
+  const live=Object.entries(liveSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(s=>matchesStudent(s,profile)&&s.status!=='ended');
   live.forEach(s=>{
     const at=Number(s.scheduledTime||0),isLive=s.status==='live',diff=at-now;
     if(isLive||(at&&diff>=0&&diff<=24*HOUR)){

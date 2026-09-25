@@ -1,7 +1,7 @@
 (() => {
 'use strict';
 const C=window.AcademyCore,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-let user,profile,period='daily',rows=[],mine=null,loading=false;
+let user,profile,period='daily',rows=[],mine=null,loading=false,loadVersion=0;
 
 function keyForPeriod(){
  const keys=C.leaderboardKeys();
@@ -32,7 +32,7 @@ function render(){
  ).join(''):'<div class="feature-empty"><span>🏁</span><h3>لا يوجد ترتيب بعد</h3><p>ابدأ التعلم ليظهر الترتيب.</p></div>';
 }
 async function load(){
- if(loading)return;
+ const request=++loadVersion;
  loading=true;
  window.AcademyUI?.showPageLoading('جاري تحديث لوحة الترتيب...');
  try{
@@ -41,14 +41,16 @@ async function load(){
      ref.orderByChild('xp').limitToLast(limit).once('value'),
      ref.child(user.uid).once('value')
    ]);
+   if(request!==loadVersion)return;
    rows=Object.entries(topSnap.val()||{}).map(([id,v])=>({id,...(v||{})}));
    mine=mySnap.exists()?{id:user.uid,...(mySnap.val()||{})}:null;
    render();
  }catch(err){
+   if(request!==loadVersion)return;
    console.error(err);C.toast('تعذر تحميل لوحة الترتيب الآن.','error');
    $('rankList').innerHTML=window.AcademyUI?.errorStateHtml('تعذر تحميل الترتيب','تحقق من الاتصال ثم حاول مرة أخرى.','<button class="btn btn-primary" onclick="location.reload()">إعادة المحاولة</button>')||'';
  }finally{
-   loading=false;window.AcademyUI?.hidePageLoading();
+   if(request===loadVersion){loading=false;window.AcademyUI?.hidePageLoading();}
  }
 }
 $$('[data-period]').forEach(b=>b.onclick=async()=>{

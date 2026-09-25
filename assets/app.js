@@ -601,7 +601,7 @@
     if($('streakSideValue')) $('streakSideValue').textContent=stats.streak;
 
     const palettes=['subject-pink','subject-blue','subject-green','subject-gold','subject-purple','subject-teal'];
-    $('dashboardSubjects').innerHTML = subjects.slice(0,5).map((s,index) => {
+    $('dashboardSubjects').innerHTML = subjects.map((s,index) => {
       const progress = Math.max(0, Math.min(100, subjectProgressOf(p,s.id)));
       const q = new URLSearchParams({
         type: p.educationType,
@@ -611,7 +611,7 @@
       });
       const subjectImage=safeDashboardImage(s.imageUrl||'');
       return `<a class="ref-subject-card ${palettes[index%palettes.length]} ${subjectImage?'has-image':''}" href="./subject.html?${q.toString()}" aria-label="فتح مادة ${safeHtml(s.name)}">
-        <div class="ref-subject-art">${subjectImage?'<img src="'+safeHtml(subjectImage)+'" alt="" loading="lazy">':'<span>'+safeHtml(s.emoji || '📚')+'</span>'}<i></i></div>
+        <div class="ref-subject-art">${subjectImage?'<img data-subject-image data-fallback="'+safeHtml(s.emoji||'📚')+'" src="'+safeHtml(subjectImage)+'" alt="" loading="lazy">':'<span>'+safeHtml(s.emoji || '📚')+'</span>'}<i></i></div>
         <h3>${safeHtml(s.name)}</h3>
         <div class="ref-subject-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}"><span style="width:${progress}%"></span></div>
         <div class="ref-subject-footer"><small>${progress}%</small><strong>ادخل المادة <i class="fa-solid fa-chevron-left"></i></strong></div>
@@ -622,6 +622,7 @@
     const lastSubject = subjects.find(s => s.id === p.lastSubjectId) || first;
     if (lastSubject) {
       if($('continueSubjectName')) $('continueSubjectName').textContent=lastSubject.name;
+      if($('continueProgressLabel')) $('continueProgressLabel').textContent=Math.max(0,Math.min(100,subjectProgressOf(p,lastSubject.id)))+'%';
       $('continueTitle').textContent = p.lastLessonTitle || `ابدأ أول درس في ${lastSubject.name}`;
       $('continueMeta').textContent = p.lastLessonTitle
         ? `${lastSubject.name} • ${gradeLabels[p.stage]?.[p.grade] || ''}`
@@ -691,7 +692,7 @@
       .map(s => {
         const subjectImage=safeDashboardImage(s.imageUrl||'');
         return `<article class="explorer-subject-item ${subjectImage?'has-image':''}">
-        <span class="emoji">${subjectImage?'<img src="'+safeHtml(subjectImage)+'" alt="" loading="lazy">':safeHtml(s.emoji || '📚')}</span>
+        <span class="emoji">${subjectImage?'<img data-subject-image data-fallback="'+safeHtml(s.emoji||'📚')+'" src="'+safeHtml(subjectImage)+'" alt="" loading="lazy">':safeHtml(s.emoji || '📚')}</span>
         <div><strong>${s.name}</strong><small>${context || 'متاحة في مراحل مختلفة حسب المنهج'}</small></div>
         <button aria-label="فتح المادة"><i class="fa-solid fa-arrow-left"></i></button>
       </article>`;}).join('') || '<p>لا توجد مواد مطابقة.</p>';
@@ -958,9 +959,11 @@
       state.profile = await loadProfile(user.uid);
     } catch (e) {
       console.warn(e);
-      state.profile = null;
+      state.profile = null;showPublicExperience();
+      toast('تعذر تحميل حسابك. أعد تحميل الصفحة للمحاولة مرة أخرى.','error');
+      return;
     }
-
+    if(state.user?.uid!==user.uid)return;
     renderHeaderUser();
 
     if (!state.profile?.onboardingCompleted || !state.profile?.stage || !state.profile?.grade) {

@@ -18,7 +18,7 @@ const defaultSubjects={
 };
 
 const esc=(v='')=>String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const safeUrl=(u='')=>{try{const x=new URL(u,location.href);return ['http:','https:'].includes(x.protocol)?x.href:'#'}catch{return'#'}};
+const safeUrl=(u='')=>window.AcademyUtils.safeUrl(u)||'#';
 const initials=(n='طالب')=>(n.trim()[0]||'ط').toUpperCase();
 const typeLabel=t=>t==='azhar'?'التعليم الأزهري':'التعليم العام';
 const stageLabel=s=>stageNames[s]||s||'';
