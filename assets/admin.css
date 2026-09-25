@@ -403,3 +403,22 @@ linear-gradient(135deg,#0f172a,#111827 45%,#172554)}
   color:#173f89;font-size:7px;font-weight:900;box-shadow:0 5px 12px rgba(31,73,139,.10)
 }
 .admin-subject-image-preview.has-image{border-style:solid;border-color:#9fc6f3}
+
+/* Subject cards visual preview */
+.admin-subject-card{overflow:hidden}
+.admin-subject-thumb,.admin-subject-auto-art{
+  height:105px;margin:-15px -15px 12px;border-radius:16px 16px 11px 11px;
+  background-size:cover;background-position:center;
+  position:relative;overflow:hidden;border-bottom:1px solid #e6edf7
+}
+.admin-subject-thumb:after{
+  content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,31,83,.02),rgba(6,31,83,.28))
+}
+.admin-subject-auto-art{
+  display:grid;place-items:center;
+  background:
+    radial-gradient(circle at 70% 20%,rgba(255,255,255,.72),transparent 22%),
+    linear-gradient(145deg,#4ba6ff,#7b78ff)
+}
+.admin-subject-auto-art span{font-size:46px;filter:drop-shadow(0 10px 9px rgba(17,43,94,.20))}
+.admin-subject-card.has-image h3{color:#17366f}
