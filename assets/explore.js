@@ -32,7 +32,7 @@ function getSubjects(stage,grade,type){
  const list=[...(defaults[stage]||[])];
  customList(stage,grade).forEach(s=>{
    if(!s?.id||!s?.name||(s.type&&s.type!==type))return;
-   const item={id:s.id,name:s.name,emoji:s.emoji||'⭐'},i=list.findIndex(x=>x.id===s.id);
+   const item={id:s.id,name:s.name,emoji:s.emoji||'⭐',imageUrl:s.imageUrl||''},i=list.findIndex(x=>x.id===s.id);
    if(i>=0)list[i]={...list[i],...item};else list.push(item);
  });
  return list;
@@ -59,6 +59,9 @@ function countContent(subjectId){
  const lessons=Object.values(data.lessons||{}).filter(l=>l.type===state.type&&String(l.grade)===String(state.grade)&&l.subject===subjectId&&!l.isHidden).length;
  const quizzes=Object.values(data.quizzes||{}).filter(q=>q.type===state.type&&String(q.grade)===String(state.grade)&&q.subject===subjectId&&!q.isHidden).length;
  return {lessons,quizzes};
+}
+function safeImageUrl(value=''){
+ try{if(!value)return'';const u=new URL(value,location.href);return ['http:','https:'].includes(u.protocol)?u.href:''}catch{return''}
 }
 function subjectUrl(id){
  const q=new URLSearchParams({type:state.type,stage:state.stage,grade:String(state.grade),subject:id});
@@ -88,7 +91,8 @@ function renderSubjects(){
  $('exploreSubjectCount').textContent=subjects.length+' مادة';
  $('exploreSubjectGrid').innerHTML=subjects.map(s=>{
    const counts=countContent(s.id);
-   return '<a class="explore-subject-card" href="'+subjectUrl(s.id)+'"><span class="explore-subject-emoji">'+esc(s.emoji||'📚')+'</span><div><h3>'+esc(s.name)+'</h3><p>'+counts.lessons+' درس • '+counts.quizzes+' اختبار</p></div><span class="explore-open"><i class="fa-solid fa-arrow-left"></i></span></a>';
+   const image=safeImageUrl(s.imageUrl||'');
+   return '<a class="explore-subject-card '+(image?'has-image':'')+'" href="'+subjectUrl(s.id)+'"><span class="explore-subject-emoji">'+(image?'<img src="'+esc(image)+'" alt="" loading="lazy">':esc(s.emoji||'📚'))+'</span><div><h3>'+esc(s.name)+'</h3><p>'+counts.lessons+' درس • '+counts.quizzes+' اختبار</p></div><span class="explore-open"><i class="fa-solid fa-arrow-left"></i></span></a>';
  }).join('')||'<div class="empty-state"><span>🔎</span><h3>لا توجد مادة مطابقة</h3><p>جرّب كلمة أقصر أو صفًا آخر.</p></div>';
 }
 async function loadAndRenderSubjects(){
