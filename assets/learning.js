@@ -22,6 +22,8 @@ const defaults={
 };
 const esc=(v='')=>String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const initials=(n='طالب')=>(n.trim()[0]||'ط').toUpperCase();
+const localDateKey=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const quizXpTarget=score=>Number(score)>=80?40:20;
 
 function toast(msg,type='success'){
  const el=$('toast'); if(!el)return; el.textContent=msg; el.className='toast show '+type;
@@ -447,7 +449,7 @@ async function markComplete(c,id){
  try{
    const at=Date.now();
    await db.ref('studentProfilesV3/'+state.user.uid+'/learningProgress/'+id).update({completed:true,completedAt:at,subject:c.subject});
-   await db.ref('studentProfilesV3/'+state.user.uid+'/dailyGoals/'+new Date().toISOString().slice(0,10)+'/lesson').set(true);
+   await db.ref('studentProfilesV3/'+state.user.uid+'/dailyGoals/'+localDateKey()+'/lesson').set(true);
    await db.ref('studentProfilesV3/'+state.user.uid+'/stats').transaction(s=>{s=s||{};s.completedLessons=(s.completedLessons||0)+1;s.totalXP=(s.totalXP||0)+50;s.level=Math.floor((s.totalXP||0)/1000)+1;return s});
    if(window.AcademyCore?.addLeaderboardXP)await window.AcademyCore.addLeaderboardXP(state.user.uid,state.profile?.name||state.user.displayName||'طالب',50,0);
    state.profile.learningProgress=state.profile.learningProgress||{};state.profile.learningProgress[id]={completed:true,completedAt:at,subject:c.subject};
@@ -480,26 +482,40 @@ function renderQuestion(){
  $('prevQuestionBtn').onclick=()=>{if(state.quizIndex>0){state.quizIndex--;renderQuestion()}};$('nextQuestionBtn').onclick=()=>{if(qz.answers[i]===null){toast('اختر إجابة أولًا.','error');return}if(i===total-1)finishQuiz();else{state.quizIndex++;renderQuestion()}};
 }
 async function finishQuiz(){
- const qz=state.quiz;let score=0;qz.questions.forEach((q,i)=>{if(Number(qz.answers[i])===Number(q.correctAnswer))score++});const pct=Math.round(score/qz.questions.length*100);
+ const qz=state.quiz;let score=0;
+ qz.questions.forEach((q,i)=>{if(Number(qz.answers[i])===Number(q.correctAnswer))score++});
+ const pct=Math.round(score/qz.questions.length*100);
  $('quizEngine').classList.add('hidden');$('quizResult').classList.remove('hidden');$('resultPercent').textContent=pct+'%';$('resultRing').style.background='conic-gradient(#10b981 '+(pct*3.6)+'deg,#e5e7eb 0deg)';
- $('resultTitle').textContent=pct>=80?'ممتاز جدًا! 🌟':pct>=60?'أداء جيد 👏':'راجع الشرح وجرّب مرة أخرى';$('resultMessage').textContent='أجبت عن '+score+' من '+qz.questions.length+' إجابة بشكل صحيح.';
+ $('resultTitle').textContent=pct>=80?'ممتاز جدًا! 🌟':pct>=60?'أداء جيد 👏':'راجع الشرح وجرّب مرة أخرى';
+ $('resultMessage').textContent='أجبت عن '+score+' من '+qz.questions.length+' إجابة بشكل صحيح.';
  trackContentEvent(qz.sourceId,'quiz',pct);
- if(state.user){
-   const gained=pct>=80?40:20;
-   await db.ref('studentProfilesV3/'+state.user.uid+'/stats').transaction(s=>{s=s||{};s.completedQuizzes=(s.completedQuizzes||0)+1;s.totalXP=(s.totalXP||0)+gained;s.level=Math.floor((s.totalXP||0)/1000)+1;return s});
-   await db.ref('studentProfilesV3/'+state.user.uid+'/quizHistory').push({
-     sourceId:qz.sourceId,
-     sourceType:state.currentLesson?'lesson':'quiz',
+ if(!state.user)return;
+ try{
+   const history=Object.values(state.profile?.quizHistory||{}).filter(x=>x?.sourceId===qz.sourceId);
+   const firstAttempt=!history.length;
+   const previousTarget=history.length?Math.max(...history.map(x=>quizXpTarget(Number(x.score||0)))):0;
+   const target=quizXpTarget(pct),gained=Math.max(0,target-previousTarget),quizDelta=firstAttempt?1:0;
+   const rec={
+     sourceId:qz.sourceId,sourceType:state.currentLesson?'lesson':'quiz',
      title:state.currentQuiz?.name||state.currentLesson?.title||'اختبار',
-     subject:qz.c?.subject||'',
-     unit:Number(state.currentQuiz?.unit||state.currentLesson?.unit||0),
-     score:pct,
-     correct:score,
-     total:qz.questions.length,
-     createdAt:Date.now()
+     subject:qz.c?.subject||'',unit:Number(state.currentQuiz?.unit||state.currentLesson?.unit||0),
+     score:pct,correct:score,total:qz.questions.length,xp:gained,createdAt:Date.now()
+   };
+   const ref=db.ref('studentProfilesV3/'+state.user.uid+'/quizHistory').push();
+   await ref.set(rec);
+   await db.ref('studentProfilesV3/'+state.user.uid+'/stats').transaction(s=>{
+     s=s||{};s.completedQuizzes=(s.completedQuizzes||0)+quizDelta;s.totalXP=(s.totalXP||0)+gained;s.level=Math.floor((s.totalXP||0)/1000)+1;return s;
    });
-   await db.ref('studentProfilesV3/'+state.user.uid+'/dailyGoals/'+new Date().toISOString().slice(0,10)+'/quiz').set(true);
-   if(window.AcademyCore?.addLeaderboardXP) await window.AcademyCore.addLeaderboardXP(state.user.uid,state.profile?.name||state.user.displayName||'طالب',gained,1);
+   await db.ref('studentProfilesV3/'+state.user.uid+'/dailyGoals/'+localDateKey()+'/quiz').set(true);
+   if(window.AcademyCore?.addLeaderboardXP&&(gained||quizDelta))await window.AcademyCore.addLeaderboardXP(state.user.uid,state.profile?.name||state.user.displayName||'طالب',gained,quizDelta);
+   state.profile.quizHistory=state.profile.quizHistory||{};state.profile.quizHistory[ref.key]=rec;
+   state.profile.stats=state.profile.stats||{};
+   state.profile.stats.completedQuizzes=Number(state.profile.stats.completedQuizzes||0)+quizDelta;
+   state.profile.stats.totalXP=Number(state.profile.stats.totalXP||0)+gained;
+   if(gained>0)toast('أضفنا +'+gained+' XP لتحسن نتيجتك ✨');
+   else if(!firstAttempt)toast('تم حفظ المحاولة. نقاط هذا المستوى حصلت عليها بالفعل.');
+ }catch(err){
+   console.error(err);toast('تم حساب النتيجة لكن تعذر حفظ المحاولة الآن.','error');
  }
 }
 function renderQuizOnly(c,id){
