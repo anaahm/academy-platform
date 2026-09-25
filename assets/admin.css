@@ -387,3 +387,19 @@ linear-gradient(135deg,#0f172a,#111827 45%,#172554)}
 @media(max-width:650px){
   .admin-hero-art{width:72px;height:72px;border-radius:21px}
 }
+
+/* Subject image preview */
+.admin-subject-image-preview{
+  min-height:138px;border:1px dashed #b9cbe4;border-radius:15px;
+  background:
+    radial-gradient(circle at 78% 20%,rgba(67,151,255,.16),transparent 30%),
+    linear-gradient(135deg,#eef6ff,#e5efff);
+  background-size:cover;background-position:center;
+  display:grid;place-items:center;overflow:hidden;
+  box-shadow:inset 0 1px 0 #fff,0 8px 18px rgba(31,73,139,.06)
+}
+.admin-subject-image-preview span{
+  padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.94);
+  color:#173f89;font-size:7px;font-weight:900;box-shadow:0 5px 12px rgba(31,73,139,.10)
+}
+.admin-subject-image-preview.has-image{border-style:solid;border-color:#9fc6f3}
