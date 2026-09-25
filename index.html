@@ -200,110 +200,200 @@
       </section>
     </section>
 
-    <section id="studentDashboard" class="dashboard-shell hidden">
-      <aside class="dashboard-sidebar simple-dashboard-sidebar" id="dashboardSidebar">
-        <div class="sidebar-brand-row">
-          <a class="brand brand-light" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-book-open"></i></span><span class="sidebar-brand-copy"><strong>الأكاديمية</strong><small>مساحتك التعليمية</small></span></a>
+    <section id="studentDashboard" class="dashboard-shell premium-dashboard-shell hidden">
+      <aside class="dashboard-sidebar ref-dashboard-sidebar" id="dashboardSidebar">
+        <div class="ref-sidebar-brand">
+          <a class="brand brand-light" href="./index.html">
+            <span class="ref-brand-icon"><i class="fa-solid fa-book-open"></i><i class="fa-solid fa-star"></i></span>
+            <span><strong id="dashboardBrandName">الأكاديمية</strong><small>للتعليم المبتكر</small></span>
+          </a>
         </div>
 
-        <nav class="dashboard-nav simple-dashboard-nav" aria-label="التنقل الرئيسي للطالب">
+        <nav class="dashboard-nav ref-dashboard-nav" aria-label="التنقل الرئيسي للطالب">
           <button class="active" id="dashHomeBtn" data-nav-label="الرئيسية"><i class="fa-solid fa-house"></i><span>الرئيسية</span></button>
           <button id="dashSubjectsBtn" data-nav-label="موادي"><i class="fa-solid fa-book-open"></i><span>موادي</span></button>
-          <button id="dashPlannerBtn" data-nav-label="خطتي"><i class="fa-regular fa-calendar-check"></i><span>خطتي</span></button>
-          <button id="dashAssignmentsBtn" onclick="location.href='./assignments.html'" data-nav-label="الواجبات"><i class="fa-solid fa-clipboard-check"></i><span>الواجبات</span></button>
-
-          <div class="dashboard-nav-group dashboard-more-group">
-            <button class="dashboard-more-toggle" id="dashboardMoreToggle" aria-expanded="false"><i class="fa-solid fa-ellipsis"></i><span>المزيد</span><i class="fa-solid fa-chevron-down more-chevron"></i></button>
-            <div class="dashboard-more-menu hidden" id="dashboardMoreMenu">
-              <button id="dashTestsBtn" data-nav-label="الاختبارات"><i class="fa-regular fa-circle-check"></i><span>الاختبارات</span></button>
-              <button id="dashScheduleBtn" onclick="location.href='./schedule.html'" data-nav-label="الجدول"><i class="fa-regular fa-calendar-days"></i><span>الجدول</span></button>
-              <button id="dashProgressBtn" data-nav-label="التقدم"><i class="fa-solid fa-chart-line"></i><span>التقدم</span></button>
-              <button id="dashLibraryBtn" data-nav-label="المكتبة"><i class="fa-solid fa-folder-open"></i><span>المكتبة</span></button>
-              <button id="dashLiveBtn" data-nav-label="البث المباشر"><i class="fa-solid fa-tower-broadcast"></i><span>البث المباشر</span></button>
-              <button id="dashSimulationsBtn" data-nav-label="المحاكيات"><i class="fa-solid fa-stopwatch"></i><span>المحاكيات</span></button>
-              <button id="dashCommunityBtn" data-nav-label="المجتمع"><i class="fa-solid fa-users"></i><span>المجتمع</span></button>
-              <button id="dashLeaderboardBtn" data-nav-label="المتصدرون"><i class="fa-solid fa-ranking-star"></i><span>المتصدرون</span></button>
-              <button id="exploreAllStagesSide" data-nav-label="استكشف المراحل"><i class="fa-regular fa-compass"></i><span>استكشف المراحل</span></button>
-            </div>
-          </div>
+          <button id="dashTestsBtn" data-nav-label="الاختبارات"><i class="fa-regular fa-file-lines"></i><span>الاختبارات</span></button>
+          <button id="dashAssignmentsBtn" onclick="location.href='./assignments.html'" data-nav-label="الواجبات"><i class="fa-regular fa-square-check"></i><span>الواجبات</span></button>
+          <button id="dashPlannerBtn" data-nav-label="خطة المذاكرة"><i class="fa-regular fa-calendar"></i><span>خطة المذاكرة</span></button>
+          <button id="dashProgressBtn" data-nav-label="متابعة التقدم"><i class="fa-solid fa-chart-simple"></i><span>متابعة التقدم</span></button>
+          <button id="dashLibraryBtn" data-nav-label="المكتبة"><i class="fa-solid fa-book"></i><span>المكتبة</span></button>
+          <button id="dashLiveBtn" data-nav-label="البث المباشر"><i class="fa-solid fa-tower-broadcast"></i><span>البث المباشر</span></button>
+          <button id="dashCommunityBtn" data-nav-label="مجتمع الطلاب"><i class="fa-solid fa-users"></i><span>مجتمع الطلاب</span></button>
+          <button id="dashLeaderboardBtn" data-nav-label="المتصدرون"><i class="fa-solid fa-trophy"></i><span>المتصدرون</span></button>
+          <button id="exploreAllStagesSide" data-nav-label="استكشف المراحل"><i class="fa-regular fa-compass"></i><span>استكشف المراحل</span></button>
+          <button id="dashProfileBtn" data-nav-label="حسابي"><i class="fa-regular fa-user"></i><span>حسابي</span></button>
+          <button id="dashScheduleBtn" class="hidden" onclick="location.href='./schedule.html'"></button>
+          <button id="dashSimulationsBtn" class="hidden"></button>
         </nav>
 
-        <div class="dashboard-sidebar-footer">
-          <button id="dashProfileBtn" data-nav-label="حسابي"><i class="fa-regular fa-user"></i><span>حسابي</span></button>
-          <button id="dashLogoutBtn" class="dashboard-logout-btn" data-nav-label="تسجيل الخروج"><i class="fa-solid fa-arrow-right-from-bracket"></i><span>تسجيل الخروج</span></button>
+        <div class="ref-sidebar-promo">
+          <span class="promo-crown">👑</span>
+          <strong>طور مستقبلك<br>مع الأكاديمية</strong>
+          <small>كل أدوات التعلم في مكان واحد</small>
+          <button type="button" id="sidebarExplorePromo">استكشف الآن <i class="fa-solid fa-arrow-left"></i></button>
+        </div>
+
+        <div class="dashboard-sidebar-footer ref-sidebar-footer">
+          <button id="dashLogoutBtn" data-nav-label="تسجيل الخروج"><i class="fa-solid fa-arrow-right-from-bracket"></i><span>تسجيل الخروج</span></button>
         </div>
       </aside>
-      <div class="dashboard-content">
-        <header class="dashboard-topbar simple-dashboard-topbar">
-          <div class="dashboard-welcome">
-            <button class="dash-mobile-menu" id="dashMobileMenu" aria-label="فتح القائمة"><i class="fa-solid fa-bars"></i></button>
-            <div><span class="dashboard-greeting">أهلًا <strong id="dashStudentName">طالبنا</strong> 👋</span><small id="dashTodayLabel">جاهز تكمل من مكانك؟</small></div>
-          </div>
-          <div class="dashboard-actions simple-top-actions">
-            <a class="icon-btn" href="./search.html" aria-label="البحث" title="البحث"><i class="fa-solid fa-magnifying-glass"></i></a>
-            <button class="icon-btn" id="dashNotificationBtn" aria-label="الإشعارات" title="الإشعارات"><i class="fa-regular fa-bell"></i></button>
-            <a class="simple-account-avatar" href="./profile.html" aria-label="حسابي" title="حسابي"><span class="avatar" id="dashAccountAvatar">ط</span></a>
+
+      <div class="dashboard-content ref-dashboard-content">
+        <header class="dashboard-topbar ref-dashboard-topbar">
+          <button class="dash-mobile-menu" id="dashMobileMenu" aria-label="فتح القائمة"><i class="fa-solid fa-bars"></i></button>
+
+          <form class="ref-dashboard-search" id="dashSearchForm">
+            <button type="submit" aria-label="بحث"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <input id="dashSearchInput" type="search" placeholder="ابحث عن درس، موضوع، أو أي محتوى...">
+          </form>
+
+          <div class="ref-top-user">
+            <button class="ref-notification-btn" id="dashNotificationBtn" aria-label="الإشعارات">
+              <i class="fa-regular fa-bell"></i><span class="ref-notification-badge">3</span>
+            </button>
+            <a href="./profile.html" class="ref-user-chip">
+              <span class="avatar" id="dashAccountAvatar">ط</span>
+              <span><strong>مرحبًا <b id="dashStudentName">طالبنا</b> 👋</strong><small id="dashTodayLabel">طالب مجتهد يصنع الفرق</small></span>
+              <i class="fa-solid fa-chevron-down"></i>
+            </a>
           </div>
         </header>
 
-        <div class="dashboard-page simple-student-home">
-          <section class="simple-home-heading">
-            <div>
-              <span class="simple-eyebrow">مساحتك التعليمية</span>
-              <h1>جاهز تكمل؟</h1>
-              <p><strong id="currentGradeTitle">الصف الدراسي</strong><span>•</span><span id="currentEducationTitle">المسار التعليمي</span></p>
+        <main class="ref-dashboard-page">
+          <section class="ref-hero-card" id="dashboardHero">
+            <div class="ref-hero-overlay"></div>
+            <div class="ref-hero-copy">
+              <h1>مرحبًا <span id="heroStudentName">طالبنا</span> <span class="wave">👋</span></h1>
+              <p id="dashboardHeroSubtitle">كل يوم هو فرصة جديدة للتعلم وتقترب من أهدافك</p>
+              <div class="ref-hero-badges">
+                <button type="button" id="dashChangeStudyBtn" class="hero-badge grade"><i class="fa-solid fa-graduation-cap"></i><span id="currentGradeTitle">الصف الدراسي</span></button>
+                <span class="hero-badge type" id="currentEducationTitle">التعليم العام</span>
+              </div>
             </div>
-            <button class="simple-text-action" id="dashChangeStudyBtn"><i class="fa-solid fa-pen"></i> تعديل مرحلتي</button>
           </section>
 
-          <section class="simple-focus-grid">
-            <article class="simple-continue-card">
-              <span class="simple-focus-icon primary"><i class="fa-solid fa-play"></i></span>
-              <div class="simple-focus-copy">
-                <span class="simple-card-label">تابع من حيث توقفت</span>
-                <h2 id="continueTitle">اختر أول مادة وابدأ رحلتك</h2>
-                <p id="continueMeta">سنحفظ تقدمك تلقائيًا.</p>
+          <section class="ref-stats-grid" aria-label="إحصائيات الطالب">
+            <article class="ref-stat-card stat-purple">
+              <span class="ref-stat-icon"><i class="fa-solid fa-graduation-cap"></i></span>
+              <div><strong id="completedLessons">0</strong><small>درس مكتمل</small></div>
+              <i class="fa-solid fa-chart-simple stat-bars"></i>
+            </article>
+            <article class="ref-stat-card stat-green">
+              <span class="ref-stat-icon"><i class="fa-solid fa-file-circle-check"></i></span>
+              <div><strong id="completedQuizzes">0</strong><small>اختبار مكتمل</small></div>
+              <i class="fa-solid fa-chart-simple stat-bars"></i>
+            </article>
+            <article class="ref-stat-card stat-orange">
+              <span class="ref-stat-icon"><i class="fa-solid fa-fire"></i></span>
+              <div><strong id="streakValue">0</strong><small>أيام متتالية</small></div>
+              <i class="fa-solid fa-chart-simple stat-bars"></i>
+            </article>
+            <article class="ref-stat-card stat-blue">
+              <span class="ref-stat-icon"><i class="fa-solid fa-star"></i></span>
+              <div><strong id="xpStat">0</strong><small>نقطة خبرة (XP)</small></div>
+              <i class="fa-solid fa-chart-simple stat-bars"></i>
+            </article>
+          </section>
+
+          <section class="ref-main-grid">
+            <article class="ref-card ref-continue-card">
+              <header class="ref-card-head">
+                <div><i class="fa-solid fa-circle-play"></i><h2>تابع من حيث توقفت</h2></div>
+              </header>
+              <div class="ref-continue-layout">
+                <div class="ref-continue-visual" id="continueLessonVisual">
+                  <span class="continue-subject-tag">موادك</span>
+                  <button type="button" class="continue-play" id="continuePlayBtn" aria-label="متابعة الدرس"><i class="fa-solid fa-play"></i></button>
+                </div>
+                <div class="ref-continue-copy">
+                  <span class="ref-muted" id="continueSubjectName">المادة الدراسية</span>
+                  <h3 id="continueTitle">اختر أول مادة وابدأ رحلتك</h3>
+                  <p id="continueMeta">سنحفظ تقدمك تلقائيًا.</p>
+                  <div class="continue-progress-line"><span style="width:58%"></span></div>
+                  <div class="continue-time"><span>12:45</span><span>28:30</span></div>
+                  <button class="btn ref-primary-btn" id="continueLearningBtn">متابعة الدرس <i class="fa-solid fa-play"></i></button>
+                </div>
               </div>
-              <button class="btn btn-primary" id="continueLearningBtn">متابعة <i class="fa-solid fa-arrow-left"></i></button>
             </article>
 
-            <article class="simple-today-card">
-              <span class="simple-focus-icon soft"><i class="fa-regular fa-calendar"></i></span>
-              <div class="simple-focus-copy">
-                <span class="simple-card-label">اليوم</span>
-                <h3 id="pulseActionTitle">جاري تجهيز أهم خطوة ليك...</h3>
-                <p id="pulseActionText">هنعرض المطلوب الأهم فقط.</p>
-                <small>القادم: <strong id="pulseNextTime">—</strong></small>
+            <article class="ref-card ref-next-card">
+              <header class="ref-card-head"><div><i class="fa-solid fa-bullseye"></i><h2>ماذا تفعل اليوم؟</h2></div></header>
+              <div class="next-step-pill">الخطوة التالية لك</div>
+              <div class="next-step-content">
+                <span class="next-step-art">📋</span>
+                <div>
+                  <h3 id="pulseActionTitle">جاري تجهيز أهم خطوة ليك...</h3>
+                  <p id="pulseActionText">هنعرض المطلوب الأهم فقط.</p>
+                  <small>القادم: <strong id="pulseNextTime">—</strong></small>
+                </div>
               </div>
-              <button class="simple-link-button" id="pulseActionBtn">ابدأ</button>
+              <button class="btn ref-primary-btn" id="pulseActionBtn">ابدأ الآن <i class="fa-solid fa-arrow-left"></i></button>
+            </article>
+
+            <article class="ref-card ref-goals-card">
+              <header class="ref-card-head goals-head">
+                <div><i class="fa-solid fa-bullseye"></i><h2>أهدافك اليومية</h2></div>
+                <strong id="dailyGoalCount">0 من 4 مكتملة</strong>
+              </header>
+              <div class="ref-goal-progress"><span id="dailyGoalProgress"></span></div>
+              <div class="ref-goal-list">
+                <button data-daily-goal="lesson"><i class="fa-regular fa-circle goal-state"></i><span>مشاهدة درس جديد</span></button>
+                <button data-daily-goal="assignment"><i class="fa-regular fa-circle goal-state"></i><span>حل واجب مدرسي</span></button>
+                <button data-daily-goal="quiz"><i class="fa-regular fa-circle goal-state"></i><span>إجراء اختبار قصير</span></button>
+                <button data-daily-goal="review"><i class="fa-regular fa-circle goal-state"></i><span>مذاكرة لمدة 30 دقيقة</span></button>
+              </div>
+              <p class="hidden" id="dailyGoalMessage"></p>
+              <span class="hidden" id="dailyGoalRing"></span>
+              <span class="hidden" id="dailyGoalPercent"></span>
+              <button class="hidden" id="dailyQuickStart"></button>
             </article>
           </section>
 
-          <section class="dashboard-section simple-subjects-section" id="studentSubjects">
-            <div class="simple-section-head">
-              <div><span class="simple-eyebrow">التعلّم</span><h2>موادك</h2></div>
-              <button class="simple-text-action" id="exploreSubjectsDash">استكشف باقي المواد <i class="fa-solid fa-arrow-left"></i></button>
-            </div>
-            <div class="dashboard-subject-grid simple-subject-grid" id="dashboardSubjects"></div>
-          </section>
+          <section class="ref-content-grid">
+            <div class="ref-content-main">
+              <section class="ref-card ref-subjects-section" id="studentSubjects">
+                <header class="ref-section-head">
+                  <button class="ref-link-btn" id="exploreSubjectsDash">عرض جميع المواد <i class="fa-solid fa-arrow-left"></i></button>
+                  <div><h2><i class="fa-solid fa-book-open"></i> موادي الدراسية</h2></div>
+                </header>
+                <div class="ref-subject-grid" id="dashboardSubjects"></div>
+              </section>
 
-          <section class="simple-today-links">
-            <div class="simple-section-head">
-              <div><span class="simple-eyebrow">اختصارات</span><h2>محتاج تعمل إيه؟</h2></div>
+              <section class="ref-card ref-tools-section">
+                <header class="ref-section-head"><div><h2><i class="fa-solid fa-briefcase"></i> الخدمات والأدوات</h2></div></header>
+                <div class="ref-tools-grid">
+                  <a href="./exam-center.html" class="tool-purple"><span><i class="fa-solid fa-list-check"></i></span><div><strong>الاختبارات</strong><small>اختبر معلوماتك</small></div><i class="fa-solid fa-chevron-down"></i></a>
+                  <a href="./assignments.html" class="tool-orange"><span><i class="fa-solid fa-clipboard-list"></i></span><div><strong>الواجبات</strong><small>تابع واجباتك</small></div><i class="fa-solid fa-chevron-down"></i></a>
+                  <a href="./schedule.html" class="tool-blue"><span><i class="fa-solid fa-calendar-days"></i></span><div><strong>الجدول</strong><small>مواعيدك الدراسية</small></div><i class="fa-solid fa-chevron-down"></i></a>
+                  <a href="./planner.html" class="tool-green"><span><i class="fa-solid fa-bullseye"></i></span><div><strong>خطة المذاكرة</strong><small>نظم وقتك</small></div><i class="fa-solid fa-chevron-down"></i></a>
+                  <a href="./library.html" class="tool-purple"><span><i class="fa-solid fa-book"></i></span><div><strong>المكتبة</strong><small>مصادر وكتب إضافية</small></div><i class="fa-solid fa-chevron-down"></i></a>
+                  <a href="./live.html" class="tool-red"><span><i class="fa-solid fa-tower-broadcast"></i></span><div><strong>البث المباشر</strong><small>حصص مباشرة</small></div><i class="fa-solid fa-chevron-down"></i></a>
+                  <a href="./community.html" class="tool-blue"><span><i class="fa-solid fa-users"></i></span><div><strong>المجتمع</strong><small>تواصل مع زملائك</small></div><i class="fa-solid fa-chevron-down"></i></a>
+                  <a href="./progress.html" class="tool-green"><span><i class="fa-solid fa-chart-simple"></i></span><div><strong>متابعة التقدم</strong><small>راقب تطورك</small></div><i class="fa-solid fa-chevron-down"></i></a>
+                </div>
+              </section>
             </div>
-            <div class="simple-quick-grid">
-              <a href="./assignments.html"><span><i class="fa-solid fa-clipboard-check"></i></span><strong>الواجبات</strong><small>المطلوب منك</small></a>
-              <a href="./schedule.html"><span><i class="fa-regular fa-calendar-days"></i></span><strong>الجدول</strong><small>حصصك ومواعيدك</small></a>
-              <a href="./planner.html"><span><i class="fa-regular fa-calendar-check"></i></span><strong>خطتي</strong><small>نظّم مذاكرتك</small></a>
-              <a href="./exam-center.html"><span><i class="fa-regular fa-circle-check"></i></span><strong>الاختبارات</strong><small>اختبر نفسك</small></a>
-            </div>
-          </section>
 
-          <section class="simple-more-strip">
-            <div><span class="simple-more-icon"><i class="fa-solid fa-grid-2"></i></span><div><strong>أدوات إضافية</strong><small>المكتبة، البث، المجتمع، التقدم والمزيد.</small></div></div>
-            <button class="btn btn-soft" id="openMoreServices">عرض المزيد</button>
+            <aside class="ref-content-side">
+              <article class="ref-side-card streak-card">
+                <div><small>أنت الآن في سلسلة</small><strong><span id="streakSideValue">0</span> أيام متتالية! 🔥</strong><p>مواصلة هذا الأداء الرائع!</p></div>
+                <span class="side-art">🏆</span>
+              </article>
+
+              <article class="ref-side-card challenge-card">
+                <div><small>🎁 تحدي اليوم</small><strong>أجب على 5 أسئلة في أي مادة</strong><p>واحصل على 50 نقطة خبرة إضافية</p><span>التقدم: <b id="pulseChallengeState">0 / 4</b></span></div>
+                <span class="side-art">🎮</span>
+                <a href="./exam-center.html" class="btn challenge-btn">ابدأ التحدي</a>
+              </article>
+
+              <article class="ref-side-card explore-card">
+                <div><strong>استكشف جميع المراحل</strong><p>تصفح المناهج والمحتوى لجميع المراحل الدراسية</p></div>
+                <span class="side-art">🗺️</span>
+                <button type="button" id="exploreAllStagesMain" class="btn explore-btn">استكشف الآن</button>
+              </article>
+            </aside>
           </section>
-        </div>
+        </main>
       </div>
     </section>
   </main>
