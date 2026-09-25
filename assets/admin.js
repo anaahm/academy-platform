@@ -93,7 +93,7 @@ const ADMIN_TAB_PATHS={
  files:['files','customSubjects'],
  live:['liveSessions'],
  schedule:['scheduleEvents','customSubjects'],
- teachers:['teacherProfiles','teacherSubmissions','studentProfilesV3','customSubjects'],
+ teachers:['teacherProfiles','teacherSubmissions','studentProfilesV3','customSubjects','settings'],
  students:['studentProfilesV3'],
  news:['posts'],
  community:['community'],
@@ -516,8 +516,46 @@ async function createTeacherAccount(event){
    $('newTeacherPassword').value='';button.disabled=false;
  }
 }
+const publicProfileFields=['name','title','photoUrl','bio','qualifications','experience','teachingStyle'];
+function cleanPublicProfile(raw={}){
+ const limits={name:80,title:100,photoUrl:500,bio:1200,qualifications:200,experience:200,teachingStyle:450},out={};
+ publicProfileFields.forEach(key=>out[key]=String(raw[key]||'').trim().slice(0,limits[key]));
+ out.photoUrl=out.photoUrl&&cleanUrl(out.photoUrl)!=='#'?out.photoUrl:'';
+ return out;
+}
+function fillTeacherProfileEditor(){
+ const uid=$('profileTeacherId').value,t=root.teacherProfiles?.[uid]||{},p=root.settings?.publicTeachers?.[uid]||{};
+ const fields={Name:p.name||t.name||'',Title:p.title||'',Photo:p.photoUrl||'',Bio:p.bio||'',Qualifications:p.qualifications||'',Experience:p.experience||'',Style:p.teachingStyle||''};
+ Object.entries(fields).forEach(([key,value])=>{$('profileTeacher'+key).value=value});
+}
+async function saveTeacherProfile(e){
+ e.preventDefault();const uid=$('profileTeacherId').value,t=root.teacherProfiles?.[uid];
+ if(!t||t.isActive===false)return toast('اختر مدرسًا نشطًا أولًا.','error');
+ const raw={name:$('profileTeacherName').value,title:$('profileTeacherTitle').value,photoUrl:$('profileTeacherPhoto').value,bio:$('profileTeacherBio').value,qualifications:$('profileTeacherQualifications').value,experience:$('profileTeacherExperience').value,teachingStyle:$('profileTeacherStyle').value};
+ const profile=cleanPublicProfile(raw);if(!profile.name||!profile.title)return toast('الاسم والتخصص مطلوبان.','error');
+ if(raw.photoUrl.trim()&&!profile.photoUrl)return toast('رابط الصورة يجب أن يبدأ بـ https:// أو http://.','error');
+ try{await db.ref('settings/publicTeachers/'+uid).set({...profile,active:true,updatedAt:Date.now()});toast('تم نشر ملف المدرس للطلاب')}catch(err){console.error(err);toast('تعذر حفظ ملف المدرس.','error')}
+}
+async function reviewTeacherProfile(key,approved){
+ const [uid,id]=key.split('|'),s=root.teacherSubmissions?.[uid]?.[id],t=root.teacherProfiles?.[uid];
+ if(!s||s.type!=='profile'||s.status!=='pending')return;
+ if(approved&&(!t||t.isActive===false))return toast('المدرس غير نشط؛ لا يمكن نشر ملفه.','error');
+ try{
+   if(approved){const profile=cleanPublicProfile(s.profile);if(!profile.name||!profile.title)throw Error('بيانات الملف غير مكتملة');await db.ref('settings/publicTeachers/'+uid).set({...profile,active:true,updatedAt:Date.now()})}
+   await db.ref('teacherSubmissions/'+uid+'/'+id).update({status:approved?'approved':'rejected',reviewedAt:Date.now()});
+   toast(approved?'تم اعتماد الملف ونشره':'تم رفض طلب التعديل');
+ }catch(err){console.error(err);toast('تعذر مراجعة الطلب.','error')}
+}
 function renderTeachers(){
- const teachers=values(root.teacherProfiles),students=values(root.studentProfilesV3),subs=flattenSubmissions(),pending=subs.filter(s=>(s.status||'pending')==='pending');
+ const teachers=values(root.teacherProfiles),students=values(root.studentProfilesV3),all=flattenSubmissions(),subs=all.filter(s=>s.type!=='profile'),profileRequests=all.filter(s=>s.type==='profile').sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)),pending=subs.filter(s=>(s.status||'pending')==='pending');
+ const selected=$('profileTeacherId').value;
+ $('profileTeacherId').innerHTML='<option value="">اختر المدرس</option>'+teachers.filter(t=>t.isActive!==false).map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||t.email||'مدرس')+'</option>').join('');
+ $('profileTeacherId').value=teachers.some(t=>t.id===selected&&t.isActive!==false)?selected:'';
+ if(!$('profileTeacherId').value&&teachers.some(t=>t.isActive!==false))$('profileTeacherId').value=teachers.find(t=>t.isActive!==false).id;
+ if(document.activeElement?.closest('#adminTeacherProfileForm')===null||document.activeElement===$('profileTeacherId'))fillTeacherProfileEditor();
+ $('teacherProfileRequestsList').innerHTML=profileRequests.length?profileRequests.map(s=>{const p=s.profile||{},photo=cleanUrl(p.photoUrl||'');return '<div class="admin-list-item"><div><strong>'+esc(p.name||root.teacherProfiles?.[s.uid]?.name||'مدرس')+'</strong><small>'+esc(p.title||'')+'</small><details class="teacher-profile-review"><summary>عرض المعلومات المقترحة</summary>'+(photo!=='#'?'<img src="'+esc(photo)+'" alt="الصورة المقترحة" loading="lazy">':'')+'<p><b>النبذة:</b> '+esc(p.bio||'—')+'</p><p><b>المؤهلات:</b> '+esc(p.qualifications||'—')+'</p><p><b>الخبرة:</b> '+esc(p.experience||'—')+'</p><p><b>أسلوب الشرح:</b> '+esc(p.teachingStyle||'—')+'</p></details></div><div class="admin-action-row">'+(s.status==='pending'?'<button class="admin-action-btn success" data-approve-profile="'+s.uid+'|'+s.id+'" title="اعتماد ونشر" aria-label="اعتماد ملف '+esc(p.name||'المدرس')+'">✓</button><button class="admin-action-btn danger" data-reject-profile="'+s.uid+'|'+s.id+'" title="رفض" aria-label="رفض ملف '+esc(p.name||'المدرس')+'">✕</button>':'<span class="status-pill '+(s.status==='approved'?'approved':'rejected')+'">'+(s.status==='approved'?'معتمد':'مرفوض')+'</span>')+'</div></div>'}).join(''):empty('لا توجد طلبات ملفات','يمكن للمدرس تقديم معلومات ملفه من بوابته.');
+ $$('[data-approve-profile]').forEach(b=>b.onclick=()=>reviewTeacherProfile(b.dataset.approveProfile,true));
+ $$('[data-reject-profile]').forEach(b=>b.onclick=()=>reviewTeacherProfile(b.dataset.rejectProfile,false));
  $('pendingCountText').textContent=pending.length+' قيد المراجعة';
  $('teachersAdminList').innerHTML=teachers.length?teachers.map(t=>'<div class="admin-list-item"><div><strong>'+esc(t.name||t.email||'مدرس')+'</strong><small>'+esc(t.email||'')+' • '+assignmentsOf(t).length+' صلاحية • '+(t.isActive===false?'موقوف':'نشط')+'</small></div><div class="admin-action-row"><button class="admin-action-btn" data-reset-teacher="'+t.id+'" title="إرسال رابط تغيير كلمة المرور" aria-label="إرسال رابط تغيير كلمة المرور إلى '+esc(t.name||t.email||'المدرس')+'"><i class="fa-solid fa-key"></i></button><button class="admin-action-btn '+(t.isActive===false?'success':'')+'" data-toggle-teacher="'+t.id+'" title="تفعيل أو إيقاف" aria-label="تفعيل أو إيقاف '+esc(t.name||'المدرس')+'"><i class="fa-solid '+(t.isActive===false?'fa-play':'fa-pause')+'"></i></button><button class="admin-action-btn danger" data-remove-teacher="'+t.id+'" title="إزالة الصلاحية" aria-label="إزالة صلاحية '+esc(t.name||'المدرس')+'"><i class="fa-solid fa-user-minus"></i></button></div></div>').join(''):empty('لا يوجد مدرسون','أنشئ حسابًا جديدًا من النموذج أعلاه أو رقّ حسابًا موجودًا.');
  const teacherIds=new Set(teachers.map(t=>t.id)),candidates=students.filter(s=>!teacherIds.has(s.id));
@@ -525,9 +563,9 @@ function renderTeachers(){
  $('assignTeacher').innerHTML=teachers.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||t.email||t.id)+'</option>').join('');
  refreshAssignmentSubjects();
  $('teacherSubmissionsList').innerHTML=subs.length?subs.map(s=>'<div class="admin-list-item"><div><strong>'+esc(s.title||'محتوى')+'</strong><small>'+esc(s.teacherName||root.teacherProfiles?.[s.uid]?.name||'مدرس')+' • '+esc(typeLabel(s.type))+' • '+esc(gradeLabel(s.stage,s.grade))+' • '+esc(s.subjectName||s.subject||'')+'</small>'+(s.videoUrl?'<a href="'+cleanUrl(s.videoUrl)+'" target="_blank" rel="noopener" style="font-size:9px;color:#2563eb">فتح الفيديو</a>':'')+'</div><div class="admin-action-row">'+((s.status||'pending')==='pending'?'<button class="admin-action-btn success" data-approve="'+s.uid+'|'+s.id+'" title="اعتماد"><i class="fa-solid fa-check"></i></button><button class="admin-action-btn danger" data-reject="'+s.uid+'|'+s.id+'" title="رفض"><i class="fa-solid fa-xmark"></i></button>':'<span class="status-pill '+(s.status==='approved'?'approved':'rejected')+'">'+(s.status==='approved'?'معتمد':'مرفوض')+'</span>')+'</div></div>').join(''):empty('لا توجد طلبات محتوى','عندما يرسل مدرس درسًا سيظهر هنا.');
- $$('[data-toggle-teacher]').forEach(b=>b.onclick=()=>db.ref('teacherProfiles/'+b.dataset.toggleTeacher+'/isActive').set(root.teacherProfiles?.[b.dataset.toggleTeacher]?.isActive===false));
+ $$('[data-toggle-teacher]').forEach(b=>b.onclick=async()=>{const uid=b.dataset.toggleTeacher,activate=root.teacherProfiles?.[uid]?.isActive===false;try{await db.ref('teacherProfiles/'+uid+'/isActive').set(activate);if(root.settings?.publicTeachers?.[uid])await db.ref('settings/publicTeachers/'+uid+'/active').set(activate)}catch(err){console.error(err);toast('تعذر تغيير حالة المدرس.','error')}});
  $$('[data-reset-teacher]').forEach(b=>b.onclick=async()=>{const email=root.teacherProfiles?.[b.dataset.resetTeacher]?.email;if(!email)return toast('لا يوجد بريد لهذا المدرس.','error');try{await auth.sendPasswordResetEmail(email);toast('تم إرسال رابط تغيير كلمة المرور إلى بريد المدرس.')}catch(err){console.error(err);toast('تعذر إرسال رابط تغيير كلمة المرور.','error')}});
- $$('[data-remove-teacher]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'إزالة صلاحية المدرس؟',message:'سيفقد هذا الحساب الوصول إلى بوابة المدرس وصلاحيات المواد المسندة إليه.',tone:'warning',acceptText:'إزالة الصلاحية'}))await db.ref('teacherProfiles/'+b.dataset.removeTeacher).remove()});
+ $$('[data-remove-teacher]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'إزالة صلاحية المدرس؟',message:'سيفقد هذا الحساب الوصول إلى بوابة المدرس وصلاحيات المواد المسندة إليه.',tone:'warning',acceptText:'إزالة الصلاحية'})){const uid=b.dataset.removeTeacher;try{await db.ref('settings/publicTeachers/'+uid).remove();await db.ref('teacherProfiles/'+uid).remove()}catch(err){console.error(err);toast('تعذرت إزالة صلاحية المدرس.','error')}}});
  $$('[data-promote]').forEach(b=>b.onclick=async()=>{const s=root.studentProfilesV3?.[b.dataset.promote]||{};await db.ref('teacherProfiles/'+b.dataset.promote).set({name:s.name||'',email:s.email||'',isActive:true,createdAt:Date.now(),assignments:[]});toast('تم تحويل الحساب إلى مدرس')});
  $$('[data-approve]').forEach(b=>b.onclick=()=>approveSubmission(b.dataset.approve));
  $$('[data-reject]').forEach(b=>b.onclick=async()=>{const [uid,id]=b.dataset.reject.split('|');await db.ref('teacherSubmissions/'+uid+'/'+id).update({status:'rejected',reviewedAt:Date.now()});toast('تم رفض المحتوى')});
@@ -552,6 +590,7 @@ async function addAssignment(){
 }
 async function approveSubmission(key){
  const [uid,id]=key.split('|'),s=root.teacherSubmissions?.[uid]?.[id];if(!s)return;
+ if(s.type==='profile')return;
  if((s.status||'pending')!=='pending')return toast('تمت مراجعة هذا الطلب بالفعل.','error');
  try{
    const ref=db.ref('lessons').push();
@@ -721,6 +760,8 @@ bindAdminForm('scheduleEventForm',saveScheduleEvent,'حفظ الموعد');
 bindAdminForm('studyGroupForm',saveStudyGroup,'إنشاء المجموعة');
 bindAdminForm('announcementForm',saveAnnouncement,'حفظ الإعلان');
 bindAdminForm('settingsForm',saveSettings,'حفظ الإعدادات');
+$('profileTeacherId')?.addEventListener('change',fillTeacherProfileEditor);
+$('adminTeacherProfileForm')?.addEventListener('submit',saveTeacherProfile);
 $('settingDashboardHero')?.addEventListener('input',renderDashboardHeroSettingPreview);
 $('resetDashboardHero')?.addEventListener('click',()=>{
   $('settingDashboardHero').value='';

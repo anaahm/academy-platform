@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="./assets/styles.css">
   <link rel="stylesheet" href="./assets/admin.css">
   <link rel="stylesheet" href="./assets/ui-kit.css">
-  <link rel="stylesheet" href="./assets/experience.css?v=31">
+  <link rel="stylesheet" href="./assets/experience.css?v=34">
   <script src="./assets/academy-utils.js"></script>
 </head>
 <body class="admin-v3-body">
@@ -230,6 +230,26 @@
             <p id="createTeacherStatus" class="teacher-form-status" role="status" aria-live="polite"></p>
             <p class="teacher-form-tip">أرسل بيانات الدخول للمدرس بطريقة خاصة، واطلب منه تغيير كلمة المرور عبر «نسيت كلمة المرور؟» عند أول دخول.</p>
           </article>
+          <div class="admin-teacher-grid admin-spaced-card">
+            <article class="admin-card admin-form-card">
+              <div class="admin-card-head"><div><span class="section-kicker">ملف عام</span><h3>ملف المدرس الظاهر للطلاب</h3><p>تحكم في الاسم والصورة والتخصص والسيرة، ثم انشرها.</p></div><span>👤</span></div>
+              <form id="adminTeacherProfileForm" class="admin-form">
+                <label class="full"><span>المدرس</span><select id="profileTeacherId" required></select></label>
+                <label><span>الاسم المعروض</span><input id="profileTeacherName" required maxlength="80"></label>
+                <label><span>التخصص</span><input id="profileTeacherTitle" required maxlength="100" placeholder="مثال: مدرس اللغة العربية"></label>
+                <label class="full"><span>رابط صورة المدرس</span><input id="profileTeacherPhoto" type="url" dir="ltr" placeholder="https://..."></label>
+                <label class="full"><span>نبذة عن المدرس</span><textarea id="profileTeacherBio" maxlength="1200" rows="4"></textarea></label>
+                <label><span>المؤهلات</span><input id="profileTeacherQualifications" maxlength="200"></label>
+                <label><span>الخبرة</span><input id="profileTeacherExperience" maxlength="200"></label>
+                <label class="full"><span>طريقة الشرح</span><textarea id="profileTeacherStyle" maxlength="450" rows="2"></textarea></label>
+                <button class="btn btn-primary full" type="submit">حفظ ونشر الملف</button>
+              </form>
+            </article>
+            <article class="admin-card">
+              <div class="admin-card-head"><div><span class="section-kicker">موافقتك مطلوبة</span><h3>طلبات تحديث الملفات</h3></div><span>📨</span></div>
+              <div id="teacherProfileRequestsList" class="admin-list"></div>
+            </article>
+          </div>
           <div class="admin-teacher-grid">
             <article class="admin-card"><div class="admin-card-head"><div><span class="section-kicker">المدرسون</span><h3>الحسابات الحالية</h3></div><span>👨‍🏫</span></div><div id="teachersAdminList" class="admin-list"></div></article>
             <article class="admin-card"><div class="admin-card-head"><div><span class="section-kicker">ترقية حساب</span><h3>طلاب يمكن تحويلهم لمدرسين</h3></div><span>➕</span></div><div id="teacherCandidates" class="admin-list admin-scroll-list"></div></article>
@@ -469,7 +489,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="./assets/firebase-config.js"></script>
   <script src="./assets/admin-auth-flow.js?v=33"></script>
-  <script src="./assets/admin.js?v=32"></script>
+  <script src="./assets/admin.js?v=34"></script>
   <script src="./assets/admin-notifications.js"></script>
 </body>
 </html>

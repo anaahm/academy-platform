@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/portal.css">
   <link rel="stylesheet" href="./assets/ui-kit.css">
-  <link rel="stylesheet" href="./assets/experience.css?v=31">
+  <link rel="stylesheet" href="./assets/experience.css?v=34">
   <script src="./assets/academy-utils.js"></script>
 </head>
 <body class="teacher-v3-body">
@@ -37,6 +37,7 @@
         <button data-teacher-tab="assignments" role="tab" aria-selected="false" aria-controls="teacher-tab-assignments"><i class="fa-solid fa-clipboard-check"></i> الواجبات</button>
         <button data-teacher-tab="students" role="tab" aria-selected="false" aria-controls="teacher-tab-students"><i class="fa-solid fa-users"></i> الطلاب</button>
         <button data-teacher-tab="analytics" role="tab" aria-selected="false" aria-controls="teacher-tab-analytics"><i class="fa-solid fa-chart-line"></i> الإحصائيات</button>
+        <button data-teacher-tab="profile" role="tab" aria-selected="false" aria-controls="teacher-tab-profile"><i class="fa-solid fa-id-card"></i> ملفي العام</button>
       </nav>
     </aside>
     <div class="teacher-mobile-overlay hidden" id="teacherOverlay"></div>
@@ -71,6 +72,25 @@
               <div class="submission-list" id="teacherRecentSubmissions"></div>
             </article>
           </section>
+        </section>
+
+        <section class="teacher-tab hidden" id="teacher-tab-profile" role="tabpanel">
+          <article class="teacher-card">
+            <div class="teacher-card-head"><div><span class="section-kicker">ملفك للطلاب</span><h3>معلومات المعلم وصورته</h3></div><span>👤</span></div>
+            <p class="profile-muted">اكتب المعلومات التي تريد عرضها للطلاب. تظهر التعديلات بعد موافقة الإدارة فقط.</p>
+            <p id="teacherProfileStatus" class="teacher-form-status" role="status"></p>
+            <a id="teacherProfilePublicLink" class="btn btn-soft hidden" target="_blank" rel="noopener">عرض الملف المنشور</a>
+            <form id="teacherProfileForm" class="teacher-form">
+              <label><span>الاسم المعروض</span><input id="teacherProfileName" required maxlength="80"></label>
+              <label><span>التخصص</span><input id="teacherProfileTitle" required maxlength="100" placeholder="مثال: مدرس اللغة العربية"></label>
+              <label class="full"><span>رابط الصورة الشخصية</span><input id="teacherProfilePhoto" type="url" dir="ltr" placeholder="https://..."></label>
+              <label class="full"><span>نبذة عنك</span><textarea id="teacherProfileBio" maxlength="1200" rows="4"></textarea></label>
+              <label><span>المؤهلات</span><input id="teacherProfileQualifications" maxlength="200"></label>
+              <label><span>الخبرة</span><input id="teacherProfileExperience" maxlength="200"></label>
+              <label class="full"><span>أسلوبك في الشرح</span><textarea id="teacherProfileStyle" maxlength="450" rows="2"></textarea></label>
+              <button class="btn btn-primary full" type="submit">إرسال التعديلات للإدارة</button>
+            </form>
+          </article>
         </section>
 
         <section class="teacher-tab hidden" id="teacher-tab-content" role="tabpanel">
@@ -182,6 +202,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="./assets/firebase-config.js"></script>
-  <script src="./assets/teacher.js?v=32"></script>
+  <script src="./assets/teacher.js?v=34"></script>
 </body>
 </html>

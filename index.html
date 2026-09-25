@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="./assets/portal.css">
   <link rel="stylesheet" href="./assets/news.css">
   <link rel="stylesheet" href="./assets/ui-kit.css">
-  <link rel="stylesheet" href="./assets/experience.css?v=30">
+  <link rel="stylesheet" href="./assets/experience.css?v=34">
   <script src="./assets/academy-utils.js"></script>
 </head>
 <body>
@@ -179,11 +179,7 @@
             <p>لو شرح مدرس لم يناسبك، يمكنك التبديل بسهولة ومتابعة نفس الدرس مع مدرس آخر بدون أن تفقد مسارك أو تقدمك.</p>
             <button class="btn btn-light" data-open-auth="register">أنشئ حسابك وابدأ</button>
           </div>
-          <div class="teacher-cards">
-            <article><span class="teacher-avatar">م</span><div><strong>أ/ محمد</strong><small>لغة عربية</small></div><span class="rating"><i class="fa-solid fa-star"></i> 4.9</span></article>
-            <article><span class="teacher-avatar alt">س</span><div><strong>أ/ سارة</strong><small>علوم</small></div><span class="rating"><i class="fa-solid fa-star"></i> 4.8</span></article>
-            <article><span class="teacher-avatar third">ع</span><div><strong>أ/ عمر</strong><small>رياضيات</small></div><span class="rating"><i class="fa-solid fa-star"></i> 4.9</span></article>
-          </div>
+          <div class="teacher-cards" id="publicTeacherCards" aria-live="polite"><p class="teacher-empty">نجهّز ملفات فريق التدريس المعتمدة.</p></div>
         </div>
       </section>
 
@@ -478,7 +474,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="./assets/firebase-config.js"></script>
   <script src="./assets/auth-flow.js"></script>
-  <script src="./assets/app.js"></script>
+  <script src="./assets/app.js?v=34"></script>
   <script src="./assets/notification-engine.js"></script>
   <script src="./assets/notification-widget.js"></script>
   <script src="./assets/activity-tracker.js"></script>

@@ -609,6 +609,14 @@ function renderLearningSubjects(type,stage,grade){
 }
 
 async function init(){
+ if(page==='subject')document.addEventListener('click',e=>{
+   if(state.user)return;
+   const target=e.target.closest('a[href*="lesson.html"], .locked-curriculum-action, #resumeBtn, #subjectPathContinueBtn');
+   if(!target)return;
+   e.preventDefault();e.stopImmediatePropagation();
+   const destination=target.href&&new URL(target.href,location.href).pathname.endsWith('/lesson.html')?new URL(target.href,location.href).pathname+new URL(target.href,location.href).search:location.pathname+location.search;
+   const login=new URL('./index.html',location.href);login.searchParams.set('auth','login');login.searchParams.set('return',destination);location.assign(login.href);
+ },true);
  window.AcademyUI?.showPageLoading(page==='lesson'?'جاري تجهيز الدرس...':'جاري تجهيز المادة...');
  try{
    const requestedSubject=params.get('subject'),requestedStage=params.get('stage');
@@ -625,6 +633,7 @@ async function init(){
  }catch(e){toast('تعذر تحميل المحتوى الآن.','error')}
  auth.onAuthStateChanged(async user=>{
    state.user=user;
+   if(page==='lesson'&&!user){const login=new URL('./index.html',location.href);login.searchParams.set('auth','login');login.searchParams.set('return',location.pathname+location.search);location.replace(login.href);return}
    try{
      await loadProfile(user);
      if(page==='subject'){renderSubject();bindLearningExplorer()}

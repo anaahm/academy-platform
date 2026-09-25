@@ -166,6 +166,17 @@
     }
   }
 
+  function renderPublicTeachers(teachers={}) {
+    const container=$('publicTeacherCards');if(!container)return;
+    const list=Object.entries(teachers||{}).filter(([,p])=>p&&p.active!==false&&p.name).slice(0,6);
+    container.innerHTML=list.length?list.map(([id,p])=>{
+      const name=safeHtml(String(p.name).slice(0,80)),title=safeHtml(String(p.title||'عضو فريق التدريس').slice(0,100));
+      const image=safeDashboardImage(p.photoUrl||'');
+      return '<a class="teacher-public-card" href="./teacher-profile.html?id='+encodeURIComponent(id)+'"><span class="teacher-avatar">'+(image?'<img data-teacher-photo src="'+safeHtml(image)+'" alt="" loading="lazy">':safeHtml((p.name||'م')[0]))+'</span><span><strong>'+name+'</strong><small>'+title+'</small></span><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></a>';
+    }).join(''):'<p class="teacher-empty">ستظهر هنا ملفات المعلمين بعد اعتمادها من الإدارة.</p>';
+    container.querySelectorAll('[data-teacher-photo]').forEach(img=>img.addEventListener('error',()=>{img.parentElement.textContent=img.closest('a')?.querySelector('strong')?.textContent?.[0]||'م'},{once:true}));
+  }
+
   async function loadProfile(uid) {
     const snap = await database.ref('studentProfilesV3/' + uid).once('value');
     return snap.val();
@@ -191,6 +202,8 @@
       showPublicExperience();
       return;
     }
+    const requested=new URLSearchParams(location.search).get('return');
+    if(requested){try{const destination=new URL(requested,location.origin);if(destination.origin===location.origin&&destination.pathname.endsWith('/lesson.html')){location.replace(destination.href);return}}catch{}}
     $('siteHeader').classList.add('hidden');
     $('publicExperience').classList.add('hidden');
     $('publicFooter').classList.add('hidden');
@@ -868,8 +881,8 @@
       }
     });
 
-    $('openExplorerPublic').addEventListener('click', () => openExplorer());
-    $('openSubjectsExplorer').addEventListener('click', () => { openExplorer(); switchExplorerTab('subjects'); });
+    $('openExplorerPublic').addEventListener('click', () => location.href='./explore.html');
+    $('openSubjectsExplorer').addEventListener('click', () => location.href='./explore.html');
     $('exploreAllStagesMain')?.addEventListener('click', () => location.href='./explore.html');
     $('dashHomeBtn')?.addEventListener('click', () => window.scrollTo({top:0,behavior:'smooth'}));
     $('dashSubjectsBtn')?.addEventListener('click', () => document.getElementById('studentSubjects')?.scrollIntoView({behavior:'smooth'}));
@@ -895,7 +908,9 @@
     $('closeExplorer').addEventListener('click', closeExplorer);
     $('explorerBackdrop').addEventListener('click', closeExplorer);
 
-    $$('[data-explore-type][data-explore-stage]').forEach(card => card.addEventListener('click', () => openExplorer(card.dataset.exploreType, card.dataset.exploreStage)));
+    $$('[data-explore-type][data-explore-stage]').forEach(card => card.addEventListener('click', () => {
+      location.href='./explore.html?'+new URLSearchParams({type:card.dataset.exploreType,stage:card.dataset.exploreStage});
+    }));
 
     $$('[data-type-filter]').forEach(btn => btn.addEventListener('click', () => {
       state.explorer.type = btn.dataset.typeFilter;
@@ -976,9 +991,11 @@
 
   async function init() {
     bindEvents();
+    if(new URLSearchParams(location.search).get('auth')==='login'&&!auth.currentUser){switchAuthTab('login');openModal('authModal')}
     if(!baseDataPromise) baseDataPromise=loadDatabaseSnapshot();
     await baseDataPromise;
     renderPublicNews();
+    database.ref('settings/publicTeachers').on('value',snapshot=>renderPublicTeachers(snapshot.val()||{}),err=>{console.warn('Teacher directory unavailable',err);renderPublicTeachers()});
     renderExplorerStages();
     renderExplorerSubjects();
   }
