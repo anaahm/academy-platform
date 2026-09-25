@@ -132,6 +132,16 @@
     return type === 'azhar' ? 'التعليم الأزهري' : 'التعليم العام';
   }
 
+  function subjectProgressOf(profile,subjectId,ctx={}) {
+    const type=ctx.type||profile?.educationType||'public';
+    const stage=ctx.stage||profile?.stage||'prep';
+    const grade=String(ctx.grade||profile?.grade||1);
+    const contextual=profile?.subjectProgressV3?.[type]?.[stage]?.[grade]?.[subjectId];
+    return contextual===undefined||contextual===null
+      ?Number(profile?.subjectProgress?.[subjectId]||0)
+      :Number(contextual||0);
+  }
+
   function initials(name = '') {
     return (name.trim()[0] || 'ط').toUpperCase();
   }
@@ -285,9 +295,8 @@
     const stats = statsFromProfile();
     const p = state.profile || {};
     const subjects = p.stage && p.grade ? getSubjects(p.stage, String(p.grade), p.educationType) : [];
-    const subjectProgress = p.subjectProgress || {};
-    const weakest = [...subjects].sort((a,b)=>Number(subjectProgress[a.id]||0)-Number(subjectProgress[b.id]||0))[0];
-    const weakPct = weakest ? Number(subjectProgress[weakest.id]||0) : 0;
+    const weakest = [...subjects].sort((a,b)=>subjectProgressOf(p,a.id)-subjectProgressOf(p,b.id))[0];
+    const weakPct = weakest ? subjectProgressOf(p,weakest.id) : 0;
     const achievements = [
       {emoji:'🚀',name:'البداية',ok:stats.lessons>=1},
       {emoji:'📚',name:'5 دروس',ok:stats.lessons>=5},
@@ -448,7 +457,7 @@
         database.ref('scheduleEvents').once('value')
       ]);
       const candidates=[];
-      const today=new Date().toISOString().slice(0,10);
+      const today=todayKey();
 
       Object.entries(plannerSnap.val()||{}).forEach(([id,t])=>{
         if(!t||t.done||!t.date)return;
@@ -508,8 +517,7 @@
 
       if(!pick){
         const subjects=getSubjects(p.stage,String(p.grade),p.educationType);
-        const progress=p.subjectProgress||{};
-        const weak=[...subjects].sort((a,b)=>Number(progress[a.id]||0)-Number(progress[b.id]||0))[0];
+        const weak=[...subjects].sort((a,b)=>subjectProgressOf(p,a.id)-subjectProgressOf(p,b.id))[0];
         if(weak){
           const q=new URLSearchParams({type:p.educationType,stage:p.stage,grade:String(p.grade),subject:weak.id});
           pick={title:'ابدأ خطوة خفيفة في '+weak.name,text:'مفيش التزامات عاجلة دلوقتي. درس واحد كفاية كبداية.',href:'./subject.html?'+q.toString(),at:0};
@@ -569,9 +577,8 @@
     $('xpProgress').style.width = Math.min(100, levelXp / 10) + '%';
     $('xpProgressTrack')?.setAttribute('aria-valuenow',String(levelXp));
 
-    const subjectProgress = p.subjectProgress || {};
     $('dashboardSubjects').innerHTML = subjects.map((s) => {
-      const progress = Math.max(0, Math.min(100, Number(subjectProgress[s.id] || 0)));
+      const progress = Math.max(0, Math.min(100, subjectProgressOf(p,s.id)));
       const q = new URLSearchParams({
         type: p.educationType,
         stage: p.stage,
