@@ -453,8 +453,18 @@ async function markComplete(c,id){
    await db.ref('studentProfilesV3/'+state.user.uid+'/stats').transaction(s=>{s=s||{};s.completedLessons=(s.completedLessons||0)+1;s.totalXP=(s.totalXP||0)+50;s.level=Math.floor((s.totalXP||0)/1000)+1;return s});
    if(window.AcademyCore?.addLeaderboardXP)await window.AcademyCore.addLeaderboardXP(state.user.uid,state.profile?.name||state.user.displayName||'طالب',50,0);
    state.profile.learningProgress=state.profile.learningProgress||{};state.profile.learningProgress[id]={completed:true,completedAt:at,subject:c.subject};
-   const subjectPct=progress();
-   await db.ref('studentProfilesV3/'+state.user.uid+'/subjectProgress/'+c.subject).set(subjectPct);
+   const subjectPct=progress(),contextPath='studentProfilesV3/'+state.user.uid+'/subjectProgressV3/'+c.type+'/'+c.stage+'/'+String(c.grade)+'/'+c.subject;
+   await db.ref(contextPath).set(subjectPct);
+   state.profile.subjectProgressV3=state.profile.subjectProgressV3||{};
+   state.profile.subjectProgressV3[c.type]=state.profile.subjectProgressV3[c.type]||{};
+   state.profile.subjectProgressV3[c.type][c.stage]=state.profile.subjectProgressV3[c.type][c.stage]||{};
+   state.profile.subjectProgressV3[c.type][c.stage][String(c.grade)]=state.profile.subjectProgressV3[c.type][c.stage][String(c.grade)]||{};
+   state.profile.subjectProgressV3[c.type][c.stage][String(c.grade)][c.subject]=subjectPct;
+   const isOwnContext=c.type===(state.profile.educationType||'public')&&c.stage===state.profile.stage&&String(c.grade)===String(state.profile.grade);
+   if(isOwnContext){
+     await db.ref('studentProfilesV3/'+state.user.uid+'/subjectProgress/'+c.subject).set(subjectPct);
+     state.profile.subjectProgress=state.profile.subjectProgress||{};state.profile.subjectProgress[c.subject]=subjectPct;
+   }
    await db.ref('studentProfilesV3/'+state.user.uid).update({lastLessonTitle:state.currentLesson?.title||'',lastLessonId:id,lastSubjectId:c.subject,lastActiveAt:Date.now()});
    trackContentEvent(id,'completions');
    updateProgress(id);renderOutline(c,state.currentLesson);toast('رائع! +50 XP وتم حفظ تقدمك 🎉');showLessonCelebration(c,id,50);
