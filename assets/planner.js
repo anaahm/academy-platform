@@ -54,11 +54,11 @@ function renderTasks(){
  $$('[data-delete-task]').forEach(b=>b.onclick=()=>removeTask(b.dataset.deleteTask,b));
 }
 function renderSuggestion(){
- const subjects=currentSubjects(),sp=profile.subjectProgress||{};
- const weak=[...subjects].sort((a,b)=>Number(sp[a.id]||0)-Number(sp[b.id]||0))[0];
+ const subjects=currentSubjects();
+ const weak=[...subjects].sort((a,b)=>C.subjectProgressValue(profile,a.id)-C.subjectProgressValue(profile,b.id))[0];
  const box=$('plannerSuggestion');
  if(!weak){box.innerHTML='<p>ابدأ بإضافة أول مهمة مذاكرة.</p>';return}
- const pct=Number(sp[weak.id]||0);
+ const pct=C.subjectProgressValue(profile,weak.id);
  box.innerHTML='<span class="planner-suggest-emoji">'+C.esc(weak.emoji||'📚')+'</span><strong>'+C.esc(weak.name)+'</strong><p>تقدمك الحالي '+pct+'%. خصص 30 دقيقة اليوم لمراجعة درس واحد فيها.</p><button class="btn btn-soft btn-block" id="useSuggestion">أضفها للخطة</button>';
  $('useSuggestion').onclick=()=>{
    $('plannerTitle').value='مراجعة درس في '+weak.name;$('plannerSubject').value=weak.id;$('plannerDate').value=today();$('plannerDuration').value='30';
