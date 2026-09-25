@@ -3,7 +3,7 @@
 if(!window.firebase || !firebase.apps.length)return;
 const auth=firebase.auth(),db=firebase.database();
 let uid=null,pending=0,flushing=false;
-const today=()=>new Date().toISOString().slice(0,10);
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 
 async function flush(){
  if(!uid||pending<=0||flushing)return;
