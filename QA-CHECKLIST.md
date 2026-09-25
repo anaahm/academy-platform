@@ -1,180 +1,90 @@
-# Academy Platform — QA & Release Checklist
+# Academy Platform — Phase 1 QA Checklist
 
-هذا الملف هو بوابة الجودة قبل اعتبار أي نسخة جاهزة للإطلاق. أي ميزة جديدة يجب ألا تُعتبر مكتملة قبل اختبار التدفق المرتبط بها.
+This checklist is the release gate for `main`.
 
-## 1. Student Authentication
+## Automated gate
+- [ ] Static QA workflow passes on latest `main`.
+- [ ] GitHub Pages deployment succeeds on the same commit.
+- [ ] No missing local HTML/CSS/JS references.
+- [ ] No JavaScript syntax errors.
+- [ ] No duplicate static HTML IDs.
 
-- [ ] إنشاء حساب جديد بالبريد وكلمة المرور.
-- [ ] اختيار نوع التعليم والمرحلة والصف لأول مرة.
-- [ ] تسجيل الدخول بعد تسجيل الخروج.
-- [ ] استمرار الجلسة بعد Refresh.
-- [ ] استعادة كلمة المرور.
-- [ ] تسجيل الخروج من Dashboard.
-- [ ] تعديل الاسم من صفحة الحساب.
-- [ ] تغيير نوع التعليم / المرحلة / الصف.
-- [ ] ظهور التغييرات مباشرة في Dashboard.
+## Student journey
+- [ ] Register a new account.
+- [ ] Select education type, stage and grade.
+- [ ] Refresh and confirm the session persists.
+- [ ] Open dashboard and verify only the selected study context is shown.
+- [ ] Open a subject, unit and lesson.
+- [ ] Switch between multiple teacher videos.
+- [ ] Complete a lesson once; verify +50 XP is not awarded twice.
+- [ ] Confirm subject progress is isolated by education type, stage, grade and subject.
+- [ ] Complete/retry a quiz; verify XP is only awarded for a new reward tier.
+- [ ] Open Exam Center and verify locked/unlocked quizzes.
+- [ ] Run/retry a simulation; verify repeat attempts cannot farm XP.
+- [ ] Verify certificate is available only when all lessons in the exact subject context are complete.
+- [ ] Add, complete and delete planner tasks.
+- [ ] Verify planner items appear in the smart schedule.
+- [ ] Verify weekly report reflects planner/quiz/simulation activity.
+- [ ] Open library files and reject invalid links.
+- [ ] Open live session viewer and close with Escape/backdrop.
+- [ ] Create, like and report a community post.
+- [ ] Join/leave a study group.
+- [ ] Verify leaderboard periods and XP.
+- [ ] Mark one/all notifications read.
+- [ ] Submit an assignment, update it before grading, then view teacher feedback.
+- [ ] Change name and study stage from profile.
+- [ ] Log out and log back in.
+- [ ] Test mobile bottom navigation on major student pages.
+- [ ] Test PWA direct entry and offline shell.
 
-## 2. Student Dashboard
+## Teacher journey
+- [ ] Sign in with an active teacher profile.
+- [ ] Confirm only assigned subjects are selectable.
+- [ ] Submit lesson content for admin review.
+- [ ] Reject invalid/non-YouTube lesson video URLs.
+- [ ] Create an assignment only for an assigned subject.
+- [ ] Reject past due dates and invalid max scores.
+- [ ] View student submissions; confirm newest/ungraded appear first.
+- [ ] Grade within valid score range.
+- [ ] Edit an existing grade.
+- [ ] Verify modal focus/Escape behavior.
+- [ ] Verify keyboard tab navigation.
+- [ ] Log out with confirmation.
+- [ ] Test responsive teacher portal on mobile.
 
-- [ ] كل بطاقات المواد تفتح المادة الصحيحة.
-- [ ] القائمة الجانبية تعمل في الوضع العادي والمطوي.
-- [ ] أدوات إضافية تفتح وتغلق.
-- [ ] البحث يفتح صفحة البحث بالكلمة الصحيحة.
-- [ ] تحدي اليوم يحفظ حالته.
-- [ ] مهمة الدرس تتعلم تلقائيًا بعد إكمال درس.
-- [ ] مهمة الاختبار تتعلم تلقائيًا بعد إنهاء اختبار.
-- [ ] بطاقة «ماذا تفعل الآن؟» تفتح الإجراء الصحيح.
-- [ ] الحساب، تغيير المرحلة، والإشعارات تعمل.
-- [ ] تسجيل الخروج يعمل.
+## Admin journey
+- [ ] Sign in with an admin account only.
+- [ ] Verify overview loads before lazy sections.
+- [ ] Open each admin section and confirm data loads on demand.
+- [ ] Use global admin search.
+- [ ] Create/edit/delete subjects, lessons, quizzes, files, simulations and live sessions.
+- [ ] Add/edit schedule events.
+- [ ] Create/edit news and announcements.
+- [ ] Add/edit/disable teachers.
+- [ ] Assign a subject to a teacher and prevent duplicate assignment.
+- [ ] Approve/reject teacher submissions.
+- [ ] View/manage students.
+- [ ] Moderate community content/reports.
+- [ ] Send targeted notification broadcasts.
+- [ ] Verify forms show loading/error feedback.
+- [ ] Verify all modals close with Escape/backdrop and restore focus.
+- [ ] Verify current admin tab survives refresh.
+- [ ] Test responsive admin portal on mobile.
+- [ ] Log out with confirmation.
 
-## 3. Subject & Lesson Flow
+## Firebase release gate
+- [ ] Apply the reviewed rules from `firebase.rules.production.json` in Firebase Console.
+- [ ] Confirm required indexes exist for lessons, quizzes, files, assignments, schedule events and leaderboard XP.
+- [ ] Test student writes only under their own profile/submissions.
+- [ ] Test teacher writes only to allowed teacher paths.
+- [ ] Test admin-only paths with a non-admin account.
+- [ ] Confirm denied reads/writes show user-friendly errors.
 
-- [ ] صفحة المادة تفتح من Dashboard وExplore.
-- [ ] مسار التعلم يعرض الوحدات والتقدم الحقيقي.
-- [ ] «كمّل من مكانك» يفتح أول درس غير مكتمل.
-- [ ] الدرس التالي يظهر بعلامة «التالي لك».
-- [ ] اختيار مدرس/فيديو مختلف يعمل.
-- [ ] الشرح والصور والمرفقات تظهر بدون أخطاء.
-- [ ] Quick Check يعمل ويعرض Feedback صحيح.
-- [ ] ملاحظات الطالب تحفظ وتعود بعد Refresh.
-- [ ] حفظ الدرس للمراجعة يعمل.
-- [ ] تعليم الدرس كمكتمل يزيد XP ويحدث التقدم.
-- [ ] شاشة الاحتفال تظهر بعد الإكمال.
-- [ ] اختبار الوحدة لا يفتح قبل إكمال دروس الوحدة.
-- [ ] الاختبار الشامل لا يفتح قبل إكمال المادة.
-- [ ] الشهادة تظهر عند تحقيق شرط الإتمام.
-
-## 4. Exams & Simulations
-
-- [ ] مركز الاختبارات يعرض الاختبارات المناسبة للطالب.
-- [ ] الفلاتر تعمل.
-- [ ] الأسئلة والتنقل بين الأسئلة يعملان.
-- [ ] النتيجة تحفظ في السجل.
-- [ ] XP يضاف مرة صحيحة.
-- [ ] المحاكي يبدأ بعدد الأسئلة الصحيح.
-- [ ] Timer يعمل وينهي المحاكي عند انتهاء الوقت.
-- [ ] العودة من النتيجة تعمل.
-- [ ] سجل المحاكيات يظهر في التقدم.
-
-## 5. Assignments
-
-### Student
-- [ ] الواجبات المناسبة للمسار/المرحلة/الصف فقط تظهر.
-- [ ] فتح تفاصيل الواجب يعمل.
-- [ ] إرسال إجابة نصية يعمل.
-- [ ] إرسال رابط http/https يعمل.
-- [ ] تعديل التسليم قبل التصحيح يعمل.
-- [ ] التسليم المصحح لا يمكن للطالب تغييره.
-- [ ] الدرجة وتعليق المدرس يظهران.
-
-### Teacher
-- [ ] إنشاء واجب من المادة المسموحة للمدرس.
-- [ ] تحديد آخر موعد والدرجة النهائية.
-- [ ] ظهور التسليمات.
-- [ ] فتح رابط الطالب آمن ومقيّد بـ http/https.
-- [ ] التصحيح بالدرجة والتعليق يعمل.
-- [ ] حذف الواجب يحذف التسليمات أولًا.
-
-## 6. Planner, Schedule & Weekly Report
-
-- [ ] إضافة/إكمال/حذف مهمة مذاكرة.
-- [ ] الاقتراح التلقائي لأضعف مادة.
-- [ ] الهدف الأسبوعي يتحدث.
-- [ ] جدول الطالب يعرض الحصص والبث ومهام المذاكرة.
-- [ ] فلترة الجدول تعمل.
-- [ ] التقرير الأسبوعي يحسب النشاط الحالي.
-- [ ] المقارنة بالأسبوع السابق منطقية.
-- [ ] طباعة التقرير تعمل.
-
-## 7. Notifications
-
-- [ ] عداد غير المقروء يظهر على الجرس.
-- [ ] مركز الإشعارات يفتح.
-- [ ] مقروء/غير مقروء يحفظ.
-- [ ] «تعليم الكل كمقروء» يعمل.
-- [ ] تصحيح الواجب يولد إشعارًا.
-- [ ] الواجب القريب يولد إشعارًا.
-- [ ] الحصة والبث القريبان يظهران.
-- [ ] مهمة اليوم تظهر.
-- [ ] الإشعار الموجه يحترم المسار/المرحلة/الصف.
-- [ ] رابط الإجراء يفتح المسار الصحيح.
-
-## 8. Community
-
-- [ ] نشر منشور يعمل.
-- [ ] النصوص تظهر escaped.
-- [ ] الإعجاب مرة واحدة لكل حساب.
-- [ ] الإبلاغ يعمل حتى عند غياب AcademyUI.
-- [ ] الانضمام/مغادرة مجموعة يعمل.
-- [ ] لا توجد رسائل خاصة.
-
-## 9. Teacher Portal
-
-- [ ] الحساب غير المدرس يُرفض.
-- [ ] المدرس الموقوف يُرفض.
-- [ ] المواد والصفوف المسندة تظهر.
-- [ ] إرسال محتوى للمراجعة يعمل.
-- [ ] المحتوى المنشور يظهر.
-- [ ] إحصائيات المشاهدة/الإكمال/الاختبارات تظهر.
-- [ ] حذف وتصحيح الواجبات يعملان.
-- [ ] تسجيل الخروج يعمل.
-
-## 10. Admin Dashboard
-
-- [ ] تسجيل الدخول والحفاظ على الجلسة.
-- [ ] الحساب غير المدير يُرفض.
-- [ ] كل Tabs تفتح.
-- [ ] CRUD المواد.
-- [ ] CRUD الدروس.
-- [ ] أكثر من فيديو/مدرس للدرس.
-- [ ] CRUD الاختبارات.
-- [ ] CRUD الملفات.
-- [ ] CRUD المحاكيات.
-- [ ] CRUD البث.
-- [ ] جدول الحصص.
-- [ ] إدارة المدرسين والصلاحيات.
-- [ ] مراجعة محتوى المدرسين.
-- [ ] مراجعة المجتمع والبلاغات.
-- [ ] الأخبار.
-- [ ] الإشعارات الموجهة.
-- [ ] الإعلانات.
-- [ ] إعدادات المنصة.
-- [ ] البحث والتحديث.
-- [ ] تسجيل الخروج.
-
-## 11. Firebase & Security
-
-- [x] جميع المسارات المستخدمة في الكود موجودة في ملف القواعد المرجعي.
-- [x] إنشاء الواجب يتطلب ملف مدرس موجودًا ونشطًا.
-- [x] الطالب لا يستطيع إرسال حقول التصحيح داخل تسليمه.
-- [x] تسليم الطالب لا يُقرأ من طالب آخر.
-- [ ] تطبيق القواعد الفعلية في Firebase Console بعد اختبارها.
-- [ ] نقل XP والترتيب إلى منطق موثوق server-side قبل إطلاق تنافسي حقيقي.
-- [ ] مراجعة Content Analytics ضد التلاعب قبل الاعتماد عليها ماليًا/إداريًا.
-
-## 12. Responsive & PWA
-
-اختبار كل صفحة على الأقل في:
-- [ ] Desktop 1366×768.
-- [ ] Tablet ~768px.
-- [ ] Mobile ~390px.
-
-وفحص:
-- [ ] القوائم والمودالات لا تتداخل.
-- [ ] الجداول قابلة للقراءة/التمرير.
-- [ ] الحقول والأزرار لا تخرج خارج الشاشة.
-- [ ] PWA install يعمل.
-- [ ] Service Worker يحصل على النسخة الجديدة.
-- [ ] Offline fallback واضح.
-- [ ] العودة بعد استعادة الإنترنت تعمل.
-
-## 13. Release Gate
-
-لا يتم نقل النسخة إلى الدومين النهائي قبل:
-- [ ] عدم وجود أخطاء JavaScript معروفة.
-- [ ] اكتمال سيناريو Student كامل.
-- [ ] اكتمال سيناريو Teacher كامل.
-- [ ] اكتمال سيناريو Admin كامل.
-- [ ] اختبار Firebase Rules الفعلية.
-- [ ] اختبار الهاتف الحقيقي.
-- [ ] أخذ Backup قبل الإطلاق.
+## Final release
+- [ ] Hard refresh production after deployment.
+- [ ] Test Chrome desktop.
+- [ ] Test Android Chrome.
+- [ ] Test a narrow mobile viewport.
+- [ ] Test a fresh/incognito session.
+- [ ] Test an existing account with legacy progress data.
+- [ ] Confirm latest Service Worker cache version is active.
