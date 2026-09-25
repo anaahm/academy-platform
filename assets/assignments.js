@@ -128,7 +128,7 @@ function openAssignment(id){
     submissionStateBlock(a,s)+
     (st==='graded'
       ?'<div class="assignment-feedback"><span class="assignment-grade-ring" style="--grade:'+Math.max(0,Math.min(100,percent))+'"><strong>'+percent+'%</strong></span><div><strong>تم التصحيح • '+Number(s.score||0)+' / '+Number(s.maxScore||a.maxScore||100)+'</strong><p>'+C.esc(s.feedback||'لا توجد ملاحظات إضافية من المدرس.')+'</p></div></div>'+
-       '<div class="assignment-submission-preview"><small>إجابتك</small><p>'+C.esc(s.answer||'—')+'</p>'+(s.link?'<a href="'+C.safeUrl(s.link)+'" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> فتح الرابط المرفق</a>':'')+'</div>'
+       '<div class="assignment-submission-preview"><small>إجابتك</small><p>'+C.esc(s.answer||'—')+'</p>'+((s.link&&C.safeUrl(s.link)!=='#')?'<a href="'+C.safeUrl(s.link)+'" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> فتح الرابط المرفق</a>':'')+'</div>'
       :'<form id="assignmentSubmitForm" class="assignment-submit-form">'+
          '<label><span>إجابتك أو ملاحظاتك</span><textarea id="assignmentAnswer" maxlength="5000" placeholder="اكتب إجابتك هنا...">'+C.esc(s?.answer||'')+'</textarea><small class="assignment-character-count"><span id="assignmentCharCount">'+String(s?.answer||'').length+'</span> / 5000</small></label>'+
          '<label><span>رابط ملف أو Google Drive — اختياري</span><input id="assignmentLink" type="url" dir="ltr" value="'+C.esc(s?.link||'')+'" placeholder="https://..."><small>تأكد أن الرابط متاح للمدرس قبل الإرسال.</small></label>'+
