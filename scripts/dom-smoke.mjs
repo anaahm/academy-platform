@@ -41,13 +41,14 @@ async function check(file,role='student',failurePath=''){
    push:(value)=>{const child=ref(path+'/new'+(++pushed));if(value!==undefined)child.set(value);return child},transaction:async fn=>{const next=fn(clone(get(path)));if(next===undefined)return {committed:false,snapshot:snap(get(path))};set(path,next);return {committed:true,snapshot:snap(next)}}};return r;
  }
  const user=role==='guest'?null:{uid:'tester',displayName:'اختبار',email:'test@example.test',updateProfile:async()=>{},reload:async()=>{}};
- const auth={currentUser:user,onAuthStateChanged:fn=>{callbacks.push(fn);return ()=>{}},setPersistence:async()=>{},signOut:async()=>{for(const fn of callbacks)await fn(null)}};
- w.firebase={apps:[],initializeApp:()=>{w.firebase.apps.push({});return {auth:()=>auth}},auth:Object.assign(()=>auth,{Auth:{Persistence:{LOCAL:'local'}},EmailAuthProvider:{credential:()=>({})}}),database:Object.assign(()=>({ref}),{ServerValue:{TIMESTAMP:Date.now(),increment:n=>n}})};
+ const auth={currentUser:user,onAuthStateChanged:fn=>{callbacks.push(fn);return ()=>{}},setPersistence:async()=>{},signInWithEmailAndPassword:async()=>{auth.currentUser={uid:'tester',email:'test@example.test'};for(const fn of callbacks)await fn(auth.currentUser);return {user:auth.currentUser}},sendPasswordResetEmail:async()=>{},signOut:async()=>{auth.currentUser=null;for(const fn of callbacks)await fn(null)}};
+ const secondaryApps=[];
+ w.firebase={apps:[],initializeApp:(_config,name)=>{if(name){const secondaryAuth={setPersistence:async()=>{},createUserWithEmailAndPassword:async(email,password)=>{assert.ok(password.length>=8);return {user:{uid:'newTeacher',email,delete:async()=>{}}}},signOut:async()=>{}};const app={auth:()=>secondaryAuth,delete:async()=>{}};secondaryApps.push(app);return app}w.firebase.apps.push({});return {auth:()=>auth}},auth:Object.assign(()=>auth,{Auth:{Persistence:{LOCAL:'local',NONE:'none'}},EmailAuthProvider:{credential:()=>({})}}),database:Object.assign(()=>({ref}),{ServerValue:{TIMESTAMP:Date.now(),increment:n=>n}})};
  const unhandled=e=>errors.push(String(e?.stack||e));process.on('unhandledRejection',unhandled);
  try{
   for(const script of w.document.querySelectorAll('script[src]')){
    const src=script.getAttribute('src');if(src.startsWith('http')||src.includes('pwa.js'))continue;
-   try{w.eval(readFileSync(src.replace('./',''),'utf8')+'\n//# sourceURL='+src)}catch(e){errors.push(src+': '+e.stack)}
+   try{w.eval(readFileSync(src.replace('./','').split('?')[0],'utf8')+'\n//# sourceURL='+src)}catch(e){errors.push(src+': '+e.stack)}
   }
   await new Promise(r=>setTimeout(r,15));
   for(const cb of [...callbacks]){try{await cb(user)}catch(e){errors.push('auth: '+e.stack)}}
@@ -81,11 +82,24 @@ async function check(file,role='student',failurePath=''){
   }
   if(file==='admin.html'&&role!=='guest'){
    for(const tab of w.document.querySelectorAll('[data-admin-tab]')){tab.click();await new Promise(r=>setTimeout(r,8));}
+   const form=w.document.getElementById('createTeacherForm');
+   w.document.getElementById('newTeacherName').value='مدرس جديد';w.document.getElementById('newTeacherEmail').value='newteacher@example.test';w.document.getElementById('newTeacherPassword').value='long-secure-password';
+   form.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,20));
+   assert.equal(get('teacherProfiles/newTeacher/name'),'مدرس جديد');assert.equal(get('teacherProfiles/newTeacher/email'),'newteacher@example.test');
+   assert.equal(JSON.stringify(database).includes('long-secure-password'),false,'teacher password never stored in database');
+   assert.equal(auth.currentUser?.uid,'tester','admin session stays active');assert.equal(secondaryApps.length,1);
   }
   if(file==='teacher.html'){
-   assert.equal(w.document.getElementById('teacherPortal').classList.contains('hidden'),false);
-   for(const tab of w.document.querySelectorAll('[data-teacher-tab]'))tab.click();
-   if(failurePath)assert.match(w.document.getElementById('teacherAssignmentSubmissions').textContent,/غير متاحة/);
+   if(role==='guest'){
+    assert.equal(w.document.getElementById('teacherLoginForm').classList.contains('hidden'),false);
+    w.document.getElementById('teacherLoginEmail').value='test@example.test';w.document.getElementById('teacherLoginPassword').value='correct-password';
+    w.document.getElementById('teacherLoginForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,25));
+    assert.equal(w.document.getElementById('teacherPortal').classList.contains('hidden'),false);
+   }else{
+    assert.equal(w.document.getElementById('teacherPortal').classList.contains('hidden'),false);
+    for(const tab of w.document.querySelectorAll('[data-teacher-tab]'))tab.click();
+    if(failurePath)assert.match(w.document.getElementById('teacherAssignmentSubmissions').textContent,/غير متاحة/);
+   }
   }
   if(file==='index.html'&&role==='student'){
    const img=w.document.querySelector('img[data-subject-image]');if(img){img.dispatchEvent(new w.Event('error'));assert.equal(w.document.querySelectorAll('#dashboardSubjects img[data-subject-image]').length,0)}
@@ -97,6 +111,6 @@ async function check(file,role='student',failurePath=''){
  scenarios++;if(errors.length){failures++;console.error('FAIL',file,role,failurePath,errors.join('\n'))}else console.log('PASS',file,role,failurePath||'');
 }
 for(const file of files)await check(file,file==='admin.html'?'admin':file==='teacher.html'?'teacher':'student');
-await check('index.html','guest');await check('admin.html','guest');await check('teacher.html','teacher','assignmentSubmissions/');
+await check('index.html','guest');await check('admin.html','guest');await check('teacher.html','guest');await check('teacher.html','teacher','assignmentSubmissions/');
 console.log(`DOM smoke: ${scenarios-failures}/${scenarios} scenarios passed. Uses in-memory Firebase fixtures, not live Firebase or layout rendering.`);
 if(failures)process.exit(1);

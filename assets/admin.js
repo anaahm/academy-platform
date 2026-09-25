@@ -487,16 +487,46 @@ async function saveStudyGroup(e){
 
 /* Teachers */
 function assignmentsOf(t){return Array.isArray(t?.assignments)?t.assignments:Object.values(t?.assignments||{})}
+async function createTeacherAccount(event){
+ event.preventDefault();
+ const form=event.currentTarget,button=$('createTeacherBtn'),status=$('createTeacherStatus');
+ const name=$('newTeacherName').value.trim(),email=$('newTeacherEmail').value.trim().toLowerCase(),password=$('newTeacherPassword').value;
+ if(!name||!email||password.length<8){status.textContent='أكمل اسم المدرس والبريد وكلمة مرور من 8 أحرف على الأقل.';status.classList.add('error');return}
+ if(!currentUser||!(await verifyAdmin(currentUser))){status.textContent='انتهت صلاحية الإدارة. سجّل الدخول من جديد.';status.classList.add('error');return}
+ button.disabled=true;status.textContent='جاري إنشاء حساب المدرس...';status.classList.remove('error');
+ let secondaryApp,createdUser=null,profileSaved=false;
+ try{
+   secondaryApp=firebase.initializeApp(firebaseConfig,'teacher-provision-'+Date.now());
+   const secondaryAuth=secondaryApp.auth();
+   await secondaryAuth.setPersistence(firebase.auth.Auth.Persistence.NONE);
+   const credential=await secondaryAuth.createUserWithEmailAndPassword(email,password);
+   createdUser=credential.user;
+   await db.ref('teacherProfiles/'+createdUser.uid).set({name,email,isActive:true,createdAt:Date.now(),assignments:[]});
+   profileSaved=true;form.reset();
+   status.textContent='تم إنشاء حساب '+name+' بنجاح. اسند له المادة والصف من القائمة أدناه، ثم أعطه بيانات الدخول بشكل خاص.';
+   toast('تم إنشاء حساب المدرس.');
+ }catch(err){
+   console.error('Teacher account creation failed:',err);
+   if(createdUser&&!profileSaved){try{await createdUser.delete();createdUser=null}catch(cleanupError){console.error('Teacher account cleanup failed:',cleanupError)}}
+   status.classList.add('error');
+   status.textContent=err.code==='auth/email-already-in-use'?'البريد مستخدم بالفعل. إذا كان الحساب موجودًا كطالب، رقّه من القائمة أدناه.':
+     createdUser?'تعذر حفظ صلاحية المدرس. أُنشئ حساب تسجيل الدخول؛ احذفه من Firebase Authentication قبل إعادة المحاولة.':'تعذر إنشاء الحساب. راجع اتصالك وصلاحيات Firebase وحاول مجددًا.';
+ }finally{
+   if(secondaryApp){try{await secondaryApp.auth().signOut()}catch{}try{await secondaryApp.delete()}catch{}}
+   $('newTeacherPassword').value='';button.disabled=false;
+ }
+}
 function renderTeachers(){
  const teachers=values(root.teacherProfiles),students=values(root.studentProfilesV3),subs=flattenSubmissions(),pending=subs.filter(s=>(s.status||'pending')==='pending');
  $('pendingCountText').textContent=pending.length+' قيد المراجعة';
- $('teachersAdminList').innerHTML=teachers.length?teachers.map(t=>'<div class="admin-list-item"><div><strong>'+esc(t.name||t.email||'مدرس')+'</strong><small>'+assignmentsOf(t).length+' صلاحية • '+(t.isActive===false?'موقوف':'نشط')+'</small></div><div class="admin-action-row"><button class="admin-action-btn '+(t.isActive===false?'success':'')+'" data-toggle-teacher="'+t.id+'"><i class="fa-solid '+(t.isActive===false?'fa-play':'fa-pause')+'"></i></button><button class="admin-action-btn danger" data-remove-teacher="'+t.id+'"><i class="fa-solid fa-user-minus"></i></button></div></div>').join(''):empty('لا يوجد مدرسون','حوّل حسابًا من القائمة المجاورة إلى مدرس.');
+ $('teachersAdminList').innerHTML=teachers.length?teachers.map(t=>'<div class="admin-list-item"><div><strong>'+esc(t.name||t.email||'مدرس')+'</strong><small>'+esc(t.email||'')+' • '+assignmentsOf(t).length+' صلاحية • '+(t.isActive===false?'موقوف':'نشط')+'</small></div><div class="admin-action-row"><button class="admin-action-btn" data-reset-teacher="'+t.id+'" title="إرسال رابط تغيير كلمة المرور" aria-label="إرسال رابط تغيير كلمة المرور إلى '+esc(t.name||t.email||'المدرس')+'"><i class="fa-solid fa-key"></i></button><button class="admin-action-btn '+(t.isActive===false?'success':'')+'" data-toggle-teacher="'+t.id+'" title="تفعيل أو إيقاف" aria-label="تفعيل أو إيقاف '+esc(t.name||'المدرس')+'"><i class="fa-solid '+(t.isActive===false?'fa-play':'fa-pause')+'"></i></button><button class="admin-action-btn danger" data-remove-teacher="'+t.id+'" title="إزالة الصلاحية" aria-label="إزالة صلاحية '+esc(t.name||'المدرس')+'"><i class="fa-solid fa-user-minus"></i></button></div></div>').join(''):empty('لا يوجد مدرسون','أنشئ حسابًا جديدًا من النموذج أعلاه أو رقّ حسابًا موجودًا.');
  const teacherIds=new Set(teachers.map(t=>t.id)),candidates=students.filter(s=>!teacherIds.has(s.id));
  $('teacherCandidates').innerHTML=candidates.length?candidates.map(s=>'<div class="admin-list-item"><div><strong>'+esc(s.name||s.email||'طالب')+'</strong><small>'+esc(s.email||'')+'</small></div><button class="admin-action-btn success" data-promote="'+s.id+'"><i class="fa-solid fa-plus"></i></button></div>').join(''):empty('لا توجد حسابات للترقية','كل الحسابات الحالية لها حالة مدرس أو لا توجد حسابات.');
  $('assignTeacher').innerHTML=teachers.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||t.email||t.id)+'</option>').join('');
  refreshAssignmentSubjects();
  $('teacherSubmissionsList').innerHTML=subs.length?subs.map(s=>'<div class="admin-list-item"><div><strong>'+esc(s.title||'محتوى')+'</strong><small>'+esc(s.teacherName||root.teacherProfiles?.[s.uid]?.name||'مدرس')+' • '+esc(typeLabel(s.type))+' • '+esc(gradeLabel(s.stage,s.grade))+' • '+esc(s.subjectName||s.subject||'')+'</small>'+(s.videoUrl?'<a href="'+cleanUrl(s.videoUrl)+'" target="_blank" rel="noopener" style="font-size:9px;color:#2563eb">فتح الفيديو</a>':'')+'</div><div class="admin-action-row">'+((s.status||'pending')==='pending'?'<button class="admin-action-btn success" data-approve="'+s.uid+'|'+s.id+'" title="اعتماد"><i class="fa-solid fa-check"></i></button><button class="admin-action-btn danger" data-reject="'+s.uid+'|'+s.id+'" title="رفض"><i class="fa-solid fa-xmark"></i></button>':'<span class="status-pill '+(s.status==='approved'?'approved':'rejected')+'">'+(s.status==='approved'?'معتمد':'مرفوض')+'</span>')+'</div></div>').join(''):empty('لا توجد طلبات محتوى','عندما يرسل مدرس درسًا سيظهر هنا.');
  $$('[data-toggle-teacher]').forEach(b=>b.onclick=()=>db.ref('teacherProfiles/'+b.dataset.toggleTeacher+'/isActive').set(root.teacherProfiles?.[b.dataset.toggleTeacher]?.isActive===false));
+ $$('[data-reset-teacher]').forEach(b=>b.onclick=async()=>{const email=root.teacherProfiles?.[b.dataset.resetTeacher]?.email;if(!email)return toast('لا يوجد بريد لهذا المدرس.','error');try{await auth.sendPasswordResetEmail(email);toast('تم إرسال رابط تغيير كلمة المرور إلى بريد المدرس.')}catch(err){console.error(err);toast('تعذر إرسال رابط تغيير كلمة المرور.','error')}});
  $$('[data-remove-teacher]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'إزالة صلاحية المدرس؟',message:'سيفقد هذا الحساب الوصول إلى بوابة المدرس وصلاحيات المواد المسندة إليه.',tone:'warning',acceptText:'إزالة الصلاحية'}))await db.ref('teacherProfiles/'+b.dataset.removeTeacher).remove()});
  $$('[data-promote]').forEach(b=>b.onclick=async()=>{const s=root.studentProfilesV3?.[b.dataset.promote]||{};await db.ref('teacherProfiles/'+b.dataset.promote).set({name:s.name||'',email:s.email||'',isActive:true,createdAt:Date.now(),assignments:[]});toast('تم تحويل الحساب إلى مدرس')});
  $$('[data-approve]').forEach(b=>b.onclick=()=>approveSubmission(b.dataset.approve));
@@ -782,6 +812,7 @@ if($('adminLoginForm')?.dataset.adminAuthBound!=='true'){
  };
 }
 $('adminResetPassword').onclick=async()=>{const email=$('adminEmail').value.trim();if(!email)return toast('اكتب البريد أولًا.','error');try{await auth.sendPasswordResetEmail(email);toast('تم إرسال رابط إعادة تعيين كلمة المرور.')}catch{toast('تعذر إرسال الرابط.','error')}};
+$('createTeacherForm').addEventListener('submit',createTeacherAccount);
 
 bindHierarchy('subjectType','subjectStage','subjectGrade',null);
 bindHierarchy('newLessonType','newLessonStage','newLessonGrade','newLessonSubject');

@@ -301,7 +301,28 @@ async function submitContent(e){
 function showNoAccess(message){
  window.AcademyUI?.hidePageLoading();
  $('teacherPortal').classList.add('hidden');$('teacherAccess').classList.remove('hidden');$('teacherAccessText').textContent=message;
+ $('teacherLoginForm')?.classList.toggle('hidden',!!auth.currentUser);
+ $('teacherSwitchAccount')?.classList.toggle('hidden',!auth.currentUser);
 }
+$('teacherLoginForm')?.addEventListener('submit',async e=>{
+ e.preventDefault();const button=$('teacherLoginBtn'),email=$('teacherLoginEmail').value.trim(),password=$('teacherLoginPassword').value;
+ if(!email||!password)return;
+ button.disabled=true;button.textContent='جاري تسجيل الدخول...';
+ try{
+   await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+   await auth.signInWithEmailAndPassword(email,password);
+   $('teacherLoginPassword').value='';
+ }catch(err){
+   console.error('Teacher sign-in failed:',err);
+   $('teacherAccessText').textContent=err.code==='auth/too-many-requests'?'محاولات كثيرة. انتظر قليلًا أو أعد تعيين كلمة المرور.':'تعذر تسجيل الدخول. تأكد من البريد وكلمة المرور.';
+ }finally{button.disabled=false;button.textContent='الدخول إلى بوابة المدرس'}
+});
+$('teacherResetPassword')?.addEventListener('click',async()=>{
+ const email=$('teacherLoginEmail').value.trim();if(!email){$('teacherAccessText').textContent='اكتب بريدك الإلكتروني أولًا لاستعادة كلمة المرور.';$('teacherLoginEmail').focus();return}
+ try{await auth.sendPasswordResetEmail(email);$('teacherAccessText').textContent='إذا كان البريد مسجّلًا فستصلك رسالة لإعادة تعيين كلمة المرور.'}
+ catch(err){console.error(err);$('teacherAccessText').textContent='تعذر إرسال الرسالة الآن. حاول مجددًا لاحقًا.'}
+});
+$('teacherSwitchAccount')?.addEventListener('click',()=>auth.signOut().catch(err=>{console.error(err);toast('تعذر تبديل الحساب الآن.','error')}));
 const teacherNavTabs=$$('.teacher-nav [data-teacher-tab]');
 teacherNavTabs.forEach((b,i)=>b.onkeydown=e=>{
  if(!['ArrowRight','ArrowLeft','Home','End'].includes(e.key))return;
@@ -335,7 +356,7 @@ $('teacherLogout').onclick=async()=>{
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('teacherGradeModal')?.classList.contains('hidden'))closeGradeModal()});
 
 auth.onAuthStateChanged(async u=>{
- if(!u){showNoAccess('سجّل الدخول أولًا من المنصة، وبعدها افتح بوابة المدرس.');return}
+ if(!u){user=null;teacher=null;showNoAccess('ادخل ببريد المدرس وكلمة المرور التي حددتها الإدارة.');return}
  user=u;
  window.AcademyUI?.showPageLoading('جاري تحميل بوابة المدرس وصلاحياتك...');
  try{

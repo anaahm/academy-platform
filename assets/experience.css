@@ -104,9 +104,21 @@ p{line-height:1.85}
 .admin-table{min-width:620px}.admin-table-wrap{max-width:100%;overflow:auto}
 .admin-form-grid label>span,.portal-form label>span{font-size:14px!important}
 .admin-action-row{flex-wrap:wrap}.admin-section-head{gap:18px}.admin-subject-card h3{font-size:19px!important}
+.admin-teacher-create{margin:0 0 18px;border:1px solid #cfe0f8!important;background:linear-gradient(130deg,#fff 55%,#f0f7ff)!important}
+.admin-teacher-create .admin-card-head p{margin:6px 0 0;color:var(--academy-muted);font-size:14px}
+.admin-teacher-create-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;align-items:end;gap:12px}
+.admin-teacher-create-form label,.teacher-login-form label{display:grid;gap:6px;text-align:right;font-size:14px;font-weight:700;color:var(--academy-ink)}
+.admin-teacher-create-form input,.teacher-login-form input{width:100%;min-height:46px;padding:10px 12px;border:1px solid #bed2ed;border-radius:12px;background:#fff;outline:none}
+.admin-teacher-create-form .btn{min-height:46px;white-space:normal}
+.teacher-form-status{min-height:1.8em;margin:10px 0 0;color:#146237;font-weight:700}.teacher-form-status.error{color:#b42332}
+.teacher-form-tip{font-size:13px;color:var(--academy-muted);margin:4px 0 0}
+.teacher-login-form{display:grid;gap:14px;max-width:410px;margin:22px auto 12px;text-align:right}
+.teacher-login-form .btn{width:100%}.teacher-reset-link{border:0;background:none;color:#145cbd;font-size:14px;font-weight:700;cursor:pointer;justify-self:center;min-height:44px}
+.teacher-access #teacherAccessActions a{min-height:44px}
 
 @media(min-width:1650px){.ref-main-grid{grid-template-columns:1.25fr 1fr 1fr!important}.ref-goals-card{grid-column:auto!important}.ref-goal-list{grid-template-columns:1fr!important}}
 @media(max-width:1180px){
+ .admin-teacher-create-form{grid-template-columns:repeat(2,minmax(0,1fr))}
  .premium-dashboard-shell{grid-template-columns:220px minmax(0,1fr)!important}
  .ref-content-grid{grid-template-columns:1fr!important}.ref-content-side{grid-template-columns:repeat(3,minmax(0,1fr))!important}
  .ref-main-grid{grid-template-columns:1fr!important}.ref-goal-list{grid-template-columns:repeat(2,minmax(0,1fr))!important}
@@ -121,6 +133,7 @@ p{line-height:1.85}
  .learning-breadcrumb{order:3;flex-basis:100%}
 }
 @media(max-width:640px){
+ .admin-teacher-create-form{grid-template-columns:1fr}
  .ref-content-side{grid-template-columns:1fr!important}.ref-content-side .ref-side-card>div{width:80%}.ref-content-side .side-art{opacity:.65}
  .ref-hero-copy{width:100%!important;padding:24px!important;background:linear-gradient(270deg,rgba(6,31,88,.95),rgba(6,31,88,.7))}
  .ref-hero-card{min-height:230px!important}.ref-hero-copy h1{font-size:28px!important}.ref-hero-copy p{font-size:14px!important}

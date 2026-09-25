@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/portal.css">
   <link rel="stylesheet" href="./assets/ui-kit.css">
-  <link rel="stylesheet" href="./assets/experience.css?v=30">
+  <link rel="stylesheet" href="./assets/experience.css?v=31">
   <script src="./assets/academy-utils.js"></script>
 </head>
 <body class="teacher-v3-body">
@@ -18,7 +18,13 @@
   <section id="teacherAccess" class="teacher-access hidden">
     <span>👨‍🏫</span><h1>بوابة المدرس</h1>
     <p id="teacherAccessText">يتم التحقق من حسابك وصلاحياتك...</p>
-    <div id="teacherAccessActions"><a class="btn btn-primary" href="./index.html">العودة للمنصة</a></div>
+    <form id="teacherLoginForm" class="teacher-login-form hidden">
+      <label><span>البريد الإلكتروني</span><input id="teacherLoginEmail" type="email" dir="ltr" required autocomplete="username" placeholder="teacher@example.com"></label>
+      <label><span>كلمة المرور</span><input id="teacherLoginPassword" type="password" required autocomplete="current-password" placeholder="كلمة المرور"></label>
+      <button id="teacherLoginBtn" class="btn btn-primary" type="submit">الدخول إلى بوابة المدرس</button>
+      <button id="teacherResetPassword" class="teacher-reset-link" type="button">نسيت كلمة المرور؟</button>
+    </form>
+    <div id="teacherAccessActions"><button id="teacherSwitchAccount" class="btn btn-soft hidden" type="button">الدخول بحساب مدرس آخر</button><a class="btn btn-soft" href="./index.html">العودة للمنصة</a></div>
   </section>
 
   <section id="teacherPortal" class="teacher-shell hidden">
@@ -176,6 +182,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="./assets/firebase-config.js"></script>
-  <script src="./assets/teacher.js"></script>
+  <script src="./assets/teacher.js?v=31"></script>
 </body>
 </html>

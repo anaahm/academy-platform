@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="./assets/styles.css">
   <link rel="stylesheet" href="./assets/admin.css">
   <link rel="stylesheet" href="./assets/ui-kit.css">
-  <link rel="stylesheet" href="./assets/experience.css?v=30">
+  <link rel="stylesheet" href="./assets/experience.css?v=31">
   <script src="./assets/academy-utils.js"></script>
 </head>
 <body class="admin-v3-body">
@@ -219,6 +219,17 @@
 
         <section class="admin-tab" id="admin-tab-teachers">
           <div class="admin-section-head"><div><span class="section-kicker">فريق التدريس</span><h2>المدرسون والمراجعات</h2><p>فعّل المدرسين، اسند لهم المواد، وراجع المحتوى قبل النشر.</p></div><a class="btn btn-soft" href="./teacher.html" target="_blank"><i class="fa-solid fa-eye"></i> معاينة بوابة المدرس</a></div>
+          <article class="admin-card admin-teacher-create">
+            <div class="admin-card-head"><div><span class="section-kicker">حساب مستقل</span><h3>إضافة مدرس جديد</h3><p>حدّد بيانات دخول المدرس، ثم أسند له المادة والصف من النموذج أدناه. كلمة المرور لا تُحفظ في قاعدة البيانات.</p></div><span>🔑</span></div>
+            <form id="createTeacherForm" class="admin-teacher-create-form">
+              <label><span>اسم المدرس</span><input id="newTeacherName" type="text" required maxlength="80" autocomplete="off" placeholder="اسم المدرس"></label>
+              <label><span>البريد الإلكتروني</span><input id="newTeacherEmail" type="email" required autocomplete="off" dir="ltr" placeholder="teacher@example.com"></label>
+              <label><span>كلمة مرور أولية</span><input id="newTeacherPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="ثمانية أحرف على الأقل"></label>
+              <button class="btn btn-primary" id="createTeacherBtn" type="submit"><i class="fa-solid fa-user-plus"></i> إنشاء حساب المدرس</button>
+            </form>
+            <p id="createTeacherStatus" class="teacher-form-status" role="status" aria-live="polite"></p>
+            <p class="teacher-form-tip">أرسل بيانات الدخول للمدرس بطريقة خاصة، واطلب منه تغيير كلمة المرور عبر «نسيت كلمة المرور؟» عند أول دخول.</p>
+          </article>
           <div class="admin-teacher-grid">
             <article class="admin-card"><div class="admin-card-head"><div><span class="section-kicker">المدرسون</span><h3>الحسابات الحالية</h3></div><span>👨‍🏫</span></div><div id="teachersAdminList" class="admin-list"></div></article>
             <article class="admin-card"><div class="admin-card-head"><div><span class="section-kicker">ترقية حساب</span><h3>طلاب يمكن تحويلهم لمدرسين</h3></div><span>➕</span></div><div id="teacherCandidates" class="admin-list admin-scroll-list"></div></article>
@@ -458,7 +469,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="./assets/firebase-config.js"></script>
   <script src="./assets/admin-auth-flow.js"></script>
-  <script src="./assets/admin.js"></script>
+  <script src="./assets/admin.js?v=31"></script>
   <script src="./assets/admin-notifications.js"></script>
 </body>
 </html>
