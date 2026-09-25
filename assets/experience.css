@@ -22,7 +22,7 @@ p{line-height:1.85}
 .btn-soft{background:#eef5ff!important;color:#174d91!important;border-color:#d2e3fa!important}
 .ui-skip-link{position:fixed;top:8px;right:12px;z-index:10000;transform:translateY(-180%);padding:10px 18px;background:#fff;color:#174d91;border-radius:12px;box-shadow:var(--academy-shadow)}
 .ui-skip-link:focus{transform:none}
-.explorer-drawer:not(.open){visibility:hidden;pointer-events:none}
+.explorer-drawer:not(.open){display:none!important;visibility:hidden;pointer-events:none}
 .explorer-drawer.open{visibility:visible}
 .ui-confirm-card,.modal-panel,.admin-modal,.teacher-grade-modal{max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain}
 .ui-confirm-actions{flex-wrap:wrap}
