@@ -1,10 +1,10 @@
-const CACHE='academy-shell-2026-09-25-v29';
+const CACHE='academy-shell-2026-09-25-v30';
 const CORE=[
  './','./index.html','./offline.html',
  './explore.html','./search.html','./news.html','./subject.html','./lesson.html','./profile.html',
  './exam-center.html','./simulations.html','./progress.html','./planner.html','./assignments.html','./weekly-report.html','./schedule.html',
  './library.html','./live.html','./community.html','./leaderboard.html','./notifications.html','./certificate.html','./admin.html','./teacher.html',
- './assets/experience.css','./assets/academy-utils.js',
+ './assets/experience.css?v=30','./assets/academy-utils.js',
  './assets/styles.css','./assets/learning.css','./assets/portal.css','./assets/hub.css','./assets/search.css','./assets/news.css','./assets/certificate.css','./assets/admin.css','./assets/ui-kit.css',
  './assets/ui-kit.js','./assets/student-shell.js','./assets/firebase-config.js','./assets/auth-flow.js','./assets/student-core.js',
  './assets/app.js','./assets/learning.js','./assets/explore.js','./assets/search.js','./assets/news.js','./assets/profile.js',
