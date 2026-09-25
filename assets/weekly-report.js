@@ -93,8 +93,8 @@ function render(){
    return '<div class="weekly-compare-row"><span>'+m.icon+'</span><div><strong>'+m.label+'</strong><small>السابق: '+m.prev+m.suffix+'</small></div><b>'+m.now+m.suffix+'</b><em class="'+(flat?'flat':up?'up':'down')+'">'+(flat?'—':up?'▲ ':'▼ ')+Math.abs(ch)+'%</em></div>';
  }).join('');
 
- const subjects=C.subjectsFor(data,profile.stage,String(profile.grade),profile.educationType),sp=profile.subjectProgress||{};
- const ranked=subjects.map(s=>({...s,p:Math.max(0,Math.min(100,Number(sp[s.id]||0)))})).sort((a,b)=>b.p-a.p);
+ const subjects=C.subjectsFor(data,profile.stage,String(profile.grade),profile.educationType);
+ const ranked=subjects.map(s=>({...s,p:Math.max(0,Math.min(100,C.subjectProgressValue(profile,s.id)))})).sort((a,b)=>b.p-a.p);
  $('weeklySubjects').innerHTML=ranked.length?ranked.map(s=>
    '<a class="weekly-subject-row" href="./subject.html?'+new URLSearchParams({type:profile.educationType,stage:profile.stage,grade:String(profile.grade),subject:s.id})+'">'+
    '<span>'+C.esc(s.emoji||'📚')+'</span><div><strong>'+C.esc(s.name)+'</strong><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+s.p+'"><i style="width:'+s.p+'%"></i></div></div><b>'+s.p+'%</b></a>'
