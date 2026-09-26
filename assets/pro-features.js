@@ -171,7 +171,27 @@ async function recordTeacherOutcome(teacherId,ctx={},score=0){
 async function createParentInvite(studentId=uid()){if(!studentId)return null;const code=Math.random().toString(36).slice(2,8).toUpperCase();await db.ref(paths.parentInvites+'/'+code).set({studentId,createdAt:now(),expiresAt:now()+7*day,used:false});return code}
 async function linkParent(code,parentId=uid()){const ref=db.ref(paths.parentInvites+'/'+String(code).toUpperCase()),s=await ref.once('value'),v=s.val();if(!v||v.used||v.expiresAt<now())throw new Error('الكود غير صالح');await db.ref(paths.parentLinks+'/'+parentId+'/'+v.studentId).set({studentId:v.studentId,linkedAt:now()});await ref.update({used:true,parentId});return v.studentId}
 async function getChildren(parentId=uid()){const s=await db.ref(paths.parentLinks+'/'+parentId).once('value');return Object.keys(s.val()||{})}
-async function parentReport(studentId){const [p,x,m,g,r,a]=await Promise.all([db.ref('studentProfilesV3/'+studentId).once('value'),db.ref(paths.xp+'/'+studentId).once('value'),db.ref(paths.mastery+'/'+studentId).once('value'),db.ref(paths.goals+'/'+studentId).once('value'),db.ref(paths.reviews+'/'+studentId).once('value'),db.ref(paths.studentAnalytics+'/'+studentId).once('value')]);return{profile:p.val()||{},xp:x.val()||{},mastery:m.val()||{},goals:g.val()||{},reviews:r.val()||{},analytics:a.val()||{}}}
+async function parentReport(studentId){
+ const [p,x,m,g,r,a,as]=await Promise.all([
+  db.ref('studentProfilesV3/'+studentId).once('value'),db.ref(paths.xp+'/'+studentId).once('value'),db.ref(paths.mastery+'/'+studentId).once('value'),db.ref(paths.goals+'/'+studentId).once('value'),db.ref(paths.reviews+'/'+studentId).once('value'),db.ref(paths.studentAnalytics+'/'+studentId).once('value'),db.ref('assignments').once('value')
+ ]);
+ const profile=p.val()||{},allAssignments=Object.entries(as.val()||{}).map(([id,v])=>({id,...(v||{})}));
+ const matches=a=>{
+  if(a.isHidden)return false;
+  if(a.type&&a.type!==profile.educationType)return false;
+  if(a.stage&&a.stage!==profile.stage)return false;
+  if(a.grade&&String(a.grade)!==String(profile.grade))return false;
+  const mode=a.targetMode||'all';
+  if(mode==='students'){const ids=Array.isArray(a.targetStudentIds)?a.targetStudentIds:Object.keys(a.targetStudentIds||{});return ids.includes(studentId)}
+  if(mode==='group'){const groups=Array.isArray(profile.groupIds)?profile.groupIds:Object.keys(profile.groupIds||{});return !!a.targetGroupId&&(profile.classGroupId===a.targetGroupId||groups.includes(a.targetGroupId))}
+  return true;
+ };
+ const assignments=allAssignments.filter(matches),submissions={};
+ await Promise.all(assignments.map(async a=>{try{const s=await db.ref('assignmentSubmissions/'+a.id+'/'+studentId).once('value');if(s.exists())submissions[a.id]=s.val()}catch{}}));
+ const nowTs=now(),assignmentSummary={total:assignments.length,submitted:0,graded:0,pending:0,overdue:0,dueSoon:0};
+ assignments.forEach(a=>{const s=submissions[a.id],due=Number(a.dueAt||0);if(s?.status==='graded')assignmentSummary.graded++;else if(s)assignmentSummary.submitted++;else{assignmentSummary.pending++;if(due&&due<nowTs)assignmentSummary.overdue++;else if(due&&due-nowTs<=48*3600000)assignmentSummary.dueSoon++}});
+ return{profile,xp:x.val()||{},mastery:m.val()||{},goals:g.val()||{},reviews:r.val()||{},analytics:a.val()||{},assignmentSummary};
+}
 function certificateIdFor(data,userId=uid()){
  const raw=[userId,data.type||'public',data.stage||'',data.grade||'',data.subject||''].join('-').replace(/[^a-zA-Z0-9_-]/g,'-');
  return 'ACD-'+raw.slice(0,72).toUpperCase();
