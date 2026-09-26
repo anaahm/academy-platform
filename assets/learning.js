@@ -285,17 +285,26 @@ function trackContentEvent(id,eventName,score=null,questions=null,answers=null){
          const chosen=String(answers[i]);
          record.optionCounts[chosen]=Number(record.optionCounts[chosen]||0)+1;
          a.questionStats[index]=record;
-         if(q.questionBankId){
-           db.ref('questionAnalytics/'+q.questionBankId).transaction(stat=>{
-             stat=stat||{};stat.attempts=Number(stat.attempts||0)+1;stat.correct=Number(stat.correct||0)+(answers[i]===Number(q.correctAnswer)?1:0);
-             stat.optionCounts=stat.optionCounts||{};stat.optionCounts[chosen]=Number(stat.optionCounts[chosen]||0)+1;stat.updatedAt=Date.now();return stat;
-           }).catch(()=>{});
-         }
        });
      }
    }
    a.updatedAt=Date.now();return a;
  }).catch(()=>{});
+ if(eventName==='quiz'&&questions&&answers){
+   questions.forEach((q,i)=>{
+     if(!q?.questionBankId)return;
+     const chosen=String(answers[i]);
+     db.ref('questionAnalytics/'+q.questionBankId).transaction(stat=>{
+       stat=stat||{};
+       stat.attempts=Number(stat.attempts||0)+1;
+       stat.correct=Number(stat.correct||0)+(answers[i]===Number(q.correctAnswer)?1:0);
+       stat.optionCounts=stat.optionCounts||{};
+       stat.optionCounts[chosen]=Number(stat.optionCounts[chosen]||0)+1;
+       stat.updatedAt=Date.now();
+       return stat;
+     }).catch(()=>{});
+   });
+ }
 }
 
 /* lesson */
