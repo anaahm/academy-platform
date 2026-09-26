@@ -126,17 +126,42 @@ async function submitContent(type,payload){
  await db.ref(paths.submissions+'/'+id).set(item);await audit('content.submit',type,id,{status:item.status});return id;
 }
 async function reviewContent(id,status,reason=''){if(await roleOf()!=='admin')throw new Error('غير مصرح');await db.ref(paths.submissions+'/'+id).update({status,reason,reviewerUid:uid(),reviewedAt:now()});await audit('content.review','submission',id,{status,reason})}
-async function recordAttendance(sessionId,joined=true,userId=uid()){if(!userId||!sessionId)return;const ref=db.ref(paths.attendance+'/'+sessionId+'/'+userId);if(joined)await ref.update({joinedAt:now(),lastSeenAt:now()});else await ref.update({leftAt:now(),lastSeenAt:now()})}
+async function recordAttendance(sessionId,joined=true,userId=uid()){
+ if(!userId||!sessionId)return;
+ const ref=db.ref(paths.attendance+'/'+sessionId+'/'+userId),ts=now();
+ await ref.transaction(row=>{
+  row=row||{totalSeconds:0,visits:0};
+  if(joined){
+    if(!row.activeSince){row.activeSince=ts;row.visits=Number(row.visits||0)+1}
+    row.joinedAt=row.joinedAt||ts;row.lastSeenAt=ts;row.isPresent=true;
+  }else{
+    const start=Number(row.activeSince||row.lastSeenAt||ts);
+    row.totalSeconds=Number(row.totalSeconds||0)+Math.max(0,Math.round((ts-start)/1000));
+    row.leftAt=ts;row.lastSeenAt=ts;row.isPresent=false;delete row.activeSince;
+  }
+  return row;
+ });
+}
 async function rateLesson(lessonId,value,comment='',userId=uid()){if(!userId||!lessonId)return;await db.ref(paths.ratings+'/'+lessonId+'/'+userId).set({value:Number(value),comment:String(comment||'').slice(0,500),createdAt:now()})}
 async function createParentInvite(studentId=uid()){if(!studentId)return null;const code=Math.random().toString(36).slice(2,8).toUpperCase();await db.ref(paths.parentInvites+'/'+code).set({studentId,createdAt:now(),expiresAt:now()+7*day,used:false});return code}
 async function linkParent(code,parentId=uid()){const ref=db.ref(paths.parentInvites+'/'+String(code).toUpperCase()),s=await ref.once('value'),v=s.val();if(!v||v.used||v.expiresAt<now())throw new Error('الكود غير صالح');await db.ref(paths.parentLinks+'/'+parentId+'/'+v.studentId).set({studentId:v.studentId,linkedAt:now()});await ref.update({used:true,parentId});return v.studentId}
 async function getChildren(parentId=uid()){const s=await db.ref(paths.parentLinks+'/'+parentId).once('value');return Object.keys(s.val()||{})}
 async function parentReport(studentId){const [p,x,m,g,r,a]=await Promise.all([db.ref('studentProfilesV3/'+studentId).once('value'),db.ref(paths.xp+'/'+studentId).once('value'),db.ref(paths.mastery+'/'+studentId).once('value'),db.ref(paths.goals+'/'+studentId).once('value'),db.ref(paths.reviews+'/'+studentId).once('value'),db.ref(paths.studentAnalytics+'/'+studentId).once('value')]);return{profile:p.val()||{},xp:x.val()||{},mastery:m.val()||{},goals:g.val()||{},reviews:r.val()||{},analytics:a.val()||{}}}
-async function issueCertificate(data,userId=uid()){const id='ACD-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).slice(2,6).toUpperCase();await db.ref(paths.certificates+'/'+id).set({...data,id,studentId:userId,issuedAt:now(),valid:true});return id}
+function certificateIdFor(data,userId=uid()){
+ const raw=[userId,data.type||'public',data.stage||'',data.grade||'',data.subject||''].join('-').replace(/[^a-zA-Z0-9_-]/g,'-');
+ return 'ACD-'+raw.slice(0,72).toUpperCase();
+}
+async function issueCertificate(data,userId=uid()){
+ if(!userId)return null;
+ const id=data.id||certificateIdFor(data,userId),ref=db.ref(paths.certificates+'/'+id),snap=await ref.once('value');
+ if(!snap.exists())await ref.set({...data,id,studentId:userId,issuedAt:now(),valid:true});
+ else if(snap.val()?.valid!==false)await ref.update({...data,id,studentId:userId,valid:true});
+ return id;
+}
 async function verifyCertificate(id){const s=await db.ref(paths.certificates+'/'+String(id||'').trim().toUpperCase()).once('value');const v=s.val();return v&&v.valid!==false?v:null}
 async function snapshot(userId=uid()){
  const [x,s,g,r]=await Promise.all([db.ref(paths.xp+'/'+userId).once('value'),db.ref(paths.streaks+'/'+userId).once('value'),db.ref(paths.goals+'/'+userId).once('value'),db.ref(paths.reviews+'/'+userId).once('value')]);
  return{xp:x.val()||{total:0,level:1},streak:s.val()||{count:0,best:0},goals:g.val()||{},due:Object.values(r.val()||{}).filter(v=>v.nextReviewAt<=now()&&v.status!=='mastered').length};
 }
-window.AcademyPro={auth,db,paths,roleOf,can,audit,awardXP,touchStreak,setWeeklyGoals,incrementGoal,recordMastery,saveResume,getResume,saveNote,toggleFavorite,logMistake,markReview,dueReviews,updateQuestionStats,adaptiveDifficulty,selectAdaptiveQuestions,submitAnswer,saveDiagnostic,recommendNext,addQuestion,bulkAddQuestions,generateExam,submitContent,reviewContent,recordAttendance,rateLesson,createParentInvite,linkParent,getChildren,parentReport,issueCertificate,verifyCertificate,snapshot,levelForXP,dateKey};
+window.AcademyPro={auth,db,paths,roleOf,can,audit,awardXP,touchStreak,setWeeklyGoals,incrementGoal,recordMastery,saveResume,getResume,saveNote,toggleFavorite,logMistake,markReview,dueReviews,updateQuestionStats,adaptiveDifficulty,selectAdaptiveQuestions,submitAnswer,saveDiagnostic,recommendNext,addQuestion,bulkAddQuestions,generateExam,submitContent,reviewContent,recordAttendance,rateLesson,createParentInvite,linkParent,getChildren,parentReport,issueCertificate,certificateIdFor,verifyCertificate,snapshot,levelForXP,dateKey};
 })();
