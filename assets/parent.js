@@ -19,7 +19,7 @@ function render(snapshot){
  const delta=Number(w.delta||0);$('parentWeekly').innerHTML='<div class="pro-kpi-grid"><article class="pro-kpi"><strong>'+Number(w.current||0)+'%</strong><span>متوسط هذا الأسبوع</span></article><article class="pro-kpi"><strong>'+Number(w.previous||0)+'%</strong><span>الأسبوع السابق</span></article><article class="pro-kpi"><strong>'+(delta>0?'+':'')+delta+'%</strong><span>التغير</span></article><article class="pro-kpi"><strong>'+Number(w.count||0)+'</strong><span>اختبارات هذا الأسبوع</span></article></div>';
 }
 async function lookup(code){
- code=String(code||'').trim().toUpperCase();if(!/^[A-Z2-9]{8}$/.test(code))return toast('أدخل كود متابعة مكوّنًا من 8 رموز.','error');
+ code=String(code||'').trim().toUpperCase();if(!/^[A-Z2-9]{12}$/.test(code))return toast('أدخل كود متابعة مكوّنًا من 12 رمزًا.','error');
  try{const snap=await db.ref('parentSnapshots/'+code).once('value');render(snap.val());if(snap.exists())localStorage.setItem('academyParentCode',code)}catch(err){console.error(err);toast('تعذر فتح التقرير الآن.','error')}
 }
 $('parentLookupForm').onsubmit=e=>{e.preventDefault();lookup($('parentCodeInput').value)};
