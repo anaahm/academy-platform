@@ -295,14 +295,19 @@ function renderTeacherAssignments(){
 async function submitTeacherAssignment(e){
  e.preventDefault();
  const subject=$('assignmentSubject').value,subjectName=$('assignmentSubject').selectedOptions[0]?.textContent||subject;
+ const targetMode=$('assignmentTargetMode')?.value||'all',targetRaw=$('assignmentTargetValue')?.value.trim()||'';
+ const targetStudentIds=targetMode==='students'?targetRaw.split(/[،,\s]+/).map(x=>x.trim()).filter(Boolean):[];
  const payload={
    title:$('assignmentTitle').value.trim(),instructions:$('assignmentInstructions').value.trim(),
    type:$('assignmentEducationType').value,stage:$('assignmentStage').value,grade:$('assignmentGrade').value,
    subject,subjectName,dueAt:$('assignmentDueAt').value?new Date($('assignmentDueAt').value).getTime():0,
    maxScore:Number($('assignmentMaxScore').value||100),teacherId:user.uid,teacherName:teacher.name||user.displayName||'المدرس',
+   targetMode,targetStudentIds,targetGroupId:targetMode==='group'?targetRaw:'',
    submissionKind:'assignment',status:'pending',createdAt:Date.now()
  };
  if(!payload.title||!payload.dueAt)return toast('أكمل عنوان الواجب وآخر موعد.','error');
+ if(payload.targetMode==='students'&&!payload.targetStudentIds.length)return toast('أدخل معرّف طالب واحد على الأقل.','error');
+ if(payload.targetMode==='group'&&!payload.targetGroupId)return toast('أدخل رمز المجموعة أو الفصل.','error');
  if(!assignmentAllowed(payload.type,payload.stage,payload.grade,payload.subject))return toast('لا يمكنك إرسال واجب لمادة غير مسندة إلى حسابك.','error');
  if(payload.dueAt<=Date.now())return toast('اختر موعد تسليم في المستقبل.','error');
  if(!Number.isFinite(payload.maxScore)||payload.maxScore<1||payload.maxScore>1000)return toast('الدرجة النهائية يجب أن تكون بين 1 و1000.','error');
