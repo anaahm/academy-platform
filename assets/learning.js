@@ -293,9 +293,30 @@ function renderLesson(){
  if($('lessonVideoCount'))$('lessonVideoCount').textContent=(Array.isArray(lesson.videos)?lesson.videos.filter(v=>v?.url).length:0)+' فيديو';
  if($('lessonQuestionCount'))$('lessonQuestionCount').textContent=(Array.isArray(lesson.questions)?lesson.questions.length:0)+' سؤال';
  $('lessonBreadcrumb').innerHTML='<a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><a id="backToSubjectLink" href="'+url('subject.html',c)+'">'+esc(state.subject.name)+'</a><i class="fa-solid fa-chevron-left"></i><span>'+esc(lesson.title||'الدرس')+'</span>';
- renderVideo(lesson);renderExplanation(lesson);renderQuickCheck(lesson);renderFiles();renderOutline(c,lesson);renderNav(c);updateProgress(id);updateBookmarkUI(id);bindTabs();setupQuiz(c,state.currentLesson);renderLinkedLessonQuizzes(c,id);renderLessonPath();loadLessonNotes(id);
+ renderVideo(lesson);renderExplanation(lesson);renderQuickCheck(lesson);renderFiles();renderOutline(c,lesson);renderNav(c);updateProgress(id);updateBookmarkUI(id);bindTabs();setupQuiz(c,state.currentLesson);renderLinkedLessonQuizzes(c,id);renderLessonPath();loadLessonNotes(id);bindLessonRating(id);
  $('markCompleteBtn').onclick=()=>markComplete(c,id);$('markCompleteHeader').onclick=()=>markComplete(c,id);
  if($('bookmarkLessonBtn')) $('bookmarkLessonBtn').onclick=()=>toggleBookmark(c,id);
+}
+async function bindLessonRating(id){
+ const box=$('lessonRatingCard'),status=$('lessonRatingStatus');if(!box||!state.user||!window.AcademyPro)return;
+ try{
+   const snap=await db.ref(window.AcademyPro.paths.ratings+'/'+id+'/'+state.user.uid).once('value'),saved=snap.val();
+   if(saved?.value){
+     $('[data-lesson-rating]').forEach(b=>b.classList.toggle('active',Number(b.dataset.lessonRating)===Number(saved.value)));
+     if(status)status.textContent='تم حفظ تقييمك، ويمكنك تغييره في أي وقت.';
+   }
+ }catch{}
+ $('[data-lesson-rating]').forEach(b=>b.onclick=async()=>{
+   const value=Number(b.dataset.lessonRating);
+   $('[data-lesson-rating]').forEach(x=>x.disabled=true);
+   try{
+     await window.AcademyPro.rateLesson(id,value,'',state.user.uid);
+     $('[data-lesson-rating]').forEach(x=>x.classList.toggle('active',x===b));
+     if(status)status.textContent=value===3?'رائع، سعيدين إن الشرح واضح ✅':value===2?'شكرًا، سنعتبر أن الدرس يحتاج دعمًا إضافيًا.':'تم تسجيل أن الدرس يحتاج شرحًا أكثر.';
+     toast('تم حفظ تقييمك للدرس.');
+   }catch(err){console.error(err);toast('تعذر حفظ التقييم.','error')}
+   finally{$('[data-lesson-rating]').forEach(x=>x.disabled=false)}
+ });
 }
 function renderQuickCheck(lesson){
  const box=$('lessonQuickCheck');if(!box)return;
