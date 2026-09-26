@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-page="smart-assessment">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>التقييم الذكي | الأكاديمية</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/learning.css"><link rel="stylesheet" href="./assets/ui-kit.css"><link rel="stylesheet" href="./assets/pro-suite.css">
+</head>
+<body class="feature-page">
+<div id="toast" class="toast"></div>
+<header class="learning-header"><div class="container learning-nav">
+<a class="brand" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-book-open"></i></span><span><strong>الأكاديمية</strong><small>التقييم الذكي</small></span></a>
+<div class="learning-breadcrumb"><a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><span>تحديد المستوى</span></div>
+<a class="btn btn-soft" href="./review-center.html"><i class="fa-solid fa-arrows-rotate"></i> المراجعة الذكية</a>
+</div></header>
+<main class="pro-shell">
+<section class="pro-page-hero"><span class="section-kicker light">اختبار يتكيف مع مستواك</span><h1>التقييم الذكي وتحديد المستوى</h1><p>يبدأ من مستوى متوسط ثم يرفع أو يخفض صعوبة السؤال وفق إجاباتك، ويخرج لك نقاط القوة والمهارات التي تحتاج مراجعة.</p></section>
+<section class="pro-panel" id="assessmentSetup">
+ <div class="pro-panel-head"><div><h2>اختر نوع التقييم</h2><p>يمكنك إجراء تحديد مستوى شامل أو تقييم تكيفي أقصر.</p></div></div>
+ <div class="pro-form">
+  <label><span>المادة</span><select id="assessmentSubject"><option value="">جاري تحميل المواد...</option></select></label>
+  <label><span>النمط</span><select id="assessmentMode"><option value="placement">تحديد مستوى — 15 سؤالًا</option><option value="adaptive">اختبار تكيفي — 12 سؤالًا</option></select></label>
+  <div class="full pro-toolbar"><button class="pro-btn" id="startAssessment"><i class="fa-solid fa-play"></i> ابدأ التقييم</button><span id="assessmentBankInfo" class="pro-badge">جاري تجهيز بنك الأسئلة</span></div>
+ </div>
+</section>
+<section class="pro-panel pro-section-hidden" id="assessmentEngine">
+ <div class="pro-panel-head"><div><span class="section-kicker" id="assessmentProgressText">السؤال 1</span><h2 id="assessmentTitle">التقييم</h2></div><span class="pro-badge" id="difficultyBadge">متوسط</span></div>
+ <div class="pro-progress"><span id="assessmentProgressBar" style="width:0"></span></div>
+ <article class="pro-question-card" style="margin-top:18px"><h3 id="assessmentQuestion"></h3><div id="assessmentOptions"></div><div id="assessmentFeedback"></div></article>
+ <div class="pro-toolbar" style="margin-top:16px"><button class="pro-btn" id="assessmentNext" disabled>التالي <i class="fa-solid fa-arrow-left"></i></button></div>
+</section>
+<section class="pro-panel pro-section-hidden" id="assessmentResult">
+ <div class="pro-panel-head"><div><span class="section-kicker">نتيجتك التحليلية</span><h2 id="assessmentResultTitle">انتهى التقييم</h2><p id="assessmentResultText"></p></div><span class="pro-mastery-pill learning" id="assessmentScore">0%</span></div>
+ <div class="pro-kpi-grid" id="assessmentKpis"></div>
+ <div class="pro-two-col" style="margin-top:18px"><article><h3>نقاط القوة</h3><div class="pro-list" id="strongSkills"></div></article><article><h3>يحتاج مراجعة</h3><div class="pro-list" id="weakSkills"></div></article></div>
+ <div class="pro-toolbar" style="margin-top:20px"><button class="pro-btn" id="retryAssessment">إعادة التقييم</button><a class="pro-btn secondary" href="./review-center.html">فتح المراجعة الذكية</a><a class="pro-btn secondary" href="./index.html">العودة للوحة الطالب</a></div>
+</section>
+</main>
+<script src="./assets/ui-kit.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="./assets/firebase-config.js"></script><script src="./assets/academy-utils.js"></script><script src="./assets/pro-suite-core.js"></script><script src="./assets/smart-assessment.js"></script><script src="./assets/pwa.js"></script><script src="./assets/student-shell.js"></script>
+</body></html>
