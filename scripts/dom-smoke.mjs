@@ -9,7 +9,7 @@ function fixtures(){return {
  adminProfiles:{tester:{isAdmin:true,name:'مدير الاختبار'}},teacherProfiles:{tester:{name:'مدرس الاختبار',isActive:true,subjects:[{type:'public',stage:'prep',grade:'1',subject:'arabic'}]}},
  customSubjects:{prep:{1:[{id:'arabic',name:'اللغة العربية',emoji:'📘',type:'public',imageUrl:'https://example.test/broken.jpg',units:[{name:'النحو'}]}]}},
  lessons:{lesson1:{title:'المبتدأ والخبر',content:'شرح تجريبي',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,teacherId:'tester',videos:[],questions:[question,{text:'ما ناتج 2 + 2؟',opts:['4','5'],correctAnswer:0}]}},
- quizzes:{quiz1:{name:'اختبار النحو',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:0,questions:[question]}},
+ quizzes:{quiz1:{name:'اختبار النحو',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:0,questions:[question]},quiz2:{name:'اختبار مرتبط بالدرس',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,lessonId:'lesson1',teacherId:'tester',questions:[question]}},
  files:{file1:{title:'ملف بلا رابط',type:'public',stage:'prep',grade:'1',subject:'arabic',url:''}},
  assignments:{hw1:{title:'واجب النحو',instructions:'أجب',type:'public',stage:'prep',grade:'1',subject:'arabic',teacherId:'tester',maxScore:10,dueAt:Date.now()+86400000}},
  assignmentSubmissions:{hw1:{student2:{studentName:'طالب تجريبي',status:'submitted',text:'إجابة',submittedAt:Date.now()}}},
@@ -18,13 +18,15 @@ function fixtures(){return {
  settings:{},posts:{},announcements:{},scheduleEvents:{},notificationBroadcasts:{},simulations:{},contentAnalytics:{lesson1:{questionStats:{0:{attempts:4,correct:1},1:{attempts:4,correct:4}}}},leaderboardV3:{},teacherSubmissions:{}
 }}
 let failures=0,scenarios=0;
-async function check(file,role='student',failurePath='',reviewMode=false){
+async function check(file,role='student',failurePath='',reviewMode=false,linkedMode=false){
  const errors=[],writes=[],database=fixtures(),callbacks=[];
+ if(file==='admin.html'&&role==='admin')database.teacherSubmissions={tester:{quizSubmission:{submissionKind:'quiz',title:'اختبار المبتدأ والخبر',lessonId:'lesson1',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()},assignmentSubmission:{submissionKind:'assignment',title:'واجب جديد',instructions:'حل التدريبات',type:'public',stage:'prep',grade:'1',subject:'arabic',dueAt:Date.now()+86400000,maxScore:100,status:'pending',teacherId:'tester',createdAt:Date.now()}}};
  if(file==='profile.html')database.studentProfilesV3.tester.mistakeNotebook={lesson1:{0:{text:'ما ناتج 1 + 1؟',opts:['1','2'],chosen:0,correctAnswer:1,sourceType:'lesson',title:'المبتدأ والخبر',subject:'arabic',type:'public',stage:'prep',grade:'1'}}};
  if(reviewMode)database.studentProfilesV3.tester.mistakeNotebook={lesson1:{1:{text:'ما ناتج 2 + 2؟',opts:['4','5'],chosen:1,correctAnswer:0,sourceType:'lesson',title:'المبتدأ والخبر',subject:'arabic',type:'public',stage:'prep',grade:'1'}}};
+ if(linkedMode)database.studentProfilesV3.tester.learningProgress={lesson1:{completed:true}};
  const v=new VirtualConsole();v.on('jsdomError',e=>{if(!/navigation|scrollTo|Not implemented/.test(e.message))errors.push(e.message)});
  v.on('error',(...args)=>{if(!failurePath)errors.push(args.map(x=>x?.stack||String(x)).join(' '))});
- const dom=new JSDOM(readFileSync(file,'utf8').replace(/<link[^>]*>/g,''),{url:'https://example.test/academy/'+file+'?type=public&stage=prep&grade=1&subject=arabic&id=lesson1'+(reviewMode?'&reviewMistakes=1':''),runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:v});
+ const dom=new JSDOM(readFileSync(file,'utf8').replace(/<link[^>]*>/g,''),{url:'https://example.test/academy/'+file+'?type=public&stage=prep&grade=1&subject=arabic&'+(linkedMode?'quiz=quiz2':'id=lesson1')+(reviewMode?'&reviewMistakes=1':''),runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:v});
  const w=dom.window;w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};
  w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});
  w.requestAnimationFrame=fn=>w.setTimeout(()=>fn(Date.now()),0);
@@ -109,8 +111,13 @@ async function check(file,role='student',failurePath='',reviewMode=false){
    await new Promise(r=>setTimeout(r,25));
    assert.equal(get('studentProfilesV3/tester/mistakeNotebook/lesson1/1'),null,'focused practice clears corrected mistake');
   }
-  if(file==='lesson.html'&&!reviewMode){
+  if(file==='lesson.html'&&linkedMode){
+   assert.match(w.document.getElementById('lessonTitle').textContent,/اختبار مرتبط/);
+   assert.equal(w.document.getElementById('quizIntro').classList.contains('hidden'),false,'completed linked lesson unlocks its exam');
+  }
+  if(file==='lesson.html'&&!reviewMode&&!linkedMode){
    const b=w.document.getElementById('markCompleteBtn');if(b&&!b.disabled){b.click();b.click();await new Promise(r=>setTimeout(r,30));assert.equal(get('studentProfilesV3/tester/stats/totalXP'),100,'double click gives only one award');}
+   assert.match(w.document.querySelector('#linkedLessonQuizzes a')?.href||'',/quiz=quiz2/,'linked exam is offered after completing lesson');
    w.document.getElementById('startQuizBtn').click();assert.ok(w.document.querySelector('[data-a]'),'quiz options');
    assert.equal(w.document.getElementById('nextQuestionBtn').disabled,true,'must answer before moving on');
    w.document.querySelector('[data-a="0"]').click();
@@ -145,6 +152,14 @@ async function check(file,role='student',failurePath='',reviewMode=false){
   }
   if(file==='admin.html'&&role!=='guest'){
    for(const tab of w.document.querySelectorAll('[data-admin-tab]')){tab.click();await new Promise(r=>setTimeout(r,8));}
+   assert.equal(get('quizzes/new1'),null,'teacher quiz stays unpublished before approval');
+   w.document.querySelector('[data-approve="tester|quizSubmission"]').click();await new Promise(r=>setTimeout(r,15));
+   assert.equal(get('quizzes/new1/lessonId'),'lesson1','approved quiz links to chosen lesson');
+   assert.equal(get('teacherSubmissions/tester/quizSubmission/status'),'approved');
+   assert.equal(get('assignments/new2'),null,'teacher homework stays unpublished before approval');
+   w.document.querySelector('[data-approve="tester|assignmentSubmission"]').click();await new Promise(r=>setTimeout(r,15));
+   assert.equal(get('assignments/new2/teacherId'),'tester','homework publishes only after admin approval');
+   assert.equal(get('teacherSubmissions/tester/assignmentSubmission/status'),'approved');
    const form=w.document.getElementById('createTeacherForm');
    w.document.getElementById('newTeacherName').value='مدرس جديد';w.document.getElementById('newTeacherEmail').value='newteacher@example.test';w.document.getElementById('newTeacherPassword').value='long-secure-password';
    form.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,20));
@@ -166,6 +181,26 @@ async function check(file,role='student',failurePath='',reviewMode=false){
    }else{
     assert.equal(w.document.getElementById('teacherPortal').classList.contains('hidden'),false);
     assert.match(w.document.getElementById('teacherDifficultQuestions').textContent,/75% خطأ/);
+    if(!failurePath){
+     w.document.getElementById('teacherQuizStage').value='prep';w.document.getElementById('teacherQuizStage').dispatchEvent(new w.Event('change'));
+     assert.equal(w.document.getElementById('teacherQuizLesson').querySelector('option[value="lesson1"]')?.value,'lesson1');
+     w.document.getElementById('teacherQuizLesson').value='lesson1';w.document.getElementById('teacherQuizTitle').value='اختبار المدرس';
+     w.document.getElementById('teacherAddQuestion').click();
+     const row=w.document.querySelector('.teacher-question-row');row.querySelector('.teacher-question-text').value='سؤال فردي';
+     row.querySelectorAll('.teacher-question-option').forEach((input,i)=>input.value=i<2?'إجابة '+i:'');row.querySelector('.teacher-question-correct').value='1';
+     w.document.getElementById('teacherQuizBulk').value=JSON.stringify([question]);w.document.getElementById('teacherImportQuestions').click();
+     assert.equal(w.document.querySelectorAll('.teacher-question-row').length,2,'individual and bulk questions can be combined');
+     w.document.getElementById('teacherQuizForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,22));
+     assert.equal(get('teacherSubmissions/tester/new1/questions').length,2);
+     assert.equal(get('teacherSubmissions/tester/new1/status'),'pending');
+     assert.equal(get('quizzes/new1'),null,'teacher cannot publish quizzes directly');
+     w.document.getElementById('assignmentTitle').value='واجب تجريبي';
+     w.document.getElementById('assignmentStage').value='prep';w.document.getElementById('assignmentStage').dispatchEvent(new w.Event('change'));
+     w.document.getElementById('assignmentDueAt').value=new Date(Date.now()+172800000).toISOString().slice(0,16);
+     w.document.getElementById('teacherAssignmentForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,22));
+     assert.equal(get('teacherSubmissions/tester/new2/submissionKind'),'assignment');
+     assert.equal(get('assignments/new2'),null,'teacher cannot publish homework directly');
+    }
     for(const tab of w.document.querySelectorAll('[data-teacher-tab]'))tab.click();
     if(failurePath)assert.match(w.document.getElementById('teacherAssignmentSubmissions').textContent,/غير متاحة/);
    }
@@ -182,5 +217,6 @@ async function check(file,role='student',failurePath='',reviewMode=false){
 for(const file of files)await check(file,file==='admin.html'?'admin':file==='teacher.html'?'teacher':'student');
 await check('index.html','guest');await check('admin.html','guest');await check('teacher.html','guest');await check('teacher.html','teacher','assignmentSubmissions/');
 await check('lesson.html','student','',true);
+await check('lesson.html','student','',false,true);
 console.log(`DOM smoke: ${scenarios-failures}/${scenarios} scenarios passed. Uses in-memory Firebase fixtures, not live Firebase or layout rendering.`);
 if(failures)process.exit(1);

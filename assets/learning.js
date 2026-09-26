@@ -178,8 +178,8 @@ function renderCurriculum(c,filter){
  $('curriculumSkeleton').classList.add('hidden');
  const map=new Map();
  state.lessons.forEach(l=>{const u=Number(l.unit||1);if(!map.has(u))map.set(u,{lessons:[],quizzes:[]});map.get(u).lessons.push(l)});
- state.quizzes.filter(q=>Number(q.unit||0)>0).forEach(q=>{const u=Number(q.unit);if(!map.has(u))map.set(u,{lessons:[],quizzes:[]});map.get(u).quizzes.push(q)});
- const comprehensive=state.quizzes.filter(q=>Number(q.unit||0)===0);
+ state.quizzes.filter(q=>q.lessonId||Number(q.unit||0)>0).forEach(q=>{const u=Number(q.lessonId?state.lessons.find(l=>l.id===q.lessonId)?.unit||q.unit||1:q.unit);if(!map.has(u))map.set(u,{lessons:[],quizzes:[]});map.get(u).quizzes.push(q)});
+ const comprehensive=state.quizzes.filter(q=>!q.lessonId&&Number(q.unit||0)===0);
  if(!map.size&&!comprehensive.length){$('curriculumEmpty').classList.remove('hidden');$('curriculumList').classList.add('hidden');return}
  $('curriculumEmpty').classList.add('hidden');$('curriculumList').classList.remove('hidden');
 
@@ -197,7 +197,12 @@ function renderCurriculum(c,filter){
        '<div class="item-action"><span class="item-state '+(complete?'complete':current?'current':'')+'">'+status+'</span><span class="item-open"><i class="fa-solid fa-arrow-left"></i></span></div>'+
      '</a>');
    });
-   if(filter!=='lessons')d.quizzes.forEach(q=>{
+   if(filter!=='lessons')d.quizzes.filter(q=>q.lessonId).forEach(q=>{
+     const linked=state.lessons.find(l=>l.id===q.lessonId),locked=!linked||!done(q.lessonId);
+     const body='<span class="item-icon quiz"><i class="fa-solid '+(locked?'fa-lock':'fa-file-circle-question')+'"></i></span><div><h4>'+esc(q.name||'اختبار الدرس')+'</h4><p>مرتبط بدرس: '+esc(linked?.title||'درس غير متاح')+' • '+(q.questions?.length||0)+' سؤال</p></div><div class="item-action"><span class="item-state '+(locked?'locked':'quiz-ready')+'">'+(locked?'أكمل الدرس':'ابدأ الاختبار')+'</span></div>';
+     items.push(locked?'<button type="button" class="curriculum-item quiz-item locked locked-curriculum-action" data-locked-quiz="lesson" aria-label="أكمل الدرس لفتح الاختبار">'+body+'</button>':'<a class="curriculum-item quiz-item unlocked" href="'+url('lesson.html',c,{quiz:q.id})+'">'+body+'</a>');
+   });
+   if(filter!=='lessons')d.quizzes.filter(q=>!q.lessonId).forEach(q=>{
      const locked=!unitComplete;
      const body='<span class="item-icon quiz"><i class="fa-solid '+(locked?'fa-lock':'fa-file-circle-question')+'"></i></span>'+
        '<div><h4>'+esc(q.name||'اختبار الوحدة')+'</h4><p>'+(locked?'أكمل دروس الوحدة لفتح الاختبار':'جاهز الآن • ')+(q.questions?.length||0)+' سؤال</p></div>'+
@@ -227,7 +232,7 @@ function renderCurriculum(c,filter){
  }
  $('curriculumList').innerHTML=cards.join('')||'<div class="empty-state"><span>🔎</span><h3>لا يوجد محتوى بهذا الفلتر</h3></div>';
  $$('[data-locked-quiz]').forEach(b=>b.onclick=()=>{
-   toast(b.dataset.lockedQuiz==='all'?'أكمل دروس المادة أولًا لفتح الاختبار الشامل.':'أكمل دروس هذه الوحدة أولًا لفتح الاختبار.','error');
+   toast(b.dataset.lockedQuiz==='lesson'?'أكمل الدرس المرتبط لفتح الاختبار.':b.dataset.lockedQuiz==='all'?'أكمل دروس المادة أولًا لفتح الاختبار الشامل.':'أكمل دروس هذه الوحدة أولًا لفتح الاختبار.','error');
  });
  $$('[data-toggle-unit]').forEach(btn=>btn.onclick=()=>{
    const target=$('unitItems-'+btn.dataset.toggleUnit);if(!target)return;
@@ -288,7 +293,7 @@ function renderLesson(){
  if($('lessonVideoCount'))$('lessonVideoCount').textContent=(Array.isArray(lesson.videos)?lesson.videos.filter(v=>v?.url).length:0)+' فيديو';
  if($('lessonQuestionCount'))$('lessonQuestionCount').textContent=(Array.isArray(lesson.questions)?lesson.questions.length:0)+' سؤال';
  $('lessonBreadcrumb').innerHTML='<a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><a id="backToSubjectLink" href="'+url('subject.html',c)+'">'+esc(state.subject.name)+'</a><i class="fa-solid fa-chevron-left"></i><span>'+esc(lesson.title||'الدرس')+'</span>';
- renderVideo(lesson);renderExplanation(lesson);renderQuickCheck(lesson);renderFiles();renderOutline(c,lesson);renderNav(c);updateProgress(id);updateBookmarkUI(id);bindTabs();setupQuiz(c,state.currentLesson);renderLessonPath();loadLessonNotes(id);
+ renderVideo(lesson);renderExplanation(lesson);renderQuickCheck(lesson);renderFiles();renderOutline(c,lesson);renderNav(c);updateProgress(id);updateBookmarkUI(id);bindTabs();setupQuiz(c,state.currentLesson);renderLinkedLessonQuizzes(c,id);renderLessonPath();loadLessonNotes(id);
  $('markCompleteBtn').onclick=()=>markComplete(c,id);$('markCompleteHeader').onclick=()=>markComplete(c,id);
  if($('bookmarkLessonBtn')) $('bookmarkLessonBtn').onclick=()=>toggleBookmark(c,id);
 }
@@ -316,6 +321,12 @@ function renderQuickCheck(lesson){
      ?'<i class="fa-solid fa-circle-check"></i><div><strong>إجابة صحيحة 👏</strong><p>ممتاز، تقدر تدخل التدريب الكامل لما تكون جاهز.</p></div>'
      :'<i class="fa-solid fa-circle-xmark"></i><div><strong>مش هي دي الإجابة.</strong><p>راجع النقطة دي سريعًا، والإجابة الصحيحة هي: '+esc(q.opts[correct]||'—')+'.</p></div>';
  });
+}
+function renderLinkedLessonQuizzes(c,id){
+ const box=$('linkedLessonQuizzes');if(!box)return;
+ const quizzes=state.quizzes.filter(q=>q.lessonId===id);
+ box.classList.toggle('hidden',!quizzes.length);
+ box.innerHTML=quizzes.length?'<h3><i class="fa-solid fa-file-circle-question"></i> اختبارات مرتبطة بهذا الدرس</h3>'+quizzes.map(q=>done(id)?'<a class="linked-quiz-item" href="'+url('lesson.html',c,{quiz:q.id})+'"><span>'+esc(q.name||'اختبار الدرس')+' <small>'+(q.questions?.length||0)+' سؤال</small></span><i class="fa-solid fa-arrow-left"></i></a>':'<div class="linked-quiz-item is-locked"><span>'+esc(q.name||'اختبار الدرس')+' <small>أكمل الدرس لفتح الاختبار</small></span><i class="fa-solid fa-lock"></i></div>').join(''):'';
 }
 function showLessonCelebration(c,id,xp=50){
  document.getElementById('lessonCelebration')?.remove();
@@ -505,7 +516,7 @@ async function markComplete(c,id){
      try{await window.AcademyCore.addLeaderboardXP(state.user.uid,state.profile.name||'طالب',50,0)}
      catch(err){console.warn('Leaderboard sync deferred',err);toast('حُفظ تقدمك؛ تعذر تحديث ترتيبك الآن.','error')}
    }
-   trackContentEvent(id,'completions');renderOutline(c,state.currentLesson);
+   trackContentEvent(id,'completions');renderOutline(c,state.currentLesson);renderLinkedLessonQuizzes(c,id);
    renderLessonPath();
    toast('رائع! +50 XP وتم حفظ تقدمك 🎉');showLessonCelebration(c,id,50);
  }catch(err){console.error(err);toast('تعذر حفظ تقدم الدرس الآن. حاول مرة أخرى.','error')}
@@ -618,9 +629,9 @@ function renderQuizOnly(c,id){
  state.currentQuiz={...q,id};
  filterContent(c);
  const unit=Number(q.unit||0);
- const unlocked=unit===0?subjectIsComplete():unitIsComplete(unit);
+ const unlocked=q.lessonId?done(q.lessonId):unit===0?subjectIsComplete():unitIsComplete(unit);
  if(state.user && !unlocked){
-   toast(unit===0?'أكمل دروس المادة أولًا لفتح الاختبار الشامل.':'أكمل دروس الوحدة أولًا لفتح الاختبار.','error');
+   toast(q.lessonId?'أكمل الدرس المرتبط أولًا لفتح الاختبار.':unit===0?'أكمل دروس المادة أولًا لفتح الاختبار الشامل.':'أكمل دروس الوحدة أولًا لفتح الاختبار.','error');
    setTimeout(()=>location.replace(url('subject.html',c)),900);return;
  }
  state.subject=subjectFor(c);filterContent(c);$('lessonTitle').textContent=q.name||'اختبار';$('lessonMeta').textContent=(Number(q.unit||0)===0?'اختبار شامل':unitName(c,q.unit))+' • '+state.subject.name;$('lessonSubtitle').textContent='اختبر مستواك واعرف نقاط القوة وما يحتاج للمراجعة.';

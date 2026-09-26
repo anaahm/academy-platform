@@ -21,6 +21,7 @@ function relevantLessons(subject){
 }
 function quizUnlockInfo(q){
  const lessons=relevantLessons(q.subject),unit=Number(q.unit||0);
+ if(q.lessonId){const related=lessons.find(lesson=>lesson.id===q.lessonId);return {unlocked:!!related&&lessonDone(q.lessonId),complete:related&&lessonDone(q.lessonId)?1:0,total:1,reason:'أكمل الدرس المرتبط لفتح الاختبار'};}
  const required=unit===0?lessons:lessons.filter(l=>Number(l.unit||1)===unit);
  const complete=required.filter(l=>lessonDone(l.id)).length;
  const unlocked=!required.length||complete===required.length;

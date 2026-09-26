@@ -1,16 +1,16 @@
-const CACHE='academy-shell-2026-09-26-v41';
+const CACHE='academy-shell-2026-09-26-v42';
 const CORE=[
  './','./index.html','./offline.html',
  './explore.html','./search.html','./news.html','./subject.html','./lesson.html','./profile.html',
  './exam-center.html','./simulations.html','./progress.html','./planner.html','./assignments.html','./weekly-report.html','./schedule.html',
  './library.html','./live.html','./community.html','./leaderboard.html','./notifications.html','./certificate.html','./admin.html','./teacher.html','./teacher-profile.html',
  './assets/experience.css?v=39','./assets/academy-utils.js',
- './assets/styles.css','./assets/learning.css?v=41','./assets/portal.css?v=41','./assets/hub.css','./assets/search.css','./assets/news.css','./assets/certificate.css','./assets/admin.css','./assets/ui-kit.css?v=35',
+ './assets/styles.css','./assets/learning.css?v=42','./assets/portal.css?v=42','./assets/hub.css','./assets/search.css','./assets/news.css','./assets/certificate.css','./assets/admin.css?v=42','./assets/ui-kit.css?v=35',
  './assets/ui-kit.js','./assets/student-shell.js','./assets/firebase-config.js','./assets/auth-flow.js','./assets/student-core.js',
- './assets/app.js?v=39','./assets/learning.js?v=41','./assets/explore.js','./assets/search.js','./assets/news.js','./assets/profile.js?v=41',
- './assets/exam-center.js','./assets/simulations.js','./assets/progress.js','./assets/planner.js','./assets/assignments.js','./assets/weekly-report.js','./assets/schedule.js',
+ './assets/app.js?v=39','./assets/learning.js?v=42','./assets/explore.js','./assets/search.js','./assets/news.js','./assets/profile.js?v=41',
+ './assets/exam-center.js?v=42','./assets/simulations.js','./assets/progress.js','./assets/planner.js','./assets/assignments.js','./assets/weekly-report.js','./assets/schedule.js',
  './assets/library.js','./assets/live.js','./assets/community.js','./assets/leaderboard.js','./assets/notification-engine.js','./assets/notifications.js','./assets/notification-widget.js',
- './assets/activity-tracker.js','./assets/admin-auth-flow.js?v=33','./assets/admin.js?v=39','./assets/admin-notifications.js','./assets/teacher.js?v=41','./assets/teacher-profile.js?v=34','./assets/certificate.js','./assets/pwa.js','./assets/dashboard-hero.jpg','./assets/app-icon.svg','./manifest.webmanifest'
+ './assets/activity-tracker.js','./assets/admin-auth-flow.js?v=33','./assets/admin.js?v=42','./assets/admin-notifications.js','./assets/teacher.js?v=42','./assets/teacher-profile.js?v=34','./assets/certificate.js','./assets/pwa.js','./assets/dashboard-hero.jpg','./assets/app-icon.svg','./manifest.webmanifest'
 ];
 
 self.addEventListener('install',event=>{

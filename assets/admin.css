@@ -422,4 +422,6 @@ linear-gradient(135deg,#0f172a,#111827 45%,#172554)}
 }
 .admin-subject-auto-art span{font-size:46px;filter:drop-shadow(0 10px 9px rgba(17,43,94,.20))}
 .admin-subject-card.has-image h3{color:#17366f}
-
+.teacher-submission-preview{margin-top:9px;padding:9px 12px;border:1px solid #dce8f6;border-radius:11px;background:#f8fbff;max-height:300px;overflow:auto}
+.teacher-submission-preview summary{cursor:pointer;color:#1763a0;font-weight:800}
+.teacher-submission-preview p{margin:7px 0;line-height:1.7;overflow-wrap:anywhere}

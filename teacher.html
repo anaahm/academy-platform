@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/portal.css?v=41">
+  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/portal.css?v=42">
   <link rel="stylesheet" href="./assets/ui-kit.css?v=35">
   <link rel="stylesheet" href="./assets/experience.css?v=34">
   <script src="./assets/academy-utils.js"></script>
@@ -34,6 +34,7 @@
         <button class="active" data-teacher-tab="home" role="tab" aria-selected="true" aria-controls="teacher-tab-home"><i class="fa-solid fa-house"></i> الرئيسية</button>
         <button data-teacher-tab="content" role="tab" aria-selected="false" aria-controls="teacher-tab-content"><i class="fa-solid fa-book-open"></i> محتواي</button>
         <button data-teacher-tab="submit" role="tab" aria-selected="false" aria-controls="teacher-tab-submit"><i class="fa-solid fa-circle-plus"></i> إضافة محتوى</button>
+        <button data-teacher-tab="quizzes" role="tab" aria-selected="false" aria-controls="teacher-tab-quizzes"><i class="fa-solid fa-file-circle-question"></i> إنشاء اختبار</button>
         <button data-teacher-tab="assignments" role="tab" aria-selected="false" aria-controls="teacher-tab-assignments"><i class="fa-solid fa-clipboard-check"></i> الواجبات</button>
         <button data-teacher-tab="students" role="tab" aria-selected="false" aria-controls="teacher-tab-students"><i class="fa-solid fa-users"></i> الطلاب</button>
         <button data-teacher-tab="analytics" role="tab" aria-selected="false" aria-controls="teacher-tab-analytics"><i class="fa-solid fa-chart-line"></i> الإحصائيات</button>
@@ -132,6 +133,25 @@
           </article>
         </section>
 
+        <section class="teacher-tab hidden" id="teacher-tab-quizzes" role="tabpanel">
+          <article class="teacher-card teacher-spaced-card">
+            <div class="teacher-card-head"><div><span class="section-kicker">يُنشر بعد موافقة الإدارة</span><h3>اختبار مرتبط بدرس</h3></div><span>🧩</span></div>
+            <p class="profile-muted">اختر درسًا معتمدًا في المادة المسندة إليك، ثم أضف الأسئلة واحدًا واحدًا أو الصق مجموعة بصيغة JSON. لن يظهر الاختبار للطلاب قبل الاعتماد.</p>
+            <form id="teacherQuizForm" class="teacher-form">
+              <label><span>نوع التعليم</span><select id="teacherQuizType"><option value="public">تعليم عام</option><option value="azhar">أزهر</option></select></label>
+              <label><span>المرحلة</span><select id="teacherQuizStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+              <label><span>الصف</span><select id="teacherQuizGrade"></select></label>
+              <label><span>المادة</span><select id="teacherQuizSubject"></select></label>
+              <label class="full"><span>الدرس المرتبط</span><select id="teacherQuizLesson" required><option value="">اختر الدرس المعتمد</option></select></label>
+              <label class="full"><span>اسم الاختبار</span><input id="teacherQuizTitle" required maxlength="120" placeholder="مثال: اختبار درس المبتدأ والخبر"></label>
+              <div class="full teacher-quiz-editor"><div class="teacher-card-head"><div><span class="section-kicker">أسئلة الاختبار</span><h3>أضف سؤالًا في كل مرة</h3></div><button class="btn btn-soft" id="teacherAddQuestion" type="button"><i class="fa-solid fa-plus"></i> إضافة سؤال</button></div><div id="teacherQuizQuestionRows" class="teacher-question-rows"></div></div>
+              <div class="full teacher-quiz-import"><label for="teacherQuizBulk"><span>إضافة مجموعة دفعة واحدة بصيغة JSON</span></label><textarea id="teacherQuizBulk" dir="ltr" rows="5" placeholder='[{"text":"نص السؤال","opts":["الأول","الثاني","الثالث","الرابع"],"correctAnswer":0}]'></textarea><small>رقم الإجابة يبدأ من 0 للخيار الأول، و1 للخيار الثاني.</small><button class="btn btn-soft" id="teacherImportQuestions" type="button">إضافة الأسئلة من JSON</button></div>
+              <button class="btn btn-primary full" id="teacherQuizSubmitBtn" type="submit"><i class="fa-solid fa-paper-plane"></i> إرسال الاختبار للمراجعة</button>
+            </form>
+          </article>
+          <article class="teacher-card teacher-spaced-card"><div class="teacher-card-head"><div><span class="section-kicker">متابعة الطلبات</span><h3>اختباراتي المرسلة</h3></div><span>📋</span></div><div id="teacherQuizRequests" class="submission-list"></div></article>
+        </section>
+
         <section class="teacher-tab hidden" id="teacher-tab-assignments" role="tabpanel">
           <section class="teacher-grid">
             <article class="teacher-card">
@@ -147,7 +167,7 @@
                   <label><span>آخر موعد</span><input id="assignmentDueAt" type="datetime-local" required></label>
                   <label><span>الدرجة النهائية</span><input id="assignmentMaxScore" type="number" min="1" max="1000" value="100"></label>
                 </div>
-                <button class="btn btn-primary btn-block" id="teacherAssignmentSubmitBtn" type="submit"><i class="fa-solid fa-paper-plane"></i> نشر الواجب</button>
+                <button class="btn btn-primary btn-block" id="teacherAssignmentSubmitBtn" type="submit"><i class="fa-solid fa-paper-plane"></i> إرسال الواجب للمراجعة</button>
               </form>
             </article>
 
@@ -156,6 +176,7 @@
               <div id="teacherAssignmentsList" class="teacher-engagement-list"></div>
             </article>
           </section>
+          <article class="teacher-card teacher-spaced-card"><div class="teacher-card-head"><div><span class="section-kicker">بانتظار الإدارة</span><h3>طلبات الواجبات</h3></div><span>⏳</span></div><div id="teacherAssignmentRequests" class="submission-list"></div></article>
 
           <article class="teacher-card teacher-spaced-card">
             <div class="teacher-card-head"><div><span class="section-kicker">التسليمات</span><h3>تصحيح واجبات الطلاب</h3></div><span>✅</span></div>
@@ -207,6 +228,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="./assets/firebase-config.js"></script>
-  <script src="./assets/teacher.js?v=41"></script>
+  <script src="./assets/teacher.js?v=42"></script>
 </body>
 </html>

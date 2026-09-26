@@ -174,7 +174,7 @@
     "assignments": {
       ".read": "auth != null",
       "$assignmentId": {
-        ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || ((!data.exists() && newData.child('teacherId').val() === auth.uid && root.child('teacherProfiles').child(auth.uid).exists() && root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true) || (data.child('teacherId').val() === auth.uid && root.child('teacherProfiles').child(auth.uid).exists() && root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true && (!newData.exists() || newData.child('teacherId').val() === auth.uid))))",
+        ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (data.child('teacherId').val() === auth.uid && root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true && !newData.exists()))",
         "title": {
           ".validate": "!newData.exists() || (newData.isString() && newData.val().length > 0 && newData.val().length <= 120)"
         },

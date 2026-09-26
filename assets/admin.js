@@ -332,7 +332,7 @@ async function saveLesson(e){
 /* Quizzes */
 function renderQuizzes(){
  const arr=values(root.quizzes).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
- $('quizzesAdminList').innerHTML=arr.length?'<table class="admin-table"><thead><tr><th>الاختبار</th><th>المرحلة</th><th>المادة</th><th>الوحدة</th><th>الأسئلة</th><th>إجراء</th></tr></thead><tbody>'+arr.map(q=>'<tr><td><strong>'+esc(q.name||'اختبار')+'</strong></td><td>'+esc(gradeLabel(q.stage,q.grade))+'</td><td>'+esc(q.subject||'-')+'</td><td>'+(Number(q.unit||0)===0?'شامل':esc(q.unit||'-'))+'</td><td>'+(q.questions?.length||0)+'</td><td><div class="admin-action-row"><button class="admin-action-btn" data-edit-quiz="'+q.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><button class="admin-action-btn danger" data-delete-quiz="'+q.id+'"><i class="fa-solid fa-trash"></i></button></div></td></tr>').join('')+'</tbody></table>':empty('لا توجد اختبارات','أنشئ أول اختبار.');
+ $('quizzesAdminList').innerHTML=arr.length?'<table class="admin-table"><thead><tr><th>الاختبار</th><th>المرحلة</th><th>المادة</th><th>الوحدة</th><th>الأسئلة</th><th>إجراء</th></tr></thead><tbody>'+arr.map(q=>'<tr><td><strong>'+esc(q.name||'اختبار')+'</strong>'+(q.lessonId?'<br><small>مرتبط بدرس: '+esc(root.lessons?.[q.lessonId]?.title||'درس غير متاح')+'</small>':'')+'</td><td>'+esc(gradeLabel(q.stage,q.grade))+'</td><td>'+esc(q.subject||'-')+'</td><td>'+(Number(q.unit||0)===0?'شامل':esc(q.unit||'-'))+'</td><td>'+(q.questions?.length||0)+'</td><td><div class="admin-action-row"><button class="admin-action-btn" data-edit-quiz="'+q.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><button class="admin-action-btn danger" data-delete-quiz="'+q.id+'"><i class="fa-solid fa-trash"></i></button></div></td></tr>').join('')+'</tbody></table>':empty('لا توجد اختبارات','أنشئ أول اختبار.');
  $$('[data-edit-quiz]').forEach(b=>b.onclick=()=>editQuiz(b.dataset.editQuiz));
  $$('[data-delete-quiz]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الاختبار؟',message:'سيتم حذف الاختبار والأسئلة الموجودة بداخله من المنصة.',tone:'danger',acceptText:'حذف الاختبار'}))await db.ref('quizzes/'+b.dataset.deleteQuiz).remove()});
 }
@@ -346,7 +346,9 @@ async function saveQuiz(e){
  try{questions=JSON.parse($('newQuizQuestions').value.trim()||'[]');if(!Array.isArray(questions))throw new Error()}catch{return toast('صيغة JSON للأسئلة غير صحيحة.','error')}
  try{questions=window.AcademyUtils.validateQuestions(questions)}catch(err){return toast(err.message,'error')}
  if(!questions.length)return toast('أضف سؤالًا صحيحًا واحدًا على الأقل.','error');
- const payload={type:$('newQuizType').value,stage:$('newQuizStage').value,grade:$('newQuizGrade').value,subject:$('newQuizSubject').value,unit:Number($('newQuizUnit').value||0),name:$('newQuizName').value.trim(),questions,isHidden:editState.quiz?!!root.quizzes?.[editState.quiz]?.isHidden:false};
+ const existing=editState.quiz?root.quizzes?.[editState.quiz]:null;
+ const payload={type:$('newQuizType').value,stage:$('newQuizStage').value,grade:$('newQuizGrade').value,subject:$('newQuizSubject').value,unit:Number($('newQuizUnit').value||0),name:$('newQuizName').value.trim(),questions,isHidden:!!existing?.isHidden};
+ if(existing?.lessonId){payload.lessonId=existing.lessonId;payload.teacherId=existing.teacherId||'';payload.teacherSubmissionId=existing.teacherSubmissionId||''}
  if(editState.quiz){payload.updatedAt=Date.now();await db.ref('quizzes/'+editState.quiz).update(payload);toast('تم تحديث الاختبار')}else{payload.createdAt=Date.now();await db.ref('quizzes').push(payload);toast('تم حفظ الاختبار')}
  closeModal('quizModal');resetQuizEditor();
 }
@@ -562,7 +564,12 @@ function renderTeachers(){
  $('teacherCandidates').innerHTML=candidates.length?candidates.map(s=>'<div class="admin-list-item"><div><strong>'+esc(s.name||s.email||'طالب')+'</strong><small>'+esc(s.email||'')+'</small></div><button class="admin-action-btn success" data-promote="'+s.id+'"><i class="fa-solid fa-plus"></i></button></div>').join(''):empty('لا توجد حسابات للترقية','كل الحسابات الحالية لها حالة مدرس أو لا توجد حسابات.');
  $('assignTeacher').innerHTML=teachers.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||t.email||t.id)+'</option>').join('');
  refreshAssignmentSubjects();
- $('teacherSubmissionsList').innerHTML=subs.length?subs.map(s=>'<div class="admin-list-item"><div><strong>'+esc(s.title||'محتوى')+'</strong><small>'+esc(s.teacherName||root.teacherProfiles?.[s.uid]?.name||'مدرس')+' • '+esc(typeLabel(s.type))+' • '+esc(gradeLabel(s.stage,s.grade))+' • '+esc(s.subjectName||s.subject||'')+'</small>'+(s.videoUrl?'<a href="'+cleanUrl(s.videoUrl)+'" target="_blank" rel="noopener" style="font-size:9px;color:#2563eb">فتح الفيديو</a>':'')+'</div><div class="admin-action-row">'+((s.status||'pending')==='pending'?'<button class="admin-action-btn success" data-approve="'+s.uid+'|'+s.id+'" title="اعتماد"><i class="fa-solid fa-check"></i></button><button class="admin-action-btn danger" data-reject="'+s.uid+'|'+s.id+'" title="رفض"><i class="fa-solid fa-xmark"></i></button>':'<span class="status-pill '+(s.status==='approved'?'approved':'rejected')+'">'+(s.status==='approved'?'معتمد':'مرفوض')+'</span>')+'</div></div>').join(''):empty('لا توجد طلبات محتوى','عندما يرسل مدرس درسًا سيظهر هنا.');
+ $('teacherSubmissionsList').innerHTML=subs.length?subs.map(s=>{
+   const kind=s.submissionKind==='quiz'?'اختبار':s.submissionKind==='assignment'?'واجب':'درس';
+   const related=s.lessonId?root.lessons?.[s.lessonId]?.title||'درس غير موجود':'';
+   const preview=s.submissionKind==='quiz'?'<details class="teacher-submission-preview"><summary>مراجعة الأسئلة ('+(s.questions?.length||0)+')</summary><p>الدرس المرتبط: '+esc(related)+'</p>'+(Array.isArray(s.questions)?s.questions.map((q,i)=>'<p><strong>'+(i+1)+'. '+esc(q.text||q.question||'سؤال')+'</strong><br>الاختيارات: '+(q.opts||q.options||[]).map((option,j)=>esc(option)+(j===Number(q.correctAnswer)?' ✓':'')).join(' • ')+'</p>').join(''):'')+'</details>':s.submissionKind==='assignment'?'<details class="teacher-submission-preview"><summary>عرض تعليمات الواجب</summary><p>'+esc(s.instructions||'—')+'</p><p>آخر موعد: '+(Number.isFinite(Number(s.dueAt))?new Date(Number(s.dueAt)).toLocaleString('ar-EG'):'غير محدد')+'</p></details>':'';
+   return '<div class="admin-list-item"><div><strong>'+esc(kind+': '+(s.title||'محتوى'))+'</strong><small>'+esc(s.teacherName||root.teacherProfiles?.[s.uid]?.name||'مدرس')+' • '+esc(typeLabel(s.type))+' • '+esc(gradeLabel(s.stage,s.grade))+' • '+esc(s.subjectName||s.subject||'')+'</small>'+preview+(s.videoUrl?'<a href="'+cleanUrl(s.videoUrl)+'" target="_blank" rel="noopener" style="font-size:9px;color:#2563eb">فتح الفيديو</a>':'')+'</div><div class="admin-action-row">'+((s.status||'pending')==='pending'?'<button class="admin-action-btn success" data-approve="'+s.uid+'|'+s.id+'" title="اعتماد '+kind+'"><i class="fa-solid fa-check"></i></button><button class="admin-action-btn danger" data-reject="'+s.uid+'|'+s.id+'" title="رفض '+kind+'"><i class="fa-solid fa-xmark"></i></button>':'<span class="status-pill '+(s.status==='approved'?'approved':'rejected')+'">'+(s.status==='approved'?'معتمد':'مرفوض')+'</span>')+'</div></div>';
+ }).join(''):empty('لا توجد طلبات محتوى','عندما يرسل مدرس درسًا أو اختبارًا أو واجبًا سيظهر هنا.');
  $$('[data-toggle-teacher]').forEach(b=>b.onclick=async()=>{const uid=b.dataset.toggleTeacher,activate=root.teacherProfiles?.[uid]?.isActive===false;try{await db.ref('teacherProfiles/'+uid+'/isActive').set(activate);if(root.settings?.publicTeachers?.[uid])await db.ref('settings/publicTeachers/'+uid+'/active').set(activate)}catch(err){console.error(err);toast('تعذر تغيير حالة المدرس.','error')}});
  $$('[data-reset-teacher]').forEach(b=>b.onclick=async()=>{const email=root.teacherProfiles?.[b.dataset.resetTeacher]?.email;if(!email)return toast('لا يوجد بريد لهذا المدرس.','error');try{await auth.sendPasswordResetEmail(email);toast('تم إرسال رابط تغيير كلمة المرور إلى بريد المدرس.')}catch(err){console.error(err);toast('تعذر إرسال رابط تغيير كلمة المرور.','error')}});
  $$('[data-remove-teacher]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'إزالة صلاحية المدرس؟',message:'سيفقد هذا الحساب الوصول إلى بوابة المدرس وصلاحيات المواد المسندة إليه.',tone:'warning',acceptText:'إزالة الصلاحية'})){const uid=b.dataset.removeTeacher;try{await db.ref('settings/publicTeachers/'+uid).remove();await db.ref('teacherProfiles/'+uid).remove()}catch(err){console.error(err);toast('تعذرت إزالة صلاحية المدرس.','error')}}});
@@ -592,11 +599,41 @@ async function approveSubmission(key){
  const [uid,id]=key.split('|'),s=root.teacherSubmissions?.[uid]?.[id];if(!s)return;
  if(s.type==='profile')return;
  if((s.status||'pending')!=='pending')return toast('تمت مراجعة هذا الطلب بالفعل.','error');
+ const t=root.teacherProfiles?.[uid];if(!t||t.isActive!==true)return toast('حساب المعلم غير نشط؛ لا يمكن اعتماد الطلب.','error');
+ let claimed=false;
  try{
-   const ref=db.ref('lessons').push();
-   await ref.set({title:s.title||'درس',content:'',type:s.type||'public',stage:s.stage||'prep',grade:String(s.grade||1),subject:s.subject||'',unit:Number(s.unit||1),videos:s.videoUrl?[{name:s.teacherName||root.teacherProfiles?.[uid]?.name||'المدرس',url:s.videoUrl,teacherId:uid}]:[],questions:[],isLocked:false,isHidden:false,teacherId:uid,teacherSubmissionId:id,createdAt:Date.now()});
-   await db.ref('teacherSubmissions/'+uid+'/'+id).update({status:'approved',lessonId:ref.key,reviewedAt:Date.now()});toast('تم اعتماد المحتوى ونشره');
- }catch(err){console.error(err);toast('تعذر اعتماد المحتوى الآن.','error')}
+   const kind=s.submissionKind||'lesson',now=Date.now(),updates={};let publishedId='',publishedType='';
+   const scopes=assignmentsOf(t).length?assignmentsOf(t):(Array.isArray(t.subjects)?t.subjects:[]);
+   if(!scopes.some(raw=>{const item=typeof raw==='string'?{subject:raw}:raw;return item&&(!item.type||item.type===s.type)&&(!item.stage||item.stage===s.stage)&&(!item.grade||String(item.grade)===String(s.grade))&&(!item.subject||item.subject===s.subject)}))throw Error('المادة والصف غير مسندين إلى هذا المعلم');
+   if(kind==='quiz'){
+     const lesson=root.lessons?.[s.lessonId];
+     if(!lesson||lesson.isHidden)throw Error('الدرس المرتبط غير متاح');
+     if(lesson.type!==s.type||lesson.stage!==s.stage||String(lesson.grade)!==String(s.grade)||lesson.subject!==s.subject)throw Error('بيانات الاختبار لا تطابق الدرس');
+     const questions=window.AcademyUtils.validateQuestions(s.questions);
+     if(!questions.length||questions.length>100||questions.some(q=>q.opts.length>4))throw Error('راجع أسئلة الاختبار قبل الاعتماد');
+     publishedType='quizzes';publishedId=db.ref('quizzes').push().key;
+     updates['quizzes/'+publishedId]={name:s.title,lessonId:s.lessonId,type:s.type,stage:s.stage,grade:String(s.grade),subject:s.subject,unit:Number(lesson.unit||1),questions,teacherId:uid,teacherSubmissionId:id,isHidden:false,createdAt:now};
+   }else if(kind==='assignment'){
+     if(!Number(s.dueAt)||Number(s.dueAt)<=now)throw Error('انتهى موعد الواجب؛ اطلب من المعلم إرساله بموعد جديد');
+     if(!s.title||!s.subject||!s.grade||!Number.isFinite(Number(s.maxScore))||Number(s.maxScore)<1||Number(s.maxScore)>1000)throw Error('بيانات الواجب غير مكتملة');
+     publishedType='assignments';publishedId=db.ref('assignments').push().key;
+     updates['assignments/'+publishedId]={title:s.title,instructions:s.instructions||'',type:s.type,stage:s.stage,grade:String(s.grade),subject:s.subject,subjectName:s.subjectName||'',dueAt:Number(s.dueAt),maxScore:Number(s.maxScore),teacherId:uid,teacherName:s.teacherName||t.name||'المدرس',teacherSubmissionId:id,isHidden:false,createdAt:now};
+   }else if(kind==='lesson'){
+     publishedType='lessons';publishedId=db.ref('lessons').push().key;
+     updates['lessons/'+publishedId]={title:s.title||'درس',content:'',type:s.type||'public',stage:s.stage||'prep',grade:String(s.grade||1),subject:s.subject||'',unit:Number(s.unit||1),videos:s.videoUrl?[{name:s.teacherName||t.name||'المدرس',url:s.videoUrl,teacherId:uid}]:[],questions:[],isLocked:false,isHidden:false,teacherId:uid,teacherSubmissionId:id,createdAt:now};
+   }else throw Error('نوع الطلب غير معروف');
+   updates['teacherSubmissions/'+uid+'/'+id+'/status']='approved';
+   updates['teacherSubmissions/'+uid+'/'+id+'/reviewedAt']=now;
+   updates['teacherSubmissions/'+uid+'/'+id+'/'+({lessons:'lessonId',quizzes:'quizId',assignments:'assignmentId'}[publishedType])]=publishedId;
+   const statusRef=db.ref('teacherSubmissions/'+uid+'/'+id+'/status');
+   const claim=await statusRef.transaction(current=>!current||current==='pending'?'approving':undefined);
+   if(!claim.committed)return toast('هذا الطلب قيد المراجعة أو تم اعتماده بالفعل.','error');
+   claimed=true;
+   await db.ref().update(updates);toast('تم اعتماد '+(kind==='quiz'?'الاختبار':kind==='assignment'?'الواجب':'الدرس')+' ونشره');
+ }catch(err){
+   if(claimed)await db.ref('teacherSubmissions/'+uid+'/'+id+'/status').transaction(current=>current==='approving'?'pending':undefined).catch(console.error);
+   console.error(err);toast('تعذر اعتماد المحتوى: '+err.message,'error');
+ }
 }
 
 /* Students */
