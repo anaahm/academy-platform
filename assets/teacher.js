@@ -472,11 +472,11 @@ auth.onAuthStateChanged(async u=>{
    const t=await db.ref('teacherProfiles/'+u.uid).once('value');
    teacher=t.val();
    if(teacher?.role==='assistant'){
-     $('[data-teacher-tab="assignments"]').forEach(el=>el.classList.add('hidden'));
-     $('[data-teacher-tab="students"]').forEach(el=>el.classList.add('hidden'));
+     $$('[data-teacher-tab="assignments"]').forEach(el=>el.classList.add('hidden'));
+     $$('[data-teacher-tab="students"]').forEach(el=>el.classList.add('hidden'));
    }else{
-     $('[data-teacher-tab="assignments"]').forEach(el=>el.classList.remove('hidden'));
-     $('[data-teacher-tab="students"]').forEach(el=>el.classList.remove('hidden'));
+     $$('[data-teacher-tab="assignments"]').forEach(el=>el.classList.remove('hidden'));
+     $$('[data-teacher-tab="students"]').forEach(el=>el.classList.remove('hidden'));
    }
    if($('teacherTopRole')){
      $('teacherTopRole').textContent=teacher?.role==='assistant'?'مساعد معلم • إعداد محتوى واختبارات':teacher?.role==='supervisor'?'مشرف مادة • متابعة المحتوى والتحليلات':'بوابة إدارة المحتوى التعليمي';
