@@ -384,6 +384,76 @@ function showLessonCelebration(c,id,xp=50){
    location.href=errors?url('lesson.html',c,{id,reviewMistakes:'1'}):next?url('lesson.html',c,{id:next.id}):url('subject.html',c);
  };
 }
+let youtubeApiPromise=null,activeYoutubePlayer=null,videoProgressTimer=null;
+function loadYoutubeApi(){
+ if(window.YT?.Player)return Promise.resolve(window.YT);
+ if(youtubeApiPromise)return youtubeApiPromise;
+ youtubeApiPromise=new Promise(resolve=>{
+   const previous=window.onYouTubeIframeAPIReady;
+   window.onYouTubeIframeAPIReady=()=>{try{previous?.()}catch{} resolve(window.YT)};
+   let s=document.querySelector('script[data-academy-youtube-api]');
+   if(!s){s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';s.async=true;s.dataset.academyYoutubeApi='1';document.head.appendChild(s)}
+   const poll=setInterval(()=>{if(window.YT?.Player){clearInterval(poll);resolve(window.YT)}},250);
+   setTimeout(()=>clearInterval(poll),15000);
+ });
+ return youtubeApiPromise;
+}
+function stopVideoProgressTracker(){
+ clearInterval(videoProgressTimer);videoProgressTimer=null;
+ try{activeYoutubePlayer?.destroy?.()}catch{}
+ activeYoutubePlayer=null;
+}
+async function attachVideoProgress(frameId,lesson,videoIndex){
+ if(!state.user||!window.AcademyPro)return;
+ try{
+   const YT=await loadYoutubeApi();if(!YT?.Player||!document.getElementById(frameId))return;
+   stopVideoProgressTracker();
+   const resumeId=(lesson.id||'lesson')+'-'+videoIndex;
+   activeYoutubePlayer=new YT.Player(frameId,{events:{
+     onReady:async event=>{
+       try{
+         const saved=await window.AcademyPro.getResume('video',resumeId,state.user.uid);
+         const duration=Number(event.target.getDuration?.()||saved?.total||0);
+         const pos=Number(saved?.position||0);
+         if(pos>5&&duration>0&&pos<duration-12)event.target.seekTo(pos,true);
+       }catch{}
+     },
+     onStateChange:event=>{
+       const playing=event.data===YT.PlayerState.PLAYING,ended=event.data===YT.PlayerState.ENDED;
+       clearInterval(videoProgressTimer);videoProgressTimer=null;
+       const persist=async()=>{
+         try{
+           const position=Number(event.target.getCurrentTime?.()||0),duration=Number(event.target.getDuration?.()||0);
+           if(duration>0){
+             await window.AcademyPro.saveResume('video',resumeId,position,duration,state.user.uid);
+             const c=ctx(),percent=Math.min(100,Math.round(position/duration*100));
+             await window.AcademyPro.recordMastery({type:c.type,stage:c.stage,grade:c.grade,subject:c.subject,lessonId:lesson.id},{video:percent},state.user.uid);
+             if(percent>=90)window.AcademyPro.incrementGoal('minutes',Math.max(1,Math.round(duration/60)),state.user.uid).catch(()=>{});
+           }
+         }catch{}
+       };
+       if(playing){persist();videoProgressTimer=setInterval(persist,10000)}
+       else persist();
+       if(ended){
+         try{
+           const c=ctx();window.AcademyPro.saveResume('video',resumeId,event.target.getDuration?.()||0,event.target.getDuration?.()||0,state.user.uid);
+           window.AcademyPro.recordMastery({type:c.type,stage:c.stage,grade:c.grade,subject:c.subject,lessonId:lesson.id},{video:100},state.user.uid);
+         }catch{}
+       }
+     }
+   }});
+ }catch(err){console.warn('Video resume unavailable',err)}
+}
+window.addEventListener('pagehide',()=>{
+ if(activeYoutubePlayer&&window.AcademyPro&&state.user){
+   try{
+     const position=Number(activeYoutubePlayer.getCurrentTime?.()||0),duration=Number(activeYoutubePlayer.getDuration?.()||0);
+     if(state.currentLesson&&duration>0)window.AcademyPro.saveResume('video',(state.currentLesson.id||'lesson')+'-'+(activeYoutubePlayer.getIframe?.()?.dataset?.videoIndex||0),position,duration,state.user.uid).catch(()=>{});
+   }catch{}
+ }
+ clearInterval(videoProgressTimer);
+});
+
 function renderVideo(l){
  const vids=Array.isArray(l.videos)?l.videos.filter(v=>v?.url):[];
  if(!vids.length)return;
@@ -393,11 +463,11 @@ function renderVideo(l){
    const apiSrc=src+(src.includes('?')?'&':'?')+'enablejsapi=1&origin='+encodeURIComponent(location.origin);
    return '<iframe id="lessonVideoFrame'+i+'" data-video-index="'+i+'" src="'+apiSrc+'" title="'+esc((l.title||'الدرس')+' - شرح '+teacher)+'" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
  };
- const first=frameHtml(vids[0],0);if(first)$('videoFrame').innerHTML=first;
+ const first=frameHtml(vids[0],0);if(first){$('videoFrame').innerHTML=first;attachVideoProgress('lessonVideoFrame0',l,0)}
  $('teacherSwitcherWrap').classList.remove('hidden');$('teacherCountBadge').textContent=vids.length+' '+(vids.length===1?'مدرس':'مدرسين');
  $('teacherSwitcher').innerHTML=vids.map((v,i)=>'<button class="teacher-choice '+(i===0?'active':'')+'" data-v="'+i+'" aria-pressed="'+(i===0?'true':'false')+'"><span class="teacher-mini-avatar">'+esc((v.name||'م')[0])+'</span><strong>'+esc(v.name||('المدرس '+(i+1)))+'</strong><small>'+(i===0?'يتم العرض الآن':'اختر هذا الشرح')+'</small></button>').join('');
  $$('[data-v]').forEach(b=>b.onclick=()=>{
-   const i=Number(b.dataset.v),html=frameHtml(vids[i],i);if(html)$('videoFrame').innerHTML=html;
+   const i=Number(b.dataset.v),html=frameHtml(vids[i],i);if(html){stopVideoProgressTracker();$('videoFrame').innerHTML=html;attachVideoProgress('lessonVideoFrame'+i,l,i)}
    $$('[data-v]').forEach(x=>{
      const active=x===b;x.classList.toggle('active',active);x.setAttribute('aria-pressed',active?'true':'false');
      const small=x.querySelector('small');if(small)small.textContent=active?'يتم العرض الآن':'اختر هذا الشرح';
