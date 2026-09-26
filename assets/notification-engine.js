@@ -51,12 +51,13 @@ async function loadNotifications(user,profileInput){
   const {db}=ensureFirebase();
   const profile=profileInput||((await db.ref('studentProfilesV3/'+user.uid).once('value')).val()||{});
   const reads=profile.notificationReads||{};
-  const [assignSnap,liveSnap,scheduleSnap,annSnap,broadcastSnap]=await Promise.all([
+  const [assignSnap,liveSnap,scheduleSnap,annSnap,broadcastSnap,reviewSnap]=await Promise.all([
     db.ref('assignments').orderByChild('stage').equalTo(profile.stage).once('value'),
     db.ref('liveSessions').once('value'),
     db.ref('scheduleEvents').once('value'),
     db.ref('announcements').once('value'),
-    db.ref('notificationBroadcasts').once('value')
+    db.ref('notificationBroadcasts').once('value'),
+    db.ref('learningV4/reviews/'+user.uid).once('value')
   ]);
 
   const assignments=Object.entries(assignSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(a=>matchesStudent(a,profile)&&assignmentTargetMatches(a,profile,user.uid)&&!a.isHidden);
@@ -111,6 +112,18 @@ async function loadNotifications(user,profileInput){
       items.push({key,kind:'planner',category:'academic',icon:'fa-list-check',tone:'orange',title:'مهمة مذاكرة اليوم',text:t.title||'مهمة مذاكرة',createdAt:taskDay.getTime()+12*HOUR,href:hrefFor('planner'),priority:t.priority==='urgent'?'urgent':t.priority==='high'?'high':'normal',read:!!reads[key]});
     }
   });
+
+  const dueReviews=Object.values(reviewSnap.val()||{}).filter(x=>x&&x.status!=='mastered'&&Number(x.nextReviewAt||0)<=now);
+  if(dueReviews.length){
+    const oldest=Math.min(...dueReviews.map(x=>Number(x.nextReviewAt||now)));
+    const key=cleanKey('spaced-review-'+dateKey(now)+'-'+dueReviews.length);
+    items.push({
+      key,kind:'review',category:'academic',icon:'fa-brain',tone:'violet',
+      title:'حان وقت مراجعة أخطائك',
+      text:'لديك '+dueReviews.length+' سؤالًا حان موعد مراجعتها لتثبيت المعلومة.',
+      createdAt:oldest,href:'./pro-center.html',priority:dueReviews.length>=8?'urgent':'high',read:!!reads[key]
+    });
+  }
 
   const ann=annSnap.val()||{};
   if(ann.isActive&&ann.text&&(!ann.expiry||now<Number(ann.expiry))){
