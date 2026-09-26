@@ -30,6 +30,14 @@
     if (!/^\+[1-9]\d{7,14}$/.test(phone)) throw new Error('أدخل رقم هاتف صحيحًا، مثل 01012345678، مع رمز الدولة إن كان من خارج مصر.');
     return {phone, email:'p' + phone.slice(1) + '@students.academy.invalid'};
   }
+  function phoneIndexKey(phone=''){ return String(phone||'').replace(/\D/g,''); }
+  async function ensureStudentPhoneIndex(uid, profile){
+    if(!uid||!profile?.phone)return;
+    const key=phoneIndexKey(profile.phone);if(!key)return;
+    try{
+      await database.ref('studentPhoneIndexV4/'+key).set({studentId:uid,updatedAt:Date.now()});
+    }catch(error){console.warn('Student phone index sync skipped',error)}
+  }
 
   const stageLabels = {
     primary: 'المرحلة الابتدائية',
@@ -191,7 +199,9 @@
 
   async function loadProfile(uid) {
     const snap = await database.ref('studentProfilesV3/' + uid).once('value');
-    return snap.val();
+    const profile=snap.val();
+    if(auth.currentUser?.uid===uid&&profile?.phone)ensureStudentPhoneIndex(uid,profile).catch(()=>{});
+    return profile;
   }
 
   async function saveProfile(uid, patch) {
@@ -874,6 +884,7 @@
           stats: { totalXP:0, level:1, completedLessons:0, completedQuizzes:0, streak:0 }
         });
         state.profile = await loadProfile(cred.user.uid);
+        await ensureStudentPhoneIndex(cred.user.uid,state.profile);
         closeModal('authModal');
         showDashboard();
         toast('تم إنشاء الحساب وفتح مرحلتك بنجاح ✨');
