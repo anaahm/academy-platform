@@ -74,9 +74,21 @@ function renderHistory(){
    '</article>';
  }).join('')+'</div>':'<div class="feature-empty"><span>📝</span><h3>لا يوجد سجل نتائج بعد</h3><p>أكمل أول اختبار وسيظهر هنا.</p></div>';
 }
+function quizTargetMatches(q){
+ const mode=q.targetMode||'all';
+ if(mode==='students'){
+   const ids=Array.isArray(q.targetStudentIds)?q.targetStudentIds:Object.keys(q.targetStudentIds||{});
+   return ids.includes(user?.uid);
+ }
+ if(mode==='group'){
+   const groups=Array.isArray(profile?.groupIds)?profile.groupIds:Object.keys(profile?.groupIds||{});
+   return !!q.targetGroupId&&(profile?.classGroupId===q.targetGroupId||groups.includes(q.targetGroupId));
+ }
+ return true;
+}
 function quizzes(){
  return Object.entries(data.quizzes||{}).map(([id,v])=>({id,...v})).filter(q=>
-   !q.isHidden&&q.type===profile.educationType&&q.stage===profile.stage&&String(q.grade)===String(profile.grade)
+   !q.isHidden&&q.type===profile.educationType&&q.stage===profile.stage&&String(q.grade)===String(profile.grade)&&quizTargetMatches(q)
  );
 }
 function renderSubjects(){
