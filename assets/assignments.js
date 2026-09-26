@@ -3,9 +3,14 @@
 const C=window.AcademyCore,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 let user,profile,assignments=[],submissions={},data={customSubjects:{}},filter='all',activeAssignment=null,lastModalTrigger=null;
 
+function isAssignmentVisible(a){
+  if(!a||a.targetMode!=='students')return true;
+  const list=Array.isArray(a.targetStudentIds)?a.targetStudentIds:[];
+  return !!user&&list.includes(user.uid);
+}
 function matching(){
   return assignments
-    .filter(a=>!a.isHidden&&a.type===profile.educationType&&a.stage===profile.stage&&String(a.grade)===String(profile.grade))
+    .filter(a=>!a.isHidden&&a.type===profile.educationType&&a.stage===profile.stage&&String(a.grade)===String(profile.grade)&&isAssignmentVisible(a))
     .sort((a,b)=>Number(a.dueAt||Infinity)-Number(b.dueAt||Infinity));
 }
 function isOverdue(a){
