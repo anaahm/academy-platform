@@ -85,7 +85,9 @@ const reviewIntervals=[1,3,7,14,30,60];
 async function logMistake(question,ctx={},userId=uid()){
  if(!userId||!question?.id)return;const ref=db.ref(paths.reviews+'/'+userId+'/'+question.id),s=(await ref.once('value')).val()||{};
  const step=Math.max(0,Number(s.step||0)-1);
- await ref.set({questionId:question.id,questionText:question.question||question.text||'',correctAnswer:question.correctAnswer??question.correct??'',studentAnswer:ctx.studentAnswer??'',lessonId:ctx.lessonId||'',subject:ctx.subject||'',step,nextReviewAt:now()+reviewIntervals[step]*day,lastWrongAt:now(),wrongCount:Number(s.wrongCount||0)+1,status:'due'});
+ const options=question.options||question.opts||[];
+ const rawCorrect=question.correctAnswer??question.correct??'',correctIndex=Number.isInteger(Number(rawCorrect))?Number(rawCorrect):options.findIndex(x=>String(x)===String(rawCorrect));
+ await ref.set({questionId:question.id,questionText:question.question||question.text||'',options,correctIndex,correctAnswer:correctIndex>=0?options[correctIndex]:rawCorrect,explanation:question.explanation||'',studentAnswer:ctx.studentAnswer??'',lessonId:ctx.lessonId||'',subject:ctx.subject||'',step,nextReviewAt:now()+reviewIntervals[step]*day,lastWrongAt:now(),wrongCount:Number(s.wrongCount||0)+1,correctReviews:Number(s.correctReviews||0),status:'due'});
  await updateQuestionStats(question.id,false,ctx.studentAnswer);
 }
 async function markReview(questionId,correct,userId=uid()){
