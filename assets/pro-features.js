@@ -11,7 +11,7 @@ const clean=v=>v===undefined?null:v;
 const paths={
  mastery:'learningV4/mastery',reviews:'learningV4/reviews',resume:'learningV4/resume',
  notes:'learningV4/notes',favorites:'learningV4/favorites',goals:'learningV4/goals',
- streaks:'learningV4/streaks',xp:'learningV4/xp',diagnostics:'learningV4/diagnostics',
+ streaks:'learningV4/streaks',xp:'learningV4/xp',achievements:'learningV4/achievements',diagnostics:'learningV4/diagnostics',
  recommendations:'learningV4/recommendations',questionStats:'analyticsV4/questions',
  teacherAnalytics:'analyticsV4/teachers',studentAnalytics:'analyticsV4/students',
  bank:'questionBankV4',submissions:'contentReviewV4',audit:'auditLogV4',
@@ -159,9 +159,36 @@ async function issueCertificate(data,userId=uid()){
  return id;
 }
 async function verifyCertificate(id){const s=await db.ref(paths.certificates+'/'+String(id||'').trim().toUpperCase()).once('value');const v=s.val();return v&&v.valid!==false?v:null}
+async function refreshAchievements(userId=uid()){
+ if(!userId)return{};
+ const [x,s,m,r,a]=await Promise.all([
+  db.ref(paths.xp+'/'+userId).once('value'),
+  db.ref(paths.streaks+'/'+userId).once('value'),
+  db.ref(paths.mastery+'/'+userId).once('value'),
+  db.ref(paths.reviews+'/'+userId).once('value'),
+  db.ref(paths.achievements+'/'+userId).once('value')
+ ]);
+ const xp=Number(x.val()?.total||0),streak=Number(s.val()?.best||s.val()?.count||0),existing=a.val()||{};
+ const mastered=[];(function walk(o){Object.values(o||{}).forEach(v=>v&&typeof v==='object'&&'lessonId'in v?(v.status==='mastered'&&mastered.push(v)):walk(v))})(m.val()||{});
+ const reviews=Object.values(r.val()||{}),reviewWins=reviews.reduce((n,v)=>n+Number(v.correctReviews||0),0);
+ const defs=[
+  ['first_mastery','أول إتقان','أتقنت أول درس','🌟',mastered.length>=1],
+  ['mastery_10','خبير البداية','أتقنت 10 دروس','🏅',mastered.length>=10],
+  ['streak_7','أسبوع متواصل','تعلمت 7 أيام متتالية','🔥',streak>=7],
+  ['streak_30','شهر من الالتزام','حافظت على سلسلة 30 يومًا','👑',streak>=30],
+  ['xp_1000','ألف نقطة','وصلت إلى 1000 XP','⚡',xp>=1000],
+  ['review_50','صياد الأخطاء','راجعت 50 خطأ بنجاح','🧠',reviewWins>=50]
+ ];
+ const patch={};
+ defs.forEach(([id,title,description,icon,earned])=>{
+  if(earned&&!existing[id])patch[id]={id,title,description,icon,earnedAt:now()};
+ });
+ if(Object.keys(patch).length)await db.ref(paths.achievements+'/'+userId).update(patch);
+ return{...existing,...patch};
+}
 async function snapshot(userId=uid()){
  const [x,s,g,r]=await Promise.all([db.ref(paths.xp+'/'+userId).once('value'),db.ref(paths.streaks+'/'+userId).once('value'),db.ref(paths.goals+'/'+userId).once('value'),db.ref(paths.reviews+'/'+userId).once('value')]);
- return{xp:x.val()||{total:0,level:1},streak:s.val()||{count:0,best:0},goals:g.val()||{},due:Object.values(r.val()||{}).filter(v=>v.nextReviewAt<=now()&&v.status!=='mastered').length};
+ const achievements=await refreshAchievements(userId);return{xp:x.val()||{total:0,level:1},streak:s.val()||{count:0,best:0},goals:g.val()||{},achievements,due:Object.values(r.val()||{}).filter(v=>v.nextReviewAt<=now()&&v.status!=='mastered').length};
 }
-window.AcademyPro={auth,db,paths,roleOf,can,audit,awardXP,touchStreak,setWeeklyGoals,incrementGoal,recordMastery,saveResume,getResume,saveNote,toggleFavorite,logMistake,markReview,dueReviews,updateQuestionStats,adaptiveDifficulty,selectAdaptiveQuestions,submitAnswer,saveDiagnostic,recommendNext,addQuestion,bulkAddQuestions,generateExam,submitContent,reviewContent,recordAttendance,rateLesson,createParentInvite,linkParent,getChildren,parentReport,issueCertificate,certificateIdFor,verifyCertificate,snapshot,levelForXP,dateKey};
+window.AcademyPro={auth,db,paths,roleOf,can,audit,awardXP,touchStreak,setWeeklyGoals,incrementGoal,recordMastery,saveResume,getResume,saveNote,toggleFavorite,logMistake,markReview,dueReviews,updateQuestionStats,adaptiveDifficulty,selectAdaptiveQuestions,submitAnswer,saveDiagnostic,recommendNext,addQuestion,bulkAddQuestions,generateExam,submitContent,reviewContent,recordAttendance,rateLesson,createParentInvite,linkParent,getChildren,parentReport,issueCertificate,certificateIdFor,verifyCertificate,refreshAchievements,snapshot,levelForXP,dateKey};
 })();
