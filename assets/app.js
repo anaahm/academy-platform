@@ -306,6 +306,22 @@
       return ['http:','https:'].includes(url.protocol)?url.href:'';
     } catch { return ''; }
   }
+  function applyVisualSettings(){
+    const settings=state.dbData.settings||{},root=document.documentElement;
+    const publicHero=safeDashboardImage(settings.publicHeroUrl||'');
+    const authVisual=safeDashboardImage(settings.authVisualUrl||'');
+    if(publicHero)root.style.setProperty('--future-public-hero-image','url("'+publicHero.replace(/"/g,'%22')+'")');
+    else root.style.removeProperty('--future-public-hero-image');
+    if(authVisual)root.style.setProperty('--future-auth-image','url("'+authVisual.replace(/"/g,'%22')+'")');
+    else root.style.removeProperty('--future-auth-image');
+    const map={primary:'stageImagePrimary',prep:'stageImagePrep',sec:'stageImageSec',azhar:'stageImageAzhar'};
+    Object.entries(map).forEach(([key,id])=>{
+      const el=$(id),image=safeDashboardImage(settings.stageImages?.[key]||'');
+      if(!el)return;
+      if(image)el.style.setProperty('--stage-image','url("'+image.replace(/"/g,'%22')+'")');
+      else el.style.removeProperty('--stage-image');
+    });
+  }
 
   async function updateDailyActivity(uid) {
     const now=new Date(),yesterdayDate=new Date(now);
@@ -1052,6 +1068,7 @@
     if(new URLSearchParams(location.search).get('auth')==='login'&&!auth.currentUser){switchAuthTab('login');openModal('authModal')}
     if(!baseDataPromise) baseDataPromise=loadDatabaseSnapshot();
     await baseDataPromise;
+    applyVisualSettings();
     renderPublicNews();
     database.ref('settings/publicTeachers').on('value',snapshot=>renderPublicTeachers(snapshot.val()||{}),err=>{console.warn('Teacher directory unavailable',err);renderPublicTeachers()});
     renderExplorerStages();
