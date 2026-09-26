@@ -176,3 +176,15 @@ p{line-height:1.85}
 @media(max-width:650px){.teacher-profile-header{padding:18px 16px 0}.teacher-profile-main{margin-top:23px;padding:0 14px}.teacher-profile-content{padding:0 20px 28px}.teacher-profile-banner{height:120px}.teacher-profile-photo{width:90px;height:90px;border-radius:23px;font-size:43px}.teacher-profile-identity{gap:15px;margin-top:-40px;align-items:end}.teacher-profile-details{grid-template-columns:1fr}.teacher-profile-section{padding:18px}}
 
 .teacher-profile-review{margin-top:8px;font-size:12px;line-height:1.8;max-width:520px}.teacher-profile-review summary{cursor:pointer;color:#1357a6;font-weight:800}.teacher-profile-review p{white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0}.teacher-profile-review img{width:78px;height:78px;object-fit:cover;border-radius:16px;margin-top:10px}
+
+/* Keep authentication panels stable after history restoration and at intermediate widths. */
+#authModal{position:fixed;inset:0;display:grid;place-items:center;overflow-y:auto;overscroll-behavior:contain}
+#authModal .auth-modal{direction:rtl;display:grid;grid-template-columns:minmax(0,.88fr) minmax(0,1.12fr);grid-template-rows:auto;align-items:stretch;width:min(980px,100%);height:auto;min-height:0;max-height:calc(100dvh - 32px);margin:auto;overflow-y:auto}
+#authModal .auth-side{grid-column:1;grid-row:1;min-width:0;align-self:stretch}
+#authModal .auth-form-wrap{grid-column:2;grid-row:1;min-width:0;align-self:stretch}
+@media(max-width:860px){
+ #authModal .auth-modal{grid-template-columns:minmax(0,1fr);grid-template-rows:auto;width:min(500px,100%)}
+ #authModal .auth-side{display:none}
+ #authModal .auth-form-wrap{grid-column:1;grid-row:1;padding:28px 24px}
+}
+@media(max-width:420px){#authModal .auth-form-wrap{padding:26px 18px}}
