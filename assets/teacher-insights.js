@@ -9,17 +9,16 @@ function inScope(lesson,scope){
 async function load(){
  const role=await P.roleOf(),uid=P.auth.currentUser?.uid;
  if(!['teacher','assistant_teacher','subject_supervisor','admin'].includes(role)){location.href='./index.html';return}
- const [statsSnap,bankSnap,analyticsSnap,lessonSnap,ratingSnap,teacherSnap,liveSnap,attendanceSnap]=await Promise.all([
+ const [statsSnap,bankSnap,analyticsSnap,lessonSnap,ratingSnap,teacherSnap,liveSnap]=await Promise.all([
   P.db.ref(P.paths.questionStats).once('value'),
   P.db.ref(P.paths.bank).once('value'),
   P.db.ref('contentAnalytics').once('value'),
   P.db.ref('lessons').once('value'),
   P.db.ref(P.paths.ratings).once('value'),
   uid?P.db.ref('teacherProfiles/'+uid).once('value'):Promise.resolve({val:()=>({})}),
-  P.db.ref('liveSessions').once('value'),
-  P.db.ref(P.paths.attendance).once('value')
+  P.db.ref('liveSessions').once('value')
  ]);
- const stats=statsSnap.val()||{},bank=bankSnap.val()||{},contentAnalytics=analyticsSnap.val()||{},allLessons=lessonSnap.val()||{},ratings=ratingSnap.val()||{},teacher=teacherSnap.val?.()||{},liveSessions=liveSnap.val()||{},attendance=attendanceSnap.val()||{};
+ const stats=statsSnap.val()||{},bank=bankSnap.val()||{},contentAnalytics=analyticsSnap.val()||{},allLessons=lessonSnap.val()||{},ratings=ratingSnap.val()||{},teacher=teacherSnap.val?.()||{},liveSessions=liveSnap.val()||{};
  let lessons={};
  if(role==='admin')lessons=allLessons;
  else if(role==='subject_supervisor'){
@@ -42,10 +41,15 @@ async function load(){
  const rated=Object.keys(lessons).map(id=>{const vals=Object.values(ratings[id]||{}).map(x=>Number(x.value||0)).filter(Boolean);return{id,title:lessons[id]?.title||'درس',vals,avg:vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0}}).filter(x=>x.vals.length).sort((a,b)=>a.avg-b.avg);
  $('ratings').innerHTML=rated.length?rated.map(x=>{const yes=x.vals.filter(v=>v===3).length,partial=x.vals.filter(v=>v===2).length,no=x.vals.filter(v=>v===1).length;return '<div class="pro-item"><div class="pro-space"><strong>'+esc(x.title)+'</strong><span class="pro-badge '+(x.avg>=2.5?'ok':x.avg>=1.8?'warn':'bad')+'">'+Math.round(x.avg/3*100)+'% وضوح</span></div><div class="pro-muted">فهمت: '+yes+' • إلى حد ما: '+partial+' • يحتاج شرحًا: '+no+'</div></div>'}).join(''):'<div class="pro-empty">لا توجد تقييمات طلاب حتى الآن.</div>';
  const avg=heat.length?Math.round(heat.reduce((n,x)=>n+Number(x.average||0),0)/heat.length):0,attempts=heat.reduce((n,x)=>n+Number(x.attempts||0),0),needs=heat.filter(x=>Number(x.average||0)<60).length;
- const sessionRows=Object.entries(liveSessions).filter(([id,s])=>role==='admin'||s?.teacherId===uid||s?.createdBy===uid).map(([id,s])=>{
-  const rows=Object.values(attendance[id]||{}),students=rows.length,totalSeconds=rows.reduce((n,x)=>n+Number(x.totalSeconds||0),0),avg=students?Math.round(totalSeconds/students):0,visits=rows.reduce((n,x)=>n+Number(x.visits||0),0);
-  return{id,title:s?.title||'جلسة مباشرة',students,totalSeconds,avg,visits};
- }).sort((a,b)=>b.totalSeconds-a.totalSeconds);
+ const ownSessions=Object.entries(liveSessions).filter(([id,s])=>role==='admin'||s?.teacherId===uid||s?.createdBy===uid);
+ const sessionRows=[];
+ for(const [id,s] of ownSessions){
+  try{
+   const attendanceSnap=await P.db.ref(P.paths.attendance+'/'+id).once('value'),rows=Object.values(attendanceSnap.val()||{}),students=rows.length,totalSeconds=rows.reduce((n,x)=>n+Number(x.totalSeconds||0),0),avg=students?Math.round(totalSeconds/students):0,visits=rows.reduce((n,x)=>n+Number(x.visits||0),0);
+   sessionRows.push({id,title:s?.title||'جلسة مباشرة',students,totalSeconds,avg,visits});
+  }catch(err){console.warn('Attendance not readable for session',id)}
+ }
+ sessionRows.sort((a,b)=>b.totalSeconds-a.totalSeconds);
  if($('attendanceStats'))$('attendanceStats').innerHTML=sessionRows.length?sessionRows.map(x=>'<div class="pro-item"><div class="pro-space"><div><strong>'+esc(x.title)+'</strong><div class="pro-muted">'+x.students+' طالب • '+x.visits+' دخول</div></div><span class="pro-badge">'+Math.round(x.totalSeconds/60)+' دقيقة إجمالي</span></div><div class="pro-muted">متوسط حضور الطالب: '+Math.round(x.avg/60)+' دقيقة</div></div>').join(''):'<div class="pro-empty">لا توجد بيانات حضور للحصص المباشرة حتى الآن.</div>';
 
  $('teacherSummary').innerHTML='<div class="pro-item"><strong>'+avg+'%</strong><div class="pro-muted">متوسط أداء الدروس</div></div><div class="pro-item"><strong>'+attempts+'</strong><div class="pro-muted">محاولات مسجلة</div></div><div class="pro-item"><strong>'+needs+'</strong><div class="pro-muted">دروس تحتاج دعمًا</div></div><div class="pro-item"><strong>'+Object.keys(lessons).length+'</strong><div class="pro-muted">'+(role==='subject_supervisor'?'دروس ضمن نطاق الإشراف':'دروس ضمن نطاقك')+'</div></div>';
