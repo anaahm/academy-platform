@@ -14,6 +14,10 @@
 .last-activity{margin-top:16px}.last-activity-card{background:#f8fafc;border:1px solid var(--line);border-radius:17px;padding:16px}.last-activity-card h3{margin:0 0 4px}.last-activity-card p{font-size:12px;color:#64748b}.last-activity-card .btn{margin-top:8px}
 .profile-form{display:grid;gap:15px;margin-top:18px}.profile-form>label>span{display:block;font-size:12px;font-weight:900;color:#475569;margin-bottom:6px}.profile-form select{width:100%;border:1px solid var(--line);background:#f8fafc;border-radius:14px;padding:12px;outline:none}.input-wrap.locked{opacity:.7}.profile-form small{font-size:12px;color:#94a3b8}.danger-card{background:linear-gradient(180deg,#fff,#fff7f7)}
 
+.mistake-notebook-list{display:grid;gap:18px;margin-top:20px}.mistake-group{padding:18px;border:1px solid #d9e9f7;border-radius:18px;background:#f8fbff}.mistake-group-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px}.mistake-group-head small{color:#16749b;font-weight:800}.mistake-group-head h3{margin:4px 0;font-size:17px;color:#173b5d}.mistake-entry{padding:13px 15px;margin-top:9px;background:#fff;border:1px solid #e1eaf4;border-radius:13px}.mistake-entry>strong{display:block;line-height:1.7;color:#153856}.mistake-entry p{margin:5px 0 0;font-size:13px;line-height:1.7}.mistake-chosen{color:#b53e4b;font-weight:800}.mistake-correct{color:#07835d;font-weight:800}
+.teacher-difficult-questions{display:grid;gap:10px}.teacher-difficult-item{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px;border:1px solid #e3eaf4;border-radius:15px;background:#f9fcff}.teacher-difficult-item>div{min-width:0}.teacher-difficult-item small{display:block;font-size:11px;color:#55718b}.teacher-difficult-item h4{margin:4px 0;font-size:14px;line-height:1.6;color:#153856;overflow-wrap:anywhere}.teacher-difficult-item span{font-size:12px;color:#087454}.teacher-difficult-item>strong{flex:none;min-width:106px;text-align:center;color:#ae3746;background:#fff0f1;border-radius:12px;padding:9px;font-size:15px}.teacher-difficult-item>strong small{margin-top:3px;color:#9b5d64}
+@media(max-width:540px){.mistake-group{padding:13px}.mistake-group-head .btn{width:100%}.teacher-difficult-item{align-items:flex-start;flex-direction:column}.teacher-difficult-item>strong{width:100%}}
+
 /* Dashboard smart panels */
 .smart-dashboard-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-top:22px}
 .dashboard-smart-card{background:#fff;border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:0 8px 24px rgba(15,23,42,.04)}
@@ -881,4 +885,3 @@
 @media(max-width:700px){
   .profile-avatar-wrap{width:80px!important;height:80px!important}
 }
-

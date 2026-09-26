@@ -162,6 +162,14 @@ function renderTeacherAnalytics(){
    const rate=views?Math.min(100,Math.round(done/views*100)):0;
    return '<div class="teacher-analytics-row"><div><strong>'+escapeHtml(x.lesson.title||'درس')+'</strong><small>'+(stageName[x.lesson.stage]||x.lesson.stage||'')+' • صف '+(x.lesson.grade||'')+'</small></div><span><b>'+views+'</b><small>مشاهدة</small></span><span><b>'+rate+'%</b><small>إكمال</small></span><span><b>'+attempts+'</b><small>تدريب</small></span><span><b>'+avg+'%</b><small>متوسط</small></span></div>';
  }).join(''):'<div class="portal-empty-state"><span>📈</span><h3>لا توجد تحليلات بعد</h3><p>ستظهر الأرقام عندما يبدأ الطلاب في استخدام المحتوى.</p></div>';
+
+ const difficult=metrics.flatMap(({lesson,m})=>Object.entries(m.questionStats||{}).map(([key,stats])=>{
+   const question=lesson.questions?.[Number(key)],attempts=Number(stats?.attempts||0),correct=Number(stats?.correct||0);
+   if(!question||!Number.isInteger(Number(key))||!attempts)return null;
+   return {lesson,question,index:Number(key),attempts,wrong:Math.max(0,attempts-correct),rate:Math.round(Math.max(0,attempts-correct)/attempts*100)};
+ }).filter(Boolean)).filter(item=>item.wrong>0).sort((a,b)=>b.rate-a.rate||b.attempts-a.attempts).slice(0,12);
+ const difficultList=$('teacherDifficultQuestions');
+ if(difficultList)difficultList.innerHTML=difficult.length?difficult.map(item=>'<article class="teacher-difficult-item"><div><small>'+escapeHtml(item.lesson.title||'درس')+' • السؤال '+(item.index+1)+'</small><h4>'+escapeHtml(item.question.text||item.question.question||'سؤال')+'</h4><span>الإجابة الصحيحة: '+escapeHtml((item.question.opts||item.question.options||[])[Number(item.question.correctAnswer)]||'—')+'</span></div><strong>'+item.rate+'% خطأ<small>'+item.wrong+' من '+item.attempts+' محاولة</small></strong></article>').join(''):'<div class="portal-empty-state"><span>🌟</span><h3>لا توجد أسئلة صعبة مسجلة بعد</h3><p>تظهر هنا الأسئلة التي أخطأ فيها الطلاب بعد إنهاء تدريبات دروسك.</p></div>';
 }
 
 function updateAssignmentGrades(){

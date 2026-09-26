@@ -1330,3 +1330,8 @@ button.curriculum-item{cursor:pointer}
 }
 .quiz-option-v3.correct,.quiz-option-v3.correct:hover{border-color:#0fa675!important;background:#e7f9f2!important;color:#075f48!important}
 .quiz-option-v3.wrong,.quiz-option-v3.wrong:hover{border-color:#e75a60!important;background:#fff0f0!important;color:#a52e37!important}
+
+.lesson-path-card{padding:21px;border:1px solid #cce6f6;border-radius:22px;background:linear-gradient(150deg,#fff,#ecf9ff);box-shadow:0 12px 28px rgba(20,92,150,.09)}
+.lesson-path-card .sidebar-card-head{margin-bottom:15px}.lesson-path-steps{list-style:none;padding:0;margin:0 0 17px;display:grid;gap:10px}
+.lesson-path-steps li{display:flex;align-items:center;gap:11px;color:#68809a;font-size:13px}.lesson-path-steps li>span{display:grid;place-items:center;width:29px;height:29px;flex:none;border-radius:10px;background:#e9f0f8;color:#4f6b86;font-weight:900}.lesson-path-steps li.complete>span{background:#d6f8e9;color:#087f5d}.lesson-path-steps li.complete strong{color:#154d42}.lesson-path-steps li.pending:first-of-type strong{color:#17509b}
+.lesson-path-card .btn{white-space:normal;min-height:45px;line-height:1.5}

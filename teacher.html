@@ -7,8 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/portal.css">
-  <link rel="stylesheet" href="./assets/ui-kit.css">
+  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/portal.css?v=41">
+  <link rel="stylesheet" href="./assets/ui-kit.css?v=35">
   <link rel="stylesheet" href="./assets/experience.css?v=34">
   <script src="./assets/academy-utils.js"></script>
 </head>
@@ -178,6 +178,11 @@
             <div class="teacher-card-head"><div><span class="section-kicker">تفصيل كل درس</span><h3>تحليلات المحتوى</h3></div><span>📈</span></div>
             <div class="teacher-analytics-table" id="teacherAnalyticsList"></div>
           </article>
+          <article class="teacher-card teacher-spaced-card">
+            <div class="teacher-card-head"><div><span class="section-kicker">ما يحتاج شرحًا أكثر</span><h3>الأسئلة الأكثر خطأً</h3></div><span>🧠</span></div>
+            <p class="profile-muted">نتائج مجمعة من محاولات تدريبات دروسك، دون عرض بيانات الطلاب. تُرتب حسب نسبة الخطأ.</p>
+            <div class="teacher-difficult-questions" id="teacherDifficultQuestions"></div>
+          </article>
         </section>
       </div>
     </main>
@@ -202,6 +207,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="./assets/firebase-config.js"></script>
-  <script src="./assets/teacher.js?v=34"></script>
+  <script src="./assets/teacher.js?v=41"></script>
 </body>
 </html>

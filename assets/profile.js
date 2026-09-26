@@ -89,6 +89,17 @@ function lastActivityHref(){
   }
   return './index.html';
 }
+function renderMistakeNotebook(){
+ const groups=Object.entries(profile.mistakeNotebook||{}).map(([sourceId,items])=>({sourceId,items:Object.values(items||{}).filter(item=>item&&Array.isArray(item.opts))})).filter(group=>group.items.length);
+ const count=groups.reduce((total,group)=>total+group.items.length,0);
+ $('profileMistakeCount').textContent=count;
+ $('mistakeNotebookList').innerHTML=groups.length?groups.map(group=>{
+   const recent=group.items[0],query=new URLSearchParams({type:recent.type||profile.educationType||'public',stage:recent.stage||profile.stage||'prep',grade:String(recent.grade||profile.grade||1),subject:recent.subject||'arabic',reviewMistakes:'1'});
+   query.set(recent.sourceType==='quiz'?'quiz':'id',group.sourceId);
+   return '<section class="mistake-group"><div class="mistake-group-head"><div><small>'+(recent.sourceType==='quiz'?'اختبار':'درس')+' • '+group.items.length+' سؤال</small><h3>'+esc(recent.title||'مراجعة')+'</h3></div><a class="btn btn-primary" href="./lesson.html?'+query.toString()+'">تدرّب على أخطائك</a></div>'+
+     group.items.map(item=>'<article class="mistake-entry"><strong>'+esc(item.text||'سؤال')+'</strong><p>إجابتك: <span class="mistake-chosen">'+esc(item.opts[item.chosen]||'—')+'</span></p><p>الصحيح: <span class="mistake-correct">'+esc(item.opts[item.correctAnswer]||'—')+'</span></p></article>').join('')+'</section>';
+ }).join(''):'<div class="profile-empty-activity"><span>🎉</span><h3>دفتر أخطائك خالٍ</h3><p>عندما تخطئ في تدريب، ستجد السؤال هنا لتراجعه وتعيد المحاولة.</p><a class="btn btn-primary" href="./index.html">استكشف الدروس</a></div>';
+}
 function render(){
   const s=profile.stats||{},name=profile.name||user.displayName||(user.email||'طالب').split('@')[0];
   const totalXP=Number(s.totalXP||0),level=Number(s.level||Math.floor(totalXP/1000)+1),levelXp=totalXP%1000,remaining=1000-levelXp;
@@ -106,6 +117,7 @@ function render(){
   $('profileQuizzes').textContent=s.completedQuizzes||0;
   $('profileStreak').textContent=s.streak||0;
   $('profileTotalXp').textContent=totalXP;
+  renderMistakeNotebook();
   $('profileNameInput').value=name;
   const phoneAccount=profile.loginMethod==='phone'||Boolean(profile.phone);
   $('profileContactLabel').textContent=phoneAccount?'رقم الهاتف':'البريد الإلكتروني';
@@ -169,7 +181,7 @@ function render(){
   setBaselines();
 }
 function switchTab(tab,updateUrl=true){
-  const allowed=['overview','account','study','saved','security'];
+  const allowed=['overview','account','study','saved','mistakes','security'];
   if(!allowed.includes(tab))tab='overview';
   $$('[data-profile-tab]').forEach(b=>{
     const active=b.dataset.profileTab===tab;

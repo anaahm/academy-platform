@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/learning.css"><link rel="stylesheet" href="./assets/portal.css">
+  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/learning.css"><link rel="stylesheet" href="./assets/portal.css?v=41">
   <link rel="stylesheet" href="./assets/ui-kit.css?v=35">
   <link rel="stylesheet" href="./assets/experience.css?v=30">
   <script src="./assets/academy-utils.js"></script>
@@ -37,6 +37,7 @@
         <button data-profile-tab="account" role="tab" aria-selected="false" aria-controls="tab-account"><i class="fa-regular fa-user"></i><span>بيانات الحساب</span></button>
         <button data-profile-tab="study" role="tab" aria-selected="false" aria-controls="tab-study"><i class="fa-solid fa-graduation-cap"></i><span>مرحلتي الدراسية</span></button>
         <button data-profile-tab="saved" role="tab" aria-selected="false" aria-controls="tab-saved"><i class="fa-regular fa-bookmark"></i><span>محفوظاتي</span><em class="profile-nav-count" id="profileSavedCount">0</em></button>
+        <button data-profile-tab="mistakes" role="tab" aria-selected="false" aria-controls="tab-mistakes"><i class="fa-solid fa-list-check"></i><span>دفتر الأخطاء</span><em class="profile-nav-count" id="profileMistakeCount">0</em></button>
         <button data-profile-tab="security" role="tab" aria-selected="false" aria-controls="tab-security"><i class="fa-solid fa-shield-halved"></i><span>الأمان</span></button>
         <button id="profileLogout" class="danger"><i class="fa-solid fa-arrow-right-from-bracket"></i> تسجيل الخروج</button>
       </aside>
@@ -94,6 +95,14 @@
           </article>
         </section>
 
+        <section class="profile-tab hidden" id="tab-mistakes" role="tabpanel">
+          <article class="profile-card">
+            <div class="profile-card-head"><div><span class="section-kicker">التعلم من المحاولة</span><h2>دفتر الأخطاء</h2></div><span>📝</span></div>
+            <p class="profile-muted">الأسئلة التي أخطأت فيها محفوظة هنا. بعد إجابتك عنها بشكل صحيح في التدريب تختفي من القائمة تلقائيًا.</p>
+            <div class="mistake-notebook-list" id="mistakeNotebookList"></div>
+          </article>
+        </section>
+
         <section class="profile-tab hidden" id="tab-security" role="tabpanel">
           <div class="profile-two-col">
             <article class="profile-card">
@@ -122,7 +131,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="./assets/firebase-config.js"></script>
-  <script src="./assets/profile.js?v=39"></script>
+  <script src="./assets/profile.js?v=41"></script>
   <script src="./assets/activity-tracker.js"></script>
   <script src="./assets/pwa.js"></script>
   <script src="./assets/student-shell.js"></script>

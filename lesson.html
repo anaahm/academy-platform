@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link rel="stylesheet" href="./assets/styles.css">
-  <link rel="stylesheet" href="./assets/learning.css?v=40">
+  <link rel="stylesheet" href="./assets/learning.css?v=41">
   <link rel="stylesheet" href="./assets/ui-kit.css?v=35">
   <link rel="stylesheet" href="./assets/experience.css?v=34">
   <script src="./assets/academy-utils.js"></script>
@@ -110,7 +110,7 @@
           </div>
           <article class="quiz-result hidden" id="quizResult">
             <div class="result-ring" id="resultRing"><strong id="resultPercent">0%</strong><span>النتيجة</span></div>
-            <div><span class="section-kicker">أحسنت المحاولة</span><h2 id="resultTitle">نتيجتك جاهزة</h2><p id="resultMessage"></p><div class="result-actions"><button class="btn btn-primary" id="retryQuizBtn">إعادة التدريب</button><button class="btn btn-soft" id="reviewLessonBtn">مراجعة الشرح</button></div></div>
+            <div><span class="section-kicker">أحسنت المحاولة</span><h2 id="resultTitle">نتيجتك جاهزة</h2><p id="resultMessage"></p><div class="result-actions"><button class="btn btn-primary" id="retryQuizBtn">إعادة التدريب</button><a class="btn btn-soft hidden" id="openMistakesBtn" href="./profile.html?tab=mistakes">دفتر الأخطاء</a><button class="btn btn-soft" id="reviewLessonBtn">مراجعة الشرح</button></div></div>
           </article>
           <section class="quiz-review hidden" id="quizReview" aria-labelledby="quizReviewTitle">
             <div class="quiz-review-head"><span class="section-kicker">راجع إجاباتك</span><h2 id="quizReviewTitle">الأسئلة وإجاباتك</h2><p>شاهد اختيارك في كل سؤال والإجابة الصحيحة، ثم جرّب مرة أخرى متى شئت.</p></div>
@@ -145,6 +145,12 @@
           <button class="btn btn-primary btn-block" id="markCompleteBtn"><i class="fa-regular fa-circle-check"></i> تعليم الدرس كمكتمل</button>
         </article>
 
+        <article class="lesson-path-card" id="lessonPathCard">
+          <div class="sidebar-card-head"><div><span class="section-kicker">خطوتك التالية</span><h3>مسار هذا الدرس</h3></div><span>🧭</span></div>
+          <ol id="lessonPathSteps" class="lesson-path-steps"></ol>
+          <button class="btn btn-primary btn-block" type="button" id="lessonPathAction">ابدأ التدريب</button>
+        </article>
+
         <article class="lesson-outline-card">
           <div class="sidebar-card-head"><div><span class="section-kicker">داخل الوحدة</span><h3 id="outlineUnitTitle">دروس الوحدة</h3><small id="outlineProgressText">—</small></div><span>📚</span></div>
           <div class="lesson-outline" id="lessonOutline"></div>
@@ -163,7 +169,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="./assets/firebase-config.js"></script>
   <script src="./assets/student-core.js"></script>
-  <script src="./assets/learning.js?v=40"></script>
+  <script src="./assets/learning.js?v=41"></script>
   <script src="./assets/activity-tracker.js"></script>
   <script src="./assets/pwa.js"></script>
   <script src="./assets/student-shell.js"></script>

@@ -15,14 +15,16 @@ function fixtures(){return {
  assignmentSubmissions:{hw1:{student2:{studentName:'طالب تجريبي',status:'submitted',text:'إجابة',submittedAt:Date.now()}}},
  liveSessions:{live1:{title:'بث مناسب',type:'public',stage:'prep',grade:'1',status:'live'},live2:{title:'بث لا يخص الطالب',stage:'sec',status:'live'}},
  community:{forums:{post1:{title:'مراجعة',content:'أهلًا',authorId:'tester',authorName:'طالب الاختبار',createdAt:Date.now()}},studyGroups:{}},
- settings:{},posts:{},announcements:{},scheduleEvents:{},notificationBroadcasts:{},simulations:{},contentAnalytics:{},leaderboardV3:{},teacherSubmissions:{}
+ settings:{},posts:{},announcements:{},scheduleEvents:{},notificationBroadcasts:{},simulations:{},contentAnalytics:{lesson1:{questionStats:{0:{attempts:4,correct:1},1:{attempts:4,correct:4}}}},leaderboardV3:{},teacherSubmissions:{}
 }}
 let failures=0,scenarios=0;
-async function check(file,role='student',failurePath=''){
+async function check(file,role='student',failurePath='',reviewMode=false){
  const errors=[],writes=[],database=fixtures(),callbacks=[];
+ if(file==='profile.html')database.studentProfilesV3.tester.mistakeNotebook={lesson1:{0:{text:'ما ناتج 1 + 1؟',opts:['1','2'],chosen:0,correctAnswer:1,sourceType:'lesson',title:'المبتدأ والخبر',subject:'arabic',type:'public',stage:'prep',grade:'1'}}};
+ if(reviewMode)database.studentProfilesV3.tester.mistakeNotebook={lesson1:{1:{text:'ما ناتج 2 + 2؟',opts:['4','5'],chosen:1,correctAnswer:0,sourceType:'lesson',title:'المبتدأ والخبر',subject:'arabic',type:'public',stage:'prep',grade:'1'}}};
  const v=new VirtualConsole();v.on('jsdomError',e=>{if(!/navigation|scrollTo|Not implemented/.test(e.message))errors.push(e.message)});
  v.on('error',(...args)=>{if(!failurePath)errors.push(args.map(x=>x?.stack||String(x)).join(' '))});
- const dom=new JSDOM(readFileSync(file,'utf8').replace(/<link[^>]*>/g,''),{url:'https://example.test/academy/'+file+'?type=public&stage=prep&grade=1&subject=arabic&id=lesson1',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:v});
+ const dom=new JSDOM(readFileSync(file,'utf8').replace(/<link[^>]*>/g,''),{url:'https://example.test/academy/'+file+'?type=public&stage=prep&grade=1&subject=arabic&id=lesson1'+(reviewMode?'&reviewMistakes=1':''),runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:v});
  const w=dom.window;w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};
  w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});
  w.requestAnimationFrame=fn=>w.setTimeout(()=>fn(Date.now()),0);
@@ -99,7 +101,15 @@ async function check(file,role='student',failurePath=''){
    w.document.querySelector('[data-open-session]').click();assert.equal(w.document.getElementById('liveViewer').classList.contains('hidden'),false);
    w.document.getElementById('closeLiveViewer').click();assert.equal(w.document.getElementById('liveVideo').children.length,0);
   }
-  if(file==='lesson.html'){
+  if(file==='lesson.html'&&reviewMode){
+   assert.match(w.document.getElementById('quizIntroText').textContent,/1 سؤال/);
+   w.document.getElementById('startQuizBtn').click();
+   assert.match(w.document.getElementById('questionText').textContent,/2 \+ 2/,'only the wrong question is selected');
+   w.document.querySelector('[data-a="0"]').click();w.document.getElementById('nextQuestionBtn').click();
+   await new Promise(r=>setTimeout(r,25));
+   assert.equal(get('studentProfilesV3/tester/mistakeNotebook/lesson1/1'),null,'focused practice clears corrected mistake');
+  }
+  if(file==='lesson.html'&&!reviewMode){
    const b=w.document.getElementById('markCompleteBtn');if(b&&!b.disabled){b.click();b.click();await new Promise(r=>setTimeout(r,30));assert.equal(get('studentProfilesV3/tester/stats/totalXP'),100,'double click gives only one award');}
    w.document.getElementById('startQuizBtn').click();assert.ok(w.document.querySelector('[data-a]'),'quiz options');
    assert.equal(w.document.getElementById('nextQuestionBtn').disabled,true,'must answer before moving on');
@@ -117,9 +127,21 @@ async function check(file,role='student',failurePath=''){
    assert.equal(w.document.getElementById('resultPercent').textContent,'50%');
    assert.equal(w.document.querySelectorAll('.quiz-review-item').length,2,'review lists all questions');
    assert.match(w.document.querySelector('.quiz-review-item.is-wrong').textContent,/إجابتك:[\s\S]*1[\s\S]*الإجابة الصحيحة:[\s\S]*2/);
+   assert.equal(get('studentProfilesV3/tester/mistakeNotebook/lesson1/0/chosen'),0,'wrong answer saved privately: '+JSON.stringify(get('studentProfilesV3/tester/mistakeNotebook')));
+   assert.equal(get('contentAnalytics/lesson1/questionStats/0/attempts'),5,'teacher aggregated question attempts');
+   assert.match(w.document.getElementById('lessonPathAction').textContent,/أخطائك/);
    w.document.getElementById('retryQuizReviewBtn').click();
    assert.equal(w.document.getElementById('quizReview').classList.contains('hidden'),true,'retry clears previous review');
    assert.equal(w.document.getElementById('nextQuestionBtn').disabled,true,'retry clears answers');
+   w.document.querySelector('[data-a="1"]').click();w.document.getElementById('nextQuestionBtn').click();
+   w.document.querySelector('[data-a="0"]').click();w.document.getElementById('nextQuestionBtn').click();await new Promise(r=>setTimeout(r,30));
+   assert.equal(get('studentProfilesV3/tester/mistakeNotebook/lesson1/0'),null,'correct retry clears the mistake');
+  }
+  if(file==='profile.html'){
+   w.document.querySelector('[data-profile-tab="mistakes"]').click();
+   assert.equal(w.document.getElementById('profileMistakeCount').textContent,'1');
+   assert.match(w.document.getElementById('mistakeNotebookList').textContent,/إجابتك:[\s\S]*1[\s\S]*الصحيح:[\s\S]*2/);
+   assert.match(w.document.querySelector('.mistake-group a').href,/reviewMistakes=1/);
   }
   if(file==='admin.html'&&role!=='guest'){
    for(const tab of w.document.querySelectorAll('[data-admin-tab]')){tab.click();await new Promise(r=>setTimeout(r,8));}
@@ -143,6 +165,7 @@ async function check(file,role='student',failurePath=''){
     assert.equal(w.document.getElementById('teacherPortal').classList.contains('hidden'),false);
    }else{
     assert.equal(w.document.getElementById('teacherPortal').classList.contains('hidden'),false);
+    assert.match(w.document.getElementById('teacherDifficultQuestions').textContent,/75% خطأ/);
     for(const tab of w.document.querySelectorAll('[data-teacher-tab]'))tab.click();
     if(failurePath)assert.match(w.document.getElementById('teacherAssignmentSubmissions').textContent,/غير متاحة/);
    }
@@ -158,5 +181,6 @@ async function check(file,role='student',failurePath=''){
 }
 for(const file of files)await check(file,file==='admin.html'?'admin':file==='teacher.html'?'teacher':'student');
 await check('index.html','guest');await check('admin.html','guest');await check('teacher.html','guest');await check('teacher.html','teacher','assignmentSubmissions/');
+await check('lesson.html','student','',true);
 console.log(`DOM smoke: ${scenarios-failures}/${scenarios} scenarios passed. Uses in-memory Firebase fixtures, not live Firebase or layout rendering.`);
 if(failures)process.exit(1);
