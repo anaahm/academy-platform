@@ -1,7 +1,7 @@
 (() => {
 'use strict';
 const frameBox=()=>document.getElementById('videoFrame');
-let observer=null,currentPlayer=null,timer=null,user=null;
+let observer=null,currentPlayer=null,timer=null,user=null,watchedSeconds=0,lastPosition=null;
 function lessonId(){return new URLSearchParams(location.search).get('id')||''}
 function loadApi(){
  if(window.YT?.Player)return Promise.resolve(window.YT);
@@ -15,7 +15,7 @@ function loadApi(){
  });
 }
 function cleanup(){
- clearInterval(timer);timer=null;
+ clearInterval(timer);timer=null;watchedSeconds=0;lastPosition=null;
  try{currentPlayer?.destroy?.()}catch{}
  currentPlayer=null;
 }
@@ -33,10 +33,20 @@ async function bindFrame(iframe){
       const duration=Number(e.target.getDuration?.()||0),position=Number(saved?.position||0);
       if(position>5&&(!duration||position<duration-8))e.target.seekTo(position,true);
      }catch{}
+     lastPosition=Number(e.target.getCurrentTime?.()||0);
      timer=setInterval(async()=>{
       try{
-       const position=Number(currentPlayer?.getCurrentTime?.()||0),duration=Number(currentPlayer?.getDuration?.()||0);
-       if(duration>0)await window.AcademyPro.saveResume('video',key,position,duration,user.uid);
+       const position=Number(currentPlayer?.getCurrentTime?.()||0),duration=Number(currentPlayer?.getDuration?.()||0),state=Number(currentPlayer?.getPlayerState?.());
+       if(duration>0){
+        await window.AcademyPro.saveResume('video',key,position,duration,user.uid);
+        const pct=Math.min(100,Math.round(position/duration*100)),q=new URLSearchParams(location.search);
+        await window.AcademyPro.recordMastery({type:q.get('type')||'public',stage:q.get('stage')||'prep',grade:q.get('grade')||'1',subject:q.get('subject')||'general',lessonId:lessonId()},{video:pct},user.uid);
+       }
+       if(state===1&&lastPosition!==null){
+        const delta=Math.max(0,Math.min(12,position-lastPosition));watchedSeconds+=delta;
+        if(watchedSeconds>=60){const mins=Math.floor(watchedSeconds/60);watchedSeconds-=mins*60;await window.AcademyPro.incrementGoal('minutes',mins,user.uid)}
+       }
+       lastPosition=position;
       }catch{}
      },10000);
     },
@@ -45,7 +55,8 @@ async function bindFrame(iframe){
       try{
        const d=Number(e.target.getDuration?.()||0);
        window.AcademyPro.saveResume('video',key,d,d,user.uid).catch(()=>{});
-       window.AcademyPro.incrementGoal('minutes',Math.max(1,Math.round(d/60)),user.uid).catch(()=>{});
+       const q=new URLSearchParams(location.search);
+       window.AcademyPro.recordMastery({type:q.get('type')||'public',stage:q.get('stage')||'prep',grade:q.get('grade')||'1',subject:q.get('subject')||'general',lessonId:lessonId()},{video:100},user.uid).catch(()=>{});
       }catch{}
      }
     }
