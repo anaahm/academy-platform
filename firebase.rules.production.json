@@ -314,7 +314,8 @@
         "$uid": {
           ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true)",
           ".write": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)"
-        }
+        },
+        ".read": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || root.child('liveSessions').child($sessionId).child('teacherId').val() === auth.uid || root.child('liveSessions').child($sessionId).child('createdBy').val() === auth.uid)"
       }
     },
     "lessonRatingsV4": {
