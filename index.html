@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="./assets/news.css">
   <link rel="stylesheet" href="./assets/ui-kit.css?v=35">
   <link rel="stylesheet" href="./assets/experience.css?v=39">
+  <link rel="stylesheet" href="./assets/future-theme.css?v=1">
   <script src="./assets/academy-utils.js"></script>
 </head>
 <body>
@@ -94,7 +95,8 @@
             </div>
           </div>
 
-          <div class="hero-visual reveal">
+          <div class="hero-visual reveal" id="publicHeroVisual">
+            <div class="future-hero-caption"><strong>التعليم يصنع فرقًا أكبر</strong><span>رحلة تعليمية حديثة تجمع الشرح والتدريب والتقدم في تجربة واحدة.</span></div>
             <div class="visual-orbit orbit-a"></div>
             <div class="visual-orbit orbit-b"></div>
             <div class="dashboard-preview">
@@ -150,10 +152,10 @@
             <button class="text-btn" id="openExplorerPublic">استكشف جميع المراحل <i class="fa-solid fa-arrow-left"></i></button>
           </div>
           <div class="stage-grid">
-            <article class="stage-card" data-explore-type="public" data-explore-stage="primary"><span class="stage-art sky">🎒</span><span class="stage-tag">تعليم عام</span><h3>المرحلة الابتدائية</h3><p>من الصف الأول إلى السادس</p><button>استكشف المرحلة <i class="fa-solid fa-arrow-left"></i></button></article>
-            <article class="stage-card" data-explore-type="public" data-explore-stage="prep"><span class="stage-art indigo">📚</span><span class="stage-tag">تعليم عام</span><h3>المرحلة الإعدادية</h3><p>من الصف الأول إلى الثالث</p><button>استكشف المرحلة <i class="fa-solid fa-arrow-left"></i></button></article>
-            <article class="stage-card" data-explore-type="public" data-explore-stage="sec"><span class="stage-art emerald">🎓</span><span class="stage-tag">تعليم عام</span><h3>المرحلة الثانوية</h3><p>من الصف الأول إلى الثالث</p><button>استكشف المرحلة <i class="fa-solid fa-arrow-left"></i></button></article>
-            <article class="stage-card azhar" data-explore-type="azhar" data-explore-stage="primary"><span class="stage-art teal">🕌</span><span class="stage-tag">تعليم أزهري</span><h3>التعليم الأزهري</h3><p>ابتدائي • إعدادي • ثانوي</p><button>استكشف الأزهر <i class="fa-solid fa-arrow-left"></i></button></article>
+            <article class="stage-card" data-explore-type="public" data-explore-stage="primary"><span class="stage-art sky" id="stageImagePrimary">🎒</span><span class="stage-tag">تعليم عام</span><h3>المرحلة الابتدائية</h3><p>من الصف الأول إلى السادس</p><button>استكشف المرحلة <i class="fa-solid fa-arrow-left"></i></button></article>
+            <article class="stage-card" data-explore-type="public" data-explore-stage="prep"><span class="stage-art indigo" id="stageImagePrep">📚</span><span class="stage-tag">تعليم عام</span><h3>المرحلة الإعدادية</h3><p>من الصف الأول إلى الثالث</p><button>استكشف المرحلة <i class="fa-solid fa-arrow-left"></i></button></article>
+            <article class="stage-card" data-explore-type="public" data-explore-stage="sec"><span class="stage-art emerald" id="stageImageSec">🎓</span><span class="stage-tag">تعليم عام</span><h3>المرحلة الثانوية</h3><p>من الصف الأول إلى الثالث</p><button>استكشف المرحلة <i class="fa-solid fa-arrow-left"></i></button></article>
+            <article class="stage-card azhar" data-explore-type="azhar" data-explore-stage="primary"><span class="stage-art teal" id="stageImageAzhar">🕌</span><span class="stage-tag">تعليم أزهري</span><h3>التعليم الأزهري</h3><p>ابتدائي • إعدادي • ثانوي</p><button>استكشف الأزهر <i class="fa-solid fa-arrow-left"></i></button></article>
           </div>
         </div>
       </section>
