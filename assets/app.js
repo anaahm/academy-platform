@@ -18,6 +18,7 @@
     explorer: { type: 'all', stage: null, tab: 'stages', search: '' }
   };
   let baseDataPromise = null;
+  let registerInProgress = false;
 
   const stageLabels = {
     primary: 'المرحلة الابتدائية',
@@ -198,7 +199,7 @@
   }
 
   function showDashboard() {
-    if (!state.user || !state.profile?.stage || !state.profile?.grade) {
+    if (!state.user || !state.profile?.onboardingCompleted || !state.profile?.stage || !state.profile?.grade) {
       showPublicExperience();
       return;
     }
@@ -820,28 +821,43 @@
       });
     }
 
+    $('registerStage').addEventListener('change', () => {
+      const stage=$('registerStage').value,select=$('registerGrade');
+      select.innerHTML='<option value="">اختر الصف الدراسي</option>'+(gradeLabels[stage]?Object.entries(gradeLabels[stage]).map(([grade,label])=>'<option value="'+grade+'">'+label+'</option>').join(''):'');
+      select.disabled=!stage;
+    });
+
     $('registerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = $('registerSubmitBtn');
       const name = $('registerName').value.trim();
+      const educationType=$('registerEducationType').value,stage=$('registerStage').value,grade=Number($('registerGrade').value);
+      if(!['public','azhar'].includes(educationType)||!gradeLabels[stage]?.[grade])return toast('اختر نوع التعليم والمرحلة والصف أولًا.','error');
       btn.disabled = true; btn.textContent = 'جاري إنشاء الحساب...';
+      registerInProgress=true;
+      let createdUser=null;
       try {
         const cred = await auth.createUserWithEmailAndPassword($('registerEmail').value.trim(), $('registerPassword').value);
+        createdUser=cred.user;
+        state.user=cred.user;
         await cred.user.updateProfile({displayName:name});
         await saveProfile(cred.user.uid, {
           name,
           email: cred.user.email,
           createdAt: firebase.database.ServerValue.TIMESTAMP,
+          educationType,stage,grade,onboardingCompleted:true,
           stats: { totalXP:0, level:1, completedLessons:0, completedQuizzes:0, streak:0 }
         });
         state.profile = await loadProfile(cred.user.uid);
         closeModal('authModal');
-        openModal('onboardingModal');
-        toast('تم إنشاء الحساب. اختر مرحلتك الآن ✨');
+        showDashboard();
+        toast('تم إنشاء الحساب وفتح مرحلتك بنجاح ✨');
       } catch (error) {
-        toast(friendlyAuthError(error), 'error');
+        if(createdUser){closeModal('authModal');openModal('onboardingModal');toast('تم إنشاء الحساب، لكن تعذر حفظ المرحلة. اخترها مرة أخرى.','error')}
+        else toast(friendlyAuthError(error), 'error');
       } finally {
-        btn.disabled = false; btn.textContent = 'متابعة واختيار المرحلة';
+        registerInProgress=false;
+        btn.disabled = false; btn.textContent = 'إنشاء الحساب ودخول مرحلتي';
       }
     });
 
@@ -957,6 +973,7 @@
 
   auth.onAuthStateChanged(async user => {
     state.user = user;
+    if(user&&registerInProgress)return;
     if (!user) {
       state.profile = null;
       showPublicExperience();

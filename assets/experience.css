@@ -190,3 +190,13 @@ p{line-height:1.85}
 @media(max-width:420px){#authModal .auth-form-wrap{padding:26px 18px}}
 /* Ripple decoration must not turn the close control into a grid item. */
 #authModal .modal-close.ui-ripple-host{position:absolute;top:16px;left:16px;right:auto;grid-column:auto;grid-row:auto}
+
+/* Choose the student's curriculum during signup. */
+#registerForm .register-stage-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:8px 0 17px;padding:15px;border:1px solid #dce8f8;border-radius:16px;background:#f7faff}
+#registerForm .register-stage-grid label{min-width:0}
+#registerForm .register-stage-grid label>span{display:block;margin-bottom:6px;font-size:12px;font-weight:900;color:#344b67}
+#registerForm .register-stage-grid select{display:block;width:100%;height:45px;padding:8px 11px;border:1px solid #d0dfef;border-radius:11px;background:#fff;color:#173a60;outline:none}
+#registerForm .register-stage-grid select:focus-visible{border-color:#1683ee}
+#registerForm .register-stage-grid select:disabled{background:#edf2f7;color:#7c8da2;cursor:not-allowed}
+#registerForm .register-grade{grid-column:1/-1}
+@media(max-width:560px){#registerForm .register-stage-grid{grid-template-columns:1fr;gap:10px;padding:12px}#registerForm .register-grade{grid-column:auto}}

@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="./assets/portal.css">
   <link rel="stylesheet" href="./assets/news.css">
   <link rel="stylesheet" href="./assets/ui-kit.css?v=35">
-  <link rel="stylesheet" href="./assets/experience.css?v=37">
+  <link rel="stylesheet" href="./assets/experience.css?v=38">
   <script src="./assets/academy-utils.js"></script>
 </head>
 <body>
@@ -430,11 +430,16 @@
         </form>
 
         <form id="registerForm" class="auth-form hidden">
-          <div class="form-heading"><h3>أنشئ حسابك مجانًا</h3><p>بيانات بسيطة، وبعدها نخصص المنصة لمرحلتك.</p></div>
+          <div class="form-heading"><h3>أنشئ حسابك مجانًا</h3><p>اختر مرحلتك وصفّك الآن، وستفتح المنصة على موادك.</p></div>
           <label><span>الاسم</span><div class="input-wrap"><i class="fa-regular fa-user"></i><input type="text" id="registerName" required minlength="2" placeholder="اكتب اسمك"></div></label>
           <label><span>البريد الإلكتروني</span><div class="input-wrap"><i class="fa-regular fa-envelope"></i><input type="email" id="registerEmail" required placeholder="example@email.com"></div></label>
           <label><span>كلمة المرور</span><div class="input-wrap"><i class="fa-solid fa-lock"></i><input type="password" id="registerPassword" required minlength="6" placeholder="6 أحرف على الأقل"><button type="button" class="toggle-pass" data-toggle-pass="registerPassword"><i class="fa-regular fa-eye"></i></button></div></label>
-          <button type="submit" class="btn btn-primary btn-block" id="registerSubmitBtn">متابعة واختيار المرحلة</button>
+          <div class="register-stage-grid">
+            <label><span>نوع التعليم</span><select id="registerEducationType" required><option value="">اختر نوع التعليم</option><option value="public">تعليم عام</option><option value="azhar">تعليم أزهري</option></select></label>
+            <label><span>المرحلة الدراسية</span><select id="registerStage" required><option value="">اختر المرحلة</option><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+            <label class="register-grade"><span>الصف الدراسي</span><select id="registerGrade" required disabled><option value="">اختر المرحلة أولًا</option></select></label>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" id="registerSubmitBtn">إنشاء الحساب ودخول مرحلتي</button>
           <p class="form-note">بإنشاء الحساب أنت توافق على شروط الاستخدام وسياسة الخصوصية.</p>
         </form>
       </div>
@@ -474,7 +479,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="./assets/firebase-config.js"></script>
   <script src="./assets/auth-flow.js"></script>
-  <script src="./assets/app.js?v=34"></script>
+  <script src="./assets/app.js?v=38"></script>
   <script src="./assets/notification-engine.js"></script>
   <script src="./assets/notification-widget.js"></script>
   <script src="./assets/activity-tracker.js"></script>
