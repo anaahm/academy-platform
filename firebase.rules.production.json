@@ -198,7 +198,7 @@
     "assignmentSubmissions": {
       "$assignmentId": {
         "$uid": {
-          ".read": "auth != null && (auth.uid === $uid || root.child('assignments').child($assignmentId).child('teacherId').val() === auth.uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
+          ".read": "auth != null && (auth.uid === $uid || root.child('assignments').child($assignmentId).child('teacherId').val() === auth.uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || root.child('parentLinksV4').child(auth.uid).child($uid).exists())",
           ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (root.child('assignments').child($assignmentId).child('teacherId').val() === auth.uid && root.child('teacherProfiles').child(auth.uid).exists() && root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true && root.child('teacherProfiles').child(auth.uid).child('role').val() !== 'assistant') || (auth.uid === $uid && root.child('assignments').child($assignmentId).exists() && (!data.exists() || data.child('status').val() !== 'graded') && newData.child('status').val() === 'submitted' && !newData.child('score').exists() && !newData.child('maxScore').exists() && !newData.child('percent').exists() && !newData.child('feedback').exists() && !newData.child('gradedAt').exists() && !newData.child('gradedBy').exists()))",
           "status": {
             ".validate": "!newData.exists() || newData.val() === 'submitted' || newData.val() === 'graded'"
