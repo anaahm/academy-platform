@@ -54,7 +54,19 @@ function unitName(c,u){
 }
 function filterContent(c){
  state.lessons=Object.entries(state.data.lessons||{}).map(([id,v])=>({id,...v})).filter(l=>l.type===c.type&&l.stage===c.stage&&String(l.grade)===String(c.grade)&&l.subject===c.subject&&!l.isHidden).sort((a,b)=>(a.unit||1)-(b.unit||1)||(a.createdAt||0)-(b.createdAt||0));
- state.quizzes=Object.entries(state.data.quizzes||{}).map(([id,v])=>({id,...v})).filter(q=>q.type===c.type&&q.stage===c.stage&&String(q.grade)===String(c.grade)&&q.subject===c.subject&&!q.isHidden).sort((a,b)=>(a.unit||0)-(b.unit||0)||(a.createdAt||0)-(b.createdAt||0));
+ const targetAllows=item=>{
+   const mode=item?.targetMode||'all';
+   if(mode==='students'){
+     const ids=Array.isArray(item.targetStudentIds)?item.targetStudentIds:Object.keys(item.targetStudentIds||{});
+     return ids.includes(state.user?.uid);
+   }
+   if(mode==='group'){
+     const groups=Array.isArray(state.profile?.groupIds)?state.profile.groupIds:Object.keys(state.profile?.groupIds||{});
+     return !!item.targetGroupId&&(state.profile?.classGroupId===item.targetGroupId||groups.includes(item.targetGroupId));
+   }
+   return true;
+ };
+ state.quizzes=Object.entries(state.data.quizzes||{}).map(([id,v])=>({id,...v})).filter(q=>q.type===c.type&&q.stage===c.stage&&String(q.grade)===String(c.grade)&&q.subject===c.subject&&!q.isHidden&&targetAllows(q)).sort((a,b)=>(a.unit||0)-(b.unit||0)||(a.createdAt||0)-(b.createdAt||0));
  state.files=Object.entries(state.data.files||{}).map(([id,v])=>({id,...v})).filter(f=>f.type===c.type&&f.stage===c.stage&&String(f.grade)===String(c.grade)&&(!f.subject||f.subject===c.subject));
 }
 function pLesson(id){return state.profile?.learningProgress?.[id]||{}}
@@ -662,7 +674,14 @@ async function finishQuiz(){
  }
 }
 function renderQuizOnly(c,id){
- const q=state.data.quizzes?.[id];if(!q||q.isHidden){toast('الاختبار غير موجود.','error');setTimeout(()=>history.back(),800);return}
+ const q=state.data.quizzes?.[id];
+ if(q){
+   const mode=q.targetMode||'all';
+   const ids=Array.isArray(q.targetStudentIds)?q.targetStudentIds:Object.keys(q.targetStudentIds||{});
+   const groups=Array.isArray(state.profile?.groupIds)?state.profile.groupIds:Object.keys(state.profile?.groupIds||{});
+   const allowed=mode==='all'||(mode==='students'&&ids.includes(state.user?.uid))||(mode==='group'&&q.targetGroupId&&(state.profile?.classGroupId===q.targetGroupId||groups.includes(q.targetGroupId)));
+   if(!allowed){toast('هذا الاختبار غير مخصص لحسابك.','error');setTimeout(()=>history.back(),900);return}
+ }if(!q||q.isHidden){toast('الاختبار غير موجود.','error');setTimeout(()=>history.back(),800);return}
  state.currentQuiz={...q,id};
  filterContent(c);
  const unit=Number(q.unit||0);
