@@ -1,6 +1,17 @@
 (()=>{'use strict';
 const P=window.AcademyPro,$=id=>document.getElementById(id),DAY=86400000;
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+function normalizePhone(raw=''){
+ const digits=String(raw||'').replace(/[٠-٩۰-۹]/g,ch=>String(ch.charCodeAt(0)-(ch.charCodeAt(0)>=1776?1776:1632))).replace(/[\s()\-.]/g,'');
+ let phone=digits;
+ if(/^01[0125]\d{8}$/.test(phone))phone='+20'+phone.slice(1);
+ else if(/^0020(1[0125]\d{8})$/.test(phone))phone='+20'+phone.slice(4);
+ else if(/^20(1[0125]\d{8})$/.test(phone))phone='+'+phone;
+ if(!/^\+[1-9]\d{7,14}$/.test(phone))throw new Error('أدخل رقم هاتف صحيحًا مثل 01012345678');
+ return phone;
+}
+function parentLoginEmail(phone){return 'g'+phone.replace(/\D/g,'')+'@parents.academy.invalid'}
 function masteryFlat(o){const a=[];(function w(x){Object.values(x||{}).forEach(v=>v&&typeof v==='object'&&'lessonId'in v?a.push(v):w(v))})(o);return a}
 function quizTrend(profile){const rows=Object.values(profile?.quizHistory||{}).filter(x=>x?.createdAt),now=Date.now(),week=rows.filter(x=>x.createdAt>=now-7*DAY),prev=rows.filter(x=>x.createdAt<now-7*DAY&&x.createdAt>=now-14*DAY),avg=a=>a.length?Math.round(a.reduce((n,x)=>n+Number(x.score||0),0)/a.length):0;return{current:avg(week),previous:avg(prev)}}
 function alertsFor(r,avg,due){
@@ -20,7 +31,7 @@ function render(id,r){
 }
 async function loadChildren(user){
  const ids=await P.getChildren(user.uid),box=$('children');
- if(!ids.length){box.innerHTML='<article class="pro-card full pro-empty">لا يوجد طلاب مربوطون بهذا الحساب بعد.</article>';return}
+ if(!ids.length){box.innerHTML='<article class="pro-card full pro-empty">لا يوجد طالب مربوط بهذا الحساب بعد. استخدم رقم الطالب أو كود الربط بالأعلى.</article>';return}
  box.innerHTML='';
  for(const id of ids){
   try{box.insertAdjacentHTML('beforeend',render(id,await P.parentReport(id)))}
@@ -30,34 +41,52 @@ async function loadChildren(user){
 function showAuth(signedIn){
  $('parentAuthCard').hidden=!!signedIn;$('parentDashboard').hidden=!signedIn;$('parentLogout').hidden=!signedIn;
 }
+function authMessage(msg){$('parentAuthStatus').textContent=msg||''}
+function linkMessage(msg,ok=true){const el=$('parentLinkStatus');el.textContent=msg||'';el.style.color=ok?'#15803d':'#b91c1c'}
 $('parentAuthForm').onsubmit=async e=>{
- e.preventDefault();$('parentAuthStatus').textContent='جاري تسجيل الدخول...';
- try{await P.auth.signInWithEmailAndPassword($('parentEmail').value.trim(),$('parentPassword').value);$('parentAuthStatus').textContent=''}
- catch(err){console.error(err);$('parentAuthStatus').textContent='تعذر تسجيل الدخول. تحقق من البريد وكلمة المرور.'}
+ e.preventDefault();authMessage('جاري تسجيل الدخول...');
+ try{
+  const phone=normalizePhone($('parentPhone').value);
+  await P.auth.signInWithEmailAndPassword(parentLoginEmail(phone),$('parentPassword').value);
+  authMessage('');
+ }catch(err){console.error(err);authMessage(err?.code==='auth/user-not-found'||err?.code==='auth/invalid-login-credentials'?'رقم الهاتف أو الرقم السري غير صحيح.':err.message||'تعذر تسجيل الدخول.')}
 };
 $('parentRegisterBtn').onclick=async()=>{
- const name=$('parentName').value.trim(),email=$('parentEmail').value.trim(),password=$('parentPassword').value;
- if(!name||!email||password.length<6){$('parentAuthStatus').textContent='اكتب الاسم والبريد وكلمة مرور 6 أحرف على الأقل.';return}
- $('parentAuthStatus').textContent='جاري إنشاء الحساب...';
+ let phone;
+ try{phone=normalizePhone($('parentPhone').value)}catch(err){authMessage(err.message);return}
+ const name=$('parentName').value.trim(),password=$('parentPassword').value;
+ if(!name||password.length<6){authMessage('اكتب الاسم ورقم الهاتف ورقمًا سريًا من 6 خانات أو أكثر.');return}
+ authMessage('جاري إنشاء حساب ولي الأمر...');
  try{
-  const cred=await P.auth.createUserWithEmailAndPassword(email,password);
-  await P.db.ref('parentProfilesV4/'+cred.user.uid).set({name,email,createdAt:Date.now(),updatedAt:Date.now()});
-  $('parentAuthStatus').textContent='';
- }catch(err){console.error(err);$('parentAuthStatus').textContent='تعذر إنشاء الحساب. قد يكون البريد مستخدمًا بالفعل.'}
+  const cred=await P.auth.createUserWithEmailAndPassword(parentLoginEmail(phone),password);
+  await cred.user.updateProfile?.({displayName:name});
+  await P.db.ref('parentProfilesV4/'+cred.user.uid).set({name,phone,loginMethod:'phone',createdAt:Date.now(),updatedAt:Date.now()});
+  authMessage('');
+ }catch(err){console.error(err);authMessage(err?.code==='auth/email-already-in-use'?'هذا الرقم مسجل بالفعل. اضغط دخول ولي الأمر.':err.message||'تعذر إنشاء الحساب.')}
 };
 $('parentLogout').onclick=()=>P.auth.signOut();
 $('linkBtn').onclick=async()=>{
- try{await P.linkParent($('parentInvite').value.trim());await P.db.ref('parentProfilesV4/'+P.auth.currentUser.uid).update({updatedAt:Date.now()});await loadChildren(P.auth.currentUser)}
- catch(e){alert(e.message||'تعذر الربط')}
+ const code=$('parentInvite').value.trim();
+ if(!code)return linkMessage('اكتب كود الطالب أولًا.',false);
+ try{linkMessage('جاري ربط الطالب...');await P.linkParent(code);$('parentInvite').value='';linkMessage('تم ربط الطالب بالكود بنجاح ✅');await loadChildren(P.auth.currentUser)}
+ catch(e){console.error(e);linkMessage(e.message||'تعذر الربط بالكود.',false)}
+};
+$('linkByPhoneBtn').onclick=async()=>{
+ const raw=$('studentPhoneLink').value.trim();
+ if(!raw)return linkMessage('اكتب رقم هاتف الطالب أولًا.',false);
+ try{linkMessage('جاري البحث عن الطالب وربطه...');await P.linkParentByPhone(raw);$('studentPhoneLink').value='';linkMessage('تم العثور على الطالب وربطه بحسابك ✅');await loadChildren(P.auth.currentUser)}
+ catch(e){console.error(e);linkMessage(e.message||'تعذر العثور على الطالب.',false)}
 };
 P.auth.onAuthStateChanged(async u=>{
- showAuth(!!u);
- if(!u)return;
- const role=await P.roleOf(u.uid);
- if(role!=='parent'&&role!=='admin'){
-  const snap=await P.db.ref('parentProfilesV4/'+u.uid).once('value');
-  if(!snap.exists())await P.db.ref('parentProfilesV4/'+u.uid).set({name:u.displayName||'',email:u.email||'',createdAt:Date.now(),updatedAt:Date.now()});
- }
- await loadChildren(u);
+ if(!u){showAuth(false);return}
+ try{
+  const parentSnap=await P.db.ref('parentProfilesV4/'+u.uid).once('value');
+  if(!parentSnap.exists()){
+   await P.auth.signOut();
+   showAuth(false);authMessage('هذا ليس حساب ولي أمر. سجّل الدخول برقم ولي الأمر أو أنشئ حسابًا جديدًا.');
+   return;
+  }
+  showAuth(true);authMessage('');await loadChildren(u);
+ }catch(err){console.error(err);showAuth(false);authMessage('تعذر تحميل حساب ولي الأمر الآن.')}
 });
 })();
