@@ -25,11 +25,13 @@ async function roleOf(userId=uid()){
  const [a,t,p]=await Promise.all([
   db.ref('adminProfiles/'+userId).once('value'),db.ref('teacherProfiles/'+userId).once('value'),db.ref('parentProfilesV4/'+userId).once('value')
  ]);
- if(a.val()?.isAdmin===true)return 'admin'; if(t.exists()&&t.val()?.isActive!==false)return 'teacher'; if(p.exists())return 'parent'; return 'student';
+ if(a.val()?.isAdmin===true)return 'admin'; if(t.exists()&&t.val()?.isActive!==false){const role=t.val()?.role||'teacher';return role==='assistant'?'assistant_teacher':role==='supervisor'?'subject_supervisor':'teacher'} if(p.exists())return 'parent'; return 'student';
 }
 const permissions={
  admin:['*'],
  teacher:['content.submit','quiz.submit','assignment.manage','analytics.teacher','students.assigned','live.manage','questionBank.write','questionBank.read'],
+ assistant_teacher:['content.submit','quiz.submit','analytics.teacher','questionBank.write','questionBank.read'],
+ subject_supervisor:['content.submit','quiz.submit','assignment.manage','analytics.teacher','students.assigned','questionBank.write','questionBank.read'],
  parent:['children.read','reports.read','notifications.read'],
  student:['learning.read','learning.write','quiz.take','notes.write','favorites.write','certificate.read']
 };
