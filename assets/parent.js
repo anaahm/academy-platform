@@ -60,7 +60,11 @@ $('parentRegisterBtn').onclick=async()=>{
  try{
   const cred=await P.auth.createUserWithEmailAndPassword(parentLoginEmail(phone),password);
   await cred.user.updateProfile?.({displayName:name});
-  await P.db.ref('parentProfilesV4/'+cred.user.uid).set({name,phone,loginMethod:'phone',createdAt:Date.now(),updatedAt:Date.now()});
+  const ts=Date.now();
+  await P.db.ref().update({
+    ['parentProfilesV4/'+cred.user.uid]:{name,phone,loginMethod:'phone',createdAt:ts,updatedAt:ts},
+    ['phoneDirectoryV4/parents/'+cred.user.uid]:{uid:cred.user.uid,name,phone,updatedAt:ts}
+  });
   authMessage('');
  }catch(err){console.error(err);authMessage(err?.code==='auth/email-already-in-use'?'هذا الرقم مسجل بالفعل. اضغط دخول ولي الأمر.':err.message||'تعذر إنشاء الحساب.')}
 };
@@ -81,6 +85,10 @@ P.auth.onAuthStateChanged(async u=>{
  if(!u){showAuth(false);return}
  try{
   const parentSnap=await P.db.ref('parentProfilesV4/'+u.uid).once('value');
+  const parentProfile=parentSnap.val()||{};
+  if(parentSnap.exists()&&parentProfile.phone){
+   P.db.ref('phoneDirectoryV4/parents/'+u.uid).set({uid:u.uid,name:parentProfile.name||u.displayName||'',phone:parentProfile.phone,updatedAt:Date.now()}).catch(()=>{});
+  }
   if(!parentSnap.exists()){
    await P.auth.signOut();
    showAuth(false);authMessage('هذا ليس حساب ولي أمر. سجّل الدخول برقم ولي الأمر أو أنشئ حسابًا جديدًا.');
