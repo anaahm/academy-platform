@@ -63,6 +63,11 @@ function masteryLabel(status){return status==='mastered'?'متقن':status==='le
 function smartNext(){
  const mastery=profile?.mastery||deriveMastery(profile||{}),arr=Object.values(mastery),due=Object.values(profile?.reviewQueue||{}).filter(x=>Number(x.nextReviewAt||0)<=Date.now());
  if(due.length)return{title:'مراجعة ذكية مستحقة',text:'لديك '+due.length+' سؤالًا من أخطائك جاهزًا للمراجعة.',href:'./review-center.html',icon:'fa-rotate'};
+ const selfRemedial=Object.entries(profile?.remedial||{}).filter(([,x])=>x?.active!==false).map(([lessonId,x])=>({lessonId,...x})).sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0))[0];
+ if(selfRemedial&&lessons[selfRemedial.lessonId]){
+   const l=lessons[selfRemedial.lessonId],q=new URLSearchParams({type:l.type||profile.educationType||'public',stage:l.stage||profile.stage||'',grade:String(l.grade||profile.grade||''),subject:l.subject||'',id:selfRemedial.lessonId});
+   return{title:'راجع: '+(l.title||'درس يحتاج دعمًا'),text:'أشرت سابقًا إلى أنك تحتاج مراجعة هذا الدرس؛ لذلك نضعه قبل التوسع في محتوى جديد.',href:'./lesson.html?'+q,icon:'fa-book-open-reader'};
+ }
  const remedial=arr.filter(x=>x.status==='review').sort((a,b)=>a.score-b.score)[0];
  if(remedial){const l=lessons[remedial.lessonId]||{},q=new URLSearchParams({type:l.type||profile.educationType||'public',stage:l.stage||profile.stage||'',grade:String(l.grade||profile.grade||''),subject:l.subject||'',id:remedial.lessonId});return{title:'راجع: '+(l.title||'درس يحتاج مراجعة'),text:'إتقانك الحالي '+remedial.score+'%، ويفضل تثبيت هذا الدرس أولًا.',href:'./lesson.html?'+q,icon:'fa-book-open-reader'}}
  const next=arr.filter(x=>x.status!=='mastered').sort((a,b)=>a.unit-b.unit||a.score-b.score)[0];
@@ -77,6 +82,7 @@ function injectDashboard(){
  '<article class="pro-suite-card"><span class="pro-icon"><i class="fa-solid '+next.icon+'"></i></span><h3>'+esc(next.title)+'</h3><p>'+esc(next.text)+'</p><a href="'+esc(next.href)+'">ابدأ الخطوة التالية</a></article>'+
  '<article class="pro-suite-card"><span class="pro-icon"><i class="fa-solid fa-brain"></i></span><h3>اختبار تحديد المستوى</h3><p>اختبار تكيفي يكتشف نقاط القوة والمهارات التي تحتاج دعمًا.</p><a href="./smart-assessment.html">ابدأ التقييم</a></article>'+
  '<article class="pro-suite-card"><span class="pro-icon"><i class="fa-solid fa-arrows-rotate"></i></span><h3>المراجعة المتباعدة</h3><p>'+(due?'لديك '+due+' سؤالًا مستحقًا الآن.':'لا توجد مراجعات عاجلة الآن.')+'</p><a href="./review-center.html">فتح مركز المراجعة</a></article>'+
+ '<article class="pro-suite-card"><span class="pro-icon"><i class="fa-solid fa-chart-line"></i></span><h3>تقريري الذكي</h3><p>شاهد أقوى موادك، ما يحتاج مراجعة، والتوصية الأنسب لك الآن.</p><a href="./smart-report.html">عرض التقرير</a></article>'+
  '<article class="pro-suite-card"><span class="pro-icon"><i class="fa-solid fa-people-roof"></i></span><h3>متابعة ولي الأمر</h3><p>أنشئ كود متابعة آمن يعرض ملخص التقدم والتنبيهات فقط.</p><a href="./parent.html?setup=1">إدارة المتابعة</a></article></div>';
  anchor.insertAdjacentElement('afterend',section);
 }
