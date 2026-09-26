@@ -10,7 +10,7 @@ function bestScores(history={}){
  const out={};Object.values(history||{}).forEach(x=>{if(x?.sourceId)out[x.sourceId]=Math.max(Number(out[x.sourceId]||0),Number(x.score||0))});return out;
 }
 function masteryForLesson(id,lesson,p,best){
- const completed=!!p?.progress?.lessons?.[id]?.completedAt,practiced=best[id]!==undefined,score=Number(best[id]||0),errors=Object.keys(p?.mistakeNotebook?.[id]||{}).length;
+ const completed=!!p?.learningProgress?.[id]?.completed,practiced=best[id]!==undefined,score=Number(best[id]||0),errors=Object.keys(p?.mistakeNotebook?.[id]||{}).length;
  let points=(completed?40:0)+(practiced?Math.round(Math.min(100,score)*.5):0)+(practiced&&errors===0?10:0);points=Math.min(100,points);
  let status='new';if(points>=85&&errors===0)status='mastered';else if(points>=60)status='learning';else if(completed||practiced||errors)status='review';
  return {lessonId:id,subject:lesson?.subject||'',unit:Number(lesson?.unit||0),score:points,status,quizScore:score,mistakes:errors,completed,practiced,updatedAt:Date.now()};
@@ -44,7 +44,7 @@ function makeAlerts(p,summaries){
  const weak=Object.entries(summaries).filter(([,x])=>x.mastery<60).sort((a,b)=>a[1].mastery-b[1].mastery)[0];if(weak)alerts.push({type:'weak',subject:weak[0],text:'يوجد احتياج لمراجعة مادة ذات إتقان أقل من 60%.'});
  const due=Object.values(p?.reviewQueue||{}).filter(x=>Number(x.nextReviewAt||0)<=now).length;if(due)alerts.push({type:'review',text:'لدى الطالب '+due+' سؤالًا مستحقًا للمراجعة.'});return alerts.slice(0,5);
 }
-function randomCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let out='';for(let i=0;i<8;i++)out+=chars[Math.floor(Math.random()*chars.length)];return out}
+function randomCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let out='';for(let i=0;i<12;i++)out+=chars[Math.floor(Math.random()*chars.length)];return out}
 async function ensureParentCode(){
  if(!user||!profile)return'';if(profile.parentCode)return profile.parentCode;
  for(let i=0;i<5;i++){const code=randomCode(),snap=await db.ref('parentSnapshots/'+code).once('value');if(!snap.exists()){await db.ref('studentProfilesV3/'+user.uid+'/parentCode').set(code);profile.parentCode=code;return code}}
@@ -55,7 +55,7 @@ async function syncDerived(){
  try{
   const mastery=deriveMastery(profile),reviewQueue=ensureReviewQueue(profile),summaries=subjectSummary(profile,mastery),comparison=weeklyComparison(profile);
   const patch={['studentProfilesV3/'+user.uid+'/mastery']:mastery,['studentProfilesV3/'+user.uid+'/reviewQueue']:reviewQueue,['learningMatrix/'+user.uid]:{name:profile.name||'طالب',educationType:profile.educationType||'public',stage:profile.stage||'',grade:String(profile.grade||''),subjects:summaries,weekly:comparison,updatedAt:Date.now()}};
-  if(profile.parentCode)patch['parentSnapshots/'+profile.parentCode]={ownerUid:user.uid,studentName:profile.name||'طالب',educationType:profile.educationType||'public',stage:profile.stage||'',grade:String(profile.grade||''),stats:{completedLessons:Number(profile.stats?.completedLessons||0),completedQuizzes:Number(profile.stats?.completedQuizzes||0),totalXP:Number(profile.stats?.totalXP||0),level:Number(profile.stats?.level||1),streak:Number(profile.stats?.streak||profile.streak||0)},subjects:summaries,weekly:comparison,alerts:makeAlerts({...profile,reviewQueue},summaries),updatedAt:Date.now()};
+  if(profile.parentCode)patch['parentSnapshots/'+profile.parentCode]={studentName:profile.name||'طالب',educationType:profile.educationType||'public',stage:profile.stage||'',grade:String(profile.grade||''),stats:{completedLessons:Number(profile.stats?.completedLessons||0),completedQuizzes:Number(profile.stats?.completedQuizzes||0),totalXP:Number(profile.stats?.totalXP||0),level:Number(profile.stats?.level||1),streak:Number(profile.stats?.streak||profile.streak||0)},subjects:summaries,weekly:comparison,alerts:makeAlerts({...profile,reviewQueue},summaries),updatedAt:Date.now()};
   await db.ref().update(patch);profile.mastery=mastery;profile.reviewQueue=reviewQueue;window.dispatchEvent(new CustomEvent('academy:pro-synced',{detail:{mastery,reviewQueue,summaries,comparison}}));
  }catch(err){console.warn('Pro suite sync deferred',err)}finally{syncing=false}
 }
