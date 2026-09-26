@@ -1,0 +1,9 @@
+{
+  "database": {
+    "rules": "firebase.rules.production.json"
+  },
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs22"
+  }
+}
