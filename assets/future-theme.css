@@ -1,5 +1,5 @@
 :root{
- --future-public-hero-image:url("./dashboard-hero.jpg");--future-dashboard-image:url("./dashboard-hero.jpg");--future-auth-image:url("./dashboard-hero.jpg");
+ --future-public-hero-image:url("./reference-hero.jpg");--future-dashboard-image:url("./dashboard-hero.jpg");--future-auth-image:url("./reference-hero.jpg");
  --future-navy:#071a4d;--future-navy-2:#0b2867;--future-blue:#1687ff;--future-cyan:#23d5ff;
  --future-violet:#7537ff;--future-purple:#8c3cff;--future-green:#22c78a;--future-orange:#ff9c25;
  --future-pink:#ff72bd;--future-ink:#0b1b45;--future-muted:#6f7b9f;--future-line:#e4eaff;
@@ -51,6 +51,10 @@ body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;ba
 .stage-card{padding:0 0 18px!important;overflow:hidden;position:relative}
 .stage-card .stage-art{height:160px!important;width:100%!important;border-radius:0!important;display:flex!important;align-items:flex-end!important;justify-content:flex-start!important;padding:18px!important;font-size:42px!important;background:var(--stage-image,linear-gradient(145deg,#e8f9ff,#dce8ff)) center/cover!important;position:relative}
 .stage-card .stage-art::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(9,27,78,.15))}
+#stageImagePrimary{--stage-image:url("./reference-stage-primary.jpg")}
+#stageImagePrep{--stage-image:url("./reference-stage-prep.jpg")}
+#stageImageSec{--stage-image:url("./reference-stage-sec.jpg")}
+#stageImageAzhar{--stage-image:url("./reference-stage-azhar.jpg")}
 .stage-card .stage-tag,.stage-card h3,.stage-card p,.stage-card button{margin-inline:18px}
 .stage-card .stage-tag{margin-top:15px}
 .stage-card button{border-radius:999px!important}
