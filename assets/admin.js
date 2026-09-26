@@ -29,6 +29,13 @@ function toast(msg,type='success'){
  el.textContent=msg; el.className='toast show '+type;
  clearTimeout(toast.t); toast.t=setTimeout(()=>el.className='toast',3200);
 }
+async function writeAudit(action,entity,entityId,meta={}){
+ if(!currentUser?.uid)return;
+ try{
+  const ref=db.ref('auditLogV4').push();
+  await ref.set({uid:currentUser.uid,action,entity,entityId:entityId||'',meta,at:Date.now(),createdAt:Date.now()});
+ }catch(err){console.warn('Audit log write skipped',err)}
+}
 function empty(title='لا توجد بيانات',text=''){
  return '<div class="empty-admin"><span>📭</span><h3>'+esc(title)+'</h3><p>'+esc(text)+'</p></div>';
 }
@@ -545,6 +552,7 @@ async function reviewTeacherProfile(key,approved){
  try{
    if(approved){const profile=cleanPublicProfile(s.profile);if(!profile.name||!profile.title)throw Error('بيانات الملف غير مكتملة');await db.ref('settings/publicTeachers/'+uid).set({...profile,active:true,updatedAt:Date.now()})}
    await db.ref('teacherSubmissions/'+uid+'/'+id).update({status:approved?'approved':'rejected',reviewedAt:Date.now()});
+   await writeAudit(approved?'teacher_profile.approve':'teacher_profile.reject','teacherSubmission',id,{teacherUid:uid});
    toast(approved?'تم اعتماد الملف ونشره':'تم رفض طلب التعديل');
  }catch(err){console.error(err);toast('تعذر مراجعة الطلب.','error')}
 }
@@ -575,7 +583,7 @@ function renderTeachers(){
  $$('[data-remove-teacher]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'إزالة صلاحية المدرس؟',message:'سيفقد هذا الحساب الوصول إلى بوابة المدرس وصلاحيات المواد المسندة إليه.',tone:'warning',acceptText:'إزالة الصلاحية'})){const uid=b.dataset.removeTeacher;try{await db.ref('settings/publicTeachers/'+uid).remove();await db.ref('teacherProfiles/'+uid).remove()}catch(err){console.error(err);toast('تعذرت إزالة صلاحية المدرس.','error')}}});
  $$('[data-promote]').forEach(b=>b.onclick=async()=>{const s=root.studentProfilesV3?.[b.dataset.promote]||{};await db.ref('teacherProfiles/'+b.dataset.promote).set({name:s.name||'',email:s.email||'',isActive:true,createdAt:Date.now(),assignments:[]});toast('تم تحويل الحساب إلى مدرس')});
  $$('[data-approve]').forEach(b=>b.onclick=()=>approveSubmission(b.dataset.approve));
- $$('[data-reject]').forEach(b=>b.onclick=async()=>{const [uid,id]=b.dataset.reject.split('|');await db.ref('teacherSubmissions/'+uid+'/'+id).update({status:'rejected',reviewedAt:Date.now()});toast('تم رفض المحتوى')});
+ $('[data-reject]').forEach(b=>b.onclick=async()=>{const [uid,id]=b.dataset.reject.split('|');await db.ref('teacherSubmissions/'+uid+'/'+id).update({status:'rejected',reviewedAt:Date.now()});await writeAudit('teacher_submission.reject','teacherSubmission',id,{teacherUid:uid});toast('تم رفض المحتوى')});
 }
 function refreshAssignmentSubjects(){
  fillGrades($('assignGrade'),$('assignStage').value);fillSubjects($('assignSubject'),$('assignStage').value,$('assignGrade').value,$('assignType').value);
@@ -629,7 +637,9 @@ async function approveSubmission(key){
    const claim=await statusRef.transaction(current=>!current||current==='pending'?'approving':undefined);
    if(!claim.committed)return toast('هذا الطلب قيد المراجعة أو تم اعتماده بالفعل.','error');
    claimed=true;
-   await db.ref().update(updates);toast('تم اعتماد '+(kind==='quiz'?'الاختبار':kind==='assignment'?'الواجب':'الدرس')+' ونشره');
+   await db.ref().update(updates);
+   await writeAudit('teacher_submission.approve','teacherSubmission',id,{teacherUid:uid,kind,publishedType,publishedId});
+   toast('تم اعتماد '+(kind==='quiz'?'الاختبار':kind==='assignment'?'الواجب':'الدرس')+' ونشره');
  }catch(err){
    if(claimed)await db.ref('teacherSubmissions/'+uid+'/'+id+'/status').transaction(current=>current==='approving'?'pending':undefined).catch(console.error);
    console.error(err);toast('تعذر اعتماد المحتوى: '+err.message,'error');
