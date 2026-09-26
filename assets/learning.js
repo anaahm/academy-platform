@@ -428,7 +428,6 @@ async function attachVideoProgress(frameId,lesson,videoIndex){
              await window.AcademyPro.saveResume('video',resumeId,position,duration,state.user.uid);
              const c=ctx(),percent=Math.min(100,Math.round(position/duration*100));
              await window.AcademyPro.recordMastery({type:c.type,stage:c.stage,grade:c.grade,subject:c.subject,lessonId:lesson.id},{video:percent},state.user.uid);
-             if(percent>=90)window.AcademyPro.incrementGoal('minutes',Math.max(1,Math.round(duration/60)),state.user.uid).catch(()=>{});
            }
          }catch{}
        };
@@ -438,6 +437,7 @@ async function attachVideoProgress(frameId,lesson,videoIndex){
          try{
            const c=ctx();window.AcademyPro.saveResume('video',resumeId,event.target.getDuration?.()||0,event.target.getDuration?.()||0,state.user.uid);
            window.AcademyPro.recordMastery({type:c.type,stage:c.stage,grade:c.grade,subject:c.subject,lessonId:lesson.id},{video:100},state.user.uid);
+           window.AcademyPro.incrementGoal('minutes',Math.max(1,Math.round(Number(event.target.getDuration?.()||0)/60)),state.user.uid).catch(()=>{});
          }catch{}
        }
      }
