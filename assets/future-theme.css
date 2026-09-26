@@ -1,4 +1,5 @@
 :root{
+ --future-public-hero-image:url("./dashboard-hero.jpg");--future-dashboard-image:url("./dashboard-hero.jpg");--future-auth-image:url("./dashboard-hero.jpg");
  --future-navy:#071a4d;--future-navy-2:#0b2867;--future-blue:#1687ff;--future-cyan:#23d5ff;
  --future-violet:#7537ff;--future-purple:#8c3cff;--future-green:#22c78a;--future-orange:#ff9c25;
  --future-pink:#ff72bd;--future-ink:#0b1b45;--future-muted:#6f7b9f;--future-line:#e4eaff;
@@ -56,7 +57,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;ba
 .subject-showcase article{transition:.22s ease}
 .subject-showcase article:hover,.stage-card:hover,.feature-card:hover{transform:translateY(-5px);box-shadow:0 24px 55px rgba(48,69,150,.17)!important}
 .auth-modal{border-radius:30px!important;overflow:hidden!important;box-shadow:0 35px 90px rgba(14,28,84,.3)!important;border:1px solid rgba(255,255,255,.7)!important}
-.auth-side{background:linear-gradient(160deg,#071a4d 0%,#0e3f9d 48%,#7041ff 100%)!important;position:relative;overflow:hidden}
+.auth-side{background:linear-gradient(160deg,rgba(7,26,77,.94),rgba(14,63,157,.87) 48%,rgba(112,65,255,.82)),var(--future-auth-image) center/cover!important;position:relative;overflow:hidden}
 .auth-side::after{content:"";position:absolute;width:280px;height:280px;border-radius:50%;left:-120px;bottom:-120px;background:rgba(64,219,255,.23)}
 .auth-form-wrap{background:linear-gradient(180deg,#fff,#f7f8ff)!important}
 .auth-tabs{background:#eef2ff!important;border-radius:999px!important;padding:5px!important}
@@ -106,3 +107,6 @@ input,select,textarea{border-color:#dfe6ff!important;border-radius:14px!importan
  .stage-card .stage-art{height:125px!important}
  .ref-dashboard-topbar,.teacher-top,.admin-topbar{border-radius:0!important}
 }
+
+.admin-stage-image-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}.admin-stage-image-grid label{background:#f8faff;border:1px solid #e2e8ff;border-radius:16px;padding:12px}.admin-cover-preview{min-height:180px!important;border-radius:20px!important;background-size:cover!important;background-position:center!important;border:1px solid #dfe6ff!important;overflow:hidden!important;box-shadow:0 12px 28px rgba(44,66,145,.10)!important;display:flex!important;align-items:flex-end!important;padding:14px!important}.admin-cover-preview span{background:rgba(7,25,71,.76)!important;color:#fff!important;border-radius:999px!important;padding:7px 12px!important;backdrop-filter:blur(9px)}
+@media(max-width:700px){.admin-stage-image-grid{grid-template-columns:1fr}}
