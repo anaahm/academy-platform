@@ -129,7 +129,7 @@ async function reviewContent(id,status,reason=''){if(await roleOf()!=='admin')th
 async function recordAttendance(sessionId,joined=true,userId=uid()){
  if(!userId||!sessionId)return;
  const ref=db.ref(paths.attendance+'/'+sessionId+'/'+userId),ts=now();
- await ref.transaction(row=>{
+ const result=await ref.transaction(row=>{
   row=row||{totalSeconds:0,visits:0};
   if(joined){
     if(!row.activeSince){row.activeSince=ts;row.visits=Number(row.visits||0)+1}
@@ -141,6 +141,10 @@ async function recordAttendance(sessionId,joined=true,userId=uid()){
   }
   return row;
  });
+ const row=result?.snapshot?.val?.()||{};
+ await db.ref(paths.studentAnalytics+'/'+userId+'/attendance/'+sessionId).set({
+  totalSeconds:Number(row.totalSeconds||0),visits:Number(row.visits||0),lastSeenAt:Number(row.lastSeenAt||ts),updatedAt:ts
+ }).catch(()=>{});
 }
 async function recordTeacherOutcome(teacherId,ctx={},score=0){
  if(!teacherId||!ctx.lessonId)return;
