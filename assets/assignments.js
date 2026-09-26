@@ -3,9 +3,21 @@
 const C=window.AcademyCore,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 let user,profile,assignments=[],submissions={},data={customSubjects:{}},filter='all',activeAssignment=null,lastModalTrigger=null;
 
+function targetMatches(a){
+  const mode=a.targetMode||'all';
+  if(mode==='students'){
+    const ids=Array.isArray(a.targetStudentIds)?a.targetStudentIds:Object.keys(a.targetStudentIds||{});
+    return ids.includes(user?.uid);
+  }
+  if(mode==='group'){
+    const groups=Array.isArray(profile?.groupIds)?profile.groupIds:Object.keys(profile?.groupIds||{});
+    return !!a.targetGroupId&&(profile?.classGroupId===a.targetGroupId||groups.includes(a.targetGroupId));
+  }
+  return true;
+}
 function matching(){
   return assignments
-    .filter(a=>!a.isHidden&&a.type===profile.educationType&&a.stage===profile.stage&&String(a.grade)===String(profile.grade))
+    .filter(a=>!a.isHidden&&a.type===profile.educationType&&a.stage===profile.stage&&String(a.grade)===String(profile.grade)&&targetMatches(a))
     .sort((a,b)=>Number(a.dueAt||Infinity)-Number(b.dueAt||Infinity));
 }
 function isOverdue(a){
