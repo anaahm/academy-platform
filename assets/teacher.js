@@ -115,6 +115,23 @@ function collectQuizQuestions(){
    return {text:row.querySelector('.teacher-question-text').value.trim(),opts,correctAnswer:Number(row.querySelector('.teacher-question-correct').value),difficulty:Number(row.querySelector('.teacher-question-difficulty')?.value||2),explanation:row.querySelector('.teacher-question-explanation')?.value.trim()||''};
  }));
 }
+async function generateQuizQuestionsFromBank(){
+ const btn=$('teacherGenerateQuestions'),type=$('teacherQuizType').value,stage=$('teacherQuizStage').value,grade=$('teacherQuizGrade').value,subject=$('teacherQuizSubject').value,lessonId=$('teacherQuizLesson').value,count=Math.max(1,Math.min(50,Number($('teacherGeneratedCount')?.value||10))),difficulty=$('teacherGeneratedDifficulty')?.value||'';
+ if(!subject||!lessonId)return toast('اختر المادة والدرس أولًا.','error');
+ window.AcademyUI?.setButtonLoading(btn,true,'توليد');
+ try{
+  const snap=await db.ref('questionBankV4').once('value');
+  let rows=Object.values(snap.val()||{}).filter(q=>q?.status==='approved'&&q.type===type&&q.stage===stage&&String(q.grade)===String(grade)&&q.subject===subject);
+  if(difficulty)rows=rows.filter(q=>String(q.difficulty||2)===String(difficulty));
+  const exact=rows.filter(q=>q.lessonId===lessonId),source=exact.length>=Math.min(count,3)?exact:rows;
+  const shuffled=[...source].sort(()=>Math.random()-.5).slice(0,count);
+  if(!shuffled.length)return toast('لا توجد أسئلة معتمدة مطابقة في بنك الأسئلة بعد.','error');
+  if(shuffled.length+$('#teacherQuizQuestionRows .teacher-question-row').length>100)return toast('سيؤدي التوليد إلى تجاوز حد 100 سؤال.','error');
+  shuffled.forEach(q=>addQuizQuestion({text:q.question||q.text||'',opts:q.options||q.opts||[],correctAnswer:Number(q.correctAnswer),difficulty:Number(q.difficulty||2),explanation:q.explanation||''}));
+  toast('تم توليد '+shuffled.length+' سؤال من بنك الأسئلة. راجعها قبل الإرسال.');
+ }catch(err){console.error(err);toast('تعذر توليد الأسئلة من البنك الآن.','error')}
+ finally{window.AcademyUI?.setButtonLoading(btn,false)}
+}
 function importQuizQuestions(){
  let items;try{items=JSON.parse($('teacherQuizBulk').value.trim());items=window.AcademyUtils.validateQuestions(items)}catch(err){return toast('تعذر قراءة المجموعة: '+(err.message||'صيغة JSON غير صحيحة.'),'error')}
  if(!items.length)return toast('لا توجد أسئلة في المجموعة.','error');
@@ -445,6 +462,7 @@ $('teacherQuizGrade').addEventListener('change',updateQuizSubjects);
 $('teacherQuizSubject').addEventListener('change',updateQuizLessons);
 $('teacherAddQuestion').onclick=()=>addQuizQuestion()?.querySelector('.teacher-question-text')?.focus();
 $('teacherImportQuestions').onclick=importQuizQuestions;
+$('teacherGenerateQuestions').onclick=generateQuizQuestionsFromBank;
 $('teacherQuizForm').addEventListener('submit',submitTeacherQuiz);
 $('teacherProfileForm')?.addEventListener('submit',submitTeacherProfile);
 $('teacherAssignmentForm')?.addEventListener('submit',submitTeacherAssignment);
