@@ -21,12 +21,23 @@ async function load(){
  const rec=await P.recommendNext(ctx,user.uid);$('nextTitle').textContent=rec?.title||'أكمل رحلتك التعليمية';$('nextReason').textContent=rec?.reason||'اختر مادة وابدأ درسًا جديدًا';$('nextAction').onclick=()=>location.href=rec?.lessonId?'./lesson.html?id='+encodeURIComponent(rec.lessonId):'./explore.html';
  const ms=(await P.db.ref(P.paths.mastery+'/'+user.uid).once('value')).val()||{},m=flatMastery(ms),counts={mastered:0,learning:0,review:0};m.forEach(x=>counts[x.status]=(counts[x.status]||0)+1);
  $('masterySummary').innerHTML=['متقن','قيد التعلم','يحتاج مراجعة'].map((n,i)=>'<div class="pro-item"><div class="pro-space"><strong>'+n+'</strong><span class="pro-badge '+(i===0?'ok':i===2?'bad':'warn')+'">'+[counts.mastered,counts.learning,counts.review][i]+'</span></div></div>').join('')||'<div class="pro-empty">ابدأ أول درس ليظهر مستوى الإتقان.</div>';
- const due=await P.dueReviews(user.uid,12);$('reviewList').innerHTML=due.length?due.map(q=>'<div class="pro-item"><strong>'+C.esc(q.questionText||'سؤال مراجعة')+'</strong><div class="pro-muted">'+C.esc(q.subject||'')+' • موعد المراجعة الآن</div></div>').join(''):'<div class="pro-empty">لا توجد مراجعات مستحقة الآن 🎉</div>';
+ const due=await P.dueReviews(user.uid,12);$('reviewList').innerHTML=due.length?due.map((q,i)=>'<div class="pro-item"><div class="pro-space"><div><strong>'+C.esc(q.questionText||'سؤال مراجعة')+'</strong><div class="pro-muted">'+C.esc(q.subject||'')+' • مرحلة المراجعة '+(Number(q.step||0)+1)+'</div></div>'+(Array.isArray(q.options)&&q.options.length?'<button class="pro-btn" data-review-index="'+i+'">راجع الآن</button>':'<span class="pro-badge warn">سيُحدّث عند محاولتك القادمة</span>')+'</div></div>').join(''):'<div class="pro-empty">لا توجد مراجعات مستحقة الآن 🎉</div>';
+ $('reviewList').querySelectorAll('[data-review-index]').forEach(b=>b.onclick=()=>playReview(due[Number(b.dataset.reviewIndex)]));
  const goals=snap.goals||{},latest=Object.values(goals).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0))[0]||{};$('goalLessons').value=latest.lessons||'';$('goalQuizzes').value=latest.quizzes||'';$('goalMinutes').value=latest.minutes||'';const pr=latest.progress||{};
  $('goalProgress').innerHTML=(latest.lessons?row('الدروس',pr.lessons||0,latest.lessons):'')+(latest.quizzes?row('الاختبارات',pr.quizzes||0,latest.quizzes):'')+(latest.minutes?row('دقائق المذاكرة',pr.minutes||0,latest.minutes):'');
  $('saveGoals').onclick=async()=>{await P.setWeeklyGoals({lessons:+$('goalLessons').value||3,quizzes:+$('goalQuizzes').value||2,minutes:+$('goalMinutes').value||60});alert('تم حفظ أهدافك الأسبوعية');load()};
  $('parentCodeBtn').onclick=async()=>{$('parentCode').textContent=await P.createParentInvite(user.uid)};
  $('startDiagnostic').onclick=startDiag;
+}
+function playReview(q){
+ const opts=Array.isArray(q.options)?q.options:[];if(!opts.length)return;
+ $('reviewList').innerHTML='<div class="pro-item"><span class="pro-badge">مراجعة متباعدة</span><h3>'+C.esc(q.questionText||'')+'</h3><div class="pro-list">'+opts.map((o,i)=>'<button class="pro-btn" data-review-answer="'+i+'">'+C.esc(o)+'</button>').join('')+'</div><div id="reviewFeedback" class="pro-muted" style="margin-top:10px"></div></div>';
+ $('reviewList').querySelectorAll('[data-review-answer]').forEach(b=>b.onclick=async()=>{
+  const chosen=Number(b.dataset.reviewAnswer),correct=chosen===Number(q.correctIndex),buttons=[...$('reviewList').querySelectorAll('[data-review-answer]')];buttons.forEach(x=>x.disabled=true);
+  const fb=$('reviewFeedback');fb.innerHTML=correct?'✅ إجابة صحيحة. ستنتقل هذه المعلومة إلى فترة مراجعة أطول.':'❌ الإجابة الصحيحة: <strong>'+C.esc(q.correctAnswer||opts[q.correctIndex]||'')+'</strong>'+(q.explanation?'<br>'+C.esc(q.explanation):'');
+  await P.markReview(q.questionId,correct);
+  setTimeout(load,900);
+ });
 }
 async function startDiag(){
  const subject=$('diagSubject').value.trim()||ctx.subject;targetCount=+$('diagCount').value||10;
