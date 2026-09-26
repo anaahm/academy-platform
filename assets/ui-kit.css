@@ -95,8 +95,8 @@ button:disabled,.btn:disabled{cursor:not-allowed;opacity:.58}
 .ui-confirm-card.danger .ui-confirm-accept{background:var(--ui-danger)}
 .ui-confirm-card.warning .ui-confirm-accept{background:var(--ui-warning)}
 .ui-confirm-card.success .ui-confirm-accept{background:var(--ui-success)}
-.ui-page-enter{animation:uiPageEnter .28s ease both}
-@keyframes uiPageEnter{from{opacity:.65;transform:translateY(4px)}to{opacity:1;transform:none}}
+.ui-page-enter{animation:uiPageEnter .28s ease}
+@keyframes uiPageEnter{from{opacity:.65}to{opacity:1}}
 .ui-loading-dots{display:inline-flex;gap:4px;align-items:center}.ui-loading-dots i{width:5px;height:5px;border-radius:50%;background:currentColor;animation:uiDot 1s infinite}.ui-loading-dots i:nth-child(2){animation-delay:.14s}.ui-loading-dots i:nth-child(3){animation-delay:.28s}
 @keyframes uiDot{0%,70%,100%{opacity:.25;transform:translateY(0)}35%{opacity:1;transform:translateY(-3px)}}
 .ui-skeleton{position:relative;overflow:hidden;background:#eef2f7!important;color:transparent!important}.ui-skeleton:after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);animation:uiSkeleton 1.25s infinite}
