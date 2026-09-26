@@ -23,9 +23,9 @@ async function audit(action,entity,entityId,meta={}){const u=uid();if(!u)return;
 async function roleOf(userId=uid()){
  if(!userId)return 'guest';
  const [a,t,p]=await Promise.all([
-  db.ref('admins/'+userId).once('value'),db.ref('teachersV3/'+userId).once('value'),db.ref('parentProfilesV4/'+userId).once('value')
+  db.ref('adminProfiles/'+userId).once('value'),db.ref('teacherProfiles/'+userId).once('value'),db.ref('parentProfilesV4/'+userId).once('value')
  ]);
- if(a.exists())return 'admin'; if(t.exists()&&t.val()?.status!=='disabled')return 'teacher'; if(p.exists())return 'parent'; return 'student';
+ if(a.val()?.isAdmin===true)return 'admin'; if(t.exists()&&t.val()?.isActive!==false)return 'teacher'; if(p.exists())return 'parent'; return 'student';
 }
 const permissions={
  admin:['*'],
