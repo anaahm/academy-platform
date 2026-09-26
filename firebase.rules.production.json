@@ -10,7 +10,7 @@
     },
     "studentProfilesV3": {
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
+        ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || root.child('parentLinksV4').child(auth.uid).child($uid).exists())",
         ".write": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)"
       }
     },
@@ -236,6 +236,98 @@
     "notificationBroadcasts": {
       ".read": "auth != null",
       ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "learningV4": {
+      "$area": {
+        "$uid": {
+          ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || root.child('parentLinksV4').child(auth.uid).child($uid).exists())",
+          ".write": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)"
+        }
+      }
+    },
+    "analyticsV4": {
+      ".read": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true)",
+      "questions": {
+        "$qid": {
+          ".write": "auth != null"
+        }
+      },
+      "students": {
+        "$uid": {
+          ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || root.child('parentLinksV4').child(auth.uid).child($uid).exists())",
+          ".write": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)"
+        }
+      },
+      "teachers": {
+        "$uid": {
+          ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
+          ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+        }
+      }
+    },
+    "questionBankV4": {
+      ".read": "auth != null",
+      "$qid": {
+        ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true && ((!data.exists() && newData.child('authorUid').val() === auth.uid && newData.child('status').val() === 'pending') || (data.child('authorUid').val() === auth.uid && data.child('status').val() === 'pending' && newData.child('status').val() === 'pending'))))"
+      }
+    },
+    "contentReviewV4": {
+      ".read": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true)",
+      "$id": {
+        ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (!data.exists() && root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true && newData.child('authorUid').val() === auth.uid && newData.child('status').val() === 'pending'))"
+      }
+    },
+    "auditLogV4": {
+      ".read": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true",
+      "$id": {
+        ".write": "auth != null && !data.exists() && newData.child('uid').val() === auth.uid"
+      }
+    },
+    "parentProfilesV4": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
+        ".write": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)"
+      }
+    },
+    "parentLinksV4": {
+      "$parentId": {
+        ".read": "auth != null && (auth.uid === $parentId || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
+        "$studentId": {
+          ".write": "auth != null && (auth.uid === $parentId || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)"
+        }
+      }
+    },
+    "parentInvitesV4": {
+      ".read": "auth != null",
+      "$code": {
+        ".write": "auth != null && ((!data.exists() && newData.child('studentId').val() === auth.uid) || (data.exists() && data.child('studentId').val() === newData.child('studentId').val() && newData.child('parentId').val() === auth.uid) || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)"
+      }
+    },
+    "certificatesV4": {
+      ".read": true,
+      "$id": {
+        ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (!data.exists() && newData.child('studentId').val() === auth.uid))"
+      }
+    },
+    "attendanceV4": {
+      "$sessionId": {
+        "$uid": {
+          ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true)",
+          ".write": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)"
+        }
+      }
+    },
+    "lessonRatingsV4": {
+      ".read": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true)",
+      "$lessonId": {
+        "$uid": {
+          ".write": "auth != null && auth.uid === $uid"
+        }
+      }
+    },
+    "targetedContentV4": {
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true)"
     }
   }
 }
