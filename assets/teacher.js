@@ -126,7 +126,11 @@ async function submitTeacherQuiz(e){
  if(!title||!lesson||lesson.isHidden||lesson.type!==type||lesson.stage!==stage||String(lesson.grade)!==grade||lesson.subject!==subject)return toast('اختر درسًا معتمدًا مطابقًا للمادة والصف.','error');
  if(!assignmentAllowed(type,stage,grade,subject))return toast('هذه المادة غير مسندة إلى حسابك.','error');
  let questions;try{questions=collectQuizQuestions()}catch(err){return toast(err.message,'error')}
- const payload={submissionKind:'quiz',title,lessonId,type,stage,grade,subject,subjectName:$('teacherQuizSubject').selectedOptions[0]?.textContent||subject,unit:Number(lesson.unit||1),questions,status:'pending',teacherId:user.uid,teacherName:teacher.name||user.displayName||'',createdAt:Date.now()};
+ const targetMode=$('teacherQuizTargetMode')?.value||'all',targetRaw=$('teacherQuizTargetValue')?.value.trim()||'';
+ const targetStudentIds=targetMode==='students'?targetRaw.split(/[،,\s]+/).map(x=>x.trim()).filter(Boolean):[];
+ if(targetMode==='students'&&!targetStudentIds.length)return toast('أدخل معرّف طالب واحد على الأقل.','error');
+ if(targetMode==='group'&&!targetRaw)return toast('أدخل رمز المجموعة أو الفصل.','error');
+ const payload={submissionKind:'quiz',title,lessonId,type,stage,grade,subject,subjectName:$('teacherQuizSubject').selectedOptions[0]?.textContent||subject,unit:Number(lesson.unit||1),questions,targetMode,targetStudentIds,targetGroupId:targetMode==='group'?targetRaw:'',status:'pending',teacherId:user.uid,teacherName:teacher.name||user.displayName||'',createdAt:Date.now()};
  const btn=$('teacherQuizSubmitBtn');window.AcademyUI?.setButtonLoading(btn,true,'إرسال');
  try{const ref=db.ref('teacherSubmissions/'+user.uid).push();await ref.set(payload);submissions[ref.key]=payload;$('teacherQuizForm').reset();$('teacherQuizQuestionRows').replaceChildren();updateQuizGrades();render();toast('تم إرسال الاختبار للإدارة للمراجعة ✅')}
  catch(err){console.error(err);toast('تعذر إرسال الاختبار الآن.','error')}
