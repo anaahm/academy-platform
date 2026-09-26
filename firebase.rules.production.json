@@ -336,6 +336,21 @@
         ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (((!data.exists()) || data.child('studentId').val() === auth.uid) && newData.child('studentId').val() === auth.uid))",
         ".validate": "!newData.exists() || (newData.hasChildren(['studentId']) && newData.child('studentId').isString())"
       }
+    },
+    "phoneDirectoryV4": {
+      ".read": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true",
+      "students": {
+        "$uid": {
+          ".write": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
+          ".validate": "!newData.exists() || (newData.child('uid').val() === $uid && newData.child('phone').isString() && newData.child('phone').val().length <= 32 && (!newData.child('name').exists() || (newData.child('name').isString() && newData.child('name').val().length <= 100)))"
+        }
+      },
+      "parents": {
+        "$uid": {
+          ".write": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
+          ".validate": "!newData.exists() || (newData.child('uid').val() === $uid && newData.child('phone').isString() && newData.child('phone').val().length <= 32 && (!newData.child('name').exists() || (newData.child('name').isString() && newData.child('name').val().length <= 100)))"
+        }
+      }
     }
   }
 }
