@@ -142,7 +142,17 @@ async function recordAttendance(sessionId,joined=true,userId=uid()){
   return row;
  });
 }
-async function rateLesson(lessonId,value,comment='',userId=uid()){if(!userId||!lessonId)return;await db.ref(paths.ratings+'/'+lessonId+'/'+userId).set({value:Number(value),comment:String(comment||'').slice(0,500),createdAt:now()})}
+async function recordTeacherOutcome(teacherId,ctx={},score=0){
+ if(!teacherId||!ctx.lessonId)return;
+ const ref=db.ref(paths.teacherAnalytics+'/'+teacherId+'/lessons/'+ctx.lessonId);
+ await ref.transaction(row=>{
+  row=row||{attempts:0,scoreTotal:0,average:0,low:0,mid:0,high:0};
+  const s=Math.max(0,Math.min(100,Number(score||0)));
+  row.attempts=Number(row.attempts||0)+1;row.scoreTotal=Number(row.scoreTotal||0)+s;row.average=Math.round(row.scoreTotal/row.attempts);
+  if(s<60)row.low=Number(row.low||0)+1;else if(s<80)row.mid=Number(row.mid||0)+1;else row.high=Number(row.high||0)+1;
+  row.subject=ctx.subject||row.subject||'';row.title=ctx.title||row.title||'';row.updatedAt=now();return row;
+ });
+}async function rateLesson(lessonId,value,comment='',userId=uid()){if(!userId||!lessonId)return;await db.ref(paths.ratings+'/'+lessonId+'/'+userId).set({value:Number(value),comment:String(comment||'').slice(0,500),createdAt:now()})}
 async function createParentInvite(studentId=uid()){if(!studentId)return null;const code=Math.random().toString(36).slice(2,8).toUpperCase();await db.ref(paths.parentInvites+'/'+code).set({studentId,createdAt:now(),expiresAt:now()+7*day,used:false});return code}
 async function linkParent(code,parentId=uid()){const ref=db.ref(paths.parentInvites+'/'+String(code).toUpperCase()),s=await ref.once('value'),v=s.val();if(!v||v.used||v.expiresAt<now())throw new Error('الكود غير صالح');await db.ref(paths.parentLinks+'/'+parentId+'/'+v.studentId).set({studentId:v.studentId,linkedAt:now()});await ref.update({used:true,parentId});return v.studentId}
 async function getChildren(parentId=uid()){const s=await db.ref(paths.parentLinks+'/'+parentId).once('value');return Object.keys(s.val()||{})}
@@ -190,5 +200,5 @@ async function snapshot(userId=uid()){
  const [x,s,g,r]=await Promise.all([db.ref(paths.xp+'/'+userId).once('value'),db.ref(paths.streaks+'/'+userId).once('value'),db.ref(paths.goals+'/'+userId).once('value'),db.ref(paths.reviews+'/'+userId).once('value')]);
  const achievements=await refreshAchievements(userId);return{xp:x.val()||{total:0,level:1},streak:s.val()||{count:0,best:0},goals:g.val()||{},achievements,due:Object.values(r.val()||{}).filter(v=>v.nextReviewAt<=now()&&v.status!=='mastered').length};
 }
-window.AcademyPro={auth,db,paths,roleOf,can,audit,awardXP,touchStreak,setWeeklyGoals,incrementGoal,recordMastery,saveResume,getResume,saveNote,toggleFavorite,logMistake,markReview,dueReviews,updateQuestionStats,adaptiveDifficulty,selectAdaptiveQuestions,submitAnswer,saveDiagnostic,recommendNext,addQuestion,bulkAddQuestions,generateExam,submitContent,reviewContent,recordAttendance,rateLesson,createParentInvite,linkParent,getChildren,parentReport,issueCertificate,certificateIdFor,verifyCertificate,refreshAchievements,snapshot,levelForXP,dateKey};
+window.AcademyPro={auth,db,paths,roleOf,can,audit,awardXP,touchStreak,setWeeklyGoals,incrementGoal,recordMastery,saveResume,getResume,saveNote,toggleFavorite,logMistake,markReview,dueReviews,updateQuestionStats,adaptiveDifficulty,selectAdaptiveQuestions,submitAnswer,saveDiagnostic,recommendNext,addQuestion,bulkAddQuestions,generateExam,submitContent,reviewContent,recordAttendance,recordTeacherOutcome,rateLesson,createParentInvite,linkParent,getChildren,parentReport,issueCertificate,certificateIdFor,verifyCertificate,refreshAchievements,snapshot,levelForXP,dateKey};
 })();
