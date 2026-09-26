@@ -188,3 +188,5 @@ p{line-height:1.85}
  #authModal .auth-form-wrap{grid-column:1;grid-row:1;padding:28px 24px}
 }
 @media(max-width:420px){#authModal .auth-form-wrap{padding:26px 18px}}
+/* Ripple decoration must not turn the close control into a grid item. */
+#authModal .modal-close.ui-ripple-host{position:absolute;top:16px;left:16px;right:auto;grid-column:auto;grid-row:auto}
