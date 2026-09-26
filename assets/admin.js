@@ -751,10 +751,21 @@ function updatePendingBadge(){
 async function verifyAdmin(user){
  const snap=await db.ref('adminProfiles/'+user.uid).once('value');return snap.val()?.isAdmin===true;
 }
+async function syncStudentPhoneIndex(){
+ const students=root.studentProfilesV3||{},updates={};
+ Object.entries(students).forEach(([studentId,p])=>{
+  const key=String(p?.phone||'').replace(/\D/g,'');
+  if(key)updates['studentPhoneIndexV4/'+key]={studentId,updatedAt:Date.now()};
+ });
+ if(Object.keys(updates).length){
+  try{await db.ref().update(updates)}catch(err){console.warn('Student phone index backfill skipped',err)}
+ }
+}
 async function startDataListener(){
  if(unsubscribe)unsubscribe();
  stopAdminListeners();
  const ok=await ensureAdminPaths(ADMIN_CORE_PATHS);
+ await syncStudentPhoneIndex();
  renderAdminIdentity();updatePendingBadge();updateCommunityBadge();
  const requested=new URLSearchParams(location.search).get('tab')||'overview';
  await setTab(requested,false);
