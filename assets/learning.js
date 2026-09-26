@@ -353,6 +353,10 @@ function renderQuickCheck(lesson){
    fb.innerHTML=chosen===correct
      ?'<i class="fa-solid fa-circle-check"></i><div><strong>إجابة صحيحة 👏</strong><p>ممتاز، تقدر تدخل التدريب الكامل لما تكون جاهز.</p></div>'
      :'<i class="fa-solid fa-circle-xmark"></i><div><strong>مش هي دي الإجابة.</strong><p>راجع النقطة دي سريعًا، والإجابة الصحيحة هي: '+esc(q.opts[correct]||'—')+'.</p></div>';
+   try{
+     const c=ctx();
+     window.AcademyPro?.recordMastery({type:c.type,stage:c.stage,grade:c.grade,subject:c.subject,lessonId:state.currentLesson?.id||''},{practice:chosen===correct?100:50},state.user?.uid)?.catch(()=>{});
+   }catch{}
  });
 }
 function renderLinkedLessonQuizzes(c,id){
