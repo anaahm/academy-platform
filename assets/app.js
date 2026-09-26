@@ -653,6 +653,9 @@
     animateDashboardNumber('completedQuizzes',stats.quizzes,520);
     animateDashboardNumber('streakValue',stats.streak,480);
     animateDashboardNumber('xpStat',stats.xp,620);
+    const progressValues=subjects.map(s=>Math.max(0,Math.min(100,subjectProgressOf(p,s.id)))),overall=progressValues.length?Math.round(progressValues.reduce((a,b)=>a+b,0)/progressValues.length):0;
+    if($('dashboardOverallPercent'))$('dashboardOverallPercent').textContent=overall+'%';
+    if($('dashboardOverallRing'))$('dashboardOverallRing').style.setProperty('--progress',(overall*3.6)+'deg');
     if($('streakSideValue')) $('streakSideValue').textContent=stats.streak;
 
     const palettes=['subject-pink','subject-blue','subject-green','subject-gold','subject-purple','subject-teal'];
