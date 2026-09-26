@@ -293,7 +293,7 @@
       "$parentId": {
         ".read": "auth != null && (auth.uid === $parentId || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
         "$studentId": {
-          ".write": "auth != null && (auth.uid === $parentId || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)"
+          ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (auth.uid === $parentId && ((newData.child('method').val() === 'phone' && newData.child('phoneKey').isString() && root.child('studentPhoneIndexV4').child(newData.child('phoneKey').val()).child('studentId').val() === $studentId) || (newData.child('method').val() === 'code' && newData.child('inviteCode').isString() && root.child('parentInvitesV4').child(newData.child('inviteCode').val()).child('studentId').val() === $studentId && root.child('parentInvitesV4').child(newData.child('inviteCode').val()).child('expiresAt').val() > now)))"
         }
       }
     },
@@ -329,6 +329,13 @@
     "targetedContentV4": {
       ".read": "auth != null",
       ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true)"
+    },
+    "studentPhoneIndexV4": {
+      "$phone": {
+        ".read": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || root.child('parentProfilesV4').child(auth.uid).exists() || data.child('studentId').val() === auth.uid)",
+        ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (((!data.exists()) || data.child('studentId').val() === auth.uid) && newData.child('studentId').val() === auth.uid))",
+        ".validate": "!newData.exists() || (newData.hasChildren(['studentId']) && newData.child('studentId').isString())"
+      }
     }
   }
 }
