@@ -147,6 +147,15 @@
               <label><span>إرسال الاختبار إلى</span><select id="teacherQuizTargetMode"><option value="all">كل طلاب الصف</option><option value="students">طلاب محددون</option><option value="group">مجموعة / فصل محدد</option></select></label>
               <label><span>معرّفات الطلاب أو رمز المجموعة</span><input id="teacherQuizTargetValue" placeholder="UID1, UID2 أو group-a"></label>
               <div class="full teacher-quiz-editor"><div class="teacher-card-head"><div><span class="section-kicker">أسئلة الاختبار</span><h3>أضف سؤالًا في كل مرة</h3></div><button class="btn btn-soft" id="teacherAddQuestion" type="button"><i class="fa-solid fa-plus"></i> إضافة سؤال</button></div><div id="teacherQuizQuestionRows" class="teacher-question-rows"></div></div>
+              <div class="full teacher-quiz-generator">
+                <div class="teacher-card-head"><div><span class="section-kicker">من بنك الأسئلة</span><h3>توليد أسئلة تلقائيًا</h3></div><span>⚙️</span></div>
+                <div class="teacher-form-grid">
+                  <label><span>عدد الأسئلة</span><input id="teacherGeneratedCount" type="number" min="1" max="50" value="10"></label>
+                  <label><span>الصعوبة</span><select id="teacherGeneratedDifficulty"><option value="">متنوعة</option><option value="1">سهل</option><option value="2">متوسط</option><option value="3">صعب</option></select></label>
+                </div>
+                <button class="btn btn-soft" id="teacherGenerateQuestions" type="button"><i class="fa-solid fa-wand-magic-sparkles"></i> توليد من البنك</button>
+                <small>يتم اختيار أسئلة معتمدة مطابقة للمادة والصف، ويُفضّل أسئلة الدرس المرتبط عندما تكون متاحة.</small>
+              </div>
               <div class="full teacher-quiz-import"><label for="teacherQuizBulk"><span>إضافة مجموعة دفعة واحدة بصيغة JSON</span></label><textarea id="teacherQuizBulk" dir="ltr" rows="5" placeholder='[{"text":"نص السؤال","opts":["الأول","الثاني","الثالث","الرابع"],"correctAnswer":0}]'></textarea><small>رقم الإجابة يبدأ من 0 للخيار الأول، و1 للخيار الثاني.</small><button class="btn btn-soft" id="teacherImportQuestions" type="button">إضافة الأسئلة من JSON</button></div>
               <button class="btn btn-primary full" id="teacherQuizSubmitBtn" type="submit"><i class="fa-solid fa-paper-plane"></i> إرسال الاختبار للمراجعة</button>
             </form>
