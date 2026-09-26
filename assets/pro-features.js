@@ -178,12 +178,12 @@ function normalizePhone(raw=''){
  return phone;
 }
 async function createParentInvite(studentId=uid()){if(!studentId)return null;const code=Math.random().toString(36).slice(2,8).toUpperCase();await db.ref(paths.parentInvites+'/'+code).set({studentId,createdAt:now(),expiresAt:now()+7*day,used:false});return code}
-async function linkParent(code,parentId=uid()){const ref=db.ref(paths.parentInvites+'/'+String(code).toUpperCase()),s=await ref.once('value'),v=s.val();if(!v||v.used||v.expiresAt<now())throw new Error('الكود غير صالح');await db.ref(paths.parentLinks+'/'+parentId+'/'+v.studentId).set({studentId:v.studentId,linkedAt:now(),method:'code'});await ref.update({used:true,parentId});return v.studentId}
+async function linkParent(code,parentId=uid()){const ref=db.ref(paths.parentInvites+'/'+String(code).toUpperCase()),s=await ref.once('value'),v=s.val();if(!v||v.used||v.expiresAt<now())throw new Error('الكود غير صالح');await db.ref(paths.parentLinks+'/'+parentId+'/'+v.studentId).set({studentId:v.studentId,linkedAt:now(),method:'code',inviteCode:String(code).toUpperCase()});await ref.update({used:true,parentId});return v.studentId}
 async function linkParentByPhone(rawPhone,parentId=uid()){
  if(!parentId)throw new Error('سجّل الدخول أولًا');
  const phone=normalizePhone(rawPhone),key=phone.replace(/\D/g,''),snap=await db.ref('studentPhoneIndexV4/'+key).once('value'),v=snap.val();
  if(!v?.studentId)throw new Error('لا يوجد طالب مسجل بهذا الرقم');
- await db.ref(paths.parentLinks+'/'+parentId+'/'+v.studentId).set({studentId:v.studentId,linkedAt:now(),method:'phone'});
+ await db.ref(paths.parentLinks+'/'+parentId+'/'+v.studentId).set({studentId:v.studentId,linkedAt:now(),method:'phone',phoneKey:key});
  return v.studentId;
 }
 async function getChildren(parentId=uid()){const s=await db.ref(paths.parentLinks+'/'+parentId).once('value');return Object.keys(s.val()||{})}
