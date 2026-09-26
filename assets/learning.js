@@ -533,6 +533,18 @@ async function markComplete(c,id){
    });
    state.profile=result.snapshot.val()||state.profile;
    if(!result.committed){toast('هذا الدرس مكتمل بالفعل.');return}
+   try{
+     const subjectPct=Number(state.profile?.subjectProgressV3?.[c.type]?.[c.stage]?.[c.grade]?.[c.subject]??state.profile?.subjectProgress?.[c.subject]??0);
+     if(subjectPct>=100&&window.AcademyPro){
+       const certId=await window.AcademyPro.issueCertificate({
+         studentName:state.profile?.name||state.user.displayName||'طالب الأكاديمية',
+         subject:c.subject,subjectName:state.subject?.name||c.subject,type:c.type,stage:c.stage,grade:String(c.grade),
+         completedAt:at,gradeLabel:grades[c.stage]?.[c.grade]||'',educationLabel:c.type==='azhar'?'التعليم الأزهري':'التعليم العام'
+       },state.user.uid);
+       state.profile.latestCertificateId=certId;
+       db.ref('studentProfilesV3/'+state.user.uid+'/latestCertificateId').set(certId).catch(()=>{});
+     }
+   }catch(err){console.warn('Certificate issuance deferred',err)}
    if(window.AcademyCore?.addLeaderboardXP){
      try{await window.AcademyCore.addLeaderboardXP(state.user.uid,state.profile.name||'طالب',50,0)}
      catch(err){console.warn('Leaderboard sync deferred',err);toast('حُفظ تقدمك؛ تعذر تحديث ترتيبك الآن.','error')}
