@@ -143,3 +143,22 @@ input,select,textarea{border-color:#dfe6ff!important;border-radius:14px!importan
 /* shared responsive */
 @media(max-width:1020px){.lesson-grid,.exam-layout,.profile-layout{grid-template-columns:1fr!important}.lesson-sidebar,.exam-sidebar{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))}.profile-nav-card{position:static!important;display:flex!important;overflow-x:auto!important;gap:6px!important}.profile-nav-card button{min-width:max-content!important}.profile-hero{grid-template-columns:auto 1fr!important}.profile-level{grid-column:1/-1}}
 @media(max-width:700px){.lesson-sidebar,.exam-sidebar{grid-template-columns:1fr!important}.profile-hero{grid-template-columns:1fr!important;text-align:center!important}.profile-avatar-wrap{margin:auto}.profile-level{width:100%!important}.lesson-tabs{top:65px!important;overflow-x:auto!important}.lesson-tabs button{min-width:max-content!important}}
+
+/* Teacher portal */
+.teacher-main,.admin-main{background:transparent!important}.teacher-page,.admin-page{max-width:1460px!important;margin:auto!important}
+.teacher-welcome,.admin-hero{background:linear-gradient(135deg,#071a4d 0%,#0c3e9e 48%,#7441ff 100%)!important;border-radius:28px!important;box-shadow:0 22px 55px rgba(28,52,145,.24)!important;overflow:hidden!important;position:relative!important}
+.teacher-welcome::after,.admin-hero::after{content:"";position:absolute;width:260px;height:260px;border-radius:50%;left:-80px;top:-110px;background:rgba(49,214,255,.22)}
+.teacher-welcome>*,.admin-hero>*{position:relative;z-index:2}.teacher-welcome-art,.admin-hero-art{font-size:80px!important;filter:drop-shadow(0 15px 30px rgba(0,0,0,.2))}
+.teacher-welcome-primary,.admin-hero-primary{background:linear-gradient(135deg,#10bfff,#7950ff)!important;color:#fff!important;border:0!important}
+.teacher-welcome-secondary,.admin-hero-secondary{background:rgba(255,255,255,.14)!important;color:#fff!important;border:1px solid rgba(255,255,255,.28)!important;backdrop-filter:blur(8px)}
+.teacher-stat-grid,.admin-stat-grid{gap:14px!important}.teacher-stat-grid article,.admin-stat-grid article{background:#fff!important;border:1px solid #e2e8ff!important;border-radius:20px!important;box-shadow:0 12px 28px rgba(42,64,145,.08)!important;position:relative!important;overflow:hidden!important}
+.teacher-stat-grid article::after,.admin-stat-grid article::after{content:"";position:absolute;width:90px;height:90px;border-radius:50%;left:-25px;top:-25px;background:linear-gradient(135deg,#18bfff,#7040ff);opacity:.07}
+.teacher-card,.admin-card{padding:20px!important}.teacher-card-head,.admin-card-head{padding-bottom:12px!important;border-bottom:1px solid #edf0ff!important;margin-bottom:14px!important}
+.teacher-form,.admin-form{gap:13px!important}.teacher-form label>span,.admin-form label>span{font-weight:800!important;color:#273963!important}
+.teacher-assignment-list>*,.submission-list>*,.admin-list-item{border-radius:16px!important;border:1px solid #e5eaff!important;background:#fafbff!important}
+.admin-filter-bar{background:#fff!important;border:1px solid #e2e8ff!important;border-radius:18px!important;padding:10px!important;box-shadow:0 9px 24px rgba(42,64,145,.06)!important}
+.admin-table-wrap,.admin-subject-grid>*,.admin-file-grid>*{border-radius:20px!important}
+.admin-modal{border-radius:26px!important;border:1px solid #e1e7ff!important;box-shadow:0 30px 80px rgba(13,30,90,.28)!important}
+.admin-section-head h2,.teacher-card-head h3{color:#0b1b45!important}
+.admin-sidebar-footer,.teacher-side{padding-bottom:12px!important}
+@media(max-width:900px){.teacher-welcome,.admin-hero{border-radius:22px!important}.teacher-page,.admin-page{padding-inline:12px!important}}
