@@ -90,7 +90,7 @@ function adminName(){
  return root.adminProfiles?.[currentUser?.uid]?.name||currentUser?.displayName||'مدير المنصة';
 }
 
-const ADMIN_CORE_PATHS=['adminProfiles','lessons','quizzes','studentProfilesV3','teacherProfiles','teacherSubmissions','community'];
+const ADMIN_CORE_PATHS=['adminProfiles','lessons','quizzes','studentProfilesV3','parentProfilesV4','teacherProfiles','teacherSubmissions','community'];
 const ADMIN_TAB_PATHS={
  overview:ADMIN_CORE_PATHS,
  curriculum:['customSubjects'],
@@ -752,13 +752,20 @@ async function verifyAdmin(user){
  const snap=await db.ref('adminProfiles/'+user.uid).once('value');return snap.val()?.isAdmin===true;
 }
 async function syncStudentPhoneIndex(){
- const students=root.studentProfilesV3||{},updates={};
+ const students=root.studentProfilesV3||{},parents=root.parentProfilesV4||{},updates={},ts=Date.now();
  Object.entries(students).forEach(([studentId,p])=>{
-  const key=String(p?.phone||'').replace(/\D/g,'');
-  if(key)updates['studentPhoneIndexV4/'+key]={studentId,updatedAt:Date.now()};
+  const phone=String(p?.phone||''),key=phone.replace(/\D/g,'');
+  if(key){
+   updates['studentPhoneIndexV4/'+key]={studentId,updatedAt:ts};
+   updates['phoneDirectoryV4/students/'+studentId]={uid:studentId,name:p?.name||'',phone,updatedAt:ts};
+  }
+ });
+ Object.entries(parents).forEach(([parentId,p])=>{
+  const phone=String(p?.phone||'');
+  if(phone)updates['phoneDirectoryV4/parents/'+parentId]={uid:parentId,name:p?.name||'',phone,updatedAt:ts};
  });
  if(Object.keys(updates).length){
-  try{await db.ref().update(updates)}catch(err){console.warn('Student phone index backfill skipped',err)}
+  try{await db.ref().update(updates)}catch(err){console.warn('Phone directory backfill skipped',err)}
  }
 }
 async function startDataListener(){
