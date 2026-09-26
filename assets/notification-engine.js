@@ -18,6 +18,18 @@ function matchesStudent(item,profile){
     (!item.stage||item.stage===profile.stage) &&
     (!item.grade||String(item.grade)===String(profile.grade));
 }
+function assignmentTargetMatches(item,profile,userId){
+  const mode=item?.targetMode||'all';
+  if(mode==='students'){
+    const ids=Array.isArray(item.targetStudentIds)?item.targetStudentIds:Object.keys(item.targetStudentIds||{});
+    return ids.includes(userId);
+  }
+  if(mode==='group'){
+    const groups=Array.isArray(profile?.groupIds)?profile.groupIds:Object.keys(profile?.groupIds||{});
+    return !!item.targetGroupId&&(profile?.classGroupId===item.targetGroupId||groups.includes(item.targetGroupId));
+  }
+  return true;
+}
 function nextRecurringTime(dayOfWeek,time='18:00'){
   const now=new Date(),target=new Date(now);target.setSeconds(0,0);
   const diff=(Number(dayOfWeek)-now.getDay()+7)%7;
@@ -47,7 +59,7 @@ async function loadNotifications(user,profileInput){
     db.ref('notificationBroadcasts').once('value')
   ]);
 
-  const assignments=Object.entries(assignSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(a=>matchesStudent(a,profile)&&!a.isHidden);
+  const assignments=Object.entries(assignSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(a=>matchesStudent(a,profile)&&assignmentTargetMatches(a,profile,user.uid)&&!a.isHidden);
   const submissionSnaps=await Promise.all(assignments.map(a=>db.ref('assignmentSubmissions/'+a.id+'/'+user.uid).once('value')));
   const submissions={};assignments.forEach((a,i)=>{if(submissionSnaps[i].exists())submissions[a.id]=submissionSnaps[i].val()});
 
