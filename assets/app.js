@@ -35,8 +35,12 @@
     if(!uid||!profile?.phone)return;
     const key=phoneIndexKey(profile.phone);if(!key)return;
     try{
-      await database.ref('studentPhoneIndexV4/'+key).set({studentId:uid,updatedAt:Date.now()});
-    }catch(error){console.warn('Student phone index sync skipped',error)}
+      const ts=Date.now();
+      await database.ref().update({
+        ['studentPhoneIndexV4/'+key]:{studentId:uid,updatedAt:ts},
+        ['phoneDirectoryV4/students/'+uid]:{uid,name:profile.name||'',phone:profile.phone,updatedAt:ts}
+      });
+    }catch(error){console.warn('Student phone directory sync skipped',error)}
   }
 
   const stageLabels = {
