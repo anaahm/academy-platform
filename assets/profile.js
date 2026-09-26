@@ -107,8 +107,13 @@ function render(){
   $('profileStreak').textContent=s.streak||0;
   $('profileTotalXp').textContent=totalXP;
   $('profileNameInput').value=name;
-  $('profileEmailInput').value=user.email||'';
-  if($('securityEmail'))$('securityEmail').textContent=user.email||'لا يوجد بريد';
+  const phoneAccount=profile.loginMethod==='phone'||Boolean(profile.phone);
+  $('profileContactLabel').textContent=phoneAccount?'رقم الهاتف':'البريد الإلكتروني';
+  $('profileContactHint').textContent=phoneAccount?'لتغيير رقم الدخول تواصل مع إدارة المنصة.':'تغيير البريد يتطلب التواصل مع إدارة المنصة.';
+  $('profileEmailInput').value=phoneAccount?(profile.phone||''):(user.email||'');
+  $('emailResetControls').classList.toggle('hidden',phoneAccount);
+  $('phonePasswordForm').classList.toggle('hidden',!phoneAccount);
+  if($('securityEmail'))$('securityEmail').textContent=phoneAccount?'—':(user.email||'لا يوجد بريد');
 
   $('studyType').value=profile.educationType||'public';
   $('studyStage').value=profile.stage||'prep';
@@ -252,6 +257,7 @@ $('studyForm').addEventListener('submit',async e=>{
 
 $('sendResetBtn').onclick=async()=>{
   const btn=$('sendResetBtn');
+  if(profile.loginMethod==='phone'||profile.phone)return;
   if(!user?.email)return toast('لا يوجد بريد إلكتروني مرتبط بهذا الحساب.','error');
   const ok=await window.AcademyUI.confirm({
     title:'إرسال رابط إعادة التعيين؟',
@@ -270,6 +276,26 @@ $('sendResetBtn').onclick=async()=>{
     window.AcademyUI?.setButtonLoading(btn,false);
   }
 };
+
+$('phonePasswordForm').addEventListener('submit',async event=>{
+  event.preventDefault();
+  if(!user||!(profile.loginMethod==='phone'||profile.phone))return;
+  const current=$('currentPassword').value, next=$('newPassword').value, btn=$('changePhonePasswordBtn');
+  if(next.length<6)return toast('كلمة المرور الجديدة يجب أن تتكون من 6 أحرف على الأقل.','error');
+  window.AcademyUI?.setButtonLoading(btn,true,'جاري التغيير');
+  try{
+    const credential=firebase.auth.EmailAuthProvider.credential(user.email,current);
+    await user.reauthenticateWithCredential(credential);
+    await user.updatePassword(next);
+    $('phonePasswordForm').reset();
+    toast('تم تغيير كلمة المرور بنجاح.');
+  }catch(err){
+    console.error(err);
+    toast(err.code==='auth/wrong-password'||err.code==='auth/invalid-credential'?'كلمة المرور الحالية غير صحيحة.':'تعذر تغيير كلمة المرور الآن.','error');
+  }finally{
+    window.AcademyUI?.setButtonLoading(btn,false);
+  }
+});
 
 async function logout(){
   const ok=await window.AcademyUI.confirm({

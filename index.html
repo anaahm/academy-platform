@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="./assets/portal.css">
   <link rel="stylesheet" href="./assets/news.css">
   <link rel="stylesheet" href="./assets/ui-kit.css?v=35">
-  <link rel="stylesheet" href="./assets/experience.css?v=38">
+  <link rel="stylesheet" href="./assets/experience.css?v=39">
   <script src="./assets/academy-utils.js"></script>
 </head>
 <body>
@@ -423,16 +423,18 @@
 
         <form id="loginForm" class="auth-form" action="javascript:void(0)">
           <div class="form-heading"><h3>مرحبًا بعودتك 👋</h3><p>أدخل بياناتك للمتابعة من حيث توقفت.</p></div>
-          <label><span>البريد الإلكتروني</span><div class="input-wrap"><i class="fa-regular fa-envelope"></i><input type="email" id="loginEmail" required placeholder="example@email.com"></div></label>
+          <label id="loginPhoneField"><span>رقم الهاتف</span><div class="input-wrap"><i class="fa-solid fa-phone"></i><input type="tel" id="loginPhone" required inputmode="tel" autocomplete="tel" dir="ltr" placeholder="01012345678"></div></label>
+          <label id="loginEmailField" class="hidden"><span>البريد الإلكتروني للحساب القديم</span><div class="input-wrap"><i class="fa-regular fa-envelope"></i><input type="email" id="loginEmail" autocomplete="email" dir="ltr" placeholder="example@email.com"></div></label>
           <label><span>كلمة المرور</span><div class="input-wrap"><i class="fa-solid fa-lock"></i><input type="password" id="loginPassword" required minlength="6" placeholder="••••••••"><button type="button" class="toggle-pass" data-toggle-pass="loginPassword"><i class="fa-regular fa-eye"></i></button></div></label>
           <div class="form-row"><label class="check-row"><input type="checkbox" checked> <span>تذكرني</span></label><button type="button" class="link-btn" id="forgotPasswordBtn">نسيت كلمة المرور؟</button></div>
           <button type="submit" class="btn btn-primary btn-block" id="loginSubmitBtn">تسجيل الدخول</button>
+          <button type="button" class="link-btn auth-legacy-toggle" id="legacyLoginToggle">لدي حساب قديم بالبريد الإلكتروني</button>
         </form>
 
         <form id="registerForm" class="auth-form hidden">
           <div class="form-heading"><h3>أنشئ حسابك مجانًا</h3><p>اختر مرحلتك وصفّك الآن، وستفتح المنصة على موادك.</p></div>
           <label><span>الاسم</span><div class="input-wrap"><i class="fa-regular fa-user"></i><input type="text" id="registerName" required minlength="2" placeholder="اكتب اسمك"></div></label>
-          <label><span>البريد الإلكتروني</span><div class="input-wrap"><i class="fa-regular fa-envelope"></i><input type="email" id="registerEmail" required placeholder="example@email.com"></div></label>
+          <label><span>رقم الهاتف</span><div class="input-wrap"><i class="fa-solid fa-phone"></i><input type="tel" id="registerPhone" required inputmode="tel" autocomplete="tel" dir="ltr" placeholder="01012345678"></div></label>
           <label><span>كلمة المرور</span><div class="input-wrap"><i class="fa-solid fa-lock"></i><input type="password" id="registerPassword" required minlength="6" placeholder="6 أحرف على الأقل"><button type="button" class="toggle-pass" data-toggle-pass="registerPassword"><i class="fa-regular fa-eye"></i></button></div></label>
           <div class="register-stage-grid">
             <label><span>نوع التعليم</span><select id="registerEducationType" required><option value="">اختر نوع التعليم</option><option value="public">تعليم عام</option><option value="azhar">تعليم أزهري</option></select></label>
@@ -440,7 +442,7 @@
             <label class="register-grade"><span>الصف الدراسي</span><select id="registerGrade" required disabled><option value="">اختر المرحلة أولًا</option></select></label>
           </div>
           <button type="submit" class="btn btn-primary btn-block" id="registerSubmitBtn">إنشاء الحساب ودخول مرحلتي</button>
-          <p class="form-note">بإنشاء الحساب أنت توافق على شروط الاستخدام وسياسة الخصوصية.</p>
+          <p class="form-note">رقم الهاتف للدخول فقط، دون رسالة تحقق. احتفظ بكلمة مرورك؛ لاستعادتها إذا نسيتها تواصل مع إدارة المنصة.</p>
         </form>
       </div>
     </div>
@@ -478,8 +480,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="./assets/firebase-config.js"></script>
-  <script src="./assets/auth-flow.js"></script>
-  <script src="./assets/app.js?v=38"></script>
+  <script src="./assets/app.js?v=39"></script>
   <script src="./assets/notification-engine.js"></script>
   <script src="./assets/notification-widget.js"></script>
   <script src="./assets/activity-tracker.js"></script>

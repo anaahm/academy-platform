@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/learning.css"><link rel="stylesheet" href="./assets/portal.css">
-  <link rel="stylesheet" href="./assets/ui-kit.css">
+  <link rel="stylesheet" href="./assets/ui-kit.css?v=35">
   <link rel="stylesheet" href="./assets/experience.css?v=30">
   <script src="./assets/academy-utils.js"></script>
 </head>
@@ -67,7 +67,7 @@
             <div class="profile-card-head"><div><span class="section-kicker">بياناتك الأساسية</span><h2>معلومات الحساب</h2></div><span>👤</span></div>
             <form id="accountForm" class="profile-form">
               <label><span>الاسم</span><div class="input-wrap"><i class="fa-regular fa-user"></i><input id="profileNameInput" required minlength="2"></div></label>
-              <label><span>البريد الإلكتروني</span><div class="input-wrap locked"><i class="fa-regular fa-envelope"></i><input id="profileEmailInput" disabled></div><small>تغيير البريد سيتم من قسم الأمان لاحقًا.</small></label>
+              <label><span id="profileContactLabel">البريد الإلكتروني</span><div class="input-wrap locked"><i class="fa-solid fa-phone"></i><input id="profileEmailInput" disabled dir="ltr"></div><small id="profileContactHint">تغيير بيانات الدخول يتطلب التواصل مع إدارة المنصة.</small></label>
               <div class="profile-form-actions"><small id="accountSaveStatus">لم يتم إجراء تغييرات.</small><button class="btn btn-primary" id="accountSaveBtn" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ التغييرات</button></div>
             </form>
           </article>
@@ -98,9 +98,13 @@
           <div class="profile-two-col">
             <article class="profile-card">
               <div class="profile-card-head"><div><span class="section-kicker">كلمة المرور</span><h2>إعادة تعيين كلمة المرور</h2></div><span>🔐</span></div>
-              <p class="profile-muted">سنرسل رابطًا آمنًا إلى بريدك لتعيين كلمة مرور جديدة.</p>
-              <div class="security-email-row"><i class="fa-regular fa-envelope"></i><div><small>سيتم الإرسال إلى</small><strong id="securityEmail">—</strong></div></div>
-              <button id="sendResetBtn" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> إرسال رابط إعادة التعيين</button>
+              <div id="emailResetControls"><p class="profile-muted">سنرسل رابطًا آمنًا إلى بريدك لتعيين كلمة مرور جديدة.</p>
+                <div class="security-email-row"><i class="fa-regular fa-envelope"></i><div><small>سيتم الإرسال إلى</small><strong id="securityEmail">—</strong></div></div>
+                <button id="sendResetBtn" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> إرسال رابط إعادة التعيين</button></div>
+              <form id="phonePasswordForm" class="profile-form hidden"><p class="profile-muted">يمكنك تغيير كلمة المرور أثناء تسجيل الدخول. إذا نسيتها فتواصل مع إدارة المنصة.</p>
+                <label><span>كلمة المرور الحالية</span><div class="input-wrap"><i class="fa-solid fa-lock"></i><input type="password" id="currentPassword" required autocomplete="current-password"></div></label>
+                <label><span>كلمة المرور الجديدة</span><div class="input-wrap"><i class="fa-solid fa-key"></i><input type="password" id="newPassword" required minlength="6" autocomplete="new-password"></div></label>
+                <button type="submit" class="btn btn-primary" id="changePhonePasswordBtn">تغيير كلمة المرور</button></form>
             </article>
             <article class="profile-card danger-card">
               <div class="profile-card-head"><div><span class="section-kicker">الجلسة الحالية</span><h2>تسجيل الخروج</h2></div><span>🚪</span></div>
@@ -118,7 +122,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="./assets/firebase-config.js"></script>
-  <script src="./assets/profile.js"></script>
+  <script src="./assets/profile.js?v=39"></script>
   <script src="./assets/activity-tracker.js"></script>
   <script src="./assets/pwa.js"></script>
   <script src="./assets/student-shell.js"></script>

@@ -41,7 +41,8 @@ async function check(file,role='student',failurePath=''){
    push:(value)=>{const child=ref(path+'/new'+(++pushed));if(value!==undefined)child.set(value);return child},transaction:async fn=>{const next=fn(clone(get(path)));if(next===undefined)return {committed:false,snapshot:snap(get(path))};set(path,next);return {committed:true,snapshot:snap(next)}}};return r;
  }
  const user=role==='guest'?null:{uid:'tester',displayName:'اختبار',email:'test@example.test',updateProfile:async()=>{},reload:async()=>{}};
- const auth={currentUser:user,onAuthStateChanged:fn=>{callbacks.push(fn);return ()=>{}},setPersistence:async()=>{},signInWithEmailAndPassword:async()=>{auth.currentUser={uid:'tester',email:'test@example.test'};for(const fn of callbacks)await fn(auth.currentUser);return {user:auth.currentUser}},createUserWithEmailAndPassword:async email=>{auth.currentUser={uid:'newStudent',email,updateProfile:async()=>{}};for(const fn of callbacks)await fn(auth.currentUser);return {user:auth.currentUser}},sendPasswordResetEmail:async()=>{},signOut:async()=>{auth.currentUser=null;for(const fn of callbacks)await fn(null)}};
+ let createdEmail='',signedInEmail='';
+ const auth={currentUser:user,onAuthStateChanged:fn=>{callbacks.push(fn);return ()=>{}},setPersistence:async()=>{},signInWithEmailAndPassword:async email=>{signedInEmail=email;auth.currentUser={uid:'tester',email:'test@example.test'};for(const fn of callbacks)await fn(auth.currentUser);return {user:auth.currentUser}},createUserWithEmailAndPassword:async email=>{createdEmail=email;auth.currentUser={uid:'newStudent',email,updateProfile:async()=>{}};for(const fn of callbacks)await fn(auth.currentUser);return {user:auth.currentUser}},sendPasswordResetEmail:async()=>{},signOut:async()=>{auth.currentUser=null;for(const fn of callbacks)await fn(null)}};
  const secondaryApps=[];
  w.firebase={apps:[],initializeApp:(_config,name)=>{if(name==='teacher-portal'){const app={name,auth:()=>auth,database:()=>({ref})};w.firebase.apps.push(app);return app}if(name){const secondaryAuth={setPersistence:async()=>{},createUserWithEmailAndPassword:async(email,password)=>{assert.ok(password.length>=8);return {user:{uid:'newTeacher',email,delete:async()=>{}}}},signOut:async()=>{}};const app={name,auth:()=>secondaryAuth,delete:async()=>{}};secondaryApps.push(app);return app}w.firebase.apps.push({name:'[DEFAULT]'});return {auth:()=>auth}},auth:Object.assign(()=>auth,{Auth:{Persistence:{LOCAL:'local',NONE:'none'}},EmailAuthProvider:{credential:()=>({})}}),database:Object.assign(()=>({ref}),{ServerValue:{TIMESTAMP:Date.now(),increment:n=>n}})};
  const unhandled=e=>errors.push(String(e?.stack||e));process.on('unhandledRejection',unhandled);
@@ -59,16 +60,27 @@ async function check(file,role='student',failurePath=''){
   }
   if(file==='index.html'&&role==='guest'){
    const field=id=>w.document.getElementById(id);
-   field('registerName').value='طالب جديد';field('registerEmail').value='new@example.test';field('registerPassword').value='12345678';
+   field('registerName').value='طالب جديد';field('registerPhone').value='٠١٠١٢٣٤٥٦٧٨';field('registerPassword').value='12345678';
    field('registerEducationType').value='azhar';field('registerStage').value='prep';field('registerStage').dispatchEvent(new w.Event('change'));
    assert.equal(field('registerGrade').disabled,false,'stage selection enables grade');field('registerGrade').value='2';
    field('registerForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
    await new Promise(r=>setTimeout(r,25));
+   assert.equal(createdEmail,'p201012345678@students.academy.invalid','Arabic digits resolve to the same phone login');
+   assert.equal(get('studentProfilesV3/newStudent/phone'),'+201012345678');
+   assert.equal(get('studentProfilesV3/newStudent/email'),null,'internal identifier is not exposed in student profile');
    assert.equal(get('studentProfilesV3/newStudent/educationType'),'azhar');
    assert.equal(get('studentProfilesV3/newStudent/stage'),'prep');
    assert.equal(get('studentProfilesV3/newStudent/grade'),2);
    assert.equal(get('studentProfilesV3/newStudent/onboardingCompleted'),true);
    assert.equal(field('studentDashboard').classList.contains('hidden'),false,'new account opens its selected curriculum');
+   field('loginPhone').value=' +20 101 234 5678 ';field('loginPassword').value='12345678';
+   field('loginForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+   await new Promise(r=>setTimeout(r,25));
+   assert.equal(signedInEmail,createdEmail,'login converts phone formats to the same account');
+   field('legacyLoginToggle').click();field('loginEmail').value='old@example.test';
+   field('loginForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+   await new Promise(r=>setTimeout(r,25));
+   assert.equal(signedInEmail,'old@example.test','old email users retain login');
   }
   if(file==='library.html')assert.equal(w.document.querySelectorAll('.library-open[href]').length,0,'empty URL must not be clickable');
   if(file==='planner.html'){

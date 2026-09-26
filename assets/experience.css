@@ -200,3 +200,7 @@ p{line-height:1.85}
 #registerForm .register-stage-grid select:disabled{background:#edf2f7;color:#7c8da2;cursor:not-allowed}
 #registerForm .register-grade{grid-column:1/-1}
 @media(max-width:560px){#registerForm .register-stage-grid{grid-template-columns:1fr;gap:10px;padding:12px}#registerForm .register-grade{grid-column:auto}}
+
+#authModal .auth-legacy-toggle{display:block;margin:12px auto 0;text-align:center;font-weight:800;color:#1765a4}
+#authModal .auth-legacy-toggle:hover,#authModal .auth-legacy-toggle:focus-visible{text-decoration:underline}
+#authModal input[dir="ltr"],#profileEmailInput{unicode-bidi:plaintext;text-align:right}

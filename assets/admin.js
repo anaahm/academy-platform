@@ -558,7 +558,7 @@ function renderTeachers(){
  $$('[data-reject-profile]').forEach(b=>b.onclick=()=>reviewTeacherProfile(b.dataset.rejectProfile,false));
  $('pendingCountText').textContent=pending.length+' قيد المراجعة';
  $('teachersAdminList').innerHTML=teachers.length?teachers.map(t=>'<div class="admin-list-item"><div><strong>'+esc(t.name||t.email||'مدرس')+'</strong><small>'+esc(t.email||'')+' • '+assignmentsOf(t).length+' صلاحية • '+(t.isActive===false?'موقوف':'نشط')+'</small></div><div class="admin-action-row"><button class="admin-action-btn" data-reset-teacher="'+t.id+'" title="إرسال رابط تغيير كلمة المرور" aria-label="إرسال رابط تغيير كلمة المرور إلى '+esc(t.name||t.email||'المدرس')+'"><i class="fa-solid fa-key"></i></button><button class="admin-action-btn '+(t.isActive===false?'success':'')+'" data-toggle-teacher="'+t.id+'" title="تفعيل أو إيقاف" aria-label="تفعيل أو إيقاف '+esc(t.name||'المدرس')+'"><i class="fa-solid '+(t.isActive===false?'fa-play':'fa-pause')+'"></i></button><button class="admin-action-btn danger" data-remove-teacher="'+t.id+'" title="إزالة الصلاحية" aria-label="إزالة صلاحية '+esc(t.name||'المدرس')+'"><i class="fa-solid fa-user-minus"></i></button></div></div>').join(''):empty('لا يوجد مدرسون','أنشئ حسابًا جديدًا من النموذج أعلاه أو رقّ حسابًا موجودًا.');
- const teacherIds=new Set(teachers.map(t=>t.id)),candidates=students.filter(s=>!teacherIds.has(s.id));
+ const teacherIds=new Set(teachers.map(t=>t.id)),candidates=students.filter(s=>!teacherIds.has(s.id)&&s.email&&!s.phone);
  $('teacherCandidates').innerHTML=candidates.length?candidates.map(s=>'<div class="admin-list-item"><div><strong>'+esc(s.name||s.email||'طالب')+'</strong><small>'+esc(s.email||'')+'</small></div><button class="admin-action-btn success" data-promote="'+s.id+'"><i class="fa-solid fa-plus"></i></button></div>').join(''):empty('لا توجد حسابات للترقية','كل الحسابات الحالية لها حالة مدرس أو لا توجد حسابات.');
  $('assignTeacher').innerHTML=teachers.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||t.email||t.id)+'</option>').join('');
  refreshAssignmentSubjects();
@@ -602,8 +602,8 @@ async function approveSubmission(key){
 /* Students */
 function renderStudents(){
  const q=($('studentSearch')?.value||'').trim().toLowerCase();
- const arr=values(root.studentProfilesV3).filter(s=>!q||(s.name||'').toLowerCase().includes(q)||(s.email||'').toLowerCase().includes(q)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
- $('studentsAdminList').innerHTML=arr.length?'<table class="admin-table"><thead><tr><th>الطالب</th><th>المرحلة</th><th>XP</th><th>الدروس</th><th>الاختبارات</th><th>آخر نشاط</th></tr></thead><tbody>'+arr.map(s=>'<tr><td><strong>'+esc(s.name||'طالب')+'</strong><br><small>'+esc(s.email||'')+'</small></td><td>'+esc(typeLabel(s.educationType))+' • '+esc(gradeLabel(s.stage,s.grade))+'</td><td>'+Number(s.stats?.totalXP||0)+'</td><td>'+Number(s.stats?.completedLessons||0)+'</td><td>'+Number(s.stats?.completedQuizzes||0)+'</td><td>'+((s.lastActiveAt||s.activity?.lastSeenAt)?new Date(s.lastActiveAt||s.activity.lastSeenAt).toLocaleDateString('ar-EG'):'-')+'</td></tr>').join('')+'</tbody></table>':empty('لا يوجد طلاب مطابقون','ستظهر حسابات الطلاب الجديدة هنا.');
+ const arr=values(root.studentProfilesV3).filter(s=>!q||(s.name||'').toLowerCase().includes(q)||(s.phone||'').includes(q)||(s.email||'').toLowerCase().includes(q)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+ $('studentsAdminList').innerHTML=arr.length?'<table class="admin-table"><thead><tr><th>الطالب</th><th>المرحلة</th><th>XP</th><th>الدروس</th><th>الاختبارات</th><th>آخر نشاط</th></tr></thead><tbody>'+arr.map(s=>'<tr><td><strong>'+esc(s.name||'طالب')+'</strong><br><small>'+esc(s.phone||s.email||'')+'</small></td><td>'+esc(typeLabel(s.educationType))+' • '+esc(gradeLabel(s.stage,s.grade))+'</td><td>'+Number(s.stats?.totalXP||0)+'</td><td>'+Number(s.stats?.completedLessons||0)+'</td><td>'+Number(s.stats?.completedQuizzes||0)+'</td><td>'+((s.lastActiveAt||s.activity?.lastSeenAt)?new Date(s.lastActiveAt||s.activity.lastSeenAt).toLocaleDateString('ar-EG'):'-')+'</td></tr>').join('')+'</tbody></table>':empty('لا يوجد طلاب مطابقون','ستظهر حسابات الطلاب الجديدة هنا.');
 }
 
 /* News */
@@ -799,8 +799,8 @@ function globalSearchItems(q){
    if(hay.includes(needle))out.push({type:'lesson',id:x.id,title:x.title||'درس',meta:'درس • '+(x.subject||'')});
  });
  values(root.studentProfilesV3).forEach(x=>{
-   const hay=((x.name||'')+' '+(x.email||'')).toLowerCase();
-   if(hay.includes(needle))out.push({type:'student',id:x.id,title:x.name||x.email||'طالب',meta:'طالب • '+(x.email||'')});
+   const hay=((x.name||'')+' '+(x.phone||'')+' '+(x.email||'')).toLowerCase();
+   if(hay.includes(needle))out.push({type:'student',id:x.id,title:x.name||x.phone||x.email||'طالب',meta:'طالب • '+(x.phone||x.email||'')});
  });
  values(root.teacherProfiles).forEach(x=>{
    const hay=((x.name||'')+' '+(x.email||'')).toLowerCase();
@@ -830,7 +830,7 @@ function renderGlobalSearch(q){
    if(type==='lesson'){
      await setTab('lessons');const item=root.lessons?.[id];$('lessonSearch').value=item?.title||'';renderLessons();
    }else if(type==='student'){
-     await setTab('students');const item=root.studentProfilesV3?.[id];$('studentSearch').value=item?.name||item?.email||'';renderStudents();
+     await setTab('students');const item=root.studentProfilesV3?.[id];$('studentSearch').value=item?.name||item?.phone||item?.email||'';renderStudents();
    }else if(type==='teacher'){
      await setTab('teachers');
    }else if(type==='quiz'){

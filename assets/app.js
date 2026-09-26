@@ -19,6 +19,17 @@
   };
   let baseDataPromise = null;
   let registerInProgress = false;
+  let legacyEmailLogin = false;
+  function phoneLoginEmail(raw) {
+    const digits = raw.replace(/[٠-٩۰-۹]/g, character => String(character.charCodeAt(0) - (character.charCodeAt(0) >= 1776 ? 1776 : 1632)))
+      .replace(/[\s()\-.]/g, '');
+    let phone = digits;
+    if (/^01[0125]\d{8}$/.test(phone)) phone = '+20' + phone.slice(1);
+    else if (/^0020(1[0125]\d{8})$/.test(phone)) phone = '+20' + phone.slice(4);
+    else if (/^20(1[0125]\d{8})$/.test(phone)) phone = '+' + phone;
+    if (!/^\+[1-9]\d{7,14}$/.test(phone)) throw new Error('أدخل رقم هاتف صحيحًا، مثل 01012345678، مع رمز الدولة إن كان من خارج مصر.');
+    return {phone, email:'p' + phone.slice(1) + '@students.academy.invalid'};
+  }
 
   const stageLabels = {
     primary: 'المرحلة الابتدائية',
@@ -71,12 +82,12 @@
 
   function friendlyAuthError(error) {
     const map = {
-      'auth/email-already-in-use': 'هذا البريد مسجل بالفعل. جرّب تسجيل الدخول.',
+      'auth/email-already-in-use': 'هذا الرقم مسجل بالفعل. جرّب تسجيل الدخول.',
       'auth/invalid-email': 'صيغة البريد الإلكتروني غير صحيحة.',
       'auth/weak-password': 'كلمة المرور ضعيفة. استخدم 6 أحرف على الأقل.',
-      'auth/user-not-found': 'لا يوجد حساب بهذا البريد.',
+      'auth/user-not-found': 'لا يوجد حساب بهذه البيانات.',
       'auth/wrong-password': 'كلمة المرور غير صحيحة.',
-      'auth/invalid-login-credentials': 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
+      'auth/invalid-login-credentials': 'رقم الهاتف أو البريد أو كلمة المرور غير صحيحة.',
       'auth/too-many-requests': 'محاولات كثيرة. انتظر قليلًا ثم جرّب مرة أخرى.',
       'auth/operation-not-allowed': 'تسجيل البريد وكلمة المرور غير مفعل بعد في Firebase. فعّله من Authentication > Sign-in method.'
     };
@@ -802,6 +813,15 @@
     $('dashAccountLogout')?.addEventListener('click', dashboardLogout);
 
     const loginForm = $('loginForm');
+    $('legacyLoginToggle').addEventListener('click', () => {
+      legacyEmailLogin = !legacyEmailLogin;
+      $('loginPhoneField').classList.toggle('hidden', legacyEmailLogin);
+      $('loginEmailField').classList.toggle('hidden', !legacyEmailLogin);
+      $('loginPhone').required = !legacyEmailLogin;
+      $('loginEmail').required = legacyEmailLogin;
+      $('legacyLoginToggle').textContent = legacyEmailLogin ? 'الدخول برقم الهاتف' : 'لدي حساب قديم بالبريد الإلكتروني';
+      (legacyEmailLogin ? $('loginEmail') : $('loginPhone')).focus();
+    });
     if (loginForm && loginForm.dataset.authBound !== 'true') {
       loginForm.dataset.authBound = 'true';
       loginForm.addEventListener('submit', async (e) => {
@@ -810,7 +830,8 @@
         btn.disabled = true; btn.textContent = 'جاري تسجيل الدخول...';
         try {
           await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-          await auth.signInWithEmailAndPassword($('loginEmail').value.trim(), $('loginPassword').value);
+          const email = legacyEmailLogin ? $('loginEmail').value.trim() : phoneLoginEmail($('loginPhone').value).email;
+          await auth.signInWithEmailAndPassword(email, $('loginPassword').value);
           closeModal('authModal');
           toast('تم تسجيل الدخول بنجاح 👋');
         } catch (error) {
@@ -833,17 +854,21 @@
       const name = $('registerName').value.trim();
       const educationType=$('registerEducationType').value,stage=$('registerStage').value,grade=Number($('registerGrade').value);
       if(!['public','azhar'].includes(educationType)||!gradeLabels[stage]?.[grade])return toast('اختر نوع التعليم والمرحلة والصف أولًا.','error');
+      let login;
+      try { login = phoneLoginEmail($('registerPhone').value); }
+      catch (error) { return toast(error.message, 'error'); }
       btn.disabled = true; btn.textContent = 'جاري إنشاء الحساب...';
       registerInProgress=true;
       let createdUser=null;
       try {
-        const cred = await auth.createUserWithEmailAndPassword($('registerEmail').value.trim(), $('registerPassword').value);
+        const cred = await auth.createUserWithEmailAndPassword(login.email, $('registerPassword').value);
         createdUser=cred.user;
         state.user=cred.user;
         await cred.user.updateProfile({displayName:name});
         await saveProfile(cred.user.uid, {
           name,
-          email: cred.user.email,
+          phone: login.phone,
+          loginMethod: 'phone',
           createdAt: firebase.database.ServerValue.TIMESTAMP,
           educationType,stage,grade,onboardingCompleted:true,
           stats: { totalXP:0, level:1, completedLessons:0, completedQuizzes:0, streak:0 }
@@ -862,6 +887,7 @@
     });
 
     $('forgotPasswordBtn').addEventListener('click', async () => {
+      if (!legacyEmailLogin) return toast('إذا نسيت كلمة مرور حساب الهاتف، تواصل مع إدارة المنصة. يمكنك تغييرها من ملفك الشخصي أثناء تسجيل الدخول.', 'error');
       const email = $('loginEmail').value.trim();
       if (!email) return toast('اكتب بريدك الإلكتروني أولًا.', 'error');
       try {
