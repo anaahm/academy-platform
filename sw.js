@@ -10,7 +10,7 @@ const CORE=[
  './assets/app.js?v=39','./assets/learning.js?v=43','./assets/pro-suite-core.js?v=1','./assets/smart-assessment.js','./assets/review-center.js','./assets/smart-report.js','./assets/parent.js','./assets/verify-certificate.js','./assets/explore.js','./assets/search.js','./assets/news.js','./assets/profile.js?v=41',
  './assets/exam-center.js?v=42','./assets/simulations.js','./assets/progress.js','./assets/planner.js','./assets/assignments.js','./assets/weekly-report.js','./assets/schedule.js',
  './assets/library.js','./assets/live.js','./assets/community.js','./assets/leaderboard.js','./assets/notification-engine.js','./assets/notifications.js','./assets/notification-widget.js',
- './assets/activity-tracker.js','./assets/admin-auth-flow.js?v=33','./assets/admin.js?v=43','./assets/pro-suite-admin.js?v=1','./assets/admin-notifications.js','./assets/teacher.js?v=43','./assets/pro-suite-teacher.js?v=1','./assets/teacher-profile.js?v=34','./assets/certificate.js','./assets/pwa.js','./assets/dashboard-hero.jpg','./assets/app-icon.svg','./manifest.webmanifest'
+ './assets/activity-tracker.js','./assets/admin-auth-flow.js?v=33','./assets/admin.js?v=43','./assets/pro-suite-admin.js?v=1','./assets/pro-roles-admin.js?v=1','./assets/admin-notifications.js','./assets/teacher.js?v=43','./assets/pro-suite-teacher.js?v=1','./assets/pro-staff-review.js?v=1','./assets/teacher-profile.js?v=34','./assets/certificate.js','./assets/pwa.js','./assets/dashboard-hero.jpg','./assets/app-icon.svg','./manifest.webmanifest'
 ];
 
 self.addEventListener('install',event=>{
