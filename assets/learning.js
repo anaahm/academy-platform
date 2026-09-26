@@ -710,6 +710,8 @@ async function finishQuiz(){
  try{
    window.AcademyPro?.recordMastery({type:qz.c?.type,stage:qz.c?.stage,grade:qz.c?.grade,subject:qz.c?.subject,lessonId:state.currentLesson?.id||qz.sourceId},{video:state.currentLesson?75:0,quiz:pct,practice:100,review:score===qz.questions.length?100:60});
    window.AcademyPro?.incrementGoal('quizzes',1);
+   const teacherId=state.currentQuiz?.teacherId||state.currentLesson?.teacherId||'';
+   if(teacherId)window.AcademyPro?.recordTeacherOutcome(teacherId,{lessonId:state.currentLesson?.id||qz.sourceId,subject:qz.c?.subject||'',title:state.currentQuiz?.name||state.currentLesson?.title||'اختبار'},pct);
 
  }catch(e){console.warn('Pro mastery tracking',e)}
  if(!state.user)return;
