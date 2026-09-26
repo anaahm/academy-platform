@@ -709,34 +709,48 @@ function safeAdminImageUrl(value=''){
    return ['http:','https:'].includes(u.protocol)?u.href:'';
  }catch{return''}
 }
-function renderDashboardHeroSettingPreview(){
- const preview=$('settingDashboardHeroPreview');if(!preview)return;
- const value=$('settingDashboardHero')?.value.trim()||'';
- const safe=safeAdminImageUrl(value);
- const image=(safe||'./assets/dashboard-hero.jpg').replace(/"/g,'%22');
- preview.style.backgroundImage='linear-gradient(90deg,rgba(7,35,111,.88),rgba(11,64,171,.34),rgba(6,28,85,.04)),url("'+image+'")';
+function renderVisualSettingPreview(inputId,previewId,label,defaultImage='./assets/dashboard-hero.jpg'){
+ const preview=$(previewId);if(!preview)return;
+ const value=$(inputId)?.value.trim()||'',safe=safeAdminImageUrl(value),image=(safe||defaultImage).replace(/"/g,'%22');
+ preview.style.backgroundImage='linear-gradient(90deg,rgba(7,35,111,.22),rgba(108,66,255,.10)),url("'+image+'")';
  preview.classList.toggle('custom',!!safe);
- preview.querySelector('span').textContent=safe?'معاينة الغلاف المخصص':'الغلاف الافتراضي';
+ const caption=preview.querySelector('span');if(caption)caption.textContent=safe?label+' — صورة مخصصة':label+' — الصورة الافتراضية';
+}
+function renderDashboardHeroSettingPreview(){
+ renderVisualSettingPreview('settingPublicHero','settingPublicHeroPreview','الصفحة قبل تسجيل الدخول');
+ renderVisualSettingPreview('settingAuthVisual','settingAuthVisualPreview','تسجيل الدخول');
+ renderVisualSettingPreview('settingDashboardHero','settingDashboardHeroPreview','غلاف لوحة الطالب');
 }
 function loadSettings(){
  const s=root.settings||{};
  $('settingSiteName').value=s.siteName||'الأكاديمية';
  $('settingWhatsapp').value=s.whatsapp||'';
  $('settingLogo').value=s.siteLogo||'';
+ $('settingPublicHero').value=s.publicHeroUrl||'';
+ $('settingAuthVisual').value=s.authVisualUrl||'';
  $('settingDashboardHero').value=s.dashboardHeroUrl||'';
+ $('settingStagePrimary').value=s.stageImages?.primary||'';
+ $('settingStagePrep').value=s.stageImages?.prep||'';
+ $('settingStageSec').value=s.stageImages?.sec||'';
+ $('settingStageAzhar').value=s.stageImages?.azhar||'';
  $('settingDashboardHeroSubtitle').value=s.dashboardHeroSubtitle||'كل يوم هو فرصة جديدة للتعلم وتقترب من أهدافك';
  $('settingAbout').value=s.aboutText||'';
  renderDashboardHeroSettingPreview();
 }
 async function saveSettings(e){
  e.preventDefault();
- const heroValue=$('settingDashboardHero').value.trim();
- if(heroValue&&!safeAdminImageUrl(heroValue))return toast('رابط صورة الغلاف غير صحيح.','error');
+ const heroValue=$('settingDashboardHero').value.trim(),publicHero=$('settingPublicHero').value.trim(),authVisual=$('settingAuthVisual').value.trim();
+ const stageImages={primary:$('settingStagePrimary').value.trim(),prep:$('settingStagePrep').value.trim(),sec:$('settingStageSec').value.trim(),azhar:$('settingStageAzhar').value.trim()};
+ const imageValues=[heroValue,publicHero,authVisual,...Object.values(stageImages)].filter(Boolean);
+ if(imageValues.some(v=>!safeAdminImageUrl(v)))return toast('يوجد رابط صورة غير صحيح. استخدم رابط http أو https صالحًا.','error');
  await db.ref('settings').update({
    siteName:$('settingSiteName').value.trim(),
    whatsapp:$('settingWhatsapp').value.trim(),
    siteLogo:$('settingLogo').value.trim(),
+   publicHeroUrl:publicHero,
+   authVisualUrl:authVisual,
    dashboardHeroUrl:heroValue,
+   stageImages,
    dashboardHeroSubtitle:$('settingDashboardHeroSubtitle').value.trim()||'كل يوم هو فرصة جديدة للتعلم وتقترب من أهدافك',
    aboutText:$('settingAbout').value.trim(),
    updatedAt:Date.now()
@@ -842,7 +856,7 @@ bindAdminForm('announcementForm',saveAnnouncement,'حفظ الإعلان');
 bindAdminForm('settingsForm',saveSettings,'حفظ الإعدادات');
 $('profileTeacherId')?.addEventListener('change',fillTeacherProfileEditor);
 $('adminTeacherProfileForm')?.addEventListener('submit',saveTeacherProfile);
-$('settingDashboardHero')?.addEventListener('input',renderDashboardHeroSettingPreview);
+['settingPublicHero','settingAuthVisual','settingDashboardHero'].forEach(id=>$(id)?.addEventListener('input',renderDashboardHeroSettingPreview));
 $('resetDashboardHero')?.addEventListener('click',()=>{
   $('settingDashboardHero').value='';
   renderDashboardHeroSettingPreview();
