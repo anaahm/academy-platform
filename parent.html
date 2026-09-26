@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-page="parent">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>متابعة ولي الأمر | الأكاديمية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"><link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/learning.css"><link rel="stylesheet" href="./assets/ui-kit.css"><link rel="stylesheet" href="./assets/pro-suite.css">
+</head>
+<body class="feature-page">
+<div id="toast" class="toast"></div>
+<header class="learning-header"><div class="container learning-nav"><a class="brand" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-book-open"></i></span><span><strong>الأكاديمية</strong><small>متابعة ولي الأمر</small></span></a><div class="learning-breadcrumb"><a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><span>ولي الأمر</span></div></div></header>
+<main class="pro-shell">
+<section class="pro-page-hero"><span class="section-kicker light">متابعة مختصرة وآمنة</span><h1>لوحة ولي الأمر</h1><p>يعرض كود المتابعة ملخص الأداء والتنبيهات فقط، دون كلمة مرور الطالب أو بيانات حسابه الخاصة.</p></section>
+<section class="pro-two-col">
+<article class="pro-panel" id="parentViewer">
+<div class="pro-panel-head"><div><h2>عرض تقدم طالب</h2><p>أدخل كود المتابعة الذي أرسله لك الطالب.</p></div><span class="pro-icon"><i class="fa-solid fa-people-roof"></i></span></div>
+<form class="pro-form" id="parentLookupForm"><label class="full"><span>كود المتابعة</span><input id="parentCodeInput" dir="ltr" maxlength="8" placeholder="ABCD2345" autocomplete="off"></label><div class="full"><button class="pro-btn" type="submit">عرض التقرير</button></div></form>
+</article>
+<article class="pro-panel pro-section-hidden" id="studentParentSetup">
+<div class="pro-panel-head"><div><h2>كود متابعة ولي أمرك</h2><p>يمكنك إنشاء كود واحد ومشاركته مع ولي الأمر.</p></div></div>
+<div id="parentCodeBox" class="pro-empty"><button class="pro-btn" id="generateParentCode">إنشاء كود المتابعة</button></div>
+<p style="color:#64748b;font-size:12px">لا تشارك كلمة مرور حسابك. ولي الأمر يحتاج هذا الكود فقط.</p>
+</article>
+</section>
+<section class="pro-panel pro-section-hidden" id="parentReport">
+<div class="pro-panel-head"><div><span class="section-kicker">آخر تحديث</span><h2 id="parentStudentName">تقرير الطالب</h2><p id="parentContext"></p></div><span class="pro-badge approved" id="parentUpdatedAt">—</span></div>
+<div class="pro-kpi-grid" id="parentStats"></div>
+<div class="pro-two-col" style="margin-top:20px"><article><h3>مستوى المواد</h3><div class="pro-list" id="parentSubjects"></div></article><article><h3>تنبيهات تحتاج انتباهًا</h3><div class="pro-list" id="parentAlerts"></div></article></div>
+<div class="pro-panel" style="margin:20px 0 0"><div class="pro-panel-head"><div><h3>مقارنة الأداء الأسبوعي</h3><p>مقارنة متوسط الاختبارات بهذا الأسبوع بالأسبوع السابق.</p></div></div><div id="parentWeekly"></div></div>
+</section>
+</main>
+<script src="./assets/ui-kit.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script><script src="./assets/firebase-config.js"></script><script src="./assets/academy-utils.js"></script><script src="./assets/pro-suite-core.js"></script><script src="./assets/parent.js"></script>
+</body></html>
