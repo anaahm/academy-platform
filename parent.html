@@ -2,10 +2,26 @@
 <section class="pro-card full" id="parentAuthCard">
 <div class="pro-space"><div><h3>دخول ولي الأمر</h3><div class="pro-muted">أنشئ حساب ولي أمر أو سجّل الدخول بحسابك الحالي.</div></div></div>
 <form id="parentAuthForm" class="pro-form" style="margin-top:12px">
-<input id="parentName" placeholder="الاسم (لإنشاء حساب جديد)">
-<input id="parentEmail" type="email" required placeholder="البريد الإلكتروني">
-<input id="parentPassword" type="password" required minlength="6" placeholder="كلمة المرور">
-<div class="pro-row"><button class="pro-btn primary" id="parentLoginBtn" type="submit">تسجيل الدخول</button><button class="pro-btn" id="parentRegisterBtn" type="button">إنشاء حساب ولي أمر</button></div>
+<input id="parentName" autocomplete="name" placeholder="الاسم (مطلوب عند إنشاء الحساب)">
+<input id="parentPhone" inputmode="tel" autocomplete="tel" required placeholder="رقم الهاتف مثل 01012345678">
+<input id="parentPassword" type="password" autocomplete="current-password" required minlength="6" placeholder="الرقم السري">
+<div class="pro-row"><button class="pro-btn primary" id="parentLoginBtn" type="submit">دخول ولي الأمر</button><button class="pro-btn" id="parentRegisterBtn" type="button">إنشاء حساب جديد</button></div>
 </form><div id="parentAuthStatus" class="pro-muted" style="margin-top:10px"></div>
 </section>
-<section id="parentDashboard" hidden><section class="pro-card full"><div class="pro-space"><div><h3>ربط طالب جديد</h3><div class="pro-muted">أدخل الكود الذي أنشأه الطالب من مركز التعلم الذكي.</div></div><div class="pro-row"><input id="parentInvite" style="padding:11px;border:1px solid #e2e8f0;border-radius:12px" placeholder="ABC123"><button class="pro-btn primary" id="linkBtn">ربط</button></div></div></section><section class="pro-grid" id="children"></section></section></main><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script><script src="./assets/firebase-config.js"></script><script src="./assets/pro-features.js"></script><script src="./assets/parent.js"></script></body></html>
+<section id="parentDashboard" hidden>
+<section class="pro-card full">
+<div><h3>ربط الطالب</h3><div class="pro-muted">يمكنك الربط برقم هاتف الطالب المسجل في الأكاديمية، أو بالكود الذي أنشأه الطالب من حسابه.</div></div>
+<div class="pro-grid" style="margin-top:14px">
+  <div class="pro-card">
+    <h3>برقم الطالب</h3>
+    <div class="pro-muted">اكتب رقم هاتف الطالب المسجل به في المنصة.</div>
+    <div class="pro-row" style="margin-top:10px"><input id="studentPhoneLink" inputmode="tel" style="padding:11px;border:1px solid #e2e8f0;border-radius:12px" placeholder="01012345678"><button class="pro-btn primary" id="linkByPhoneBtn" type="button">فتح بيانات الطالب</button></div>
+  </div>
+  <div class="pro-card">
+    <h3>بكود الطالب</h3>
+    <div class="pro-muted">اكتب رمز الربط الذي أنشأه الطالب من مركز التعلم الذكي.</div>
+    <div class="pro-row" style="margin-top:10px"><input id="parentInvite" style="padding:11px;border:1px solid #e2e8f0;border-radius:12px" placeholder="ABC123"><button class="pro-btn primary" id="linkBtn" type="button">ربط بالكود</button></div>
+  </div>
+</div>
+<div id="parentLinkStatus" class="pro-muted" style="margin-top:12px"></div>
+</section><section class="pro-grid" id="children"></section></section></main><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script><script src="./assets/firebase-config.js"></script><script src="./assets/pro-features.js"></script><script src="./assets/parent.js"></script></body></html>
