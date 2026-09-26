@@ -240,7 +240,7 @@
     "questionBank": {
       ".read": "auth != null",
       "$questionId": {
-        ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true && ((!data.exists() && newData.child('teacherId').val() === auth.uid && newData.child('status').val() === 'pending') || (data.child('teacherId').val() === auth.uid && data.child('status').val() === 'pending' && newData.child('status').val() === 'pending'))))",
+        ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true && ((!data.exists() && newData.child('teacherId').val() === auth.uid && newData.child('status').val() === 'pending') || (data.child('teacherId').val() === auth.uid && data.child('status').val() === 'pending' && newData.child('status').val() === 'pending'))) || (root.child('roleProfiles').child(auth.uid).child('active').val() === true && (root.child('roleProfiles').child(auth.uid).child('role').val() === 'subjectSupervisor' || root.child('roleProfiles').child(auth.uid).child('role').val() === 'contentReviewer') && root.child('roleProfiles').child(auth.uid).child('subject').val() === data.child('subject').val() && data.child('status').val() === 'pending' && (newData.child('status').val() === 'approved' || newData.child('status').val() === 'rejected') && newData.child('teacherId').val() === data.child('teacherId').val() && newData.child('subject').val() === data.child('subject').val() && newData.child('text').val() === data.child('text').val() && newData.child('correctAnswer').val() === data.child('correctAnswer').val()))",
         "text": {
           ".validate": "!newData.exists() || (newData.isString() && newData.val().length > 0 && newData.val().length <= 700)"
         },
@@ -312,7 +312,7 @@
     "auditLog": {
       ".read": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true",
       "$entryId": {
-        ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true && newData.child('actorId').val() === auth.uid && newData.child('actorRole').val() === 'teacher'))"
+        ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (root.child('teacherProfiles').child(auth.uid).child('isActive').val() === true && newData.child('actorId').val() === auth.uid && newData.child('actorRole').val() === 'teacher') || (root.child('roleProfiles').child(auth.uid).child('active').val() === true && newData.child('actorId').val() === auth.uid && newData.child('actorRole').val() === root.child('roleProfiles').child(auth.uid).child('role').val()))"
       }
     },
     "certificateRegistry": {
