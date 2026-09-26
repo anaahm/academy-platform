@@ -32,8 +32,8 @@ function toast(msg,type='success'){
 async function writeAudit(action,entity,entityId,meta={}){
  if(!currentUser?.uid)return;
  try{
-  const ref=db.ref('auditLogV4').push();
-  await ref.set({uid:currentUser.uid,action,entity,entityId:entityId||'',meta,at:Date.now(),createdAt:Date.now()});
+  const ts=Date.now(),key=ts+'-'+Math.random().toString(36).slice(2,10);
+  await db.ref('auditLogV4/'+key).set({uid:currentUser.uid,action,entity,entityId:entityId||'',meta,at:ts,createdAt:ts});
  }catch(err){console.warn('Audit log write skipped',err)}
 }
 function empty(title='لا توجد بيانات',text=''){
