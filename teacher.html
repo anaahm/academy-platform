@@ -166,6 +166,8 @@
                   <label class="full"><span>التعليمات</span><textarea id="assignmentInstructions" rows="5" maxlength="4000" placeholder="اكتب المطلوب بوضوح..."></textarea></label>
                   <label><span>آخر موعد</span><input id="assignmentDueAt" type="datetime-local" required></label>
                   <label><span>الدرجة النهائية</span><input id="assignmentMaxScore" type="number" min="1" max="1000" value="100"></label>
+                  <label><span>إرسال الواجب إلى</span><select id="assignmentTargetMode"><option value="all">كل طلاب الصف</option><option value="students">طلاب محددون</option><option value="group">مجموعة / فصل محدد</option></select></label>
+                  <label id="assignmentTargetValueWrap"><span>معرّفات الطلاب أو رمز المجموعة</span><input id="assignmentTargetValue" placeholder="للطلاب: UID1, UID2 — للمجموعة: group-a"><small>اتركه فارغًا عند اختيار كل طلاب الصف.</small></label>
                 </div>
                 <button class="btn btn-primary btn-block" id="teacherAssignmentSubmitBtn" type="submit"><i class="fa-solid fa-paper-plane"></i> إرسال الواجب للمراجعة</button>
               </form>
