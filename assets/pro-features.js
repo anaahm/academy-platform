@@ -168,8 +168,24 @@ async function recordTeacherOutcome(teacherId,ctx={},score=0){
   row.subject=ctx.subject||row.subject||'';row.title=ctx.title||row.title||'';row.updatedAt=now();return row;
  });
 }async function rateLesson(lessonId,value,comment='',userId=uid()){if(!userId||!lessonId)return;await db.ref(paths.ratings+'/'+lessonId+'/'+userId).set({value:Number(value),comment:String(comment||'').slice(0,500),createdAt:now()})}
+function normalizePhone(raw=''){
+ const digits=String(raw||'').replace(/[٠-٩۰-۹]/g,ch=>String(ch.charCodeAt(0)-(ch.charCodeAt(0)>=1776?1776:1632))).replace(/[\s()\-.]/g,'');
+ let phone=digits;
+ if(/^01[0125]\d{8}$/.test(phone))phone='+20'+phone.slice(1);
+ else if(/^0020(1[0125]\d{8})$/.test(phone))phone='+20'+phone.slice(4);
+ else if(/^20(1[0125]\d{8})$/.test(phone))phone='+'+phone;
+ if(!/^\+[1-9]\d{7,14}$/.test(phone))throw new Error('رقم الهاتف غير صحيح');
+ return phone;
+}
 async function createParentInvite(studentId=uid()){if(!studentId)return null;const code=Math.random().toString(36).slice(2,8).toUpperCase();await db.ref(paths.parentInvites+'/'+code).set({studentId,createdAt:now(),expiresAt:now()+7*day,used:false});return code}
-async function linkParent(code,parentId=uid()){const ref=db.ref(paths.parentInvites+'/'+String(code).toUpperCase()),s=await ref.once('value'),v=s.val();if(!v||v.used||v.expiresAt<now())throw new Error('الكود غير صالح');await db.ref(paths.parentLinks+'/'+parentId+'/'+v.studentId).set({studentId:v.studentId,linkedAt:now()});await ref.update({used:true,parentId});return v.studentId}
+async function linkParent(code,parentId=uid()){const ref=db.ref(paths.parentInvites+'/'+String(code).toUpperCase()),s=await ref.once('value'),v=s.val();if(!v||v.used||v.expiresAt<now())throw new Error('الكود غير صالح');await db.ref(paths.parentLinks+'/'+parentId+'/'+v.studentId).set({studentId:v.studentId,linkedAt:now(),method:'code'});await ref.update({used:true,parentId});return v.studentId}
+async function linkParentByPhone(rawPhone,parentId=uid()){
+ if(!parentId)throw new Error('سجّل الدخول أولًا');
+ const phone=normalizePhone(rawPhone),key=phone.replace(/\D/g,''),snap=await db.ref('studentPhoneIndexV4/'+key).once('value'),v=snap.val();
+ if(!v?.studentId)throw new Error('لا يوجد طالب مسجل بهذا الرقم');
+ await db.ref(paths.parentLinks+'/'+parentId+'/'+v.studentId).set({studentId:v.studentId,linkedAt:now(),method:'phone'});
+ return v.studentId;
+}
 async function getChildren(parentId=uid()){const s=await db.ref(paths.parentLinks+'/'+parentId).once('value');return Object.keys(s.val()||{})}
 async function parentReport(studentId){
  const [p,x,m,g,r,a,as]=await Promise.all([
@@ -235,5 +251,5 @@ async function snapshot(userId=uid()){
  const [x,s,g,r]=await Promise.all([db.ref(paths.xp+'/'+userId).once('value'),db.ref(paths.streaks+'/'+userId).once('value'),db.ref(paths.goals+'/'+userId).once('value'),db.ref(paths.reviews+'/'+userId).once('value')]);
  const achievements=await refreshAchievements(userId);return{xp:x.val()||{total:0,level:1},streak:s.val()||{count:0,best:0},goals:g.val()||{},achievements,due:Object.values(r.val()||{}).filter(v=>v.nextReviewAt<=now()&&v.status!=='mastered').length};
 }
-window.AcademyPro={auth,db,paths,roleOf,can,audit,awardXP,touchStreak,setWeeklyGoals,incrementGoal,recordMastery,saveResume,getResume,saveNote,toggleFavorite,logMistake,markReview,dueReviews,updateQuestionStats,adaptiveDifficulty,selectAdaptiveQuestions,submitAnswer,saveDiagnostic,recommendNext,addQuestion,bulkAddQuestions,generateExam,submitContent,reviewContent,recordAttendance,recordTeacherOutcome,rateLesson,createParentInvite,linkParent,getChildren,parentReport,issueCertificate,certificateIdFor,verifyCertificate,refreshAchievements,snapshot,levelForXP,dateKey};
+window.AcademyPro={auth,db,paths,roleOf,can,audit,awardXP,touchStreak,setWeeklyGoals,incrementGoal,recordMastery,saveResume,getResume,saveNote,toggleFavorite,logMistake,markReview,dueReviews,updateQuestionStats,adaptiveDifficulty,selectAdaptiveQuestions,submitAnswer,saveDiagnostic,recommendNext,addQuestion,bulkAddQuestions,generateExam,submitContent,reviewContent,recordAttendance,recordTeacherOutcome,rateLesson,createParentInvite,linkParent,linkParentByPhone,getChildren,parentReport,issueCertificate,certificateIdFor,verifyCertificate,refreshAchievements,snapshot,levelForXP,dateKey};
 })();
