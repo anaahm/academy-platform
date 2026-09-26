@@ -65,13 +65,21 @@ async function incrementGoal(field,delta=1,userId=uid()){
 }
 async function recordMastery(ctx,metrics={},userId=uid()){
  if(!userId||!ctx?.lessonId)return;
- const key=[ctx.type||'public',ctx.stage||'prep',ctx.grade||1,ctx.subject||'general',ctx.lessonId].join('/');
- const v=Number(metrics.video||0),q=Number(metrics.quiz||0),p=Number(metrics.practice||0),r=Number(metrics.review||0);
- const score=Math.round(v*.25+q*.45+p*.2+r*.1);
- const status=score>=85?'mastered':score>=60?'learning':score>0?'review':'not_started';
- const payload={...ctx,video:v,quiz:q,practice:p,review:r,score,status,updatedAt:now()};
- await db.ref(paths.mastery+'/'+userId+'/'+key).update(payload);
- if(status==='mastered'){await awardXP(40,'lesson_mastered',{lessonId:ctx.lessonId},userId);await incrementGoal('lessons',1,userId)}
+ const key=[ctx.type||'public',ctx.stage||'prep',ctx.grade||1,ctx.subject||'general',ctx.lessonId].join('/'),ref=db.ref(paths.mastery+'/'+userId+'/'+key);
+ let earnedMastery=false,payload=null;
+ await ref.transaction(current=>{
+  current=current||{};
+  const v=metrics.video===undefined?Number(current.video||0):Math.max(Number(current.video||0),Number(metrics.video||0));
+  const q=metrics.quiz===undefined?Number(current.quiz||0):Math.max(Number(current.quiz||0),Number(metrics.quiz||0));
+  const p=metrics.practice===undefined?Number(current.practice||0):Math.max(Number(current.practice||0),Number(metrics.practice||0));
+  const rv=metrics.review===undefined?Number(current.review||0):Math.max(Number(current.review||0),Number(metrics.review||0));
+  const score=Math.round(v*.25+q*.45+p*.2+rv*.1);
+  const status=score>=85?'mastered':score>=60?'learning':score>0?'review':'not_started';
+  earnedMastery=current.status!=='mastered'&&status==='mastered';
+  payload={...current,...ctx,video:v,quiz:q,practice:p,review:rv,score,status,updatedAt:now()};
+  return payload;
+ });
+ if(earnedMastery){await awardXP(40,'lesson_mastered',{lessonId:ctx.lessonId},userId);await incrementGoal('lessons',1,userId)}
  return payload;
 }
 async function saveResume(kind,id,position,total,userId=uid()){
