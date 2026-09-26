@@ -356,7 +356,17 @@ async function saveQuiz(e){
  const existing=editState.quiz?root.quizzes?.[editState.quiz]:null;
  const payload={type:$('newQuizType').value,stage:$('newQuizStage').value,grade:$('newQuizGrade').value,subject:$('newQuizSubject').value,unit:Number($('newQuizUnit').value||0),name:$('newQuizName').value.trim(),questions,isHidden:!!existing?.isHidden};
  if(existing?.lessonId){payload.lessonId=existing.lessonId;payload.teacherId=existing.teacherId||'';payload.teacherSubmissionId=existing.teacherSubmissionId||''}
- if(editState.quiz){payload.updatedAt=Date.now();await db.ref('quizzes/'+editState.quiz).update(payload);toast('تم تحديث الاختبار')}else{payload.createdAt=Date.now();await db.ref('quizzes').push(payload);toast('تم حفظ الاختبار')}
+ const quizId=editState.quiz||db.ref('quizzes').push().key,now=Date.now(),updates={};
+ payload[editState.quiz?'updatedAt':'createdAt']=now;updates['quizzes/'+quizId]=editState.quiz?{...existing,...payload}:payload;
+ questions.forEach((q,qi)=>{
+   const bankId='quiz-'+quizId+'-'+qi;
+   updates['questionBankV4/'+bankId]={id:bankId,question:q.text,options:q.opts,correctAnswer:Number(q.correctAnswer),explanation:q.explanation||'',difficulty:Number(q.difficulty||2),type:payload.type,stage:payload.stage,grade:String(payload.grade),subject:payload.subject,unit:Number(payload.unit||0),lessonId:payload.lessonId||'',sourceQuizId:quizId,authorUid:currentUser?.uid||'',authorRole:'admin',status:'approved',createdAt:now,updatedAt:now};
+ });
+ const oldCount=Array.isArray(existing?.questions)?existing.questions.length:0;
+ for(let qi=questions.length;qi<oldCount;qi++)updates['questionBankV4/quiz-'+quizId+'-'+qi]=null;
+ await db.ref().update(updates);
+ await writeAudit(editState.quiz?'quiz.update':'quiz.create','quiz',quizId,{questionCount:questions.length,subject:payload.subject});
+ toast(editState.quiz?'تم تحديث الاختبار وبنك الأسئلة':'تم حفظ الاختبار وإضافة أسئلته للبنك');
  closeModal('quizModal');resetQuizEditor();
 }
 
@@ -622,6 +632,10 @@ async function approveSubmission(key){
      if(!questions.length||questions.length>100||questions.some(q=>q.opts.length>4))throw Error('راجع أسئلة الاختبار قبل الاعتماد');
      publishedType='quizzes';publishedId=db.ref('quizzes').push().key;
      updates['quizzes/'+publishedId]={name:s.title,lessonId:s.lessonId,type:s.type,stage:s.stage,grade:String(s.grade),subject:s.subject,unit:Number(lesson.unit||1),questions,targetMode:s.targetMode||'all',targetStudentIds:s.targetStudentIds||[],targetGroupId:s.targetGroupId||'',teacherId:uid,teacherSubmissionId:id,isHidden:false,createdAt:now};
+     questions.forEach((q,qi)=>{
+       const bankId='quiz-'+publishedId+'-'+qi;
+       updates['questionBankV4/'+bankId]={id:bankId,question:q.text,options:q.opts,correctAnswer:Number(q.correctAnswer),explanation:q.explanation||'',difficulty:Number(q.difficulty||2),type:s.type,stage:s.stage,grade:String(s.grade),subject:s.subject,unit:Number(lesson.unit||1),lessonId:s.lessonId,sourceQuizId:publishedId,authorUid:uid,authorRole:'teacher',status:'approved',createdAt:now,updatedAt:now};
+     });
    }else if(kind==='assignment'){
      if(!Number(s.dueAt)||Number(s.dueAt)<=now)throw Error('انتهى موعد الواجب؛ اطلب من المعلم إرساله بموعد جديد');
      if(!s.title||!s.subject||!s.grade||!Number.isFinite(Number(s.maxScore))||Number(s.maxScore)<1||Number(s.maxScore)>1000)throw Error('بيانات الواجب غير مكتملة');
