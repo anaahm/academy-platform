@@ -79,6 +79,21 @@
 @media(max-width:720px){.learning-breadcrumb{display:none}.subject-hero-card{padding:24px;border-radius:26px}.subject-title-row{align-items:flex-start}.subject-title-row h1{font-size:30px}.subject-hero-stats{grid-template-columns:1fr}.learning-section-head,.lesson-heading{align-items:flex-start;flex-direction:column}.lesson-actions{width:100%}.lesson-actions .btn{flex:1}.quiz-intro-card{grid-template-columns:1fr;text-align:center}.quiz-intro-card .btn{width:100%}.quiz-result{grid-template-columns:1fr;text-align:center}.result-ring{margin:auto}.result-actions{justify-content:center}.lesson-tabs{overflow-x:auto}.learning-layout,.lesson-grid{padding-top:18px}.learning-header .brand small{display:none}}
 @media(max-width:520px){.learning-nav{height:64px}.subject-hero{padding-top:18px}.subject-big-emoji{width:58px;height:58px;font-size:28px}.subject-title-row h1{font-size:25px}.learning-section-head h2{font-size:25px}.unit-head{align-items:flex-start}.curriculum-item{grid-template-columns:38px 1fr}.item-action{grid-column:2}.video-theater{padding:8px;border-radius:20px}.teacher-switcher-wrap{padding:10px}.explanation-card,.resources-card,.quiz-engine{padding:18px}.lesson-heading h1{font-size:26px}.question-card{padding:18px}.result-actions{flex-direction:column}}
 
+/* Immediate answer feedback and full review after each lesson quiz or exam. */
+.quiz-option-v3:disabled{cursor:default;opacity:1}.quiz-option-v3:disabled:hover{transform:none}
+.quiz-option-v3.correct,.quiz-option-v3.correct:hover{border-color:#0fa675;background:#e7f9f2;color:#075f48}
+.quiz-option-v3.wrong,.quiz-option-v3.wrong:hover{border-color:#e75a60;background:#fff0f0;color:#a52e37}
+.option-status-icon{margin-inline-start:auto;font-size:19px}
+.question-feedback{display:flex;align-items:flex-start;gap:11px;margin-top:17px;padding:15px 17px;border-radius:15px;line-height:1.85;font-size:14px}
+.question-feedback>i{font-size:21px;margin-top:3px}.question-feedback.is-correct{background:#e7f9f2;border:1px solid #a5e5cf;color:#075f48}.question-feedback.is-wrong{background:#fff1f1;border:1px solid #f5bbbb;color:#9d3038}
+.quiz-review{margin-top:20px;padding:clamp(18px,3vw,28px);border:1px solid #d9e7f5;border-radius:24px;background:#fff;box-shadow:0 14px 36px rgba(21,67,111,.07)}
+.quiz-review-head h2{margin:4px 0 4px;font-size:clamp(21px,3vw,27px);color:#153856}.quiz-review-head p{margin:0 0 21px;color:#526982;line-height:1.8}
+.quiz-review-list{display:grid;gap:13px;margin-bottom:20px}.quiz-review-item{padding:18px;border-radius:17px;border:1px solid #dbe9f4;border-inline-start:5px solid #11a878;background:#fafffd}
+.quiz-review-item.is-wrong{border-inline-start-color:#e55561;background:#fffafa}
+.quiz-review-item-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:13px;font-weight:800;color:#576f85}.quiz-review-item-head strong{color:#077d59}.quiz-review-item.is-wrong .quiz-review-item-head strong{color:#be3e4b}
+.quiz-review-item h3{font-size:17px;line-height:1.75;margin:11px 0;color:#153856;overflow-wrap:anywhere}.quiz-review-item p{font-size:14px;line-height:1.75;margin:5px 0;color:#3c5266;overflow-wrap:anywhere}.quiz-review-correct strong{color:#087a57}.quiz-review-student strong{color:#244866}.quiz-review-item.is-wrong .quiz-review-student strong{color:#be3e4b}
+@media(max-width:520px){.question-feedback{font-size:13px;padding:12px}.quiz-review{border-radius:18px}.quiz-review-item{padding:14px}.quiz-review-item h3{font-size:15px}.quiz-review>#retryQuizReviewBtn{width:100%}}
+
 .explorer-stage-rich{align-items:flex-start}
 .explore-grade-links{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
 .explore-grade-links button{width:30px;height:30px;border:1px solid #dbeafe;background:#eff6ff;color:#1d4ed8;border-radius:9px;font-size:12px;font-weight:900}
@@ -1313,4 +1328,5 @@ button.curriculum-item{cursor:pointer}
   .subject-hero-stats strong{font-size:20px!important}
   .subject-next-stat strong{font-size:12px!important}
 }
-
+.quiz-option-v3.correct,.quiz-option-v3.correct:hover{border-color:#0fa675!important;background:#e7f9f2!important;color:#075f48!important}
+.quiz-option-v3.wrong,.quiz-option-v3.wrong:hover{border-color:#e75a60!important;background:#fff0f0!important;color:#a52e37!important}

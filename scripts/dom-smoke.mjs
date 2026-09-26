@@ -8,7 +8,7 @@ function fixtures(){return {
  studentProfilesV3:{tester:{name:'طالب الاختبار',educationType:'public',stage:'prep',grade:1,onboardingCompleted:true,stats:{totalXP:50,completedLessons:0,completedQuizzes:0,streak:1,level:1},studyPlanner:{task:{title:'مراجعة الدرس',date,done:false}},learningProgress:{}}},
  adminProfiles:{tester:{isAdmin:true,name:'مدير الاختبار'}},teacherProfiles:{tester:{name:'مدرس الاختبار',isActive:true,subjects:[{type:'public',stage:'prep',grade:'1',subject:'arabic'}]}},
  customSubjects:{prep:{1:[{id:'arabic',name:'اللغة العربية',emoji:'📘',type:'public',imageUrl:'https://example.test/broken.jpg',units:[{name:'النحو'}]}]}},
- lessons:{lesson1:{title:'المبتدأ والخبر',content:'شرح تجريبي',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,teacherId:'tester',videos:[],questions:[question]}},
+ lessons:{lesson1:{title:'المبتدأ والخبر',content:'شرح تجريبي',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,teacherId:'tester',videos:[],questions:[question,{text:'ما ناتج 2 + 2؟',opts:['4','5'],correctAnswer:0}]}},
  quizzes:{quiz1:{name:'اختبار النحو',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:0,questions:[question]}},
  files:{file1:{title:'ملف بلا رابط',type:'public',stage:'prep',grade:'1',subject:'arabic',url:''}},
  assignments:{hw1:{title:'واجب النحو',instructions:'أجب',type:'public',stage:'prep',grade:'1',subject:'arabic',teacherId:'tester',maxScore:10,dueAt:Date.now()+86400000}},
@@ -102,8 +102,24 @@ async function check(file,role='student',failurePath=''){
   if(file==='lesson.html'){
    const b=w.document.getElementById('markCompleteBtn');if(b&&!b.disabled){b.click();b.click();await new Promise(r=>setTimeout(r,30));assert.equal(get('studentProfilesV3/tester/stats/totalXP'),100,'double click gives only one award');}
    w.document.getElementById('startQuizBtn').click();assert.ok(w.document.querySelector('[data-a]'),'quiz options');
-   w.document.querySelector('[data-a="1"]').click();w.document.getElementById('nextQuestionBtn').click();await new Promise(r=>setTimeout(r,30));
-   assert.equal(w.document.getElementById('resultPercent').textContent,'100%');
+   assert.equal(w.document.getElementById('nextQuestionBtn').disabled,true,'must answer before moving on');
+   w.document.querySelector('[data-a="0"]').click();
+   assert.match(w.document.getElementById('questionFeedback').textContent,/غير صحيحة/);
+   assert.match(w.document.getElementById('questionFeedback').textContent,/2/,'correct answer shown immediately');
+   assert.ok(w.document.querySelector('[data-a="1"].correct'),'correct choice highlighted');
+   w.document.querySelector('[data-a="1"]').click();
+   assert.match(w.document.getElementById('questionFeedback').textContent,/غير صحيحة/,'selection cannot change after feedback');
+   w.document.getElementById('nextQuestionBtn').click();
+   w.document.querySelector('[data-a="0"]').click();
+   assert.match(w.document.getElementById('questionFeedback').textContent,/إجابة صحيحة/);
+   w.document.getElementById('prevQuestionBtn').click();assert.ok(w.document.querySelector('[data-a="0"].wrong'),'previous feedback stays visible');
+   w.document.getElementById('nextQuestionBtn').click();w.document.getElementById('nextQuestionBtn').click();await new Promise(r=>setTimeout(r,30));
+   assert.equal(w.document.getElementById('resultPercent').textContent,'50%');
+   assert.equal(w.document.querySelectorAll('.quiz-review-item').length,2,'review lists all questions');
+   assert.match(w.document.querySelector('.quiz-review-item.is-wrong').textContent,/إجابتك:[\s\S]*1[\s\S]*الإجابة الصحيحة:[\s\S]*2/);
+   w.document.getElementById('retryQuizReviewBtn').click();
+   assert.equal(w.document.getElementById('quizReview').classList.contains('hidden'),true,'retry clears previous review');
+   assert.equal(w.document.getElementById('nextQuestionBtn').disabled,true,'retry clears answers');
   }
   if(file==='admin.html'&&role!=='guest'){
    for(const tab of w.document.querySelectorAll('[data-admin-tab]')){tab.click();await new Promise(r=>setTimeout(r,8));}

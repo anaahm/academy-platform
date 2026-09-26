@@ -500,27 +500,42 @@ async function markComplete(c,id){
  }
 }
 function setupQuiz(c,l){
- const qs=Array.isArray(l.questions)?l.questions:[];$('quizIntroText').textContent=qs.length?'تدريب مكوّن من '+qs.length+' سؤال على هذا الدرس.':'لا توجد أسئلة مضافة لهذا الدرس حتى الآن.';$('startQuizBtn').disabled=!qs.length;$('startQuizBtn').onclick=()=>startQuiz(qs,c,l.id);$('retryQuizBtn').onclick=()=>startQuiz(qs,c,l.id);$('reviewLessonBtn').onclick=()=>$$('[data-lesson-tab]').find(b=>b.dataset.lessonTab==='explanation')?.click();
+ const qs=Array.isArray(l.questions)?l.questions:[];$('quizIntroText').textContent=qs.length?'تدريب مكوّن من '+qs.length+' سؤال على هذا الدرس.':'لا توجد أسئلة مضافة لهذا الدرس حتى الآن.';$('startQuizBtn').disabled=!qs.length;$('startQuizBtn').onclick=()=>startQuiz(qs,c,l.id);$('retryQuizBtn').onclick=()=>startQuiz(qs,c,l.id);$('retryQuizReviewBtn').onclick=()=>startQuiz(qs,c,l.id);$('reviewLessonBtn').onclick=()=>$$('[data-lesson-tab]').find(b=>b.dataset.lessonTab==='explanation')?.click();
 }
 function startQuiz(qs,c,sourceId){
  let ok;try{ok=window.AcademyUtils.validateQuestions(qs)}catch(err){toast(err.message,'error');return}if(!ok.length){toast('لا توجد أسئلة قابلة للتشغيل حاليًا.','error');return}
- state.quiz={questions:ok,answers:new Array(ok.length).fill(null),c,sourceId};state.quizIndex=0;$('quizIntro').classList.add('hidden');$('quizResult').classList.add('hidden');$('quizEngine').classList.remove('hidden');renderQuestion();
+ state.quiz={questions:ok,answers:new Array(ok.length).fill(null),c,sourceId};state.quizIndex=0;$('quizIntro').classList.add('hidden');$('quizResult').classList.add('hidden');$('quizReview').classList.add('hidden');$('quizReviewList').replaceChildren();$('quizEngine').classList.remove('hidden');renderQuestion();$('quizEngine').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function renderQuestion(){
- const qz=state.quiz,i=state.quizIndex,q=qz.questions[i],total=qz.questions.length,letters=['أ','ب','ج','د','هـ'];
+ const qz=state.quiz,i=state.quizIndex,q=qz.questions[i],total=qz.questions.length,letters=['أ','ب','ج','د','هـ'],answer=qz.answers[i],correct=Number(q.correctAnswer),answered=answer!==null;
  $('quizProgressText').textContent='السؤال '+(i+1)+' من '+total;$('quizProgressBar').style.width=((i+1)/total*100)+'%';$('questionNumber').textContent=i+1;$('questionText').textContent=q.text||'';
  $('quizProgressTrack')?.setAttribute('aria-valuemax',String(total));$('quizProgressTrack')?.setAttribute('aria-valuenow',String(i+1));
- $('questionOptions').innerHTML=(q.opts||[]).map((o,j)=>'<button class="quiz-option-v3 '+(qz.answers[i]===j?'selected':'')+'" data-a="'+j+'" aria-pressed="'+(qz.answers[i]===j?'true':'false')+'"><span class="opt-letter">'+(letters[j]||j+1)+'</span><span>'+esc(o)+'</span></button>').join('');
- $$('[data-a]').forEach(b=>b.onclick=()=>{qz.answers[i]=Number(b.dataset.a);renderQuestion()});$('prevQuestionBtn').disabled=i===0;$('nextQuestionBtn').textContent=i===total-1?'إنهاء التدريب':'التالي';
+ $('questionOptions').innerHTML=(q.opts||[]).map((o,j)=>'<button type="button" class="quiz-option-v3 '+(answered?(j===correct?'correct':j===answer?'wrong':''):'')+'" data-a="'+j+'" aria-pressed="'+(answer===j?'true':'false')+'" '+(answered?'disabled':'')+'><span class="opt-letter">'+(letters[j]||j+1)+'</span><span>'+esc(o)+'</span>'+(answered&&j===correct?'<i class="fa-solid fa-circle-check option-status-icon" aria-hidden="true"></i>':answered&&j===answer?'<i class="fa-solid fa-circle-xmark option-status-icon" aria-hidden="true"></i>':'')+'</button>').join('');
+ const feedback=$('questionFeedback');feedback.classList.toggle('hidden',!answered);feedback.classList.toggle('is-correct',answered&&answer===correct);feedback.classList.toggle('is-wrong',answered&&answer!==correct);
+ feedback.innerHTML=answered?(answer===correct?'<i class="fa-solid fa-circle-check" aria-hidden="true"></i><span><strong>إجابة صحيحة! أحسنت.</strong></span>':'<i class="fa-solid fa-circle-xmark" aria-hidden="true"></i><span><strong>إجابة غير صحيحة.</strong> الإجابة الصحيحة: <strong>'+esc(q.opts[correct])+'</strong></span>'):'';
+ $$('[data-a]').forEach(b=>b.onclick=()=>{if(qz.answers[i]!==null)return;qz.answers[i]=Number(b.dataset.a);renderQuestion()});$('prevQuestionBtn').disabled=i===0;$('nextQuestionBtn').textContent=i===total-1?'عرض النتيجة':'التالي';$('nextQuestionBtn').disabled=!answered;
  $('prevQuestionBtn').onclick=()=>{if(state.quizIndex>0){state.quizIndex--;renderQuestion()}};$('nextQuestionBtn').onclick=()=>{if(qz.answers[i]===null){toast('اختر إجابة أولًا.','error');return}if(i===total-1)finishQuiz();else{state.quizIndex++;renderQuestion()}};
+}
+function renderQuizReview(qz){
+ $('quizReviewList').innerHTML=qz.questions.map((q,i)=>{
+   const chosen=qz.answers[i],correct=Number(q.correctAnswer),right=chosen===correct;
+   return '<article class="quiz-review-item '+(right?'is-correct':'is-wrong')+'">'+
+     '<div class="quiz-review-item-head"><span>السؤال '+(i+1)+'</span><strong><i class="fa-solid '+(right?'fa-circle-check':'fa-circle-xmark')+'" aria-hidden="true"></i> '+(right?'إجابة صحيحة':'إجابة خاطئة')+'</strong></div>'+
+     '<h3>'+esc(q.text)+'</h3><p class="quiz-review-student">إجابتك: <strong>'+esc(chosen===null?'لم تجب':q.opts[chosen])+'</strong></p>'+
+     '<p class="quiz-review-correct">الإجابة الصحيحة: <strong>'+esc(q.opts[correct])+'</strong></p></article>';
+ }).join('');
+ $('quizReview').classList.remove('hidden');
 }
 async function finishQuiz(){
  const qz=state.quiz;let score=0;
+ if(qz.answers.some(answer=>answer===null)){toast('أجب عن جميع الأسئلة أولًا.','error');return}
  qz.questions.forEach((q,i)=>{if(Number(qz.answers[i])===Number(q.correctAnswer))score++});
  const pct=Math.round(score/qz.questions.length*100);
  $('quizEngine').classList.add('hidden');$('quizResult').classList.remove('hidden');$('resultPercent').textContent=pct+'%';$('resultRing').style.background='conic-gradient(#10b981 '+(pct*3.6)+'deg,#e5e7eb 0deg)';
  $('resultTitle').textContent=pct>=80?'ممتاز جدًا! 🌟':pct>=60?'أداء جيد 👏':'راجع الشرح وجرّب مرة أخرى';
  $('resultMessage').textContent='أجبت عن '+score+' من '+qz.questions.length+' إجابة بشكل صحيح.';
+ renderQuizReview(qz);
+ $('quizResult').scrollIntoView({behavior:'smooth',block:'start'});
  trackContentEvent(qz.sourceId,'quiz',pct);
  if(!state.user)return;
  try{
@@ -561,7 +576,7 @@ function renderQuizOnly(c,id){
  }
  state.subject=subjectFor(c);filterContent(c);$('lessonTitle').textContent=q.name||'اختبار';$('lessonMeta').textContent=(Number(q.unit||0)===0?'اختبار شامل':unitName(c,q.unit))+' • '+state.subject.name;$('lessonSubtitle').textContent='اختبر مستواك واعرف نقاط القوة وما يحتاج للمراجعة.';
  document.querySelector('.video-theater').classList.add('hidden');$('lessonExplanationPanel').classList.add('hidden');$('lessonResourcesPanel').classList.add('hidden');$('lessonTabs').innerHTML='<button class="active"><i class="fa-solid fa-bullseye"></i> الاختبار</button>';$('lessonQuizPanel').classList.remove('hidden');
- $('quizIntroText').textContent='الاختبار مكوّن من '+(q.questions?.length||0)+' سؤال.';$('startQuizBtn').disabled=!(q.questions?.length);$('startQuizBtn').onclick=()=>startQuiz(q.questions||[],c,id);$('retryQuizBtn').onclick=()=>startQuiz(q.questions||[],c,id);$('reviewLessonBtn').classList.add('hidden');
+ $('quizIntroTitle').textContent='اختبر معلوماتك';$('quizIntroText').textContent='الاختبار مكوّن من '+(q.questions?.length||0)+' سؤال.';$('startQuizBtn').textContent='ابدأ الاختبار';$('retryQuizBtn').textContent='إعادة الاختبار';$('retryQuizReviewBtn').textContent='إعادة الاختبار';$('startQuizBtn').disabled=!(q.questions?.length);$('startQuizBtn').onclick=()=>startQuiz(q.questions||[],c,id);$('retryQuizBtn').onclick=()=>startQuiz(q.questions||[],c,id);$('retryQuizReviewBtn').onclick=()=>startQuiz(q.questions||[],c,id);$('reviewLessonBtn').classList.add('hidden');
  $('outlineUnitTitle').textContent='الاختبار';$('lessonOutline').innerHTML='<div class="outline-item active"><span class="outline-num">✓</span><strong>'+esc(q.name||'اختبار')+'</strong></div>';
  document.querySelector('.lesson-progress-card')?.classList.add('hidden');const back=url('subject.html',c);$('backToSubjectLink').href=back;$('previousLessonBtn').onclick=()=>location.href=back;$('previousLessonBtn').innerHTML='<i class="fa-solid fa-arrow-right"></i> العودة للمادة';$('nextLessonBtn').classList.add('hidden');
 }
