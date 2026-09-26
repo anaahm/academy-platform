@@ -225,6 +225,7 @@
               <label><span>اسم المدرس</span><input id="newTeacherName" type="text" required maxlength="80" autocomplete="off" placeholder="اسم المدرس"></label>
               <label><span>البريد الإلكتروني</span><input id="newTeacherEmail" type="email" required autocomplete="off" dir="ltr" placeholder="teacher@example.com"></label>
               <label><span>كلمة مرور أولية</span><input id="newTeacherPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="ثمانية أحرف على الأقل"></label>
+              <label><span>الدور والصلاحية</span><select id="newTeacherRole"><option value="teacher">معلم</option><option value="assistant">مساعد معلم</option><option value="supervisor">مشرف مادة</option></select></label>
               <button class="btn btn-primary" id="createTeacherBtn" type="submit"><i class="fa-solid fa-user-plus"></i> إنشاء حساب المدرس</button>
             </form>
             <p id="createTeacherStatus" class="teacher-form-status" role="status" aria-live="polite"></p>
