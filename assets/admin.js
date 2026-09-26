@@ -717,9 +717,9 @@ function renderVisualSettingPreview(inputId,previewId,label,defaultImage='./asse
  const caption=preview.querySelector('span');if(caption)caption.textContent=safe?label+' — صورة مخصصة':label+' — الصورة الافتراضية';
 }
 function renderDashboardHeroSettingPreview(){
- renderVisualSettingPreview('settingPublicHero','settingPublicHeroPreview','الصفحة قبل تسجيل الدخول');
- renderVisualSettingPreview('settingAuthVisual','settingAuthVisualPreview','تسجيل الدخول');
- renderVisualSettingPreview('settingDashboardHero','settingDashboardHeroPreview','غلاف لوحة الطالب');
+ renderVisualSettingPreview('settingPublicHero','settingPublicHeroPreview','الصفحة قبل تسجيل الدخول','./assets/reference-hero.jpg');
+ renderVisualSettingPreview('settingAuthVisual','settingAuthVisualPreview','تسجيل الدخول','./assets/reference-hero.jpg');
+ renderVisualSettingPreview('settingDashboardHero','settingDashboardHeroPreview','غلاف لوحة الطالب','./assets/dashboard-hero.jpg');
 }
 function loadSettings(){
  const s=root.settings||{};
@@ -858,9 +858,9 @@ $('profileTeacherId')?.addEventListener('change',fillTeacherProfileEditor);
 $('adminTeacherProfileForm')?.addEventListener('submit',saveTeacherProfile);
 ['settingPublicHero','settingAuthVisual','settingDashboardHero'].forEach(id=>$(id)?.addEventListener('input',renderDashboardHeroSettingPreview));
 $('resetDashboardHero')?.addEventListener('click',()=>{
-  $('settingDashboardHero').value='';
+  ['settingPublicHero','settingAuthVisual','settingDashboardHero','settingStagePrimary','settingStagePrep','settingStageSec','settingStageAzhar'].forEach(id=>{if($(id))$(id).value=''});
   renderDashboardHeroSettingPreview();
-  toast('تم اختيار الغلاف الافتراضي. اضغط حفظ الإعدادات لتطبيقه.');
+  toast('تم اختيار كل الصور الافتراضية. اضغط حفظ الإعدادات لتطبيقها.');
 });
 $('lessonSearch').oninput=renderLessons;$('lessonFilterStage').onchange=renderLessons;$('lessonFilterType').onchange=renderLessons;$('studentSearch').oninput=renderStudents;
 $('curriculumType').onchange=renderCurriculum;$('curriculumStage').onchange=()=>{fillGrades($('curriculumGrade'),$('curriculumStage').value);renderCurriculum()};$('curriculumGrade').onchange=renderCurriculum;
