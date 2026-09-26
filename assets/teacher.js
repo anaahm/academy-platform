@@ -300,6 +300,7 @@ function renderTeacherAssignments(){
 }
 async function submitTeacherAssignment(e){
  e.preventDefault();
+ if(teacher?.role==='assistant')return toast('مساعد المعلم لا يملك صلاحية إنشاء الواجبات.','error');
  const subject=$('assignmentSubject').value,subjectName=$('assignmentSubject').selectedOptions[0]?.textContent||subject;
  const targetMode=$('assignmentTargetMode')?.value||'all',targetRaw=$('assignmentTargetValue')?.value.trim()||'';
  const targetStudentIds=targetMode==='students'?targetRaw.split(/[،,\s]+/).map(x=>x.trim()).filter(Boolean):[];
@@ -340,6 +341,7 @@ function closeGradeModal(){
 }
 async function saveGrade(e){
  e.preventDefault();if(!activeGrade)return;
+ if(teacher?.role==='assistant')return toast('مساعد المعلم لا يملك صلاحية تصحيح الواجبات.','error');
  const a=homeworkAssignments[activeGrade.assignmentId]||{},maxScore=Number(a.maxScore||100),raw=$('gradeScore').value;
  if(raw==='')return toast('أدخل درجة الطالب.','error');
  const score=Number(raw);
@@ -469,6 +471,16 @@ auth.onAuthStateChanged(async u=>{
  try{
    const t=await db.ref('teacherProfiles/'+u.uid).once('value');
    teacher=t.val();
+   if(teacher?.role==='assistant'){
+     $('[data-teacher-tab="assignments"]').forEach(el=>el.classList.add('hidden'));
+     $('[data-teacher-tab="students"]').forEach(el=>el.classList.add('hidden'));
+   }else{
+     $('[data-teacher-tab="assignments"]').forEach(el=>el.classList.remove('hidden'));
+     $('[data-teacher-tab="students"]').forEach(el=>el.classList.remove('hidden'));
+   }
+   if($('teacherTopRole')){
+     $('teacherTopRole').textContent=teacher?.role==='assistant'?'مساعد معلم • إعداد محتوى واختبارات':teacher?.role==='supervisor'?'مشرف مادة • متابعة المحتوى والتحليلات':'بوابة إدارة المحتوى التعليمي';
+   }
    if(!teacher){showNoAccess('الحساب الحالي ليس له ملف مدرس. الإدارة لازم تضيفه كمدرس أولًا.');return}
    if(teacher.isActive!==true||teacher.status==='blocked'){showNoAccess('حساب المدرس غير مفعل حاليًا. تواصل مع الإدارة.');return}
 
