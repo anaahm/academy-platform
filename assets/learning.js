@@ -386,7 +386,8 @@ function renderVideo(l){
  const frameHtml=(v,i)=>{
    const src=yt(v.url);if(!src)return'';
    const teacher=v.name||('المدرس '+(i+1));
-   return '<iframe src="'+src+'" title="'+esc((l.title||'الدرس')+' - شرح '+teacher)+'" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+   const apiSrc=src+(src.includes('?')?'&':'?')+'enablejsapi=1&origin='+encodeURIComponent(location.origin);
+   return '<iframe id="lessonVideoFrame'+i+'" data-video-index="'+i+'" src="'+apiSrc+'" title="'+esc((l.title||'الدرس')+' - شرح '+teacher)+'" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
  };
  const first=frameHtml(vids[0],0);if(first)$('videoFrame').innerHTML=first;
  $('teacherSwitcherWrap').classList.remove('hidden');$('teacherCountBadge').textContent=vids.length+' '+(vids.length===1?'مدرس':'مدرسين');
