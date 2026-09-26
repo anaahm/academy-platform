@@ -1,7 +1,7 @@
 (() => {
 'use strict';
 const C=window.AcademyCore,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-let user,profile,sessions=[],filter='live',viewerTrigger=null;
+let user,profile,sessions=[],filter='live',viewerTrigger=null,activeSessionId=null,attendanceTimer=null;
 
 function embed(url=''){return window.AcademyUtils.youtubeEmbed(url)}
 function matchesStudent(s){
@@ -52,9 +52,19 @@ function openSession(id,trigger){
  if(yt&&yt!=='#')acts.push('<a class="btn btn-soft" href="'+C.esc(yt)+'" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-youtube"></i> فتح على YouTube</a>');
  $('liveViewerActions').innerHTML=acts.join('')||'<span class="live-no-actions">لا توجد روابط جلسة متاحة حاليًا.</span>';
  $('liveViewer').classList.remove('hidden');$('liveViewer').setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
+ activeSessionId=id;
+ if(s.status==='live'&&window.AcademyPro&&user){
+   window.AcademyPro.recordAttendance(id,true,user.uid).catch(()=>{});
+   clearInterval(attendanceTimer);
+   attendanceTimer=setInterval(()=>window.AcademyPro.recordAttendance(id,true,user.uid).catch(()=>{}),30000);
+ }
  setTimeout(()=>$('liveViewer').querySelector('.live-viewer-panel')?.focus(),30);
 }
 function closeViewer(){
+ if(activeSessionId&&window.AcademyPro&&user){
+   window.AcademyPro.recordAttendance(activeSessionId,false,user.uid).catch(()=>{});
+ }
+ activeSessionId=null;clearInterval(attendanceTimer);attendanceTimer=null;
  $('liveVideo').replaceChildren();
  $('liveViewer').classList.add('hidden');$('liveViewer').setAttribute('aria-hidden','true');document.body.style.overflow='';
  const target=viewerTrigger;viewerTrigger=null;setTimeout(()=>target?.focus(),30);
@@ -80,5 +90,6 @@ $('liveSearch').oninput=render;
    console.error(err);C.toast('تعذر تحميل الجلسات الآن.','error');
    $('liveGrid').innerHTML=window.AcademyUI?.errorStateHtml('تعذر تحميل البث والجلسات','تحقق من الاتصال وحاول مرة أخرى.','<button class="btn btn-primary" onclick="location.reload()">إعادة المحاولة</button>')||'';
  }finally{window.AcademyUI?.hidePageLoading()}
+ window.addEventListener('beforeunload',()=>{if(activeSessionId&&window.AcademyPro&&user)window.AcademyPro.recordAttendance(activeSessionId,false,user.uid).catch(()=>{});});
 })();
 })();
