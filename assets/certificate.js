@@ -27,7 +27,18 @@ function deny(){
   $('certificateGrade').textContent=C.gradeLabel(stage,grade)||C.stageLabel(stage);
   $('certificateType').textContent=C.typeLabel(type);
   $('certificateDate').textContent=new Date(completedAt).toLocaleDateString('ar-EG',{day:'numeric',month:'long',year:'numeric'});
-  $('certificateCode').textContent='ACA-'+user.uid.slice(0,6).toUpperCase()+'-'+String(subject).replace(/[^a-zA-Z0-9_-]/g,'').toUpperCase().slice(0,16)+'-'+String(completedAt).slice(-6);
+  let certificateId='ACA-'+user.uid.slice(0,6).toUpperCase()+'-'+String(subject).replace(/[^a-zA-Z0-9_-]/g,'').toUpperCase().slice(0,16)+'-'+String(completedAt).slice(-6);
+  if(window.AcademyPro){
+    certificateId=await window.AcademyPro.issueCertificate({
+      studentName:profile.name||user.displayName||'طالب الأكاديمية',
+      subject,subjectName,type,stage,grade:String(grade),completedAt,
+      gradeLabel:C.gradeLabel(stage,grade)||C.stageLabel(stage),
+      educationLabel:C.typeLabel(type)
+    },user.uid)||certificateId;
+  }
+  $('certificateCode').textContent='رقم التحقق: '+certificateId;
+  const verify=$('verifyCertificateLink');
+  if(verify){verify.href='./verify.html?id='+encodeURIComponent(certificateId);verify.classList.remove('hidden')}
   $('certificateLoading').classList.add('hidden');$('certificateApp').classList.remove('hidden');
   $('printCertificate').onclick=()=>window.print();
  }catch(err){
