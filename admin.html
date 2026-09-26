@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="./assets/admin.css?v=42">
   <link rel="stylesheet" href="./assets/ui-kit.css?v=35">
   <link rel="stylesheet" href="./assets/experience.css?v=34">
+  <link rel="stylesheet" href="./assets/future-theme.css?v=1">
   <script src="./assets/academy-utils.js"></script>
 </head>
 <body class="admin-v3-body">
@@ -346,16 +347,28 @@
               <div class="full admin-dashboard-cover-settings">
                 <div class="admin-cover-settings-head">
                   <div>
-                    <span class="section-kicker">واجهة الطالب</span>
-                    <h3>غلاف لوحة الطالب</h3>
-                    <p>اترك الرابط فارغًا لاستخدام الغلاف الافتراضي الموجود داخل المنصة.</p>
+                    <span class="section-kicker">الهوية البصرية الجديدة</span>
+                    <h3>صور واجهات المنصة</h3>
+                    <p>اترك أي رابط فارغًا ليبقى التصميم الافتراضي. بمجرد وضع رابط جديد يتم تطبيقه مباشرة.</p>
                   </div>
-                  <button class="btn btn-soft" type="button" id="resetDashboardHero"><i class="fa-solid fa-rotate-left"></i> استعادة الافتراضي</button>
+                  <button class="btn btn-soft" type="button" id="resetDashboardHero"><i class="fa-solid fa-rotate-left"></i> استعادة افتراضيات لوحة الطالب</button>
                 </div>
-                <div class="admin-cover-preview" id="settingDashboardHeroPreview" role="img" aria-label="معاينة غلاف لوحة الطالب">
-                  <span>معاينة الغلاف</span>
+
+                <div class="admin-cover-preview" id="settingPublicHeroPreview" role="img" aria-label="معاينة صورة الصفحة قبل التسجيل"><span>صورة الصفحة قبل تسجيل الدخول</span></div>
+                <label><span>صورة الصفحة الرئيسية قبل تسجيل الدخول</span><input id="settingPublicHero" type="url" dir="ltr" placeholder="اتركه فارغًا للصورة الافتراضية"></label>
+
+                <div class="admin-cover-preview" id="settingAuthVisualPreview" role="img" aria-label="معاينة صورة تسجيل الدخول"><span>صورة تسجيل الدخول</span></div>
+                <label><span>صورة جانب تسجيل الدخول / إنشاء الحساب</span><input id="settingAuthVisual" type="url" dir="ltr" placeholder="اتركه فارغًا للصورة الافتراضية"></label>
+
+                <div class="admin-cover-preview" id="settingDashboardHeroPreview" role="img" aria-label="معاينة غلاف لوحة الطالب"><span>غلاف لوحة الطالب</span></div>
+                <label><span>صورة غلاف لوحة الطالب</span><input id="settingDashboardHero" type="url" dir="ltr" placeholder="اتركه فارغًا للغلاف الافتراضي"></label>
+
+                <div class="admin-stage-image-grid">
+                  <label><span>صورة المرحلة الابتدائية</span><input id="settingStagePrimary" type="url" dir="ltr" placeholder="افتراضي"></label>
+                  <label><span>صورة المرحلة الإعدادية</span><input id="settingStagePrep" type="url" dir="ltr" placeholder="افتراضي"></label>
+                  <label><span>صورة المرحلة الثانوية</span><input id="settingStageSec" type="url" dir="ltr" placeholder="افتراضي"></label>
+                  <label><span>صورة التعليم الأزهري</span><input id="settingStageAzhar" type="url" dir="ltr" placeholder="افتراضي"></label>
                 </div>
-                <label><span>رابط صورة الغلاف</span><input id="settingDashboardHero" type="url" dir="ltr" placeholder="https://example.com/cover.jpg"></label>
               </div>
 
               <label class="full"><span>النص أسفل الترحيب في الغلاف</span><input id="settingDashboardHeroSubtitle" maxlength="140" placeholder="كل يوم هو فرصة جديدة للتعلم وتقترب من أهدافك"></label>
