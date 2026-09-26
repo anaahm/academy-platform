@@ -34,6 +34,12 @@ function toast(msg,type='success'){
 }
 function initials(n='طالب'){return(n.trim()[0]||'ط').toUpperCase()}
 function educationLabel(t){return t==='azhar'?'التعليم الأزهري':'التعليم العام'}
+async function syncPhoneDirectory(){
+  if(!user?.uid||!profile?.phone)return;
+  try{
+    await db.ref('phoneDirectoryV4/students/'+user.uid).set({uid:user.uid,name:profile.name||user.displayName||'',phone:profile.phone,updatedAt:Date.now()});
+  }catch(err){console.warn('Phone directory sync skipped',err)}
+}
 function accountSnapshot(){return{name:$('profileNameInput')?.value.trim()||''}}
 function studySnapshot(){return{educationType:$('studyType')?.value||'public',stage:$('studyStage')?.value||'prep',grade:Number($('studyGrade')?.value||1)}}
 function same(a,b){return JSON.stringify(a)===JSON.stringify(b)}
@@ -227,7 +233,8 @@ $('accountForm').addEventListener('submit',async e=>{
   try{
     await Promise.all([
       user.updateProfile({displayName:name}),
-      db.ref('studentProfilesV3/'+user.uid).update({name,updatedAt:Date.now()})
+      db.ref('studentProfilesV3/'+user.uid).update({name,updatedAt:Date.now()}),
+      profile.phone?db.ref('phoneDirectoryV4/students/'+user.uid).update({uid:user.uid,name,phone:profile.phone,updatedAt:Date.now()}):Promise.resolve()
     ]);
     profile.name=name;
     render();
@@ -334,6 +341,7 @@ auth.onAuthStateChanged(async u=>{
   try{
     const snap=await db.ref('studentProfilesV3/'+u.uid).once('value');
     profile=snap.val()||{};
+    await syncPhoneDirectory();
     render();
     const requested=new URLSearchParams(location.search).get('tab')||'overview';
     switchTab(requested,false);
