@@ -96,7 +96,6 @@ async function logMistake(question,ctx={},userId=uid()){
  const options=question.options||question.opts||[];
  const rawCorrect=question.correctAnswer??question.correct??'',correctIndex=Number.isInteger(Number(rawCorrect))?Number(rawCorrect):options.findIndex(x=>String(x)===String(rawCorrect));
  await ref.set({questionId:question.id,questionText:question.question||question.text||'',options,correctIndex,correctAnswer:correctIndex>=0?options[correctIndex]:rawCorrect,explanation:question.explanation||'',studentAnswer:ctx.studentAnswer??'',lessonId:ctx.lessonId||'',subject:ctx.subject||'',step,nextReviewAt:now()+reviewIntervals[step]*day,lastWrongAt:now(),wrongCount:Number(s.wrongCount||0)+1,correctReviews:Number(s.correctReviews||0),status:'due'});
- await updateQuestionStats(question.id,false,ctx.studentAnswer);
 }
 async function markReview(questionId,correct,userId=uid()){
  if(!userId||!questionId)return;const ref=db.ref(paths.reviews+'/'+userId+'/'+questionId);
