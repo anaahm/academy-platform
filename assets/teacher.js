@@ -101,7 +101,9 @@ function addQuizQuestion(q={}){
  row.innerHTML='<div class="teacher-question-head"><strong>السؤال <span class="question-position"></span></strong><button type="button" class="teacher-remove-question" aria-label="حذف السؤال"><i class="fa-solid fa-trash"></i> حذف</button></div>'+
    '<label><span>نص السؤال</span><textarea class="teacher-question-text" maxlength="500" rows="2" required>'+escapeHtml(q.text||'')+'</textarea></label>'+
    '<div class="teacher-question-options">'+Array.from({length:4},(_,i)=>'<label><span>الخيار '+(i+1)+'</span><input class="teacher-question-option" maxlength="250" value="'+escapeHtml(q.opts?.[i]||'')+'" '+(i<2?'required':'')+'></label>').join('')+'</div>'+
-   '<label><span>الإجابة الصحيحة</span><select class="teacher-question-correct">'+Array.from({length:4},(_,i)=>'<option value="'+i+'" '+(Number(q.correctAnswer)===i?'selected':'')+'>الخيار '+(i+1)+'</option>').join('')+'</select></label>';
+   '<label><span>الإجابة الصحيحة</span><select class="teacher-question-correct">'+Array.from({length:4},(_,i)=>'<option value="'+i+'" '+(Number(q.correctAnswer)===i?'selected':'')+'>الخيار '+(i+1)+'</option>').join('')+'</select></label>'+
+   '<label><span>مستوى الصعوبة</span><select class="teacher-question-difficulty"><option value="1" '+(Number(q.difficulty||2)===1?'selected':'')+'>سهل</option><option value="2" '+(Number(q.difficulty||2)===2?'selected':'')+'>متوسط</option><option value="3" '+(Number(q.difficulty||2)===3?'selected':'')+'>صعب</option></select></label>'+
+   '<label class="full"><span>تفسير الإجابة — يظهر بعد الحل</span><textarea class="teacher-question-explanation" maxlength="1000" rows="2" placeholder="اشرح باختصار لماذا هذه الإجابة صحيحة...">'+escapeHtml(q.explanation||'')+'</textarea></label>';
  row.querySelector('.teacher-remove-question').onclick=()=>{row.remove();updateQuestionNumbers()};box.append(row);updateQuestionNumbers();return row;
 }
 function updateQuestionNumbers(){$$('#teacherQuizQuestionRows .question-position').forEach((node,i)=>node.textContent=i+1)}
@@ -110,14 +112,14 @@ function collectQuizQuestions(){
  return window.AcademyUtils.validateQuestions(rows.map((row,i)=>{
    const opts=$$('.teacher-question-option',row).map(input=>input.value.trim());while(opts.length&&!opts.at(-1))opts.pop();
    if(opts.length<2||opts.some(o=>!o))throw Error('أكمل الخيارات بالترتيب في السؤال '+(i+1)+'.');
-   return {text:row.querySelector('.teacher-question-text').value.trim(),opts,correctAnswer:Number(row.querySelector('.teacher-question-correct').value)};
+   return {text:row.querySelector('.teacher-question-text').value.trim(),opts,correctAnswer:Number(row.querySelector('.teacher-question-correct').value),difficulty:Number(row.querySelector('.teacher-question-difficulty')?.value||2),explanation:row.querySelector('.teacher-question-explanation')?.value.trim()||''};
  }));
 }
 function importQuizQuestions(){
  let items;try{items=JSON.parse($('teacherQuizBulk').value.trim());items=window.AcademyUtils.validateQuestions(items)}catch(err){return toast('تعذر قراءة المجموعة: '+(err.message||'صيغة JSON غير صحيحة.'),'error')}
  if(!items.length)return toast('لا توجد أسئلة في المجموعة.','error');
  if(items.length+$$('#teacherQuizQuestionRows .teacher-question-row').length>100)return toast('الحد الأقصى 100 سؤال لكل اختبار.','error');
- if(items.some(q=>q.opts.length>4||q.text.length>500||q.opts.some(o=>o.length>250)))return toast('كل سؤال يقبل 2 إلى 4 خيارات ونصًا لا يتجاوز 500 حرف.','error');
+ if(items.some(q=>q.opts.length>4||q.text.length>500||q.opts.some(o=>o.length>250)||String(q.explanation||'').length>1000))return toast('كل سؤال يقبل 2 إلى 4 خيارات، ونصًا لا يتجاوز 500 حرف، وتفسيرًا لا يتجاوز 1000 حرف.','error');
  items.forEach(addQuizQuestion);$('teacherQuizBulk').value='';toast('تمت إضافة '+items.length+' سؤال. راجعها قبل الإرسال.');
 }
 async function submitTeacherQuiz(e){
