@@ -27,7 +27,15 @@ function deny(){
   $('certificateGrade').textContent=C.gradeLabel(stage,grade)||C.stageLabel(stage);
   $('certificateType').textContent=C.typeLabel(type);
   $('certificateDate').textContent=new Date(completedAt).toLocaleDateString('ar-EG',{day:'numeric',month:'long',year:'numeric'});
-  $('certificateCode').textContent='ACA-'+user.uid.slice(0,6).toUpperCase()+'-'+String(subject).replace(/[^a-zA-Z0-9_-]/g,'').toUpperCase().slice(0,16)+'-'+String(completedAt).slice(-6);
+  const certificateCode='ACA-'+user.uid.slice(0,6).toUpperCase()+'-'+String(subject).replace(/[^a-zA-Z0-9_-]/g,'').toUpperCase().slice(0,16)+'-'+String(completedAt).slice(-6);
+  $('certificateCode').textContent=certificateCode;
+  try{
+    await C.db.ref('certificateRegistry/'+certificateCode).update({ownerUid:user.uid,studentName:profile.name||user.displayName||'طالب الأكاديمية',subject,subjectName,stage,grade:String(grade),gradeLabel:C.gradeLabel(stage,grade)||C.stageLabel(stage),type,typeLabel:C.typeLabel(type),completedAt,issuedAt:Date.now()});
+    const codeNode=$('certificateCode'),wrap=codeNode?.parentElement;
+    if(wrap&&!document.getElementById('verifyCertificateLink')){
+      const a=document.createElement('a');a.id='verifyCertificateLink';a.className='cert-btn secondary';a.href='./verify.html?code='+encodeURIComponent(certificateCode);a.target='_blank';a.rel='noopener';a.innerHTML='<i class="fa-solid fa-shield-halved"></i> فحص الشهادة';wrap.appendChild(a);
+    }
+  }catch(err){console.warn('Certificate registry sync deferred',err)}
   $('certificateLoading').classList.add('hidden');$('certificateApp').classList.remove('hidden');
   $('printCertificate').onclick=()=>window.print();
  }catch(err){

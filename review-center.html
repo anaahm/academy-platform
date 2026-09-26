@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-page="review-center">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>المراجعة الذكية | الأكاديمية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/learning.css"><link rel="stylesheet" href="./assets/ui-kit.css"><link rel="stylesheet" href="./assets/pro-suite.css">
+</head>
+<body class="feature-page">
+<div id="toast" class="toast"></div>
+<header class="learning-header"><div class="container learning-nav"><a class="brand" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-book-open"></i></span><span><strong>الأكاديمية</strong><small>المراجعة الذكية</small></span></a><div class="learning-breadcrumb"><a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><span>دفتر الأخطاء الذكي</span></div><a class="btn btn-soft" href="./smart-assessment.html"><i class="fa-solid fa-brain"></i> تحديد المستوى</a></div></header>
+<main class="pro-shell">
+<section class="pro-page-hero"><span class="section-kicker light">تثبيت طويل المدى</span><h1>المراجعة المتباعدة ودفتر الأخطاء</h1><p>السؤال الذي أخطأت فيه يعود لك في التوقيت المناسب: بعد يوم، ثم 3 أيام، ثم 7 و14 و30 يومًا حتى يثبت.</p></section>
+<section class="pro-kpi-grid">
+<article class="pro-kpi"><strong id="reviewDue">0</strong><span>مستحق الآن</span></article>
+<article class="pro-kpi"><strong id="reviewTotal">0</strong><span>في دفتر الأخطاء</span></article>
+<article class="pro-kpi"><strong id="reviewMastered">0</strong><span>تم تثبيتها</span></article>
+<article class="pro-kpi"><strong id="reviewNext">—</strong><span>أقرب مراجعة</span></article>
+</section>
+<section class="pro-panel" id="reviewSession">
+<div class="pro-panel-head"><div><span class="section-kicker">جلسة اليوم</span><h2 id="reviewSessionTitle">جاري تجهيز المراجعات...</h2><p id="reviewSessionText">نرتب الأسئلة حسب وقت الاستحقاق.</p></div><span class="pro-badge" id="reviewCounter">0 / 0</span></div>
+<div id="reviewQuestionArea"></div>
+<div class="pro-toolbar" style="margin-top:16px"><button class="pro-btn" id="reviewNextBtn" disabled>السؤال التالي <i class="fa-solid fa-arrow-left"></i></button><a class="pro-btn secondary" href="./index.html">العودة للوحة الطالب</a></div>
+</section>
+<section class="pro-panel"><div class="pro-panel-head"><div><h2>كل عناصر المراجعة</h2><p>اعرف موعد المراجعة القادمة ومستوى تثبيت كل خطأ.</p></div></div><div class="pro-list" id="reviewQueueList"></div></section>
+</main>
+<script src="./assets/ui-kit.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="./assets/firebase-config.js"></script><script src="./assets/academy-utils.js"></script><script src="./assets/pro-suite-core.js"></script><script src="./assets/review-center.js"></script><script src="./assets/pwa.js"></script><script src="./assets/student-shell.js"></script>
+</body></html>

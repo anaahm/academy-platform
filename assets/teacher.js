@@ -101,7 +101,9 @@ function addQuizQuestion(q={}){
  row.innerHTML='<div class="teacher-question-head"><strong>السؤال <span class="question-position"></span></strong><button type="button" class="teacher-remove-question" aria-label="حذف السؤال"><i class="fa-solid fa-trash"></i> حذف</button></div>'+
    '<label><span>نص السؤال</span><textarea class="teacher-question-text" maxlength="500" rows="2" required>'+escapeHtml(q.text||'')+'</textarea></label>'+
    '<div class="teacher-question-options">'+Array.from({length:4},(_,i)=>'<label><span>الخيار '+(i+1)+'</span><input class="teacher-question-option" maxlength="250" value="'+escapeHtml(q.opts?.[i]||'')+'" '+(i<2?'required':'')+'></label>').join('')+'</div>'+
-   '<label><span>الإجابة الصحيحة</span><select class="teacher-question-correct">'+Array.from({length:4},(_,i)=>'<option value="'+i+'" '+(Number(q.correctAnswer)===i?'selected':'')+'>الخيار '+(i+1)+'</option>').join('')+'</select></label>';
+   '<label><span>الإجابة الصحيحة</span><select class="teacher-question-correct">'+Array.from({length:4},(_,i)=>'<option value="'+i+'" '+(Number(q.correctAnswer)===i?'selected':'')+'>الخيار '+(i+1)+'</option>').join('')+'</select></label>'+
+   '<div class="teacher-question-options"><label><span>المهارة</span><input class="teacher-question-skill" maxlength="100" value="'+escapeHtml(q.skill||'')+'" placeholder="مثال: المبتدأ والخبر"></label><label><span>الصعوبة</span><select class="teacher-question-difficulty"><option value="1" '+(Number(q.difficulty)===1?'selected':'')+'>أساسي</option><option value="2" '+(!q.difficulty||Number(q.difficulty)===2?'selected':'')+'>متوسط</option><option value="3" '+(Number(q.difficulty)===3?'selected':'')+'>متقدم</option></select></label></div>'+
+   '<label><span>شرح الإجابة</span><textarea class="teacher-question-explanation" maxlength="500" rows="2" placeholder="لماذا هذه هي الإجابة الصحيحة؟">'+escapeHtml(q.explanation||q.hint||'')+'</textarea></label>';
  row.querySelector('.teacher-remove-question').onclick=()=>{row.remove();updateQuestionNumbers()};box.append(row);updateQuestionNumbers();return row;
 }
 function updateQuestionNumbers(){$$('#teacherQuizQuestionRows .question-position').forEach((node,i)=>node.textContent=i+1)}
@@ -110,7 +112,7 @@ function collectQuizQuestions(){
  return window.AcademyUtils.validateQuestions(rows.map((row,i)=>{
    const opts=$$('.teacher-question-option',row).map(input=>input.value.trim());while(opts.length&&!opts.at(-1))opts.pop();
    if(opts.length<2||opts.some(o=>!o))throw Error('أكمل الخيارات بالترتيب في السؤال '+(i+1)+'.');
-   return {text:row.querySelector('.teacher-question-text').value.trim(),opts,correctAnswer:Number(row.querySelector('.teacher-question-correct').value)};
+   return {text:row.querySelector('.teacher-question-text').value.trim(),opts,correctAnswer:Number(row.querySelector('.teacher-question-correct').value),skill:row.querySelector('.teacher-question-skill')?.value.trim()||'',difficulty:Number(row.querySelector('.teacher-question-difficulty')?.value||2),explanation:row.querySelector('.teacher-question-explanation')?.value.trim()||''};
  }));
 }
 function importQuizQuestions(){
@@ -126,7 +128,8 @@ async function submitTeacherQuiz(e){
  if(!title||!lesson||lesson.isHidden||lesson.type!==type||lesson.stage!==stage||String(lesson.grade)!==grade||lesson.subject!==subject)return toast('اختر درسًا معتمدًا مطابقًا للمادة والصف.','error');
  if(!assignmentAllowed(type,stage,grade,subject))return toast('هذه المادة غير مسندة إلى حسابك.','error');
  let questions;try{questions=collectQuizQuestions()}catch(err){return toast(err.message,'error')}
- const payload={submissionKind:'quiz',title,lessonId,type,stage,grade,subject,subjectName:$('teacherQuizSubject').selectedOptions[0]?.textContent||subject,unit:Number(lesson.unit||1),questions,status:'pending',teacherId:user.uid,teacherName:teacher.name||user.displayName||'',createdAt:Date.now()};
+ const targetMode=$('teacherQuizTargetMode')?.value||'class',targetStudentIds=targetMode==='students'?($('teacherQuizTargetStudents')?.value||'').split(',').map(x=>x.trim()).filter(Boolean):[];
+ const payload={submissionKind:'quiz',title,lessonId,type,stage,grade,subject,subjectName:$('teacherQuizSubject').selectedOptions[0]?.textContent||subject,unit:Number(lesson.unit||1),questions,targetMode,targetStudentIds,status:'pending',teacherId:user.uid,teacherName:teacher.name||user.displayName||'',createdAt:Date.now()};
  const btn=$('teacherQuizSubmitBtn');window.AcademyUI?.setButtonLoading(btn,true,'إرسال');
  try{const ref=db.ref('teacherSubmissions/'+user.uid).push();await ref.set(payload);submissions[ref.key]=payload;$('teacherQuizForm').reset();$('teacherQuizQuestionRows').replaceChildren();updateQuizGrades();render();toast('تم إرسال الاختبار للإدارة للمراجعة ✅')}
  catch(err){console.error(err);toast('تعذر إرسال الاختبار الآن.','error')}
@@ -300,6 +303,7 @@ async function submitTeacherAssignment(e){
    type:$('assignmentEducationType').value,stage:$('assignmentStage').value,grade:$('assignmentGrade').value,
    subject,subjectName,dueAt:$('assignmentDueAt').value?new Date($('assignmentDueAt').value).getTime():0,
    maxScore:Number($('assignmentMaxScore').value||100),teacherId:user.uid,teacherName:teacher.name||user.displayName||'المدرس',
+   targetMode:$('assignmentTargetMode')?.value||'class',targetStudentIds:$('assignmentTargetMode')?.value==='students'?($('assignmentTargetStudents')?.value||'').split(',').map(x=>x.trim()).filter(Boolean):[],
    submissionKind:'assignment',status:'pending',createdAt:Date.now()
  };
  if(!payload.title||!payload.dueAt)return toast('أكمل عنوان الواجب وآخر موعد.','error');

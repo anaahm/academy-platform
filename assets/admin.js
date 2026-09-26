@@ -29,6 +29,10 @@ function toast(msg,type='success'){
  el.textContent=msg; el.className='toast show '+type;
  clearTimeout(toast.t); toast.t=setTimeout(()=>el.className='toast',3200);
 }
+async function adminAudit(action,targetId,meta={}){
+ if(!currentUser)return;
+ try{await db.ref('auditLog').push().set({actorId:currentUser.uid,actorRole:'admin',actorName:currentUser.email||'admin',action,targetId:String(targetId||''),meta,createdAt:Date.now()})}catch(err){console.warn('Audit log deferred',err)}
+}
 function empty(title='لا توجد بيانات',text=''){
  return '<div class="empty-admin"><span>📭</span><h3>'+esc(title)+'</h3><p>'+esc(text)+'</p></div>';
 }
@@ -545,6 +549,7 @@ async function reviewTeacherProfile(key,approved){
  try{
    if(approved){const profile=cleanPublicProfile(s.profile);if(!profile.name||!profile.title)throw Error('بيانات الملف غير مكتملة');await db.ref('settings/publicTeachers/'+uid).set({...profile,active:true,updatedAt:Date.now()})}
    await db.ref('teacherSubmissions/'+uid+'/'+id).update({status:approved?'approved':'rejected',reviewedAt:Date.now()});
+   await adminAudit(approved?'teacher_profile_approved':'teacher_profile_rejected',uid+'|'+id,{teacherId:uid});
    toast(approved?'تم اعتماد الملف ونشره':'تم رفض طلب التعديل');
  }catch(err){console.error(err);toast('تعذر مراجعة الطلب.','error')}
 }
@@ -575,7 +580,7 @@ function renderTeachers(){
  $$('[data-remove-teacher]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'إزالة صلاحية المدرس؟',message:'سيفقد هذا الحساب الوصول إلى بوابة المدرس وصلاحيات المواد المسندة إليه.',tone:'warning',acceptText:'إزالة الصلاحية'})){const uid=b.dataset.removeTeacher;try{await db.ref('settings/publicTeachers/'+uid).remove();await db.ref('teacherProfiles/'+uid).remove()}catch(err){console.error(err);toast('تعذرت إزالة صلاحية المدرس.','error')}}});
  $$('[data-promote]').forEach(b=>b.onclick=async()=>{const s=root.studentProfilesV3?.[b.dataset.promote]||{};await db.ref('teacherProfiles/'+b.dataset.promote).set({name:s.name||'',email:s.email||'',isActive:true,createdAt:Date.now(),assignments:[]});toast('تم تحويل الحساب إلى مدرس')});
  $$('[data-approve]').forEach(b=>b.onclick=()=>approveSubmission(b.dataset.approve));
- $$('[data-reject]').forEach(b=>b.onclick=async()=>{const [uid,id]=b.dataset.reject.split('|');await db.ref('teacherSubmissions/'+uid+'/'+id).update({status:'rejected',reviewedAt:Date.now()});toast('تم رفض المحتوى')});
+ $('[data-reject]').forEach(b=>b.onclick=async()=>{const [uid,id]=b.dataset.reject.split('|');await db.ref('teacherSubmissions/'+uid+'/'+id).update({status:'rejected',reviewedAt:Date.now()});await adminAudit('teacher_content_rejected',uid+'|'+id,{kind:root.teacherSubmissions?.[uid]?.[id]?.submissionKind||'lesson'});toast('تم رفض المحتوى')});
 }
 function refreshAssignmentSubjects(){
  fillGrades($('assignGrade'),$('assignStage').value);fillSubjects($('assignSubject'),$('assignStage').value,$('assignGrade').value,$('assignType').value);
@@ -612,12 +617,12 @@ async function approveSubmission(key){
      const questions=window.AcademyUtils.validateQuestions(s.questions);
      if(!questions.length||questions.length>100||questions.some(q=>q.opts.length>4))throw Error('راجع أسئلة الاختبار قبل الاعتماد');
      publishedType='quizzes';publishedId=db.ref('quizzes').push().key;
-     updates['quizzes/'+publishedId]={name:s.title,lessonId:s.lessonId,type:s.type,stage:s.stage,grade:String(s.grade),subject:s.subject,unit:Number(lesson.unit||1),questions,teacherId:uid,teacherSubmissionId:id,isHidden:false,createdAt:now};
+     updates['quizzes/'+publishedId]={name:s.title,lessonId:s.lessonId,type:s.type,stage:s.stage,grade:String(s.grade),subject:s.subject,unit:Number(lesson.unit||1),questions,targetMode:s.targetMode||'class',targetStudentIds:Array.isArray(s.targetStudentIds)?s.targetStudentIds:[],teacherId:uid,teacherSubmissionId:id,isHidden:false,createdAt:now};
    }else if(kind==='assignment'){
      if(!Number(s.dueAt)||Number(s.dueAt)<=now)throw Error('انتهى موعد الواجب؛ اطلب من المعلم إرساله بموعد جديد');
      if(!s.title||!s.subject||!s.grade||!Number.isFinite(Number(s.maxScore))||Number(s.maxScore)<1||Number(s.maxScore)>1000)throw Error('بيانات الواجب غير مكتملة');
      publishedType='assignments';publishedId=db.ref('assignments').push().key;
-     updates['assignments/'+publishedId]={title:s.title,instructions:s.instructions||'',type:s.type,stage:s.stage,grade:String(s.grade),subject:s.subject,subjectName:s.subjectName||'',dueAt:Number(s.dueAt),maxScore:Number(s.maxScore),teacherId:uid,teacherName:s.teacherName||t.name||'المدرس',teacherSubmissionId:id,isHidden:false,createdAt:now};
+     updates['assignments/'+publishedId]={title:s.title,instructions:s.instructions||'',type:s.type,stage:s.stage,grade:String(s.grade),subject:s.subject,subjectName:s.subjectName||'',dueAt:Number(s.dueAt),maxScore:Number(s.maxScore),targetMode:s.targetMode||'class',targetStudentIds:Array.isArray(s.targetStudentIds)?s.targetStudentIds:[],teacherId:uid,teacherName:s.teacherName||t.name||'المدرس',teacherSubmissionId:id,isHidden:false,createdAt:now};
    }else if(kind==='lesson'){
      publishedType='lessons';publishedId=db.ref('lessons').push().key;
      updates['lessons/'+publishedId]={title:s.title||'درس',content:'',type:s.type||'public',stage:s.stage||'prep',grade:String(s.grade||1),subject:s.subject||'',unit:Number(s.unit||1),videos:s.videoUrl?[{name:s.teacherName||t.name||'المدرس',url:s.videoUrl,teacherId:uid}]:[],questions:[],isLocked:false,isHidden:false,teacherId:uid,teacherSubmissionId:id,createdAt:now};
@@ -629,7 +634,7 @@ async function approveSubmission(key){
    const claim=await statusRef.transaction(current=>!current||current==='pending'?'approving':undefined);
    if(!claim.committed)return toast('هذا الطلب قيد المراجعة أو تم اعتماده بالفعل.','error');
    claimed=true;
-   await db.ref().update(updates);toast('تم اعتماد '+(kind==='quiz'?'الاختبار':kind==='assignment'?'الواجب':'الدرس')+' ونشره');
+   await db.ref().update(updates);await adminAudit('teacher_content_approved',uid+'|'+id,{kind,publishedType,publishedId,subject:s.subject||''});toast('تم اعتماد '+(kind==='quiz'?'الاختبار':kind==='assignment'?'الواجب':'الدرس')+' ونشره');
  }catch(err){
    if(claimed)await db.ref('teacherSubmissions/'+uid+'/'+id+'/status').transaction(current=>current==='approving'?'pending':undefined).catch(console.error);
    console.error(err);toast('تعذر اعتماد المحتوى: '+err.message,'error');

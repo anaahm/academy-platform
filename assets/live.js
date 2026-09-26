@@ -1,7 +1,22 @@
 (() => {
 'use strict';
 const C=window.AcademyCore,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-let user,profile,sessions=[],filter='live',viewerTrigger=null;
+let user,profile,sessions=[],filter='live',viewerTrigger=null,activeSessionId=null,attendanceStartedAt=0;
+async function startAttendance(session){
+ if(!user||!session?.id)return;activeSessionId=session.id;attendanceStartedAt=Date.now();
+ try{
+  const ref=C.db.ref('attendance/'+session.id+'/'+user.uid),snap=await ref.once('value'),prev=snap.val()||{};
+  await ref.update({studentName:profile?.name||user.displayName||'طالب',sessionTitle:session.title||'جلسة',type:profile?.educationType||'',stage:profile?.stage||'',grade:String(profile?.grade||''),firstJoinedAt:Number(prev.firstJoinedAt||attendanceStartedAt),lastJoinedAt:attendanceStartedAt,lastSeenAt:attendanceStartedAt,visits:Number(prev.visits||0)+1,totalMinutes:Number(prev.totalMinutes||0)});
+ }catch(err){console.warn('Attendance start deferred',err)}
+}
+async function finishAttendance(){
+ if(!user||!activeSessionId||!attendanceStartedAt)return;
+ const id=activeSessionId,started=attendanceStartedAt;activeSessionId=null;attendanceStartedAt=0;
+ try{
+  const ref=C.db.ref('attendance/'+id+'/'+user.uid),snap=await ref.once('value'),prev=snap.val()||{},minutes=Math.max(1,Math.round((Date.now()-started)/60000));
+  await ref.update({lastSeenAt:Date.now(),lastLeftAt:Date.now(),totalMinutes:Number(prev.totalMinutes||0)+minutes});
+ }catch(err){console.warn('Attendance finish deferred',err)}
+}
 
 function embed(url=''){return window.AcademyUtils.youtubeEmbed(url)}
 function matchesStudent(s){
@@ -52,9 +67,11 @@ function openSession(id,trigger){
  if(yt&&yt!=='#')acts.push('<a class="btn btn-soft" href="'+C.esc(yt)+'" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-youtube"></i> فتح على YouTube</a>');
  $('liveViewerActions').innerHTML=acts.join('')||'<span class="live-no-actions">لا توجد روابط جلسة متاحة حاليًا.</span>';
  $('liveViewer').classList.remove('hidden');$('liveViewer').setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
+ startAttendance(s);
  setTimeout(()=>$('liveViewer').querySelector('.live-viewer-panel')?.focus(),30);
 }
 function closeViewer(){
+ finishAttendance();
  $('liveVideo').replaceChildren();
  $('liveViewer').classList.add('hidden');$('liveViewer').setAttribute('aria-hidden','true');document.body.style.overflow='';
  const target=viewerTrigger;viewerTrigger=null;setTimeout(()=>target?.focus(),30);
@@ -62,6 +79,7 @@ function closeViewer(){
 $('closeLiveViewer').onclick=closeViewer;
 $('liveViewer').onclick=e=>{if(e.target===$('liveViewer'))closeViewer()};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('liveViewer').classList.contains('hidden'))closeViewer()});
+window.addEventListener('beforeunload',()=>{finishAttendance()});
 $$('[data-live-filter]').forEach(b=>b.onclick=()=>{
  filter=b.dataset.liveFilter;
  $$('[data-live-filter]').forEach(x=>{const active=x===b;x.classList.toggle('active',active);x.setAttribute('aria-selected',active?'true':'false')});
