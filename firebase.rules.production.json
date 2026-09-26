@@ -42,7 +42,7 @@
       ]
     },
     "quizzes": {
-      ".read": true,
+      ".read": "auth != null",
       ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true",
       ".indexOn": [
         "subject",
