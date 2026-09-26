@@ -612,12 +612,12 @@ async function approveSubmission(key){
      const questions=window.AcademyUtils.validateQuestions(s.questions);
      if(!questions.length||questions.length>100||questions.some(q=>q.opts.length>4))throw Error('راجع أسئلة الاختبار قبل الاعتماد');
      publishedType='quizzes';publishedId=db.ref('quizzes').push().key;
-     updates['quizzes/'+publishedId]={name:s.title,lessonId:s.lessonId,type:s.type,stage:s.stage,grade:String(s.grade),subject:s.subject,unit:Number(lesson.unit||1),questions,teacherId:uid,teacherSubmissionId:id,isHidden:false,createdAt:now};
+     updates['quizzes/'+publishedId]={name:s.title,lessonId:s.lessonId,type:s.type,stage:s.stage,grade:String(s.grade),subject:s.subject,unit:Number(lesson.unit||1),questions,targetMode:s.targetMode||'class',targetStudentIds:Array.isArray(s.targetStudentIds)?s.targetStudentIds:[],teacherId:uid,teacherSubmissionId:id,isHidden:false,createdAt:now};
    }else if(kind==='assignment'){
      if(!Number(s.dueAt)||Number(s.dueAt)<=now)throw Error('انتهى موعد الواجب؛ اطلب من المعلم إرساله بموعد جديد');
      if(!s.title||!s.subject||!s.grade||!Number.isFinite(Number(s.maxScore))||Number(s.maxScore)<1||Number(s.maxScore)>1000)throw Error('بيانات الواجب غير مكتملة');
      publishedType='assignments';publishedId=db.ref('assignments').push().key;
-     updates['assignments/'+publishedId]={title:s.title,instructions:s.instructions||'',type:s.type,stage:s.stage,grade:String(s.grade),subject:s.subject,subjectName:s.subjectName||'',dueAt:Number(s.dueAt),maxScore:Number(s.maxScore),teacherId:uid,teacherName:s.teacherName||t.name||'المدرس',teacherSubmissionId:id,isHidden:false,createdAt:now};
+     updates['assignments/'+publishedId]={title:s.title,instructions:s.instructions||'',type:s.type,stage:s.stage,grade:String(s.grade),subject:s.subject,subjectName:s.subjectName||'',dueAt:Number(s.dueAt),maxScore:Number(s.maxScore),targetMode:s.targetMode||'class',targetStudentIds:Array.isArray(s.targetStudentIds)?s.targetStudentIds:[],teacherId:uid,teacherName:s.teacherName||t.name||'المدرس',teacherSubmissionId:id,isHidden:false,createdAt:now};
    }else if(kind==='lesson'){
      publishedType='lessons';publishedId=db.ref('lessons').push().key;
      updates['lessons/'+publishedId]={title:s.title||'درس',content:'',type:s.type||'public',stage:s.stage||'prep',grade:String(s.grade||1),subject:s.subject||'',unit:Number(s.unit||1),videos:s.videoUrl?[{name:s.teacherName||t.name||'المدرس',url:s.videoUrl,teacherId:uid}]:[],questions:[],isLocked:false,isHidden:false,teacherId:uid,teacherSubmissionId:id,createdAt:now};
