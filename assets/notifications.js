@@ -115,7 +115,7 @@ async function reload(silent=false){
   if(loading||!user||document.hidden||!navigator.onLine)return;
   loading=true;
   try{
-    const result=await N.loadNotifications(user,profile);
+    const result=await N.loadNotifications(user);
     profile=result.profile;items=result.items;render();
   }catch(err){
     console.error(err);
