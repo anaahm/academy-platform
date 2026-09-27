@@ -319,12 +319,55 @@ function renderSubjectImagePreview(){
  const safe=safeSubjectImageUrl($('subjectImageUrl')?.value.trim()||'');
  box.classList.toggle('has-image',!!safe);
  box.style.backgroundImage=safe?'linear-gradient(180deg,rgba(5,31,84,.05),rgba(5,31,84,.28)),url("'+safe.replace(/"/g,'%22')+'")':'';
- box.querySelector('span').textContent=safe?'معاينة صورة المادة':'سيظهر التصميم التلقائي عند عدم إضافة صورة';
+ const label=box.querySelector('span');if(label)label.textContent=safe?'معاينة صورة المادة':'سيظهر التصميم التلقائي عند عدم إضافة صورة';
+ renderSubjectEditorPreview();
+}
+function collectSubjectUnits(){
+ return $('.admin-subject-unit-row',$('subjectUnitsBuilder')||document).map(row=>row.querySelector('input')?.value.trim()||'').filter(Boolean);
+}
+function syncSubjectUnits(){
+ const units=collectSubjectUnits();if($('subjectUnits'))$('subjectUnits').value=units.join('\n');if($('subjectUnitCountEditor'))$('subjectUnitCountEditor').textContent=units.length;renderSubjectEditorPreview();
+}
+function subjectUnitRowHtml(name='',i=0,total=1){
+ return '<div class="admin-subject-unit-row" data-unit-index="'+i+'"><span class="admin-unit-number">'+(i+1)+'</span><input value="'+esc(name)+'" placeholder="اسم الوحدة"><div><button type="button" data-unit-up="'+i+'" '+(i===0?'disabled':'')+' title="تحريك لأعلى"><i class="fa-solid fa-arrow-up"></i></button><button type="button" data-unit-down="'+i+'" '+(i===total-1?'disabled':'')+' title="تحريك لأسفل"><i class="fa-solid fa-arrow-down"></i></button><button type="button" class="danger" data-unit-remove="'+i+'" title="حذف الوحدة"><i class="fa-solid fa-trash"></i></button></div></div>';
+}
+function renderSubjectUnitsEditor(units=[]){
+ const wrap=$('subjectUnitsBuilder');if(!wrap)return;
+ const names=(Array.isArray(units)?units:[]).map(u=>String(u?.name??u??'').trim()).filter(Boolean);
+ wrap.innerHTML=names.length?names.map((name,i)=>subjectUnitRowHtml(name,i,names.length)).join(''):'<div class="admin-question-empty"><span>📚</span><strong>لا توجد وحدات بعد</strong><p>أضف أول وحدة أو استورد قائمة كاملة.</p></div>';
+ if($('subjectUnitCountEditor'))$('subjectUnitCountEditor').textContent=names.length;
+ $('.admin-subject-unit-row input',wrap).forEach(input=>input.addEventListener('input',syncSubjectUnits));
+ $('[data-unit-remove]',wrap).forEach(b=>b.onclick=()=>{const rows=collectSubjectUnits();rows.splice(Number(b.dataset.unitRemove),1);renderSubjectUnitsEditor(rows);syncSubjectUnits()});
+ $('[data-unit-up]',wrap).forEach(b=>b.onclick=()=>{const rows=collectSubjectUnits(),i=Number(b.dataset.unitUp);if(i>0)[rows[i-1],rows[i]]=[rows[i],rows[i-1]];renderSubjectUnitsEditor(rows);syncSubjectUnits()});
+ $('[data-unit-down]',wrap).forEach(b=>b.onclick=()=>{const rows=collectSubjectUnits(),i=Number(b.dataset.unitDown);if(i<rows.length-1)[rows[i+1],rows[i]]=[rows[i],rows[i+1]];renderSubjectUnitsEditor(rows);syncSubjectUnits()});
+ if($('subjectUnits')&&!$('subjectUnits').value.trim())$('subjectUnits').value=names.join('\n');
+ renderSubjectEditorPreview();
+}
+function addSubjectUnit(){
+ const rows=collectSubjectUnits();rows.push('');const wrap=$('subjectUnitsBuilder');
+ wrap.innerHTML=(rows.length?rows.map((name,i)=>subjectUnitRowHtml(name,i,rows.length)).join(''):'');
+ if($('subjectUnitCountEditor'))$('subjectUnitCountEditor').textContent=rows.filter(Boolean).length;
+ $('.admin-subject-unit-row input',wrap).forEach(input=>input.addEventListener('input',syncSubjectUnits));
+ $('[data-unit-remove]',wrap).forEach(b=>b.onclick=()=>{const list=$('.admin-subject-unit-row',wrap).map(r=>r.querySelector('input')?.value||'');list.splice(Number(b.dataset.unitRemove),1);renderSubjectUnitsEditor(list);syncSubjectUnits()});
+ $('[data-unit-up]',wrap).forEach(b=>b.onclick=()=>{const list=$('.admin-subject-unit-row',wrap).map(r=>r.querySelector('input')?.value||''),i=Number(b.dataset.unitUp);if(i>0)[list[i-1],list[i]]=[list[i],list[i-1]];renderSubjectUnitsEditor(list);syncSubjectUnits()});
+ $('[data-unit-down]',wrap).forEach(b=>b.onclick=()=>{const list=$('.admin-subject-unit-row',wrap).map(r=>r.querySelector('input')?.value||''),i=Number(b.dataset.unitDown);if(i<list.length-1)[list[i+1],list[i]]=[list[i],list[i+1]];renderSubjectUnitsEditor(list);syncSubjectUnits()});
+ wrap?.lastElementChild?.querySelector('input')?.focus();
+}
+function importSubjectUnitsLines(){
+ const rows=($('subjectUnits')?.value||'').split('\n').map(x=>x.trim()).filter(Boolean);renderSubjectUnitsEditor(rows);syncSubjectUnits();toast('تم تحميل '+rows.length+' وحدة إلى المحرر.');
+}
+function renderSubjectEditorPreview(){
+ const box=$('subjectEditorPreview');if(!box)return;
+ const type=$('subjectType')?.value||'public',stage=$('subjectStage')?.value||'primary',grade=$('subjectGrade')?.value||'1',name=$('subjectName')?.value.trim()||'اسم المادة سيظهر هنا',emoji=$('subjectEmoji')?.value.trim()||'📚',units=collectSubjectUnits(),image=safeSubjectImageUrl($('subjectImageUrl')?.value.trim()||'');
+ if($('subjectEditorPreviewTitle'))$('subjectEditorPreviewTitle').textContent=name;
+ if($('subjectEditorPreviewMeta'))$('subjectEditorPreviewMeta').textContent=typeLabel(type)+' • '+gradeLabel(stage,grade);
+ if($('subjectEditorPreviewText'))$('subjectEditorPreviewText').textContent=units.length+' وحدة • ستظهر للطلاب في الصف المحدد.';
+ const art=$('subjectEditorPreviewArt');if(art){art.classList.toggle('has-image',!!image);art.style.backgroundImage=image?'url("'+image.replace(/"/g,'%22')+'")':'';art.innerHTML=image?'':'<span>'+esc(emoji)+'</span>'}
 }
 function resetSubjectEditor(){
  editState.subject=null;$('subjectForm').reset();
  ['subjectType','subjectStage','subjectGrade','subjectId'].forEach(id=>{$(id).disabled=false});
- $('subjectType').value='public';$('subjectStage').value='primary';fillGrades($('subjectGrade'),'primary');$('subjectEmoji').value='📚';$('subjectImageUrl').value='';renderSubjectImagePreview();
+ $('subjectType').value='public';$('subjectStage').value='primary';fillGrades($('subjectGrade'),'primary');$('subjectEmoji').value='📚';$('subjectImageUrl').value='';$('subjectUnits').value='';renderSubjectUnitsEditor([]);renderSubjectImagePreview();renderSubjectEditorPreview();
  if($('subjectModalTitle'))$('subjectModalTitle').textContent='إضافة مادة ووحداتها';
 }
 function editSubject(id){
@@ -335,7 +378,7 @@ function editSubject(id){
  const s=custom||fallback;if(!s)return;
  editState.subject={id,type,stage,grade,isDefaultOverride:!custom};
  $('subjectType').value=type;$('subjectStage').value=stage;fillGrades($('subjectGrade'),stage,grade);$('subjectGrade').value=String(grade);
- $('subjectId').value=s.id||id;$('subjectName').value=s.name||'';$('subjectEmoji').value=s.emoji||'📚';$('subjectImageUrl').value=s.imageUrl||'';renderSubjectImagePreview();$('subjectUnits').value=(s.units||[]).map(u=>u?.name||u||'').filter(Boolean).join('\n');
+ $('subjectId').value=s.id||id;$('subjectName').value=s.name||'';$('subjectEmoji').value=s.emoji||'📚';$('subjectImageUrl').value=s.imageUrl||'';$('subjectUnits').value=(s.units||[]).map(u=>u?.name||u||'').filter(Boolean).join('\n');renderSubjectUnitsEditor(s.units||[]);renderSubjectImagePreview();renderSubjectEditorPreview();
  ['subjectType','subjectStage','subjectGrade','subjectId'].forEach(key=>{$(key).disabled=true});
  if($('subjectModalTitle'))$('subjectModalTitle').textContent='تعديل المادة والوحدات';openModal('subjectModal');
 }
@@ -347,7 +390,7 @@ async function deleteSubject(id){
  await db.ref('customSubjects/'+stage+'/'+grade).set(next);toast('تم حذف المادة');
 }
 async function saveSubject(e){
- e.preventDefault();
+ e.preventDefault();syncSubjectUnits();
  const editing=editState.subject;
  const stage=editing?.stage||$('subjectStage').value,grade=String(editing?.grade||$('subjectGrade').value),type=editing?.type||$('subjectType').value;
  const current=root.customSubjects?.[stage]?.[grade],arr=Array.isArray(current)?[...current]:Object.values(current||{});
@@ -1183,6 +1226,9 @@ bindAdminForm('newsForm',saveNews,'نشر');
 $('newsCancelEdit').onclick=resetNewsEditor;
 bindAdminForm('subjectForm',saveSubject,'حفظ المادة');
 $('subjectImageUrl')?.addEventListener('input',renderSubjectImagePreview);
+$('addSubjectUnit')?.addEventListener('click',addSubjectUnit);
+$('importSubjectUnitsLines')?.addEventListener('click',importSubjectUnitsLines);
+['subjectType','subjectStage','subjectGrade','subjectName','subjectEmoji'].forEach(id=>{const el=$(id);if(!el)return;el.addEventListener(el.tagName==='SELECT'?'change':'input',renderSubjectEditorPreview)});
 bindAdminForm('lessonForm',saveLesson,'حفظ الدرس');
 bindAdminForm('quizForm',saveQuiz,'حفظ الاختبار');
 bindAdminForm('fileForm',saveFile,'حفظ الملف');
