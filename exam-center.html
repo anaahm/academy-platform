@@ -27,24 +27,38 @@
   </header>
 
   <main>
-    <section class="feature-hero">
+    <section class="feature-hero exam-center-hero-v5">
       <div class="container">
-        <div class="feature-hero-card">
-          <div class="feature-hero-copy"><span class="section-kicker light">اختبر نفسك بذكاء</span><h1>مركز الاختبارات</h1><p id="examHeroText">اختبارات وحدات، اختبارات شاملة، ومراجعة مستواك من مكان واحد.</p></div>
-          <span class="feature-hero-art">🎯</span>
+        <div class="feature-hero-card exam-center-hero-card-v5">
+          <div class="feature-hero-copy">
+            <span class="section-kicker light">اختبر نفسك بذكاء</span>
+            <h1>مركز الاختبارات</h1>
+            <p id="examHeroText">اختبارات وحدات، اختبارات شاملة، ومراجعة مستواك من مكان واحد.</p>
+            <div class="exam-hero-points-v5">
+              <span><i class="fa-solid fa-bolt"></i> نتيجة فورية</span>
+              <span><i class="fa-solid fa-triangle-exclamation"></i> مراجعة الأخطاء</span>
+              <span><i class="fa-solid fa-chart-line"></i> تتبع أفضل نتيجة</span>
+            </div>
+          </div>
+          <div class="exam-hero-side-v5">
+            <span class="feature-hero-art">🎯</span>
+            <strong>جاهز تختبر مستواك؟</strong>
+            <small>ابدأ باختبار قصير أو جرّب محاكاة كاملة.</small>
+            <a class="btn" href="./simulations.html"><i class="fa-solid fa-stopwatch"></i> فتح المحاكيات</a>
+          </div>
         </div>
       </div>
     </section>
 
     <section class="container feature-container">
-      <div class="feature-stat-row">
+      <div class="feature-stat-row exam-stat-row-v5">
         <article><span class="stat-icon blue"><i class="fa-solid fa-file-circle-question"></i></span><div><strong id="availableExamCount">0</strong><small>اختبار متاح</small></div></article>
         <article><span class="stat-icon green"><i class="fa-solid fa-circle-check"></i></span><div><strong id="completedExamCount">0</strong><small>محاولة مكتملة</small></div></article>
         <article><span class="stat-icon orange"><i class="fa-solid fa-percent"></i></span><div><strong id="averageExamScore">0%</strong><small>متوسط النتائج</small></div></article>
         <article><span class="stat-icon violet"><i class="fa-solid fa-fire"></i></span><div><strong id="examStreak">0</strong><small>أيام الاستمرارية</small></div></article>
       </div>
 
-      <div class="feature-toolbar">
+      <div class="feature-toolbar exam-toolbar-v5">
         <div class="feature-tabs" role="tablist" aria-label="أقسام مركز الاختبارات">
           <button class="active" data-exam-filter="all" role="tab" aria-selected="true">كل الاختبارات</button>
           <button data-exam-filter="unit" role="tab" aria-selected="false">اختبارات الوحدات</button>
@@ -57,14 +71,25 @@
         </div>
       </div>
 
-      <div class="exam-layout">
+      <section class="exam-recommended-v5 hidden" id="examRecommendedCard">
+        <div class="exam-recommended-art-v5"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        <div class="exam-recommended-copy-v5">
+          <span class="section-kicker">مقترح لك الآن</span>
+          <h2 id="examRecommendedTitle">اختبار مناسب لخطوتك الحالية</h2>
+          <p id="examRecommendedText">سنختار لك اختبارًا متاحًا حسب محاولاتك السابقة.</p>
+          <div class="exam-recommended-meta-v5" id="examRecommendedMeta"></div>
+        </div>
+        <a class="btn btn-primary" id="examRecommendedAction" href="#">ابدأ الآن <i class="fa-solid fa-arrow-left"></i></a>
+      </section>
+
+      <div class="exam-layout exam-layout-v5">
         <div>
           <div class="exam-list-head"><span id="examResultCount">0 اختبار</span><small id="examListHint">اختر اختبارًا مناسبًا وابدأ عندما تكون جاهزًا.</small></div>
-          <div class="exam-list" id="examList"></div>
+          <div class="exam-list exam-card-grid-v5" id="examList"></div>
           <div id="examHistoryFull" class="hidden"></div>
         </div>
 
-        <aside class="exam-sidebar">
+        <aside class="exam-sidebar exam-sidebar-v5">
           <article class="exam-side-card">
             <span class="section-kicker">تجربة امتحان كاملة</span>
             <h3>المحاكيات</h3>
