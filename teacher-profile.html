@@ -13,10 +13,15 @@
 </head>
 <body class="teacher-public-page">
 <header class="teacher-profile-header"><a class="brand" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-book-open"></i></span><span><strong>الأكاديمية</strong><small>معلمونا</small></span></a><a href="./index.html#teachers" class="btn btn-soft">العودة للمنصة</a></header>
-<main class="teacher-profile-main"><div class="teacher-profile-breadcrumb">الأكاديمية <i class="fa-solid fa-chevron-left"></i> فريق التدريس</div><div id="teacherProfileView" aria-live="polite"><div class="teacher-profile-loading">جاري تحميل ملف المعلم...</div></div></main>
+<main class="teacher-profile-main">
+  <div class="teacher-profile-breadcrumb"><a href="./index.html">الأكاديمية</a> <i class="fa-solid fa-chevron-left"></i> <a href="./index.html#teachers">فريق التدريس</a> <i class="fa-solid fa-chevron-left"></i> <span id="teacherBreadcrumbName">المدرس</span></div>
+  <div id="teacherProfileView" aria-live="polite">
+    <div class="teacher-profile-loading"><span class="teacher-profile-spinner"></span><strong>جاري تجهيز صفحة المدرس...</strong><small>نحمّل الملف والمحتوى المنشور.</small></div>
+  </div>
+</main>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="./assets/firebase-config.js"></script>
-<script src="./assets/teacher-profile.js?v=34"></script>
+<script src="./assets/teacher-profile.js?v=35"></script>
 </body>
 </html>
