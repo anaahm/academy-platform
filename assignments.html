@@ -26,24 +26,49 @@
   </header>
 
   <main>
-    <section class="feature-hero">
+    <section class="feature-hero assignment-hero-v8">
       <div class="container">
-        <div class="feature-hero-card">
-          <div><span class="section-kicker light">تابع المطلوب وسلّم في معاده</span><h1>مركز الواجبات</h1><p>كل واجبات موادك في مكان واحد، مع حالة التسليم والدرجة وملاحظات المدرس.</p></div>
-          <span class="feature-hero-art">📝</span>
+        <div class="feature-hero-card assignment-hero-card-v8">
+          <div class="assignment-hero-copy-v8">
+            <span class="section-kicker light">تابع المطلوب وسلّم في معاده</span>
+            <h1>واجبات <span id="assignmentStudentName">طالبنا</span></h1>
+            <p id="assignmentHeroText">كل واجبات موادك في مكان واحد، مع حالة التسليم والدرجة وملاحظات المدرس.</p>
+            <div class="assignment-hero-actions-v8">
+              <button type="button" id="assignmentHeroPendingBtn"><i class="fa-solid fa-list-check"></i> المطلوب مني</button>
+              <button type="button" id="assignmentHeroGradedBtn"><i class="fa-solid fa-star"></i> المصحح</button>
+              <a href="./planner.html"><i class="fa-regular fa-calendar-check"></i> مخطط المذاكرة</a>
+            </div>
+          </div>
+
+          <aside class="assignment-next-panel-v8">
+            <div class="assignment-next-head-v8">
+              <span><i class="fa-solid fa-bell"></i> أهم واجب الآن</span>
+              <b id="assignmentHeroCountdown">—</b>
+            </div>
+            <strong id="assignmentHeroNextTitle">لا يوجد واجب مطلوب</strong>
+            <p id="assignmentHeroNextMeta">كل الواجبات المطلوبة ستظهر هنا حسب أقرب موعد.</p>
+            <div class="assignment-next-summary-v8">
+              <span><small>مطلوب</small><b id="assignmentHeroPending">0</b></span>
+              <span><small>متأخر</small><b id="assignmentHeroOverdue">0</b></span>
+              <span><small>مصحح</small><b id="assignmentHeroGraded">0</b></span>
+            </div>
+            <button type="button" id="assignmentHeroOpenBtn" disabled>فتح الواجب <i class="fa-solid fa-arrow-left"></i></button>
+          </aside>
         </div>
       </div>
     </section>
 
     <section class="container feature-page-content">
-      <section class="feature-stat-grid">
+      <section class="feature-stat-grid assignment-stats-v8">
         <article><span class="feature-card-icon blue"><i class="fa-solid fa-list-check"></i></span><div><strong id="assignmentTotal">0</strong><small>إجمالي الواجبات</small></div></article>
-        <article><span class="feature-card-icon amber"><i class="fa-solid fa-hourglass-half"></i></span><div><strong id="assignmentPending">0</strong><small>بانتظار التسليم</small></div></article>
-        <article><span class="feature-card-icon green"><i class="fa-solid fa-paper-plane"></i></span><div><strong id="assignmentSubmitted">0</strong><small>تم التسليم</small></div></article>
-        <article><span class="feature-card-icon violet"><i class="fa-solid fa-star"></i></span><div><strong id="assignmentAverage">—</strong><small>متوسط الدرجات</small></div></article>
+        <article><span class="feature-card-icon amber"><i class="fa-solid fa-hourglass-half"></i></span><div><strong id="assignmentPending">0</strong><small>مطلوب التسليم</small></div></article>
+        <article><span class="feature-card-icon rose"><i class="fa-solid fa-triangle-exclamation"></i></span><div><strong id="assignmentOverdue">0</strong><small>متأخر</small></div></article>
+        <article><span class="feature-card-icon green"><i class="fa-solid fa-paper-plane"></i></span><div><strong id="assignmentSubmitted">0</strong><small>بانتظار التصحيح</small></div></article>
+        <article><span class="feature-card-icon violet"><i class="fa-solid fa-star"></i></span><div><strong id="assignmentGraded">0</strong><small>تم التصحيح</small></div></article>
+        <article><span class="feature-card-icon cyan"><i class="fa-solid fa-percent"></i></span><div><strong id="assignmentAverage">—</strong><small>متوسط الدرجات</small></div></article>
       </section>
 
-      <section class="feature-card">
+      <section class="feature-card assignment-center-card-v8">
         <div class="feature-card-head assignment-filter-head">
           <div><span class="section-kicker">مهماتك الدراسية</span><h2>الواجبات الحالية</h2></div>
           <div class="assignment-toolbar-actions">
@@ -58,13 +83,13 @@
           </div>
         </div>
         <div class="assignment-list-summary"><strong id="assignmentResultCount">0 واجب</strong><span id="assignmentListHint">كل المطلوب منك مرتب حسب أقرب موعد.</span></div>
-        <div id="assignmentList" class="assignment-list"></div>
+        <div id="assignmentList" class="assignment-list assignment-grid-v8"></div>
       </section>
     </section>
   </main>
 
   <div class="modal-backdrop hidden" id="assignmentModal" aria-hidden="true">
-    <div class="modal-panel assignment-modal" role="dialog" aria-modal="true" aria-labelledby="assignmentModalTitle" tabindex="-1">
+    <div class="modal-panel assignment-modal assignment-modal-v8" role="dialog" aria-modal="true" aria-labelledby="assignmentModalTitle" tabindex="-1">
       <button class="modal-close" id="closeAssignmentModal" aria-label="إغلاق تفاصيل الواجب"><i class="fa-solid fa-xmark"></i></button>
       <div id="assignmentModalBody"></div>
     </div>
