@@ -26,30 +26,62 @@
   </header>
 
   <main>
-    <section class="feature-hero">
-      <div class="container"><div class="feature-hero-card"><div class="feature-hero-copy"><span class="section-kicker light">كل ملفاتك في مكان واحد</span><h1>المكتبة التعليمية</h1><p>مذكرات، مراجعات، ملفات PDF ومراجع مساعدة منظمة حسب المادة والمرحلة.</p></div><span class="feature-hero-art">📚</span></div></div>
+    <section class="feature-hero library-hero-v10">
+      <div class="container">
+        <div class="feature-hero-card library-hero-card-v10">
+          <div class="library-hero-copy-v10">
+            <span class="section-kicker light">كل ملفاتك في مكان واحد</span>
+            <h1>مكتبة <span id="libraryStudentName">طالبنا</span></h1>
+            <p id="libraryHeroText">مذكرات، مراجعات، ملفات PDF ومراجع مساعدة منظمة حسب المادة والمرحلة.</p>
+            <div class="library-hero-actions-v10">
+              <button type="button" id="libraryHeroMineBtn"><i class="fa-solid fa-book-open"></i> ملفات مرحلتي</button>
+              <button type="button" id="libraryHeroFavBtn"><i class="fa-solid fa-heart"></i> المفضلة</button>
+              <button type="button" id="libraryHeroRecentBtn"><i class="fa-solid fa-clock-rotate-left"></i> آخر ما فتحت</button>
+            </div>
+          </div>
+          <aside class="library-featured-panel-v10">
+            <div class="library-featured-head-v10"><span><i class="fa-solid fa-wand-magic-sparkles"></i> مقترح لك</span><b id="libraryFeaturedBadge">الأحدث</b></div>
+            <span class="library-featured-icon-v10" id="libraryFeaturedIcon">📘</span>
+            <strong id="libraryFeaturedTitle">لا يوجد ملف مقترح بعد</strong>
+            <p id="libraryFeaturedMeta">سيظهر هنا أحدث ملف مناسب لمرحلتك.</p>
+            <button type="button" id="libraryFeaturedOpen" disabled>فتح الملف <i class="fa-solid fa-arrow-left"></i></button>
+          </aside>
+        </div>
+      </div>
     </section>
 
     <section class="container feature-container">
-      <div class="feature-toolbar">
+      <div class="feature-toolbar library-toolbar-v10">
         <div class="feature-tabs" role="tablist" aria-label="نطاق المكتبة">
           <button class="active" data-library-scope="mine" role="tab" aria-selected="true">مرحلتي</button>
+          <button data-library-scope="favorites" role="tab" aria-selected="false">المفضلة</button>
+          <button data-library-scope="recent" role="tab" aria-selected="false">آخر ما فتحت</button>
           <button data-library-scope="all" role="tab" aria-selected="false">كل المراحل</button>
         </div>
-        <div class="feature-filter">
+        <div class="feature-filter library-filter-v10">
+          <select id="libraryKindFilter" aria-label="تصفية المكتبة حسب نوع الملف">
+            <option value="">كل الأنواع</option>
+            <option value="pdf">PDF</option>
+            <option value="note">مذكرة</option>
+            <option value="review">مراجعة</option>
+            <option value="reference">مرجع</option>
+          </select>
           <select id="librarySubjectFilter" aria-label="تصفية المكتبة حسب المادة"><option value="">كل المواد</option></select>
-          <input id="librarySearch" type="search" aria-label="البحث في المكتبة" placeholder="ابحث باسم الملف...">
+          <label class="library-search-v10"><i class="fa-solid fa-magnifying-glass"></i><input id="librarySearch" type="search" aria-label="البحث في المكتبة" placeholder="ابحث باسم الملف أو المادة أو الوصف..."></label>
         </div>
       </div>
 
-      <div class="feature-stat-row">
+      <div class="feature-stat-row library-stats-v10">
         <article><span class="stat-icon red"><i class="fa-solid fa-file-pdf"></i></span><div><strong id="libraryTotal">0</strong><small>ملف متاح</small></div></article>
         <article><span class="stat-icon blue"><i class="fa-solid fa-book-open"></i></span><div><strong id="librarySubjects">0</strong><small>مادة بها ملفات</small></div></article>
-        <article><span class="stat-icon green"><i class="fa-solid fa-graduation-cap"></i></span><div><strong id="libraryStage">—</strong><small>مرحلتك</small></div></article>
+        <article><span class="stat-icon gold"><i class="fa-solid fa-star"></i></span><div><strong id="libraryFeaturedCount">0</strong><small>ملف مهم</small></div></article>
+        <article><span class="stat-icon rose"><i class="fa-solid fa-heart"></i></span><div><strong id="libraryFavoriteCount">0</strong><small>في المفضلة</small></div></article>
+        <article><span class="stat-icon cyan"><i class="fa-solid fa-clock-rotate-left"></i></span><div><strong id="libraryOpenedCount">0</strong><small>سبق فتحه</small></div></article>
         <article><span class="stat-icon violet"><i class="fa-solid fa-folder-open"></i></span><div><strong id="libraryVisible">0</strong><small>نتائج ظاهرة</small></div></article>
       </div>
 
-      <div class="library-grid" id="libraryGrid"></div>
+      <div class="library-results-head-v10"><div><span class="section-kicker">الملفات</span><h2 id="libraryResultsTitle">ملفات مرحلتك</h2><p id="libraryResultsMeta">كل الملفات المناسبة لصفك في مكان واحد.</p></div><button type="button" id="libraryClearFilters" class="btn btn-soft"><i class="fa-solid fa-filter-circle-xmark"></i> مسح الفلاتر</button></div>
+      <div class="library-grid library-grid-v10" id="libraryGrid"></div>
     </section>
   </main>
 
