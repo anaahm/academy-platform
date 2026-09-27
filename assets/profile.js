@@ -34,6 +34,50 @@ function toast(msg,type='success'){
 }
 function initials(n='طالب'){return(n.trim()[0]||'ط').toUpperCase()}
 function educationLabel(t){return t==='azhar'?'التعليم الأزهري':'التعليم العام'}
+function localDateKey(d=new Date()){
+  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+day;
+}
+function profileQuizHistory(){
+  return Object.values(profile.quizHistory||{}).filter(Boolean).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+}
+function profileMistakeTotal(){
+  return Object.values(profile.mistakeNotebook||{}).reduce((n,items)=>n+Object.values(items||{}).filter(Boolean).length,0);
+}
+function renderProfileAnalytics(){
+  const s=profile.stats||{},history=profileQuizHistory(),mistakes=profileMistakeTotal();
+  const avg=history.length?Math.round(history.reduce((n,x)=>n+Number(x.score||0),0)/history.length):0;
+  const best=history.length?Math.max(...history.map(x=>Number(x.score||0))):null;
+  if($('profileAverageScore'))$('profileAverageScore').textContent=history.length?avg+'%':'—';
+  if($('profileBestScore'))$('profileBestScore').textContent=best===null?'—':best+'%';
+  if($('profileStudyMinutes'))$('profileStudyMinutes').textContent=Number(s.studyMinutes||0);
+  if($('profileMistakesTotal'))$('profileMistakesTotal').textContent=mistakes;
+
+  const days=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-i);
+    const key=localDateKey(d),minutes=Number(profile.activityDaily?.[key]?.minutes||0),active=!!profile.activity?.days?.[key]||minutes>0;
+    days.push({key,label:d.toLocaleDateString('ar-EG',{weekday:'short'}),minutes,active});
+  }
+  const weekMinutes=days.reduce((n,d)=>n+d.minutes,0),max=Math.max(1,...days.map(d=>d.minutes));
+  if($('profileWeekMinutes'))$('profileWeekMinutes').textContent=weekMinutes;
+  if($('profileWeekBars'))$('profileWeekBars').innerHTML=days.map(d=>{
+    const height=d.minutes?Math.max(12,Math.round(d.minutes/max*72)):(d.active?10:5);
+    return '<div class="'+(d.active?'active':'')+'" title="'+d.minutes+' دقيقة"><span style="height:'+height+'px"></span><small>'+esc(d.label)+'</small></div>';
+  }).join('');
+
+  let icon='🌱',title='ابدأ أول اختبار',text='سنلخص مستواك هنا مع كل محاولة جديدة.';
+  if(history.length){
+    if(avg>=85){icon='🏆';title='أداء ممتاز';text='متوسطك '+avg+'% — حافظ على المستوى وراجع الأخطاء القليلة المتبقية.'}
+    else if(avg>=70){icon='💪';title='أداء قوي';text='متوسطك '+avg+'% — مراجعة الأخطاء ستدفعك للمستوى التالي.'}
+    else if(avg>=50){icon='📈';title='أنت تتحسن';text='متوسطك '+avg+'% — ركز على الأسئلة التي تتكرر فيها الأخطاء.'}
+    else{icon='🎯';title='ركز على الأساسيات';text='متوسطك '+avg+'% — ارجع للشرح ثم أعد الاختبارات الصعبة.'}
+    if(mistakes>0)text+=' عندك '+mistakes+' سؤال في دفتر الأخطاء.';
+  }
+  if($('profilePerformanceIcon'))$('profilePerformanceIcon').textContent=icon;
+  if($('profilePerformanceTitle'))$('profilePerformanceTitle').textContent=title;
+  if($('profilePerformanceText'))$('profilePerformanceText').textContent=text;
+}
 async function syncPhoneDirectory(){
   if(!user?.uid||!profile?.phone)return;
   try{
@@ -123,6 +167,7 @@ function render(){
   $('profileQuizzes').textContent=s.completedQuizzes||0;
   $('profileStreak').textContent=s.streak||0;
   $('profileTotalXp').textContent=totalXP;
+  renderProfileAnalytics();
   renderMistakeNotebook();
   $('profileNameInput').value=name;
   const phoneAccount=profile.loginMethod==='phone'||Boolean(profile.phone);
@@ -218,6 +263,7 @@ profileTabs.forEach((b,i)=>{
     switchTab(profileTabs[next].dataset.profileTab);
   };
 });
+if($('profileMistakesShortcut'))$('profileMistakesShortcut').onclick=()=>{switchTab('mistakes');document.querySelector('.profile-content')?.scrollIntoView({behavior:'smooth',block:'start'})};
 
 $('profileNameInput').addEventListener('input',updateDirtyStates);
 $('studyType').addEventListener('change',updateDirtyStates);
