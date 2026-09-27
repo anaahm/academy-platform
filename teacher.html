@@ -38,6 +38,7 @@
         <button data-teacher-tab="submit" role="tab" aria-selected="false" aria-controls="teacher-tab-submit"><i class="fa-solid fa-circle-plus"></i> إضافة محتوى</button>
         <button data-teacher-tab="quizzes" role="tab" aria-selected="false" aria-controls="teacher-tab-quizzes"><i class="fa-solid fa-file-circle-question"></i> إنشاء اختبار</button>
         <button data-teacher-tab="assignments" role="tab" aria-selected="false" aria-controls="teacher-tab-assignments"><i class="fa-solid fa-clipboard-check"></i> الواجبات</button>
+        <button data-teacher-tab="notifications" role="tab" aria-selected="false" aria-controls="teacher-tab-notifications"><i class="fa-regular fa-bell"></i> إشعارات الطلاب</button>
         <button data-teacher-tab="students" role="tab" aria-selected="false" aria-controls="teacher-tab-students"><i class="fa-solid fa-users"></i> الطلاب</button>
         <button data-teacher-tab="analytics" role="tab" aria-selected="false" aria-controls="teacher-tab-analytics"><i class="fa-solid fa-chart-line"></i> الإحصائيات</button>
         <button data-teacher-tab="profile" role="tab" aria-selected="false" aria-controls="teacher-tab-profile"><i class="fa-solid fa-id-card"></i> ملفي العام</button>
@@ -114,6 +115,31 @@
             <article class="teacher-card">
               <div class="teacher-card-head"><div><span class="section-kicker">آخر التحديثات</span><h3>طلباتك الأخيرة</h3></div><span>📝</span></div>
               <div class="submission-list" id="teacherRecentSubmissions"></div>
+            </article>
+          </section>
+        </section>
+
+        <section class="teacher-tab hidden" id="teacher-tab-notifications" role="tabpanel">
+          <section class="teacher-grid teacher-notification-grid-v11">
+            <article class="teacher-card">
+              <div class="teacher-card-head"><div><span class="section-kicker">بعد موافقة الإدارة</span><h3>إرسال إشعار لطلابك</h3></div><span>🔔</span></div>
+              <p class="profile-muted">اختر مادة وصفًا من المواد المسندة لك. لن يصل الإشعار للطلاب قبل اعتماد الإدارة.</p>
+              <form id="teacherNotificationForm" class="teacher-form">
+                <label><span>نوع التعليم</span><select id="teacherNotificationType"><option value="public">تعليم عام</option><option value="azhar">أزهر</option></select></label>
+                <label><span>المرحلة</span><select id="teacherNotificationStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+                <label><span>الصف</span><select id="teacherNotificationGrade"></select></label>
+                <label><span>المادة</span><select id="teacherNotificationSubject"></select></label>
+                <label class="full"><span>عنوان الإشعار</span><input id="teacherNotificationTitle" required maxlength="120" placeholder="مثال: راجع درس المفعول المطلق قبل اختبار الغد"></label>
+                <label class="full"><span>نص الرسالة</span><textarea id="teacherNotificationText" required maxlength="800" rows="4" placeholder="اكتب رسالة واضحة ومختصرة للطلاب..."></textarea></label>
+                <label><span>الأولوية</span><select id="teacherNotificationPriority"><option value="normal">عادي</option><option value="high">مهم</option><option value="urgent">عاجل</option></select></label>
+                <label><span>مدة الظهور بالأيام</span><input id="teacherNotificationDays" type="number" min="1" max="14" value="5"></label>
+                <label class="full"><span>رابط الإجراء — اختياري</span><input id="teacherNotificationHref" maxlength="500" placeholder="./subject.html أو اتركه فارغًا لفتح المادة"></label>
+                <button class="btn btn-primary full" id="teacherNotificationSubmitBtn" type="submit"><i class="fa-solid fa-paper-plane"></i> إرسال للإدارة</button>
+              </form>
+            </article>
+            <article class="teacher-card">
+              <div class="teacher-card-head"><div><span class="section-kicker">المتابعة</span><h3>إشعاراتي المرسلة</h3></div><span>📨</span></div>
+              <div id="teacherNotificationRequests" class="submission-list"></div>
             </article>
           </section>
         </section>
