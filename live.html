@@ -26,42 +26,65 @@
   </header>
 
   <main>
-    <section class="feature-hero">
+    <section class="feature-hero live-hero-v9">
       <div class="container">
-        <div class="feature-hero-card">
-          <div class="feature-hero-copy"><span class="section-kicker light">تعلم مع المدرس لحظة بلحظة</span><h1>الجلسات والبث المباشر</h1><p>تابع الدروس المباشرة، اعرف موعد الجلسة القادمة، وادخل YouTube أو Zoom من مكان واحد.</p></div>
-          <span class="feature-hero-art">🔴</span>
+        <div class="feature-hero-card live-hero-card-v9">
+          <div class="live-hero-copy-v9">
+            <span class="section-kicker light">تعلم مع المدرس لحظة بلحظة</span>
+            <h1>جلسات <span id="liveStudentName">طالبنا</span></h1>
+            <p id="liveHeroText">تابع الدروس المباشرة، اعرف موعد الجلسة القادمة، وادخل YouTube أو Zoom من مكان واحد.</p>
+            <div class="live-hero-actions-v9">
+              <button type="button" id="liveHeroAllBtn"><i class="fa-solid fa-layer-group"></i> كل الجلسات</button>
+              <button type="button" id="liveHeroReplayBtn"><i class="fa-solid fa-rotate-left"></i> الإعادات</button>
+              <a href="./schedule.html"><i class="fa-regular fa-calendar-days"></i> جدولي</a>
+            </div>
+          </div>
+          <aside class="live-next-panel-v9">
+            <div class="live-next-head-v9"><span id="liveHeroState"><i class="fa-solid fa-calendar"></i> الجلسة القادمة</span><b id="liveHeroCountdown">—</b></div>
+            <strong id="liveHeroNextTitle">لا توجد جلسة قريبة</strong>
+            <p id="liveHeroNextMeta">عند إضافة جلسة مناسبة لصفك ستظهر هنا تلقائيًا.</p>
+            <div class="live-next-summary-v9">
+              <span><small>مباشر الآن</small><b id="liveHeroNow">0</b></span>
+              <span><small>قادم</small><b id="liveHeroUpcoming">0</b></span>
+              <span><small>حضرتها</small><b id="liveHeroAttended">0</b></span>
+            </div>
+            <button type="button" id="liveHeroOpenBtn" disabled>عرض الجلسة <i class="fa-solid fa-arrow-left"></i></button>
+          </aside>
         </div>
       </div>
     </section>
 
     <section class="container feature-container">
-      <div class="feature-toolbar">
+      <div class="feature-toolbar live-toolbar-v9">
         <div class="feature-tabs" role="tablist" aria-label="حالة الجلسات">
-          <button class="active" data-live-filter="live" role="tab" aria-selected="true">مباشر الآن</button>
+          <button data-live-filter="live" role="tab" aria-selected="false">مباشر الآن</button>
           <button data-live-filter="upcoming" role="tab" aria-selected="false">القادمة</button>
+          <button data-live-filter="replay" role="tab" aria-selected="false">الإعادات</button>
           <button data-live-filter="ended" role="tab" aria-selected="false">المنتهية</button>
-          <button data-live-filter="all" role="tab" aria-selected="false">الكل</button>
+          <button class="active" data-live-filter="all" role="tab" aria-selected="true">الكل</button>
         </div>
         <div class="feature-filter"><input id="liveSearch" type="search" aria-label="البحث في الجلسات" placeholder="ابحث باسم الجلسة أو المدرس..."></div>
       </div>
 
-      <div class="feature-stat-row">
+      <div class="feature-stat-row live-stats-v9">
         <article><span class="stat-icon red"><i class="fa-solid fa-tower-broadcast"></i></span><div><strong id="liveNowCount">0</strong><small>مباشر الآن</small></div></article>
         <article><span class="stat-icon blue"><i class="fa-solid fa-calendar"></i></span><div><strong id="upcomingCount">0</strong><small>جلسات قادمة</small></div></article>
-        <article><span class="stat-icon green"><i class="fa-solid fa-circle-check"></i></span><div><strong id="endedCount">0</strong><small>جلسات منتهية</small></div></article>
-        <article><span class="stat-icon violet"><i class="fa-solid fa-clock"></i></span><div><strong id="nextSessionText">—</strong><small>أقرب موعد</small></div></article>
+        <article><span class="stat-icon violet"><i class="fa-solid fa-rotate-left"></i></span><div><strong id="replayCount">0</strong><small>إعادة متاحة</small></div></article>
+        <article><span class="stat-icon green"><i class="fa-solid fa-user-check"></i></span><div><strong id="attendedCount">0</strong><small>حضرتها</small></div></article>
+        <article><span class="stat-icon cyan"><i class="fa-solid fa-circle-check"></i></span><div><strong id="endedCount">0</strong><small>جلسات منتهية</small></div></article>
+        <article><span class="stat-icon amber"><i class="fa-regular fa-clock"></i></span><div><strong id="nextSessionText">—</strong><small>أقرب موعد</small></div></article>
       </div>
 
-      <div class="live-grid" id="liveGrid"></div>
+      <div class="live-grid live-grid-v9" id="liveGrid"></div>
     </section>
   </main>
 
   <div class="live-viewer hidden" id="liveViewer" aria-hidden="true">
     <div class="live-viewer-panel" role="dialog" aria-modal="true" aria-labelledby="liveViewerTitle" tabindex="-1">
-      <div class="live-viewer-head"><div><span class="section-kicker">مشاهدة الجلسة</span><h3 id="liveViewerTitle">الجلسة</h3></div><button class="modal-close static" id="closeLiveViewer" aria-label="إغلاق نافذة الجلسة"><i class="fa-solid fa-xmark"></i></button></div>
-      <div class="live-video" id="liveVideo"></div>
-      <div class="live-viewer-actions-row" id="liveViewerActions"></div>
+      <div class="live-viewer-head live-viewer-head-v9"><div><span class="section-kicker">مشاهدة الجلسة</span><h3 id="liveViewerTitle">الجلسة</h3><p id="liveViewerMeta"></p></div><button class="modal-close static" id="closeLiveViewer" aria-label="إغلاق نافذة الجلسة"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="live-viewer-attendance-v9" id="liveViewerAttendance"><i class="fa-solid fa-circle-info"></i><span>سيتم تسجيل حضورك تلقائيًا أثناء الجلسة المباشرة.</span></div>
+      <div class="live-video live-video-v9" id="liveVideo"></div>
+      <div class="live-viewer-actions-row live-viewer-actions-v9" id="liveViewerActions"></div>
     </div>
   </div>
 
