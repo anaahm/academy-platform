@@ -108,17 +108,46 @@
 
       <main class="admin-page">
         <section class="admin-tab active" id="admin-tab-overview">
-          <div class="admin-hero">
-            <div><span class="section-kicker light">مركز التحكم</span><h2>كل الأكاديمية تحت عينك</h2><p>تابع النمو والمحتوى والمراجعات من مكان واحد.</p>
+          <div class="admin-hero mix-admin-command-hero">
+            <div class="mix-admin-command-copy">
+              <span class="section-kicker light">مركز القيادة</span>
+              <h2>كل الأكاديمية تحت عينك</h2>
+              <p id="adminOverviewGreeting">تابع الطلاب والمدرسين والمحتوى والمراجعات من لوحة واحدة.</p>
+              <div class="mix-admin-live-status">
+                <span class="online"><i></i> النظام يعمل</span>
+                <span id="adminOverviewAttention"><i class="fa-solid fa-bell"></i> لا توجد مهام عاجلة</span>
+              </div>
               <div class="admin-hero-actions">
                 <button class="btn admin-hero-primary" type="button" data-admin-quick="lesson"><i class="fa-solid fa-circle-plus"></i> درس جديد</button>
                 <button class="btn admin-hero-secondary" type="button" data-admin-quick="quiz"><i class="fa-solid fa-file-circle-question"></i> اختبار جديد</button>
                 <button class="btn admin-hero-secondary" type="button" data-admin-quick="teachers"><i class="fa-solid fa-user-check"></i> مراجعات المدرسين</button>
               </div>
             </div>
-            <span class="admin-hero-art">📊</span>
+            <div class="mix-admin-command-art">
+              <span class="mix-admin-command-ring"><strong id="adminOverviewHealth">100%</strong><small>جاهزية المحتوى</small></span>
+              <div><i class="fa-solid fa-shield-halved"></i><span>إدارة آمنة</span></div>
+            </div>
           </div>
           <div class="admin-stat-grid" id="overviewStats"></div>
+
+          <section class="mix-admin-quick-grid" aria-label="إجراءات الإدارة السريعة">
+            <button type="button" data-admin-quick="lesson"><span class="blue"><i class="fa-solid fa-circle-play"></i></span><div><strong>إضافة درس</strong><small>محتوى جديد مباشرة</small></div><i class="fa-solid fa-chevron-left"></i></button>
+            <button type="button" data-admin-quick="quiz"><span class="violet"><i class="fa-solid fa-file-circle-question"></i></span><div><strong>إنشاء اختبار</strong><small>تقييم جديد للطلاب</small></div><i class="fa-solid fa-chevron-left"></i></button>
+            <button type="button" data-jump-tab="students"><span class="green"><i class="fa-solid fa-user-graduate"></i></span><div><strong>إدارة الطلاب</strong><small>بحث وتعديل الحسابات</small></div><i class="fa-solid fa-chevron-left"></i></button>
+            <button type="button" data-jump-tab="teachers"><span class="orange"><i class="fa-solid fa-chalkboard-user"></i></span><div><strong>فريق التدريس</strong><small>الصلاحيات والمراجعات</small></div><i class="fa-solid fa-chevron-left"></i></button>
+          </section>
+
+          <div class="admin-overview-grid mix-admin-overview-grid">
+            <article class="admin-card mix-admin-attention-card">
+              <div class="admin-card-head"><div><span class="section-kicker">مركز العمليات</span><h3>ما يحتاج تدخلك الآن</h3></div><span>⚡</span></div>
+              <div class="mix-admin-attention-list" id="adminAttentionList"></div>
+            </article>
+            <article class="admin-card mix-admin-health-card">
+              <div class="admin-card-head"><div><span class="section-kicker">صحة الأكاديمية</span><h3>توزيع المحتوى والحسابات</h3></div><span>🛡️</span></div>
+              <div class="mix-admin-health-bars" id="adminHealthBars"></div>
+            </article>
+          </div>
+
           <div class="admin-overview-grid">
             <article class="admin-card">
               <div class="admin-card-head"><div><span class="section-kicker">آخر النشاطات</span><h3>أحدث المحتوى</h3></div><span>🕘</span></div>
@@ -381,6 +410,13 @@
         </section>
       </main>
     </div>
+    <nav class="admin-mobile-bottom-nav" id="adminMobileBottomNav" aria-label="التنقل السريع للإدارة">
+      <button type="button" class="active" data-admin-tab="overview"><i class="fa-solid fa-grid-2"></i><span>الرئيسية</span></button>
+      <button type="button" data-admin-tab="teachers"><i class="fa-solid fa-chalkboard-user"></i><span>المدرسون</span></button>
+      <button type="button" class="admin-mobile-add" data-admin-quick="lesson"><i class="fa-solid fa-plus"></i><span>إضافة</span></button>
+      <button type="button" data-admin-tab="students"><i class="fa-solid fa-user-graduate"></i><span>الطلاب</span></button>
+      <button type="button" data-admin-tab="settings"><i class="fa-solid fa-sliders"></i><span>الإعدادات</span></button>
+    </nav>
   </section>
 
   <div id="adminOverlay" class="admin-mobile-overlay hidden"></div>
