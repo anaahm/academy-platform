@@ -133,15 +133,16 @@ function render(){
  $('examStreak').textContent=profile.stats?.streak||0;
  const all=quizzes(),available=all.filter(q=>quizUnlockInfo(q).unlocked);
  $('availableExamCount').textContent=available.length;
- renderRecommended(all);
 
  if(filter==='history'){
+   $('examRecommendedCard')?.classList.add('hidden');
    $('examList').classList.add('hidden');$('examHistoryFull').classList.remove('hidden');
    $('examResultCount').textContent=historyItems().length+' محاولة';
    $('examListHint').textContent='راجع نتائجك وأعد الاختبارات التي تحتاج تحسينًا.';
    return;
  }
  $('examHistoryFull').classList.add('hidden');$('examList').classList.remove('hidden');
+ renderRecommended(all);
 
  const subject=$('examSubjectFilter').value,search=($('examSearchInput')?.value||'').trim().toLowerCase();
  const list=all.filter(q=>{
