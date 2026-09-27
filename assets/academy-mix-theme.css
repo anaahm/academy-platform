@@ -375,3 +375,22 @@ input:focus,select:focus,textarea:focus{
  .learning-sidebar{grid-template-columns:1fr!important}
  .curriculum-item{grid-template-columns:45px 1fr!important}.curriculum-item .item-action{grid-column:2}
 }
+
+/* Rich student subject cards */
+.ref-subject-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:16px!important}
+.mix-subject-card{padding:0!important;overflow:hidden!important;display:block!important;text-decoration:none!important;min-height:275px!important}
+.mix-subject-card .ref-subject-art{height:145px!important;border-radius:0!important;position:relative!important;background:linear-gradient(135deg,#eef2ff,#eff6ff)!important;overflow:hidden!important}
+.mix-subject-card .ref-subject-art img{width:100%!important;height:100%!important;object-fit:cover!important;transition:transform .45s ease!important}
+.mix-subject-card:hover .ref-subject-art img{transform:scale(1.06)}
+.mix-subject-card .ref-subject-art>span{font-size:48px!important}
+.mix-subject-progress-badge{position:absolute;top:12px;left:12px;padding:6px 9px;border-radius:999px;background:rgba(15,23,42,.72);color:#fff;font-size:10px;font-style:normal;font-weight:900;backdrop-filter:blur(7px)}
+.mix-subject-card-body{padding:14px 15px 15px}
+.mix-subject-card h3{margin:0 0 9px!important;font-size:17px!important;color:var(--mix-ink)!important}
+.mix-subject-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:11px}
+.mix-subject-meta span{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:999px;background:#f8fafc;border:1px solid #e2e8f0;color:#64748b;font-size:9px;font-weight:800}
+.mix-subject-meta i{color:var(--mix-primary)}
+.mix-subject-card .ref-subject-progress{height:7px!important;background:#e2e8f0!important;border-radius:999px!important;margin-bottom:10px!important}
+.mix-subject-card .ref-subject-progress span{background:linear-gradient(90deg,var(--mix-primary-2),var(--mix-primary))!important;border-radius:999px!important}
+.mix-subject-card .ref-subject-footer{display:flex!important;align-items:center!important;justify-content:space-between!important}.mix-subject-card .ref-subject-footer small{color:var(--mix-muted)!important}.mix-subject-card .ref-subject-footer strong{color:var(--mix-primary)!important;font-size:11px!important}
+@media(max-width:1100px){.ref-subject-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:620px){.ref-subject-grid{display:flex!important;overflow-x:auto!important;scroll-snap-type:x mandatory;padding-bottom:10px!important}.mix-subject-card{flex:0 0 82%!important;scroll-snap-align:start!important}}
