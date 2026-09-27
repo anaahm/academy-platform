@@ -70,6 +70,35 @@ function customSubjectsFor(stage,grade,type){
  const custom=root.customSubjects?.[stage]?.[grade],arr=Array.isArray(custom)?custom:Object.values(custom||{});
  return arr.filter(s=>s?.id&&s?.name&&(!s.type||s.type===type));
 }
+function adminSubjectMeta(stage,grade,type,id){
+ return subjectsFor(stage,String(grade||1),type||'public').find(s=>s.id===id)||{id:id||'',name:id||'مادة دراسية',emoji:'📚',imageUrl:'',units:[]};
+}
+function adminUnitLabel(item){
+ const subject=adminSubjectMeta(item?.stage,item?.grade,item?.type,item?.subject),unit=Number(item?.unit||0);
+ if(!unit)return'اختبار شامل';
+ return subject.units?.[unit-1]?.name||('الوحدة '+unit);
+}
+function adminLessonTeachers(lesson){
+ const names=new Set();
+ if(lesson?.teacherId){
+   const profile=root.teacherProfiles?.[lesson.teacherId];
+   if(profile?.name)names.add(profile.name);
+ }
+ if(lesson?.teacherName)names.add(lesson.teacherName);
+ (Array.isArray(lesson?.videos)?lesson.videos:[]).forEach(v=>{
+   const profile=v?.teacherId?root.teacherProfiles?.[v.teacherId]:null;
+   const name=profile?.name||v?.name;
+   if(name)names.add(name);
+ });
+ return [...names];
+}
+function adminPreviewQuery(item,extra={}){
+ const q=new URLSearchParams({type:item?.type||'public',stage:item?.stage||'prep',grade:String(item?.grade||1),subject:item?.subject||'',...extra});
+ return q.toString();
+}
+function lessonAdminPreviewUrl(lesson){return './lesson.html?'+adminPreviewQuery(lesson,{id:lesson.id})}
+function quizAdminPreviewUrl(quiz){return './lesson.html?'+adminPreviewQuery(quiz,{quiz:quiz.id})}
+
 function fillGrades(select,stage,keep){
  if(!select)return;const max=gradeCount(stage),current=keep||select.value||'1';
  select.innerHTML=Array.from({length:max},(_,i)=>'<option value="'+(i+1)+'">'+gradeLabel(stage,i+1)+'</option>').join('');
@@ -93,9 +122,9 @@ function adminName(){
 const ADMIN_CORE_PATHS=['adminProfiles','lessons','quizzes','studentProfilesV3','parentProfilesV4','teacherProfiles','teacherSubmissions','community'];
 const ADMIN_TAB_PATHS={
  overview:ADMIN_CORE_PATHS,
- curriculum:['customSubjects'],
+ curriculum:['customSubjects','lessons','quizzes'],
  lessons:['lessons','customSubjects','teacherProfiles'],
- quizzes:['quizzes','customSubjects'],
+ quizzes:['quizzes','customSubjects','lessons','teacherProfiles'],
  simulations:['simulations'],
  files:['files','customSubjects'],
  live:['liveSessions'],
