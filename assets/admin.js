@@ -211,7 +211,7 @@ const ADMIN_TAB_PATHS={
  lessons:['lessons','customSubjects','teacherProfiles','settings'],
  quizzes:['quizzes','customSubjects','lessons','teacherProfiles'],
  simulations:['simulations'],
- files:['files','customSubjects'],
+ files:['files','customSubjects','lessons'],
  live:['liveSessions','customSubjects'],
  schedule:['scheduleEvents','customSubjects'],
  teachers:['teacherProfiles','teacherSubmissions','studentProfilesV3','customSubjects','settings'],
@@ -1177,20 +1177,42 @@ async function saveSimulation(e){
 }
 
 /* Files */
+function fileKindLabel(kind){return kind==='note'?'مذكرة':kind==='review'?'مراجعة':kind==='reference'?'مرجع':'PDF'}
+function fileKindIcon(kind){return kind==='note'?'fa-note-sticky':kind==='review'?'fa-list-check':kind==='reference'?'fa-book':'fa-file-pdf'}
+function refreshFileLessons(keep){
+ const select=$('newFileLesson');if(!select)return;
+ const type=$('newFileType')?.value||'public',stage=$('newFileStage')?.value||'primary',grade=$('newFileGrade')?.value||'1',subject=$('newFileSubject')?.value||'';
+ const current=keep!==undefined?String(keep||''):select.value;
+ const rows=values(root.lessons).filter(l=>l.type===type&&l.stage===stage&&String(l.grade)===String(grade)&&(!subject||l.subject===subject)).sort((a,b)=>Number(a.unit||1)-Number(b.unit||1)||String(a.title||'').localeCompare(String(b.title||''),'ar'));
+ select.innerHTML='<option value="">بدون ربط بدرس</option>'+rows.map(l=>'<option value="'+esc(l.id)+'">'+esc((l.title||'درس')+' • '+adminUnitLabel(l))+'</option>').join('');
+ if(rows.some(l=>String(l.id)===current))select.value=current;
+}
 function renderFiles(){
  const arr=values(root.files).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
- $('filesAdminGrid').innerHTML=arr.length?arr.map(f=>'<article class="admin-file-card"><i class="fa-solid fa-file-pdf"></i><div><strong>'+esc(f.title||'ملف')+'</strong><small>'+esc(gradeLabel(f.stage,f.grade))+' • '+esc(f.subject||'')+'</small></div><div class="admin-action-row"><button class="admin-action-btn" data-edit-file="'+f.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><a class="admin-action-btn success" href="'+cleanUrl(f.url)+'" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i></a><button class="admin-action-btn danger" data-delete-file="'+f.id+'"><i class="fa-solid fa-trash"></i></button></div></article>').join(''):empty('لا توجد ملفات','أضف ملفات أو مذكرات للمادة.');
- $$('[data-edit-file]').forEach(b=>b.onclick=()=>editFile(b.dataset.editFile));
- $$('[data-delete-file]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الملف؟',message:'سيتم إزالة الملف من مكتبة المنصة.',tone:'danger',acceptText:'حذف الملف'}))await db.ref('files/'+b.dataset.deleteFile).remove()});
+ $('filesAdminGrid').innerHTML=arr.length?arr.map(f=>{
+   const subject=adminSubjectMeta(f.stage,f.grade,f.type,f.subject),lesson=f.lessonId?root.lessons?.[f.lessonId]:null,kind=f.kind||'pdf';
+   return '<article class="admin-file-card '+(f.isFeatured?'featured':'')+'"><i class="fa-solid '+fileKindIcon(kind)+'"></i><div><div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:3px"><span class="status-pill info">'+esc(fileKindLabel(kind))+'</span>'+(f.isFeatured?'<span class="status-pill pending">مهم</span>':'')+'</div><strong>'+esc(f.title||'ملف')+'</strong><small>'+esc(gradeLabel(f.stage,f.grade))+' • '+esc(subject.name||f.subject||'')+(lesson?' • مرتبط: '+esc(lesson.title||'درس'):'')+'</small>'+(f.description?'<p style="margin:4px 0 0;font-size:7px;color:#64748b">'+esc(String(f.description).slice(0,130))+'</p>':'')+'</div><div class="admin-action-row"><button class="admin-action-btn" data-edit-file="'+f.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><a class="admin-action-btn success" href="'+cleanUrl(f.url)+'" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i></a><button class="admin-action-btn danger" data-delete-file="'+f.id+'"><i class="fa-solid fa-trash"></i></button></div></article>';
+ }).join(''):empty('لا توجد ملفات','أضف ملفات أو مذكرات للمادة.');
+ $('[data-edit-file]').forEach(b=>b.onclick=()=>editFile(b.dataset.editFile));
+ $('[data-delete-file]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الملف؟',message:'سيتم إزالة الملف من مكتبة المنصة.',tone:'danger',acceptText:'حذف الملف'}))await db.ref('files/'+b.dataset.deleteFile).remove()});
 }
-function resetFileEditor(){editState.file=null;$('fileForm').reset();fillGrades($('newFileGrade'),$('newFileStage').value);fillSubjects($('newFileSubject'),$('newFileStage').value,$('newFileGrade').value,$('newFileType').value);if($('fileModalTitle'))$('fileModalTitle').textContent='إضافة ملف'}
+function resetFileEditor(){
+ editState.file=null;$('fileForm').reset();$('newFileKind').value='pdf';$('newFileFeatured').checked=false;
+ fillGrades($('newFileGrade'),$('newFileStage').value);fillSubjects($('newFileSubject'),$('newFileStage').value,$('newFileGrade').value,$('newFileType').value);refreshFileLessons('');
+ if($('fileModalTitle'))$('fileModalTitle').textContent='إضافة ملف';
+}
 function editFile(id){
  const f=root.files?.[id];if(!f)return;editState.file=id;
- $('newFileTitle').value=f.title||'';$('newFileUrl').value=f.url||'';$('newFileType').value=f.type||'public';$('newFileStage').value=f.stage||'primary';fillGrades($('newFileGrade'),f.stage||'primary',f.grade||'1');$('newFileGrade').value=String(f.grade||'1');fillSubjects($('newFileSubject'),f.stage||'primary',String(f.grade||'1'),f.type||'public');$('newFileSubject').value=f.subject||'';if($('fileModalTitle'))$('fileModalTitle').textContent='تعديل الملف';openModal('fileModal');
+ $('newFileTitle').value=f.title||'';$('newFileUrl').value=f.url||'';$('newFileKind').value=f.kind||'pdf';$('newFileDescription').value=f.description||'';$('newFileFeatured').checked=!!f.isFeatured;
+ $('newFileType').value=f.type||'public';$('newFileStage').value=f.stage||'primary';fillGrades($('newFileGrade'),f.stage||'primary',f.grade||'1');$('newFileGrade').value=String(f.grade||'1');fillSubjects($('newFileSubject'),f.stage||'primary',String(f.grade||'1'),f.type||'public');$('newFileSubject').value=f.subject||'';refreshFileLessons(f.lessonId||'');
+ if($('fileModalTitle'))$('fileModalTitle').textContent='تعديل الملف';openModal('fileModal');
 }
 async function saveFile(e){
  e.preventDefault();
- const payload={title:$('newFileTitle').value.trim(),url:$('newFileUrl').value.trim(),type:$('newFileType').value,stage:$('newFileStage').value,grade:$('newFileGrade').value,subject:$('newFileSubject').value};
+ const rawUrl=$('newFileUrl').value.trim();if(cleanUrl(rawUrl)==='#')return toast('رابط الملف غير صالح.','error');
+ const lessonId=$('newFileLesson')?.value||'',lesson=lessonId?root.lessons?.[lessonId]:null;
+ const payload={title:$('newFileTitle').value.trim(),url:rawUrl,kind:$('newFileKind')?.value||'pdf',description:$('newFileDescription')?.value.trim()||'',isFeatured:!!$('newFileFeatured')?.checked,type:$('newFileType').value,stage:$('newFileStage').value,grade:$('newFileGrade').value,subject:$('newFileSubject').value,lessonId,lessonTitle:lesson?.title||''};
+ if(!payload.title)return toast('أدخل عنوان الملف.','error');
  if(editState.file){payload.updatedAt=Date.now();await db.ref('files/'+editState.file).update(payload);toast('تم تحديث الملف')}else{payload.createdAt=Date.now();await db.ref('files').push(payload);toast('تمت إضافة الملف')}
  closeModal('fileModal');resetFileEditor();
 }
@@ -1813,6 +1835,7 @@ bindHierarchy('subjectType','subjectStage','subjectGrade',null);
 bindHierarchy('newLessonType','newLessonStage','newLessonGrade','newLessonSubject');
 bindHierarchy('newQuizType','newQuizStage','newQuizGrade','newQuizSubject');
 bindHierarchy('newFileType','newFileStage','newFileGrade','newFileSubject');
+['newFileType','newFileStage','newFileGrade','newFileSubject'].forEach(id=>$(id)?.addEventListener('change',()=>refreshFileLessons()));
 ['newLessonType','newLessonStage','newLessonGrade','newLessonSubject','newLessonUnit','newLessonTitle','newLessonContent','newLessonImage','newLessonImagePosition','newLessonHidden'].forEach(id=>{
  const el=$(id);if(!el)return;el.addEventListener(el.tagName==='SELECT'||el.type==='checkbox'?'change':'input',renderLessonEditorPreview);
 });
