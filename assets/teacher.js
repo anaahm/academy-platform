@@ -126,7 +126,7 @@ async function generateQuizQuestionsFromBank(){
   const exact=rows.filter(q=>q.lessonId===lessonId),source=exact.length>=Math.min(count,3)?exact:rows;
   const shuffled=[...source].sort(()=>Math.random()-.5).slice(0,count);
   if(!shuffled.length)return toast('لا توجد أسئلة معتمدة مطابقة في بنك الأسئلة بعد.','error');
-  if(shuffled.length+$('#teacherQuizQuestionRows .teacher-question-row').length>100)return toast('سيؤدي التوليد إلى تجاوز حد 100 سؤال.','error');
+  if(shuffled.length+$$('#teacherQuizQuestionRows .teacher-question-row').length>100)return toast('سيؤدي التوليد إلى تجاوز حد 100 سؤال.','error');
   shuffled.forEach(q=>addQuizQuestion({text:q.question||q.text||'',opts:q.options||q.opts||[],correctAnswer:Number(q.correctAnswer),difficulty:Number(q.difficulty||2),explanation:q.explanation||''}));
   toast('تم توليد '+shuffled.length+' سؤال من بنك الأسئلة. راجعها قبل الإرسال.');
  }catch(err){console.error(err);toast('تعذر توليد الأسئلة من البنك الآن.','error')}
@@ -177,11 +177,11 @@ function switchTab(tab,updateUrl=true){
    profile:['ملفي العام','معلوماتك التي يراها الطلاب بعد الموافقة']
  };
  if($('teacherTopRole'))$('teacherTopRole').textContent=labels[tab]?.[1]||'بوابة إدارة المحتوى التعليمي';
- $('.teacher-nav [data-teacher-tab]').forEach(b=>{
+ $$('.teacher-nav [data-teacher-tab]').forEach(b=>{
    const active=b.dataset.teacherTab===tab;
    b.classList.toggle('active',active);b.setAttribute('aria-selected',active?'true':'false');b.tabIndex=active?0:-1;
  });
- $('#teacherMobileBottomNav [data-teacher-tab]').forEach(b=>b.classList.toggle('active',b.dataset.teacherTab===tab));
+ $$('#teacherMobileBottomNav [data-teacher-tab]').forEach(b=>b.classList.toggle('active',b.dataset.teacherTab===tab));
  $$('.teacher-tab').forEach(s=>s.classList.add('hidden'));
  $('teacher-tab-'+tab)?.classList.remove('hidden');
  if(updateUrl){
