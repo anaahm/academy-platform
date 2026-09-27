@@ -862,7 +862,8 @@ function renderLessons(){
  $('lessonsAdminList').innerHTML=arr.length?arr.map(l=>{
    const subject=adminSubjectMeta(l.stage,l.grade,l.type,l.subject),subjectImage=safeSubjectImageUrl(subject.imageUrl||''),lessonImage=safeSubjectImageUrl(l.imageUrl||''),image=lessonImage||subjectImage,teachers=adminLessonTeachers(l),videos=Array.isArray(l.videos)?l.videos.filter(v=>v?.url).length:0,questions=Array.isArray(l.questions)?l.questions.length:0;
    const preview=lessonAdminPreviewUrl(l),unit=adminUnitLabel(l),date=l.updatedAt||l.createdAt||0;
-   return '<article class="admin-content-card admin-lesson-content-card '+(l.isHidden?'is-hidden':'is-published')+'">'+
+   return '<article class="admin-content-card admin-lesson-content-card '+(l.isHidden?'is-hidden ':'is-published ')+(selectedLessonIds.has(l.id)?'selected':'')+'">'+
+     '<label class="admin-card-selection" title="تحديد الدرس"><input type="checkbox" data-select-lesson="'+esc(l.id)+'" '+(selectedLessonIds.has(l.id)?'checked':'')+'><span><i class="fa-solid fa-check"></i></span></label>'+
      '<div class="admin-content-card-art '+(image?'has-image':'')+'" '+(image?'style="background-image:url(&quot;'+esc(image)+'&quot;)"':'')+'>'+
        (!image?'<span>'+esc(subject.emoji||'📚')+'</span>':'')+'<div class="admin-content-card-status"><span class="status-pill '+(l.isHidden?'rejected':'approved')+'">'+(l.isHidden?'مخفي':'منشور')+'</span></div>'+
        '<em>'+esc(subject.name)+'</em>'+
@@ -876,7 +877,9 @@ function renderLessons(){
  }).join(''):empty('لا توجد دروس','غيّر الفلاتر أو أضف أول درس جديد.');
  $$('[data-edit-lesson]').forEach(b=>b.onclick=()=>editLesson(b.dataset.editLesson));
  $$('[data-toggle-lesson]').forEach(b=>b.onclick=()=>{const l=root.lessons?.[b.dataset.toggleLesson];db.ref('lessons/'+b.dataset.toggleLesson+'/isHidden').set(!l?.isHidden)});
- $$('[data-delete-lesson]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الدرس نهائيًا؟',message:'لن يمكن استرجاع الدرس بعد الحذف من المنصة.',tone:'danger',acceptText:'حذف الدرس'}))await db.ref('lessons/'+b.dataset.deleteLesson).remove()});
+ $('[data-delete-lesson]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الدرس نهائيًا؟',message:'لن يمكن استرجاع الدرس بعد الحذف من المنصة.',tone:'danger',acceptText:'حذف الدرس'}))await db.ref('lessons/'+b.dataset.deleteLesson).remove()});
+ $('[data-select-lesson]').forEach(input=>input.onchange=()=>{const id=input.dataset.selectLesson;if(input.checked)selectedLessonIds.add(id);else selectedLessonIds.delete(id);updateBulkSelectionUI('lesson')});
+ updateBulkSelectionUI('lesson');
 }
 async function editLesson(id){
  const l=root.lessons?.[id];if(!l)return;
@@ -930,7 +933,8 @@ function renderQuizzes(){
  $('quizzesAdminList').innerHTML=arr.length?arr.map(q=>{
    const subject=adminSubjectMeta(q.stage,q.grade,q.type,q.subject),image=safeSubjectImageUrl(subject.imageUrl||''),lesson=q.lessonId?root.lessons?.[q.lessonId]:null,questions=Array.isArray(q.questions)?q.questions.length:0;
    const mode=q.lessonId?'مرتبط بدرس':Number(q.unit||0)>0?'اختبار وحدة':'اختبار شامل',preview=quizAdminPreviewUrl(q),teacher=q.teacherId?root.teacherProfiles?.[q.teacherId]?.name||'مدرس':'';
-   return '<article class="admin-content-card admin-quiz-content-card '+(q.isHidden?'is-hidden':'is-published')+'">'+
+   return '<article class="admin-content-card admin-quiz-content-card '+(q.isHidden?'is-hidden ':'is-published ')+(selectedQuizIds.has(q.id)?'selected':'')+'">'+
+     '<label class="admin-card-selection" title="تحديد الاختبار"><input type="checkbox" data-select-quiz="'+esc(q.id)+'" '+(selectedQuizIds.has(q.id)?'checked':'')+'><span><i class="fa-solid fa-check"></i></span></label>'+
      '<div class="admin-content-card-art quiz '+(image?'has-image':'')+'" '+(image?'style="background-image:url(&quot;'+esc(image)+'&quot;)"':'')+'>'+
        (!image?'<span>'+esc(subject.emoji||'🧠')+'</span>':'')+'<div class="admin-content-card-status"><span class="status-pill '+(q.isHidden?'rejected':'approved')+'">'+(q.isHidden?'مخفي':'منشور')+'</span></div><em>'+esc(mode)+'</em>'+
      '</div>'+
@@ -942,7 +946,9 @@ function renderQuizzes(){
  }).join(''):empty('لا توجد اختبارات','غيّر الفلاتر أو أنشئ أول اختبار.');
  $$('[data-edit-quiz]').forEach(b=>b.onclick=()=>editQuiz(b.dataset.editQuiz));
  $$('[data-toggle-quiz]').forEach(b=>b.onclick=()=>{const q=root.quizzes?.[b.dataset.toggleQuiz];db.ref('quizzes/'+b.dataset.toggleQuiz+'/isHidden').set(!q?.isHidden)});
- $$('[data-delete-quiz]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الاختبار؟',message:'سيتم حذف الاختبار والأسئلة الموجودة بداخله من المنصة.',tone:'danger',acceptText:'حذف الاختبار'}))await db.ref('quizzes/'+b.dataset.deleteQuiz).remove()});
+ $('[data-delete-quiz]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الاختبار؟',message:'سيتم حذف الاختبار والأسئلة الموجودة بداخله من المنصة.',tone:'danger',acceptText:'حذف الاختبار'}))await db.ref('quizzes/'+b.dataset.deleteQuiz).remove()});
+ $('[data-select-quiz]').forEach(input=>input.onchange=()=>{const id=input.dataset.selectQuiz;if(input.checked)selectedQuizIds.add(id);else selectedQuizIds.delete(id);updateBulkSelectionUI('quiz')});
+ updateBulkSelectionUI('quiz');
 }
 function resetQuizEditor(){
  editState.quiz=null;$('quizForm').reset();fillGrades($('newQuizGrade'),$('newQuizStage').value);fillSubjects($('newQuizSubject'),$('newQuizStage').value,$('newQuizGrade').value,$('newQuizType').value);$('newQuizQuestions').value='[]';if($('newQuizHidden'))$('newQuizHidden').checked=false;renderQuestionBuilder('quiz',[]);renderQuizEditorPreview();if($('quizModalTitle'))$('quizModalTitle').textContent='إنشاء اختبار';
