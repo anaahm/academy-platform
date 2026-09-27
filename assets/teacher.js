@@ -177,10 +177,11 @@ function switchTab(tab,updateUrl=true){
    profile:['ملفي العام','معلوماتك التي يراها الطلاب بعد الموافقة']
  };
  if($('teacherTopRole'))$('teacherTopRole').textContent=labels[tab]?.[1]||'بوابة إدارة المحتوى التعليمي';
- $$('.teacher-nav [data-teacher-tab]').forEach(b=>{
+ $('.teacher-nav [data-teacher-tab]').forEach(b=>{
    const active=b.dataset.teacherTab===tab;
    b.classList.toggle('active',active);b.setAttribute('aria-selected',active?'true':'false');b.tabIndex=active?0:-1;
  });
+ $('#teacherMobileBottomNav [data-teacher-tab]').forEach(b=>b.classList.toggle('active',b.dataset.teacherTab===tab));
  $$('.teacher-tab').forEach(s=>s.classList.add('hidden'));
  $('teacher-tab-'+tab)?.classList.remove('hidden');
  if(updateUrl){
@@ -240,6 +241,10 @@ function renderTeacherAnalytics(){
  const top=[...metrics].sort((a,b)=>Number(b.m.views||0)-Number(a.m.views||0))[0];
  if($('teacherTopLesson'))$('teacherTopLesson').innerHTML=top?'<strong>'+escapeHtml(top.lesson.title||'درس')+'</strong><span>'+Number(top.m.views||0)+' مشاهدة</span>':'<strong>—</strong><span>لا توجد بيانات بعد</span>';
  if($('teacherAverageQuiz'))$('teacherAverageQuiz').innerHTML='<strong>'+averageQuiz+'%</strong><span>'+quizAttempts+' محاولة تدريب</span>';
+ if($('teacherHomeViews'))$('teacherHomeViews').textContent=totalViews;
+ if($('teacherHomeCompletions'))$('teacherHomeCompletions').textContent=totalCompletions;
+ if($('teacherHomeAverageQuiz'))$('teacherHomeAverageQuiz').textContent=averageQuiz+'%';
+ if($('teacherHomeTopLesson'))$('teacherHomeTopLesson').innerHTML=top?'<span>🏆</span><div><small>أكثر درس مشاهدة</small><strong>'+escapeHtml(top.lesson.title||'درس')+'</strong><em>'+Number(top.m.views||0)+' مشاهدة</em></div>':'<span>🌱</span><div><small>أكثر درس مشاهدة</small><strong>سيظهر بعد أول تفاعل</strong></div>';
 
  const list=$('teacherAnalyticsList');
  if(list)list.innerHTML=metrics.length?metrics.map(x=>{
@@ -380,7 +385,25 @@ function render(){
  const name=teacher.name||user.displayName||user.email.split('@')[0]||'أستاذنا';
  $('teacherTopName').textContent='أهلًا '+name+' 👋';$('teacherWelcomeName').textContent=name;
  const assignments=normalizeAssignments(),subs=Object.entries(submissions||{}).filter(([,v])=>v?.type!=='profile').map(([id,v])=>({id,...v})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
- const approved=subs.filter(s=>s.status==='approved'),pending=subs.filter(s=>(s.status||'pending')==='pending'),lessons=ownLessons();
+ const approved=subs.filter(s=>s.status==='approved'),pending=subs.filter(s=>(s.status||'pending')==='pending'),rejected=subs.filter(s=>s.status==='rejected'),lessons=ownLessons();
+ const publicProfile=data.publicProfile||{},pendingProfile=Object.values(submissions||{}).some(s=>s?.type==='profile'&&s.status==='pending');
+ const roleLabel=teacher.role==='assistant'?'مساعد معلم':teacher.role==='supervisor'?'مشرف مادة':'معلم';
+ if($('teacherHomeRoleBadge'))$('teacherHomeRoleBadge').innerHTML='<i class="fa-solid fa-shield-halved"></i> '+roleLabel;
+ if($('teacherHomeProfileStatus')){
+   const profileLabel=pendingProfile?'الملف قيد المراجعة':publicProfile.name&&publicProfile.active!==false?'الملف منشور':'أكمل ملفك العام';
+   $('teacherHomeProfileStatus').innerHTML='<i class="fa-regular fa-id-card"></i> '+profileLabel;
+   $('teacherHomeProfileStatus').classList.toggle('pending',pendingProfile);
+   $('teacherHomeProfileStatus').classList.toggle('published',!pendingProfile&&!!publicProfile.name&&publicProfile.active!==false);
+ }
+ if($('teacherHomeSubtitle'))$('teacherHomeSubtitle').textContent=publicProfile.title||'أضف محتوى منظم، تابع ما تم اعتماده، وركّز على جودة الشرح.';
+ const hero=$('teacherHomeHero'),avatar=$('teacherHomeAvatar'),photo=safeUrl(publicProfile.photoUrl||''),cover=safeUrl(publicProfile.coverUrl||'');
+ if(hero){hero.classList.toggle('has-cover',cover!=='#');hero.style.setProperty('--teacher-home-cover',cover!=='#'?'url("'+cover.replace(/"/g,'%22')+'")':'none')}
+ if(avatar)avatar.innerHTML=photo!=='#'?'<img src="'+escapeHtml(photo)+'" alt="" loading="eager">':'<span>'+escapeHtml((name.trim()[0]||'م'))+'</span>';
+ if($('teacherPipelinePending'))$('teacherPipelinePending').textContent=pending.length;
+ if($('teacherPipelineApproved'))$('teacherPipelineApproved').textContent=approved.length;
+ if($('teacherPipelineRejected'))$('teacherPipelineRejected').textContent=rejected.length;
+ if($('teacherPipelineHint'))$('teacherPipelineHint').textContent=pending.length?'لديك '+pending.length+' طلب '+(pending.length===1?'ينتظر':'تنتظر')+' مراجعة الإدارة.':rejected.length?'راجع المحتوى المرفوض وعدّله قبل إعادة الإرسال.':'كل طلباتك الحالية تمت مراجعتها.';
+
  $('teacherApprovedCount').textContent=lessons.length||approved.length;$('teacherPendingCount').textContent=pending.length;
  $('teacherSubjectCount').textContent=new Set(assignments.map(a=>a.subject).filter(Boolean)).size||teacher.subjectCount||0;
  $('teacherGradeCount').textContent=new Set(assignments.map(a=>(a.stage||'')+'-'+(a.grade||'')).filter(x=>x!=='-')).size||teacher.gradeCount||0;
@@ -521,7 +544,7 @@ auth.onAuthStateChanged(async u=>{
    const assignedSubjects=[...new Set(normalizeAssignments().map(scope=>typeof scope==='string'?scope:scope.subject).filter(Boolean))];
    const scopeSnaps=await Promise.allSettled(assignedSubjects.map(subject=>db.ref('lessons').orderByChild('subject').equalTo(subject).once('value')));
    scopeSnaps.forEach(result=>{if(result.status==='fulfilled')Object.assign(lessons,result.value.val()||{})});
-   data={customSubjects:subjectsSnap.val()||{},lessons};
+   data={customSubjects:subjectsSnap.val()||{},lessons,publicProfile:publicProfileSnap.val()||{}};
    homeworkAssignments=homeworkSnap.val()||{};
 
    const lessonIds=ownLessons().map(lesson=>lesson.id),ownIds=Object.keys(homeworkAssignments);
