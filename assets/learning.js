@@ -150,7 +150,7 @@ function renderSubjectTeachers(c){
      (t.hasPublicProfile?'<a class="subject-teacher-profile" href="./teacher-profile.html?id='+encodeURIComponent(t.id)+'" aria-label="ملف '+esc(t.name)+'"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>':'')+
      '</div></article>';
  }).join('');
- $('[data-filter-teacher]').forEach(btn=>btn.onclick=()=>{
+ $$('[data-filter-teacher]').forEach(btn=>btn.onclick=()=>{
    state.teacherFilter=state.teacherFilter===btn.dataset.filterTeacher?'':btn.dataset.filterTeacher;
    const activeFilter=document.querySelector('[data-content-filter].active')?.dataset.contentFilter||'all';
    renderSubjectTeachers(c);renderCurriculum(c,activeFilter);
@@ -169,7 +169,7 @@ function renderSubjectUnitStrip(c){
    const lessons=unitLessonsFor(u),complete=lessons.filter(l=>done(l.id)).length,pct=lessons.length?Math.round(complete/lessons.length*100):0;
    return '<button type="button" class="subject-unit-chip '+(pct===100?'complete':'')+'" data-jump-unit="'+u+'"><span class="subject-unit-num">'+(pct===100?'<i class="fa-solid fa-check"></i>':(index+1))+'</span><span><small>الوحدة '+(index+1)+'</small><strong>'+esc(unitName(c,u))+'</strong><em>'+complete+' / '+lessons.length+' مكتمل</em></span><b>'+pct+'%</b></button>';
  }).join(''):'<div class="subject-unit-empty">ستظهر الوحدات عند إضافة الدروس.</div>';
- $('[data-jump-unit]').forEach(btn=>btn.onclick=()=>document.querySelector('[data-unit-card="'+btn.dataset.jumpUnit+'"]')?.scrollIntoView({behavior:'smooth',block:'start'}));
+ $$('[data-jump-unit]').forEach(btn=>btn.onclick=()=>document.querySelector('[data-unit-card="'+btn.dataset.jumpUnit+'"]')?.scrollIntoView({behavior:'smooth',block:'start'}));
 }
 function renderSubjectPath(c){
  const track=$('subjectPathTrack'); if(!track)return;
