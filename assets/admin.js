@@ -619,6 +619,11 @@ async function reviewTeacherProfile(key,approved){
 }
 function renderTeachers(){
  const teachers=values(root.teacherProfiles),students=values(root.studentProfilesV3),all=flattenSubmissions(),subs=all.filter(s=>s.type!=='profile'),profileRequests=all.filter(s=>s.type==='profile').sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)),pending=subs.filter(s=>(s.status||'pending')==='pending');
+ const activeTeachers=teachers.filter(t=>t.isActive!==false),inactiveTeachers=teachers.filter(t=>t.isActive===false),pendingProfiles=profileRequests.filter(s=>(s.status||'pending')==='pending');
+ if($('adminTeacherActiveCount'))$('adminTeacherActiveCount').textContent=activeTeachers.length;
+ if($('adminTeacherInactiveCount'))$('adminTeacherInactiveCount').textContent=inactiveTeachers.length;
+ if($('adminTeacherPendingContent'))$('adminTeacherPendingContent').textContent=pending.length;
+ if($('adminTeacherPendingProfiles'))$('adminTeacherPendingProfiles').textContent=pendingProfiles.length;
  const selected=$('profileTeacherId').value;
  $('profileTeacherId').innerHTML='<option value="">اختر المدرس</option>'+teachers.filter(t=>t.isActive!==false).map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name||t.email||'مدرس')+'</option>').join('');
  $('profileTeacherId').value=teachers.some(t=>t.id===selected&&t.isActive!==false)?selected:'';
@@ -714,9 +719,22 @@ async function approveSubmission(key){
 
 /* Students */
 function renderStudents(){
- const q=($('studentSearch')?.value||'').trim().toLowerCase();
- const arr=values(root.studentProfilesV3).filter(s=>!q||(s.name||'').toLowerCase().includes(q)||(s.phone||'').includes(q)||(s.email||'').toLowerCase().includes(q)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
- $('studentsAdminList').innerHTML=arr.length?'<table class="admin-table"><thead><tr><th>الطالب</th><th>المرحلة</th><th>XP</th><th>الدروس</th><th>الاختبارات</th><th>آخر نشاط</th></tr></thead><tbody>'+arr.map(s=>'<tr><td><strong>'+esc(s.name||'طالب')+'</strong><br><small>'+esc(s.phone||s.email||'')+'</small></td><td>'+esc(typeLabel(s.educationType))+' • '+esc(gradeLabel(s.stage,s.grade))+'</td><td>'+Number(s.stats?.totalXP||0)+'</td><td>'+Number(s.stats?.completedLessons||0)+'</td><td>'+Number(s.stats?.completedQuizzes||0)+'</td><td>'+((s.lastActiveAt||s.activity?.lastSeenAt)?new Date(s.lastActiveAt||s.activity.lastSeenAt).toLocaleDateString('ar-EG'):'-')+'</td></tr>').join('')+'</tbody></table>':empty('لا يوجد طلاب مطابقون','ستظهر حسابات الطلاب الجديدة هنا.');
+ const all=values(root.studentProfilesV3),q=($('studentSearch')?.value||'').trim().toLowerCase(),type=$('studentFilterType')?.value||'',stage=$('studentFilterStage')?.value||'',weekAgo=Date.now()-7*86400000;
+ const active=all.filter(s=>Number(s.lastActiveAt||s.activity?.lastSeenAt||0)>=weekAgo).length,phones=all.filter(s=>String(s.phone||'').trim()).length,profiled=all.filter(s=>s.stage&&s.grade&&s.educationType).length;
+ if($('adminStudentTotalCount'))$('adminStudentTotalCount').textContent=all.length;
+ if($('adminStudentActiveCount'))$('adminStudentActiveCount').textContent=active;
+ if($('adminStudentPhoneCount'))$('adminStudentPhoneCount').textContent=phones;
+ if($('adminStudentProfiledCount'))$('adminStudentProfiledCount').textContent=profiled;
+ const arr=all.filter(s=>{
+   const matchText=!q||(s.name||'').toLowerCase().includes(q)||(s.phone||'').includes(q)||(s.email||'').toLowerCase().includes(q);
+   const matchType=!type||s.educationType===type,matchStage=!stage||s.stage===stage;
+   return matchText&&matchType&&matchStage;
+ }).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+ if($('studentResultsCount'))$('studentResultsCount').textContent=arr.length+' طالب ظاهر';
+ $('studentsAdminList').innerHTML=arr.length?'<table class="admin-table mix-admin-student-table"><thead><tr><th>الطالب</th><th>المرحلة</th><th>XP</th><th>الدروس</th><th>الاختبارات</th><th>آخر نشاط</th></tr></thead><tbody>'+arr.map(s=>{
+   const last=Number(s.lastActiveAt||s.activity?.lastSeenAt||0),recent=last>=weekAgo;
+   return '<tr><td><div class="mix-admin-student-cell"><span>'+esc((s.name||'ط').trim()[0]||'ط')+'</span><div><strong>'+esc(s.name||'طالب')+'</strong><small>'+esc(s.phone||s.email||'بدون وسيلة تواصل')+'</small></div></div></td><td>'+esc(typeLabel(s.educationType))+' • '+esc(gradeLabel(s.stage,s.grade))+'</td><td><strong>'+Number(s.stats?.totalXP||0)+'</strong></td><td>'+Number(s.stats?.completedLessons||0)+'</td><td>'+Number(s.stats?.completedQuizzes||0)+'</td><td><span class="mix-admin-activity '+(recent?'active':'')+'"><i></i>'+ (last?new Date(last).toLocaleDateString('ar-EG'):'لا يوجد')+'</span></td></tr>';
+ }).join('')+'</tbody></table>':empty('لا يوجد طلاب مطابقون','غيّر البحث أو الفلاتر لعرض نتائج أخرى.');
 }
 
 /* News */
@@ -913,7 +931,7 @@ $('resetDashboardHero')?.addEventListener('click',()=>{
   renderDashboardHeroSettingPreview();
   toast('تم اختيار كل الصور الافتراضية. اضغط حفظ الإعدادات لتطبيقها.');
 });
-$('lessonSearch').oninput=renderLessons;$('lessonFilterStage').onchange=renderLessons;$('lessonFilterType').onchange=renderLessons;$('studentSearch').oninput=renderStudents;
+$('lessonSearch').oninput=renderLessons;$('lessonFilterStage').onchange=renderLessons;$('lessonFilterType').onchange=renderLessons;$('studentSearch').oninput=renderStudents;$('studentFilterType')?.addEventListener('change',renderStudents);$('studentFilterStage')?.addEventListener('change',renderStudents);
 $('curriculumType').onchange=renderCurriculum;$('curriculumStage').onchange=()=>{fillGrades($('curriculumGrade'),$('curriculumStage').value);renderCurriculum()};$('curriculumGrade').onchange=renderCurriculum;
 $('assignType').onchange=refreshAssignmentSubjects;$('assignStage').onchange=refreshAssignmentSubjects;$('assignGrade').onchange=refreshAssignmentSubjects;$('addAssignmentBtn').onclick=addAssignment;
 initAdminCollapse();
