@@ -529,12 +529,14 @@ function renderVideo(l){
    const apiSrc=src+(src.includes('?')?'&':'?')+'enablejsapi=1&origin='+encodeURIComponent(location.origin);
    return '<iframe id="lessonVideoFrame'+i+'" data-video-index="'+i+'" src="'+apiSrc+'" title="'+esc((l.title||'الدرس')+' - شرح '+teacher)+'" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
  };
- const first=frameHtml(vids[0],0);if(first){$('videoFrame').innerHTML=first;attachVideoProgress('lessonVideoFrame0',l,0)}
+ const requestedTeacher=new URLSearchParams(location.search).get('teacher')||'';
+ const preferredIndex=Math.max(0,vids.findIndex(v=>String(v?.teacherId||'')===String(requestedTeacher)));
+ const first=frameHtml(vids[preferredIndex],preferredIndex);if(first){$('videoFrame').innerHTML=first;attachVideoProgress('lessonVideoFrame'+preferredIndex,l,preferredIndex)}
  $('teacherSwitcherWrap').classList.remove('hidden');$('teacherCountBadge').textContent=vids.length+' '+(vids.length===1?'شرح':'شروحات');
  $('teacherSwitcher').innerHTML=vids.map((v,i)=>{
-   const t=teacherInfo(v,i),avatar=t.photo?'<img src="'+esc(t.photo)+'" alt="" loading="lazy">':'<span>'+esc(initials(t.name))+'</span>';
-   return '<button class="teacher-choice mix-teacher-choice '+(i===0?'active':'')+'" data-v="'+i+'" aria-pressed="'+(i===0?'true':'false')+'">'+
-     '<span class="teacher-mini-avatar">'+avatar+'</span><span class="mix-teacher-choice-copy"><strong>'+esc(t.name)+'</strong><em>'+esc(t.title)+'</em><small>'+(i===0?'يتم العرض الآن':'اضغط لاختيار هذا الشرح')+'</small></span><i class="fa-solid '+(i===0?'fa-circle-play':'fa-play')+'"></i></button>';
+   const t=teacherInfo(v,i),active=i===preferredIndex,avatar=t.photo?'<img src="'+esc(t.photo)+'" alt="" loading="lazy">':'<span>'+esc(initials(t.name))+'</span>';
+   return '<button class="teacher-choice mix-teacher-choice '+(active?'active':'')+'" data-v="'+i+'" aria-pressed="'+(active?'true':'false')+'">'+
+     '<span class="teacher-mini-avatar">'+avatar+'</span><span class="mix-teacher-choice-copy"><strong>'+esc(t.name)+'</strong><em>'+esc(t.title)+'</em><small>'+(active?'يتم العرض الآن':'اضغط لاختيار هذا الشرح')+'</small></span><i class="fa-solid '+(active?'fa-circle-play':'fa-play')+'"></i></button>';
  }).join('');
  $('[data-v]').forEach(b=>b.onclick=()=>{
    const i=Number(b.dataset.v),html=frameHtml(vids[i],i);if(html){stopVideoProgressTracker();$('videoFrame').innerHTML=html;attachVideoProgress('lessonVideoFrame'+i,l,i)}
