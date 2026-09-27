@@ -250,7 +250,7 @@ function renderCurriculum(c,filter){
  $('curriculumSkeleton').classList.add('hidden');
  const map=new Map();
  state.lessons.filter(l=>lessonHasTeacher(l,state.teacherFilter)).forEach(l=>{const u=Number(l.unit||1);if(!map.has(u))map.set(u,{lessons:[],quizzes:[]});map.get(u).lessons.push(l)});
- state.quizzes.filter(q=>q.lessonId||Number(q.unit||0)>0).forEach(q=>{const u=Number(q.lessonId?state.lessons.find(l=>l.id===q.lessonId)?.unit||q.unit||1:q.unit);if(!map.has(u))map.set(u,{lessons:[],quizzes:[]});map.get(u).quizzes.push(q)});
+ state.quizzes.filter(q=>q.lessonId||Number(q.unit||0)>0).filter(q=>!state.teacherFilter||String(q.teacherId||'')===String(state.teacherFilter)||(q.lessonId&&lessonHasTeacher(state.lessons.find(l=>l.id===q.lessonId),state.teacherFilter))).forEach(q=>{const u=Number(q.lessonId?state.lessons.find(l=>l.id===q.lessonId)?.unit||q.unit||1:q.unit);if(!map.has(u))map.set(u,{lessons:[],quizzes:[]});map.get(u).quizzes.push(q)});
  const comprehensive=state.quizzes.filter(q=>!q.lessonId&&Number(q.unit||0)===0);
  if(!map.size&&!comprehensive.length){$('curriculumEmpty').classList.remove('hidden');$('curriculumList').classList.add('hidden');return}
  $('curriculumEmpty').classList.add('hidden');$('curriculumList').classList.remove('hidden');
