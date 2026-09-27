@@ -196,12 +196,61 @@ async function setTab(tab,updateUrl=true){
 
 /* Overview */
 function renderOverview(){
- const lessons=values(root.lessons),quizzes=values(root.quizzes),students=values(root.studentProfilesV3),teachers=values(root.teacherProfiles),pending=flattenSubmissions().filter(x=>(x.status||'pending')==='pending');
- const stats=[['fa-user-graduate',students.length,'طالب'],['fa-chalkboard-user',teachers.length,'مدرس'],['fa-circle-play',lessons.length,'درس'],['fa-file-circle-question',quizzes.length,'اختبار'],['fa-clock',pending.length,'مراجعة معلقة']];
- $('overviewStats').innerHTML=stats.map(s=>'<article><span><i class="fa-solid '+s[0]+'"></i></span><div><strong>'+s[1]+'</strong><small>'+s[2]+'</small></div></article>').join('');
- const latest=lessons.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).slice(0,6);
+ const lessons=values(root.lessons),quizzes=values(root.quizzes),students=values(root.studentProfilesV3),parents=values(root.parentProfilesV4),teachers=values(root.teacherProfiles);
+ const submissions=flattenSubmissions(),pending=submissions.filter(x=>(x.status||'pending')==='pending'),approved=submissions.filter(x=>x.status==='approved'),rejected=submissions.filter(x=>x.status==='rejected');
+ const activeTeachers=teachers.filter(t=>t.isActive!==false),inactiveTeachers=teachers.filter(t=>t.isActive===false),reports=communityReportCount();
+ const readyLessons=lessons.filter(l=>{
+   const hasVideo=Array.isArray(l.videos)&&l.videos.some(v=>v?.url);
+   const hasText=String(l.content||l.explanation||'').trim().length>15;
+   return !l.isHidden&&(hasVideo||hasText);
+ }).length;
+ const readiness=lessons.length?Math.round(readyLessons/lessons.length*100):100;
+ const reviewed=submissions.length?Math.round((approved.length+rejected.length)/submissions.length*100):100;
+ const activeTeacherPct=teachers.length?Math.round(activeTeachers.length/teachers.length*100):100;
+ const profiledStudents=students.length?Math.round(students.filter(s=>s.stage&&s.grade).length/students.length*100):100;
+
+ const stats=[
+   ['fa-user-graduate',students.length,'طالب'],
+   ['fa-chalkboard-user',activeTeachers.length,'مدرس نشط'],
+   ['fa-people-roof',parents.length,'ولي أمر'],
+   ['fa-circle-play',lessons.length,'درس'],
+   ['fa-file-circle-question',quizzes.length,'اختبار'],
+   ['fa-clock',pending.length,'مراجعة معلقة']
+ ];
+ $('overviewStats').innerHTML=stats.map((s,i)=>'<article class="mix-admin-stat stat-'+i+'"><span><i class="fa-solid '+s[0]+'"></i></span><div><strong>'+s[1]+'</strong><small>'+s[2]+'</small></div></article>').join('');
+
+ if($('adminOverviewGreeting'))$('adminOverviewGreeting').textContent='أهلًا '+adminName()+'، هذه أهم حالة للأكاديمية الآن.';
+ if($('adminOverviewHealth'))$('adminOverviewHealth').textContent=readiness+'%';
+ if($('adminOverviewAttention')){
+   const totalAttention=pending.length+reports+inactiveTeachers.length;
+   $('adminOverviewAttention').innerHTML='<i class="fa-solid fa-bell"></i> '+(totalAttention?totalAttention+' عناصر تحتاج متابعة':'لا توجد مهام عاجلة');
+   $('adminOverviewAttention').classList.toggle('has-attention',totalAttention>0);
+ }
+
+ const attention=[];
+ if(pending.length)attention.push({icon:'fa-clock',tone:'orange',title:pending.length+' مراجعة محتوى معلقة',text:'طلبات مدرسين تنتظر قرار الإدارة.',tab:'teachers'});
+ if(reports)attention.push({icon:'fa-flag',tone:'red',title:reports+' بلاغ في المجتمع',text:'راجع المنشورات المبلّغ عنها.',tab:'community'});
+ if(inactiveTeachers.length)attention.push({icon:'fa-user-slash',tone:'gray',title:inactiveTeachers.length+' مدرس غير نشط',text:'راجع حالة حسابات فريق التدريس.',tab:'teachers'});
+ if(!lessons.length)attention.push({icon:'fa-circle-plus',tone:'blue',title:'لا توجد دروس منشورة بعد',text:'ابدأ بإضافة أول محتوى تعليمي.',tab:'lessons'});
+ if($('adminAttentionList'))$('adminAttentionList').innerHTML=attention.length?attention.map(a=>
+   '<button type="button" class="mix-admin-attention-item" data-jump-tab="'+a.tab+'"><span class="'+a.tone+'"><i class="fa-solid '+a.icon+'"></i></span><div><strong>'+esc(a.title)+'</strong><small>'+esc(a.text)+'</small></div><i class="fa-solid fa-chevron-left"></i></button>'
+ ).join(''):'<div class="mix-admin-all-clear"><span><i class="fa-solid fa-circle-check"></i></span><div><strong>كل شيء تحت السيطرة</strong><small>لا توجد مراجعات أو بلاغات عاجلة حاليًا.</small></div></div>';
+
+ const health=[
+   {label:'جاهزية الدروس المنشورة',value:readiness,meta:readyLessons+' من '+lessons.length+' درس'},
+   {label:'المدرسون النشطون',value:activeTeacherPct,meta:activeTeachers.length+' من '+teachers.length+' مدرس'},
+   {label:'الطلبات التي تمت مراجعتها',value:reviewed,meta:(approved.length+rejected.length)+' من '+submissions.length+' طلب'},
+   {label:'اكتمال ملفات الطلاب الأساسية',value:profiledStudents,meta:students.length+' طالب'}
+ ];
+ if($('adminHealthBars'))$('adminHealthBars').innerHTML=health.map(h=>
+   '<div class="mix-admin-health-row"><div><strong>'+esc(h.label)+'</strong><small>'+esc(h.meta)+'</small></div><b>'+h.value+'%</b><div class="mix-admin-health-track"><span style="width:'+Math.max(0,Math.min(100,h.value))+'%"></span></div></div>'
+ ).join('');
+
+ const latest=[...lessons].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).slice(0,6);
  $('latestContentList').innerHTML=latest.length?latest.map(l=>'<div class="admin-list-item"><div><strong>'+esc(l.title||'درس')+'</strong><small>'+esc(typeLabel(l.type))+' • '+esc(stageNames[l.stage]||l.stage)+' • '+esc(l.subject||'')+'</small></div><span class="status-pill info">درس</span></div>').join(''):empty('لا يوجد محتوى بعد','أضف أول درس من قسم الدروس.');
  $('overviewPendingList').innerHTML=pending.length?pending.slice(0,5).map(s=>'<div class="admin-list-item"><div><strong>'+esc(s.title||'محتوى')+'</strong><small>'+esc(s.teacherName||'مدرس')+'</small></div><span class="status-pill pending">مراجعة</span></div>').join(''):empty('لا توجد مراجعات معلقة','كل محتوى المدرسين تمت مراجعته.');
+
+ $('[data-jump-tab]',$('admin-tab-overview')).forEach(b=>b.onclick=()=>setTab(b.dataset.jumpTab));
 }
 
 /* Curriculum */
