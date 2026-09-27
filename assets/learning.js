@@ -956,40 +956,112 @@ function renderLessonPath(){
  else if(!complete){action.textContent='علّم الدرس كمكتمل';action.onclick=()=>markComplete(c,lesson.id)}
  else{action.textContent=next?'الدرس التالي':'العودة للمادة';action.onclick=()=>location.href=next?url('lesson.html',c,{id:next.id}):url('subject.html',c)}
 }
+let quizTimerInterval=null;
+function formatQuizClock(totalSeconds){
+ const sec=Math.max(0,Math.floor(Number(totalSeconds)||0)),m=Math.floor(sec/60),s=sec%60;
+ return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+function clearQuizTimer(){
+ if(quizTimerInterval){clearInterval(quizTimerInterval);quizTimerInterval=null}
+}
+function quizDurationMinutes(){
+ return Math.max(0,Number(state.currentQuiz?.durationMinutes||0));
+}
+function updateQuizTimer(){
+ const qz=state.quiz;if(!qz||!qz.startedAt)return;
+ const elapsed=Math.max(0,Math.floor((Date.now()-qz.startedAt)/1000));qz.elapsedSeconds=elapsed;
+ const wrap=$('quizTimerWrap'),label=$('quizTimerLabel');
+ if(qz.limitSeconds>0){
+   const left=Math.max(0,qz.limitSeconds-elapsed);
+   if(label)label.textContent=formatQuizClock(left);
+   if(wrap){wrap.classList.toggle('warning',left<=60&&left>0);wrap.classList.toggle('danger',left<=15)}
+   if(left<=0&&!qz.finishing){
+     qz.timedOut=true;clearQuizTimer();toast('انتهى وقت الاختبار وسيتم حساب إجاباتك الحالية.','error');finishQuiz(true);
+   }
+ }else{
+   if(label)label.textContent=formatQuizClock(elapsed);
+   if(wrap){wrap.classList.remove('warning','danger')}
+ }
+}
+function startQuizTimer(){
+ clearQuizTimer();updateQuizTimer();quizTimerInterval=setInterval(updateQuizTimer,1000);
+}
+function renderQuestionMap(){
+ const qz=state.quiz,box=$('quizQuestionMap');if(!qz||!box)return;
+ const current=state.quizIndex;
+ box.innerHTML=qz.questions.map((q,i)=>{
+   const ans=qz.answers[i],answered=ans!==null,correct=answered&&Number(ans)===Number(q.correctAnswer);
+   const cls=i===current?'current':answered?(correct?'answered correct':'answered wrong'):'pending';
+   const disabled=!answered&&i!==current;
+   return '<button type="button" class="'+cls+'" data-quiz-jump="'+i+'" '+(disabled?'disabled':'')+' aria-label="السؤال '+(i+1)+'">'+(i+1)+'</button>';
+ }).join('');
+ $$('[data-quiz-jump]').forEach(b=>b.onclick=()=>{const next=Number(b.dataset.quizJump);if(!Number.isFinite(next))return;state.quizIndex=next;renderQuestion()});
+}
+window.addEventListener('pagehide',clearQuizTimer);
+
 function startQuiz(qs,c,sourceId){
  let ok;try{ok=window.AcademyUtils.validateQuestions(qs)}catch(err){toast(err.message,'error');return}if(!ok.length){toast('لا توجد أسئلة قابلة للتشغيل حاليًا.','error');return}
- state.quiz={questions:ok,answers:new Array(ok.length).fill(null),c,sourceId};state.quizIndex=0;$('quizIntro').classList.add('hidden');$('quizResult').classList.add('hidden');$('quizReview').classList.add('hidden');$('quizReviewList').replaceChildren();$('quizEngine').classList.remove('hidden');renderQuestion();$('quizEngine').scrollIntoView({behavior:'smooth',block:'start'});
+ clearQuizTimer();
+ const duration=quizDurationMinutes();
+ state.quiz={questions:ok,answers:new Array(ok.length).fill(null),c,sourceId,startedAt:Date.now(),elapsedSeconds:0,limitSeconds:duration>0?Math.round(duration*60):0,timedOut:false,finishing:false,reviewFilter:'all'};
+ state.quizIndex=0;$('quizIntro').classList.add('hidden');$('quizResult').classList.add('hidden');$('quizReview').classList.add('hidden');$('quizReviewList').replaceChildren();$('quizEngine').classList.remove('hidden');
+ renderQuestion();startQuizTimer();$('quizEngine').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function renderQuestion(){
  const qz=state.quiz,i=state.quizIndex,q=qz.questions[i],total=qz.questions.length,letters=['أ','ب','ج','د','هـ'],answer=qz.answers[i],correct=Number(q.correctAnswer),answered=answer!==null;
+ const answeredCount=qz.answers.filter(x=>x!==null).length,correctCount=qz.answers.reduce((n,a,idx)=>n+(a!==null&&Number(a)===Number(qz.questions[idx].correctAnswer)?1:0),0);
  $('quizProgressText').textContent='السؤال '+(i+1)+' من '+total;$('quizProgressBar').style.width=((i+1)/total*100)+'%';$('questionNumber').textContent=i+1;$('questionText').textContent=q.text||'';
+ if($('quizAnsweredCount'))$('quizAnsweredCount').textContent=answeredCount;
+ if($('quizScoreLive'))$('quizScoreLive').textContent=correctCount+' صحيحة';
  $('quizProgressTrack')?.setAttribute('aria-valuemax',String(total));$('quizProgressTrack')?.setAttribute('aria-valuenow',String(i+1));
  $('questionOptions').innerHTML=(q.opts||[]).map((o,j)=>'<button type="button" class="quiz-option-v3 '+(answered?(j===correct?'correct':j===answer?'wrong':''):'')+'" data-a="'+j+'" aria-pressed="'+(answer===j?'true':'false')+'" '+(answered?'disabled':'')+'><span class="opt-letter">'+(letters[j]||j+1)+'</span><span>'+esc(o)+'</span>'+(answered&&j===correct?'<i class="fa-solid fa-circle-check option-status-icon" aria-hidden="true"></i>':answered&&j===answer?'<i class="fa-solid fa-circle-xmark option-status-icon" aria-hidden="true"></i>':'')+'</button>').join('');
  const feedback=$('questionFeedback');feedback.classList.toggle('hidden',!answered);feedback.classList.toggle('is-correct',answered&&answer===correct);feedback.classList.toggle('is-wrong',answered&&answer!==correct);
- feedback.innerHTML=answered?(answer===correct?'<i class="fa-solid fa-circle-check" aria-hidden="true"></i><span><strong>إجابة صحيحة! أحسنت.</strong></span>':'<i class="fa-solid fa-circle-xmark" aria-hidden="true"></i><span><strong>إجابة غير صحيحة.</strong> الإجابة الصحيحة: <strong>'+esc(q.opts[correct])+'</strong>'+(q.explanation?'<small class="answer-explanation">'+esc(q.explanation)+'</small>':'')+'</span>'):'';
- $$('[data-a]').forEach(b=>b.onclick=()=>{if(qz.answers[i]!==null)return;const chosen=Number(b.dataset.a);qz.answers[i]=chosen;if(!state.adminPreview){try{const pq={...q,id:q.id||String(qz.sourceId||'quiz')+'-'+String(q._sourceIndex??i),question:q.text||'',options:q.opts||[],correct:q.opts?.[Number(q.correctAnswer)]};window.AcademyPro?.submitAnswer(pq,chosen===Number(q.correctAnswer),q.opts?.[chosen]??chosen,{lessonId:state.currentLesson?.id||'',subject:qz.c?.subject||''})}catch(e){console.warn('Pro answer tracking',e)}}renderQuestion()});$('prevQuestionBtn').disabled=i===0;$('nextQuestionBtn').textContent=i===total-1?'عرض النتيجة':'التالي';$('nextQuestionBtn').disabled=!answered;
- $('prevQuestionBtn').onclick=()=>{if(state.quizIndex>0){state.quizIndex--;renderQuestion()}};$('nextQuestionBtn').onclick=()=>{if(qz.answers[i]===null){toast('اختر إجابة أولًا.','error');return}if(i===total-1)finishQuiz();else{state.quizIndex++;renderQuestion()}};
+ feedback.innerHTML=answered?(answer===correct
+   ?'<i class="fa-solid fa-circle-check" aria-hidden="true"></i><span><strong>إجابة صحيحة! أحسنت.</strong>'+(q.explanation?'<small class="answer-explanation">'+esc(q.explanation)+'</small>':'')+'</span>'
+   :'<i class="fa-solid fa-circle-xmark" aria-hidden="true"></i><span><strong>إجابة غير صحيحة.</strong> الإجابة الصحيحة: <strong>'+esc(q.opts[correct])+'</strong>'+(q.explanation?'<small class="answer-explanation">'+esc(q.explanation)+'</small>':'')+'</span>'):'';
+ $('[data-a]').forEach(b=>b.onclick=()=>{if(qz.answers[i]!==null)return;const chosen=Number(b.dataset.a);qz.answers[i]=chosen;if(!state.adminPreview){try{const pq={...q,id:q.id||String(qz.sourceId||'quiz')+'-'+String(q._sourceIndex??i),question:q.text||'',options:q.opts||[],correct:q.opts?.[Number(q.correctAnswer)]};window.AcademyPro?.submitAnswer(pq,chosen===Number(q.correctAnswer),q.opts?.[chosen]??chosen,{lessonId:state.currentLesson?.id||'',subject:qz.c?.subject||''})}catch(e){console.warn('Pro answer tracking',e)}}renderQuestion()});
+ renderQuestionMap();
+ $('prevQuestionBtn').disabled=i===0;
+ $('nextQuestionBtn').innerHTML=i===total-1?'عرض النتيجة <i class="fa-solid fa-chart-column"></i>':'التالي <i class="fa-solid fa-arrow-left"></i>';
+ $('nextQuestionBtn').disabled=!answered;
+ if($('quizNavHint'))$('quizNavHint').textContent=answered?(answer===correct?'إجابة صحيحة — ممتاز 👏':'شاهد التصحيح ثم أكمل'):'اختر إجابة للمتابعة';
+ $('prevQuestionBtn').onclick=()=>{if(state.quizIndex>0){state.quizIndex--;renderQuestion()}};
+ $('nextQuestionBtn').onclick=()=>{if(qz.answers[i]===null){toast('اختر إجابة أولًا.','error');return}if(i===total-1)finishQuiz();else{state.quizIndex++;renderQuestion()}};
 }
-function renderQuizReview(qz){
- $('quizReviewList').innerHTML=qz.questions.map((q,i)=>{
-   const chosen=qz.answers[i],correct=Number(q.correctAnswer),right=chosen===correct;
+function renderQuizReview(qz,filter=qz?.reviewFilter||'all'){
+ if(!qz)return;qz.reviewFilter=filter;
+ const rows=qz.questions.map((q,i)=>({q,i,chosen:qz.answers[i],correct:Number(q.correctAnswer)})).filter(x=>filter!=='wrong'||x.chosen!==x.correct);
+ $('quizReviewList').innerHTML=rows.length?rows.map(({q,i,chosen,correct})=>{
+   const right=chosen===correct;
    return '<article class="quiz-review-item '+(right?'is-correct':'is-wrong')+'">'+
      '<div class="quiz-review-item-head"><span>السؤال '+(i+1)+'</span><strong><i class="fa-solid '+(right?'fa-circle-check':'fa-circle-xmark')+'" aria-hidden="true"></i> '+(right?'إجابة صحيحة':'إجابة خاطئة')+'</strong></div>'+
      '<h3>'+esc(q.text)+'</h3><p class="quiz-review-student">إجابتك: <strong>'+esc(chosen===null?'لم تجب':q.opts[chosen])+'</strong></p>'+
      '<p class="quiz-review-correct">الإجابة الصحيحة: <strong>'+esc(q.opts[correct])+'</strong></p>'+(q.explanation?'<p class="quiz-review-explanation"><strong>لماذا؟</strong> '+esc(q.explanation)+'</p>':'')+'</article>';
- }).join('');
+ }).join(''):'<div class="feature-empty quiz-review-empty-v5"><span>🎉</span><h3>لا توجد أخطاء للمراجعة</h3><p>أجبت عن كل الأسئلة بشكل صحيح.</p></div>';
+ if($('quizReviewSubtitle'))$('quizReviewSubtitle').textContent=filter==='wrong'?'نعرض هنا الأسئلة التي تحتاج مراجعة فقط.':'شاهد اختيارك في كل سؤال والإجابة الصحيحة.';
+ $('[data-review-filter]').forEach(b=>{const active=b.dataset.reviewFilter===filter;b.classList.toggle('active',active);b.onclick=()=>renderQuizReview(qz,b.dataset.reviewFilter)});
  $('quizReview').classList.remove('hidden');
 }
-async function finishQuiz(){
- const qz=state.quiz;let score=0;
- if(qz.answers.some(answer=>answer===null)){toast('أجب عن جميع الأسئلة أولًا.','error');return}
- qz.questions.forEach((q,i)=>{if(Number(qz.answers[i])===Number(q.correctAnswer))score++});
- const pct=Math.round(score/qz.questions.length*100);
- $('quizEngine').classList.add('hidden');$('quizResult').classList.remove('hidden');$('resultPercent').textContent=pct+'%';$('resultRing').style.background='conic-gradient(#10b981 '+(pct*3.6)+'deg,#e5e7eb 0deg)';
- $('resultTitle').textContent=pct>=80?'ممتاز جدًا! 🌟':pct>=60?'أداء جيد 👏':'راجع الشرح وجرّب مرة أخرى';
- $('resultMessage').textContent='أجبت عن '+score+' من '+qz.questions.length+' إجابة بشكل صحيح.';
- $('openMistakesBtn').classList.toggle('hidden',score===qz.questions.length);
- renderQuizReview(qz);
+async function finishQuiz(force=false){
+ const qz=state.quiz;if(!qz||qz.finishing)return;qz.finishing=true;let score=0;
+ if(!force&&qz.answers.some(answer=>answer===null)){qz.finishing=false;toast('أجب عن جميع الأسئلة أولًا.','error');return}
+ clearQuizTimer();qz.elapsedSeconds=Math.max(qz.elapsedSeconds||0,Math.floor((Date.now()-(qz.startedAt||Date.now()))/1000));
+ qz.questions.forEach((q,i)=>{if(qz.answers[i]!==null&&Number(qz.answers[i])===Number(q.correctAnswer))score++});
+ const pct=Math.round(score/qz.questions.length*100),wrong=qz.questions.length-score;
+ $('quizEngine').classList.add('hidden');$('quizResult').classList.remove('hidden');$('resultPercent').textContent=pct+'%';
+ const ringColor=pct>=80?'#10b981':pct>=60?'#2563eb':'#f59e0b';$('resultRing').style.background='conic-gradient('+ringColor+' '+(pct*3.6)+'deg,#e5e7eb 0deg)';
+ $('resultTitle').textContent=pct>=90?'ممتاز جدًا! 🌟':pct>=75?'أداء قوي 👏':pct>=60?'جيد — مع مراجعة بسيطة هتتحسن':'راجع النقاط الصعبة وجرّب مرة أخرى';
+ $('resultMessage').textContent=(qz.timedOut?'انتهى الوقت. ':'')+'أجبت عن '+score+' من '+qz.questions.length+' إجابة بشكل صحيح.';
+ if($('resultCorrectCount'))$('resultCorrectCount').textContent=score;
+ if($('resultWrongCount'))$('resultWrongCount').textContent=wrong;
+ if($('resultElapsedTime'))$('resultElapsedTime').textContent=formatQuizClock(qz.elapsedSeconds);
+ if($('resultGradeLabel'))$('resultGradeLabel').textContent=pct>=90?'ممتاز':pct>=75?'جيد جدًا':pct>=60?'جيد':'يحتاج مراجعة';
+ $('openMistakesBtn').classList.toggle('hidden',wrong===0);
+ if($('reviewWrongOnlyBtn')){
+   $('reviewWrongOnlyBtn').classList.toggle('hidden',wrong===0);
+   $('reviewWrongOnlyBtn').onclick=()=>{renderQuizReview(qz,'wrong');$('quizReview').scrollIntoView({behavior:'smooth',block:'start'})};
+ }
+ renderQuizReview(qz,'all');
  $('quizResult').scrollIntoView({behavior:'smooth',block:'start'});
  if(state.adminPreview){toast('تمت المعاينة بدون حفظ النتيجة.');return}
  trackContentEvent(qz.sourceId,'quiz',pct,qz.questions,qz.answers);
@@ -1009,13 +1081,13 @@ async function finishQuiz(){
      const previous=history.length?Math.max(...history.map(x=>quizXpTarget(Number(x.score||0)))):0;
      const gained=Math.max(0,quizXpTarget(pct)-previous),quizDelta=history.length?0:1;
      profile.quizHistory=profile.quizHistory||{};
-     profile.quizHistory[attemptId]={sourceId:qz.sourceId,sourceType:state.currentLesson?'lesson':'quiz',title:state.currentQuiz?.name||state.currentLesson?.title||'اختبار',subject:qz.c?.subject||'',unit:Number(state.currentQuiz?.unit||state.currentLesson?.unit||0),score:pct,correct:score,total:qz.questions.length,xp:gained,quizDelta,createdAt:at};
+     profile.quizHistory[attemptId]={sourceId:qz.sourceId,sourceType:state.currentLesson?'lesson':'quiz',title:state.currentQuiz?.name||state.currentLesson?.title||'اختبار',subject:qz.c?.subject||'',unit:Number(state.currentQuiz?.unit||state.currentLesson?.unit||0),score:pct,correct:score,total:qz.questions.length,durationSeconds:Number(qz.elapsedSeconds||0),timedOut:!!qz.timedOut,xp:gained,quizDelta,createdAt:at};
      profile.mistakeNotebook=profile.mistakeNotebook||{};
      const sourceMistakes=profile.mistakeNotebook[qz.sourceId]||{};
      qz.questions.forEach((q,i)=>{
        const key=String(q._sourceIndex??i);
        if(qz.answers[i]===Number(q.correctAnswer))delete sourceMistakes[key];
-       else sourceMistakes[key]={text:q.text,opts:q.opts,correctAnswer:Number(q.correctAnswer),chosen:Number(qz.answers[i]),sourceId:qz.sourceId,sourceType:state.currentLesson?'lesson':'quiz',title:state.currentQuiz?.name||state.currentLesson?.title||'تدريب',subject:qz.c?.subject||'',type:qz.c?.type||'',stage:qz.c?.stage||'',grade:String(qz.c?.grade||''),updatedAt:at};
+       else sourceMistakes[key]={text:q.text,opts:q.opts,correctAnswer:Number(q.correctAnswer),chosen:qz.answers[i]===null?null:Number(qz.answers[i]),sourceId:qz.sourceId,sourceType:state.currentLesson?'lesson':'quiz',title:state.currentQuiz?.name||state.currentLesson?.title||'تدريب',subject:qz.c?.subject||'',type:qz.c?.type||'',stage:qz.c?.stage||'',grade:String(qz.c?.grade||''),updatedAt:at};
      });
      if(Object.keys(sourceMistakes).length)profile.mistakeNotebook[qz.sourceId]=sourceMistakes;
      else delete profile.mistakeNotebook[qz.sourceId];
@@ -1035,7 +1107,7 @@ async function finishQuiz(){
    toast(rec.xp>0?'أضفنا +'+rec.xp+' XP لتحسن نتيجتك ✨':'تم حفظ المحاولة؛ نقاط هذا المستوى حصلت عليها بالفعل.');
  }catch(err){
    console.error(err);toast('تم حساب النتيجة لكن تعذر حفظ المحاولة الآن.','error');
- }
+ }finally{qz.finishing=false}
 }
 function renderQuizOnly(c,id){
  $('lessonJourneyStrip')?.classList.add('hidden');
