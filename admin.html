@@ -176,7 +176,12 @@
             <select id="curriculumGrade"></select>
             <span class="mix-filter-result" id="curriculumScopeLabel">—</span>
           </div>
-          <div id="curriculumAdminGrid" class="admin-subject-grid mix-curriculum-grid"></div>
+          <div class="admin-content-view-switch" role="tablist" aria-label="طريقة عرض المنهج">
+            <button type="button" class="active" data-curriculum-view="tree"><i class="fa-solid fa-sitemap"></i> هيكل المحتوى</button>
+            <button type="button" data-curriculum-view="cards"><i class="fa-solid fa-table-cells-large"></i> بطاقات المواد</button>
+          </div>
+          <div id="curriculumTreeWrap" class="admin-curriculum-tree-wrap"></div>
+          <div id="curriculumAdminGrid" class="admin-subject-grid mix-curriculum-grid hidden"></div>
         </section>
 
         <section class="admin-tab" id="admin-tab-lessons">
