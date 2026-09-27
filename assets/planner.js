@@ -18,19 +18,29 @@ function dateLabel(value){
  return d.toLocaleDateString('ar-EG',{day:'numeric',month:'short'});
 }
 function isOverdue(t){return !t.done&&!!t.date&&t.date<today()}
+function priorityWeight(p){return p==='urgent'?3:p==='high'?2:1}
 function taskArray(){
  return Object.entries(tasks||{}).map(([id,v])=>({id,...(v||{})})).sort((a,b)=>{
    if(!!a.done!==!!b.done)return a.done?1:-1;
    const ao=isOverdue(a),bo=isOverdue(b);if(ao!==bo)return ao?-1:1;
-   return String(a.date||'').localeCompare(String(b.date||''))||(b.createdAt||0)-(a.createdAt||0);
+   const dateCmp=String(a.date||'').localeCompare(String(b.date||''));if(dateCmp)return dateCmp;
+   const priorityCmp=priorityWeight(b.priority)-priorityWeight(a.priority);if(priorityCmp)return priorityCmp;
+   return (b.createdAt||0)-(a.createdAt||0);
  });
 }
 function currentSubjects(){return C.subjectsFor(data,profile.stage,String(profile.grade),profile.educationType)}
 function renderStats(){
- const arr=taskArray(),done=arr.filter(x=>x.done).length,td=arr.filter(x=>x.date===today()&&!x.done).length;
- $('plannerTotal').textContent=arr.length;$('plannerDone').textContent=done;$('plannerToday').textContent=td;$('plannerRate').textContent=(arr.length?Math.round(done/arr.length*100):0)+'%';
+ const arr=taskArray(),done=arr.filter(x=>x.done).length,todayPending=arr.filter(x=>x.date===today()&&!x.done),overdue=arr.filter(isOverdue),pending=arr.filter(x=>!x.done);
+ const todayMinutes=todayPending.reduce((n,x)=>n+Number(x.duration||30),0),pendingMinutes=pending.reduce((n,x)=>n+Number(x.duration||30),0);
+ $('plannerTotal').textContent=arr.length;$('plannerDone').textContent=done;$('plannerToday').textContent=todayPending.length;$('plannerRate').textContent=(arr.length?Math.round(done/arr.length*100):0)+'%';
+ if($('plannerOverdueCount'))$('plannerOverdueCount').textContent=overdue.length;
+ if($('plannerPendingMinutes'))$('plannerPendingMinutes').textContent=pendingMinutes;
+ if($('plannerHeroTodayCount'))$('plannerHeroTodayCount').textContent=todayPending.length;
+ if($('plannerHeroTodayMinutes'))$('plannerHeroTodayMinutes').textContent=todayMinutes;
+ if($('plannerHeroOverdue'))$('plannerHeroOverdue').textContent=overdue.length;
  const weekDone=arr.filter(x=>x.done&&Number(x.completedAt||0)>=weekStart()).length,cap=Math.min(5,weekDone);
  $('plannerWeekDone').textContent=cap+'/5';$('plannerWeekRing').style.background='conic-gradient(#10b981 '+(cap/5*360)+'deg,#e5e7eb 0deg)';
+ renderTodayFocus(arr);
 }
 function filteredTasks(){
  const arr=taskArray();
@@ -40,29 +50,63 @@ function filteredTasks(){
  return arr;
 }
 function priorityLabel(p){return p==='urgent'?'عاجلة':p==='high'?'مهمة':'عادية'}
+function renderTodayFocus(arr=taskArray()){
+ const now=new Date();
+ if($('plannerTodayDay'))$('plannerTodayDay').textContent=now.toLocaleDateString('ar-EG',{weekday:'long'});
+ if($('plannerTodayDate'))$('plannerTodayDate').textContent=now.toLocaleDateString('ar-EG',{day:'numeric',month:'long'});
+ const candidate=arr.find(x=>!x.done&&(isOverdue(x)||x.date===today()))||arr.find(x=>!x.done);
+ if($('plannerHeroNextTask'))$('plannerHeroNextTask').textContent=candidate?(candidate.title||'مهمة مذاكرة'):'مفيش مهام متبقية 🎉';
+ const btn=$('plannerHeroNextBtn');
+ if(btn){
+   btn.disabled=!candidate;
+   btn.innerHTML=candidate?'عرض المهمة <i class="fa-solid fa-arrow-left"></i>':'أضف مهمة جديدة <i class="fa-solid fa-plus"></i>';
+   btn.onclick=()=>{
+     if(!candidate){$('plannerAddCard')?.scrollIntoView({behavior:'smooth',block:'start'});$('plannerTitle')?.focus();return}
+     filter=candidate.date===today()?'today':'pending';
+     $('[data-planner-filter]').forEach(x=>{const active=x.dataset.plannerFilter===filter;x.classList.toggle('active',active);x.setAttribute('aria-selected',active?'true':'false')});
+     renderTasks();
+     requestAnimationFrame(()=>{
+       const row=document.querySelector('[data-task-id="'+candidate.id+'"]');
+       row?.scrollIntoView({behavior:'smooth',block:'center'});row?.classList.add('planner-task-highlight');
+       setTimeout(()=>row?.classList.remove('planner-task-highlight'),1600);
+     });
+   };
+ }
+}
 function renderTasks(){
  const arr=filteredTasks();
  $('plannerTaskList').innerHTML=arr.length?arr.map(t=>{
    const sub=currentSubjects().find(s=>s.id===t.subject),overdue=isOverdue(t);
-   return '<article class="planner-task '+(t.done?'done ':'')+(overdue?'overdue':'')+'">'+
+   return '<article class="planner-task planner-task-v7 '+(t.done?'done ':'')+(overdue?'overdue':'')+'" data-task-id="'+t.id+'">'+
      '<button class="planner-check" data-toggle-task="'+t.id+'" aria-label="'+(t.done?'إعادة فتح':'إكمال')+' '+C.esc(t.title||'المهمة')+'" aria-pressed="'+(t.done?'true':'false')+'"><i class="fa-solid '+(t.done?'fa-check':'fa-circle')+'"></i></button>'+
      '<div class="planner-task-copy"><div class="planner-task-title-row"><h3>'+C.esc(t.title||'مهمة')+'</h3>'+(overdue?'<span class="status-pill rejected">متأخرة</span>':'')+'</div>'+
-     '<div class="planner-task-meta"><span>'+(sub?C.esc((sub.emoji||'📚')+' '+sub.name):'📚 مادة')+'</span><span class="'+(overdue?'planner-overdue-date':'')+'"><i class="fa-regular fa-calendar"></i> '+C.esc(dateLabel(t.date))+'</span><span><i class="fa-regular fa-clock"></i> '+Number(t.duration||30)+' دقيقة</span><span class="priority '+C.esc(t.priority||'normal')+'">'+priorityLabel(t.priority)+'</span></div></div>'+
+     '<div class="planner-task-meta"><span>'+(sub?C.esc((sub.emoji||'📚')+' '+sub.name):'📚 مادة')+'</span><span class="'+(overdue?'planner-overdue-date':'')+'"><i class="fa-regular fa-calendar"></i> '+C.esc(dateLabel(t.date))+'</span><span><i class="fa-regular fa-clock"></i> '+Number(t.duration||30)+' دقيقة</span><span class="priority '+C.esc(t.priority||'normal')+'"><i class="fa-solid fa-flag"></i> '+priorityLabel(t.priority)+'</span></div></div>'+
      '<button class="planner-delete" data-delete-task="'+t.id+'" aria-label="حذف '+C.esc(t.title||'المهمة')+'"><i class="fa-solid fa-trash"></i></button></article>';
  }).join(''):'<div class="feature-empty"><span>🗒️</span><h3>مفيش مهام في القسم ده</h3><p>أضف مهمة صغيرة وابدأ خطوة بخطوة.</p></div>';
  $$('[data-toggle-task]').forEach(b=>b.onclick=()=>toggleTask(b.dataset.toggleTask,b));
  $$('[data-delete-task]').forEach(b=>b.onclick=()=>removeTask(b.dataset.deleteTask,b));
 }
 function renderSuggestion(){
- const subjects=currentSubjects();
- const weak=[...subjects].sort((a,b)=>C.subjectProgressValue(profile,a.id)-C.subjectProgressValue(profile,b.id))[0];
- const box=$('plannerSuggestion');
+ const subjects=currentSubjects(),arr=taskArray(),overdue=arr.filter(isOverdue),todayPending=arr.filter(x=>!x.done&&x.date===today());
+ const weak=[...subjects].sort((a,b)=>C.subjectProgressValue(profile,a.id)-C.subjectProgressValue(profile,b.id))[0],box=$('plannerSuggestion');
+ if(overdue.length){
+   const t=overdue[0],sub=subjects.find(s=>s.id===t.subject);
+   box.innerHTML='<span class="planner-suggest-emoji">⚠️</span><strong>رتّب مهمة متأخرة</strong><p>'+C.esc(t.title||'مهمة')+(sub?' • '+C.esc(sub.name):'')+' — ابدأ بها قبل إضافة شيء جديد.</p><button class="btn btn-soft btn-block" id="useSuggestion">اعرض المهمة</button>';
+   $('useSuggestion').onclick=()=>{$('[data-planner-filter="pending"]')?.click();setTimeout(()=>document.querySelector('[data-task-id="'+t.id+'"]')?.scrollIntoView({behavior:'smooth',block:'center'}),120)};
+   return;
+ }
+ if(todayPending.length){
+   const minutes=todayPending.reduce((n,x)=>n+Number(x.duration||30),0);
+   box.innerHTML='<span class="planner-suggest-emoji">✅</span><strong>خطتك لليوم جاهزة</strong><p>عندك '+todayPending.length+' مهمة بإجمالي '+minutes+' دقيقة. خلّصها قبل إضافة مهام جديدة.</p><button class="btn btn-soft btn-block" id="useSuggestion">افتح مهام اليوم</button>';
+   $('useSuggestion').onclick=()=>$('[data-planner-filter="today"]')?.click();
+   return;
+ }
  if(!weak){box.innerHTML='<p>ابدأ بإضافة أول مهمة مذاكرة.</p>';return}
  const pct=C.subjectProgressValue(profile,weak.id);
  box.innerHTML='<span class="planner-suggest-emoji">'+C.esc(weak.emoji||'📚')+'</span><strong>'+C.esc(weak.name)+'</strong><p>تقدمك الحالي '+pct+'%. خصص 30 دقيقة اليوم لمراجعة درس واحد فيها.</p><button class="btn btn-soft btn-block" id="useSuggestion">أضفها للخطة</button>';
  $('useSuggestion').onclick=()=>{
    $('plannerTitle').value='مراجعة درس في '+weak.name;$('plannerSubject').value=weak.id;$('plannerDate').value=today();$('plannerDuration').value='30';
-   $('plannerTitle').focus();window.scrollTo({top:0,behavior:'smooth'});
+   $('plannerAddCard')?.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>$('plannerTitle')?.focus(),250);
  };
 }
 async function toggleTask(id,btn){
@@ -102,6 +146,9 @@ $$('[data-planner-filter]').forEach(b=>b.onclick=()=>{
  window.AcademyUI?.showPageLoading('جاري تجهيز خطة مذاكرتك...');
  try{
    ({user,profile}=await C.requireStudent());$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
+   if($('plannerStudentName'))$('plannerStudentName').textContent=profile.name||user.displayName||'طالبنا';
+   if($('plannerHeroText'))$('plannerHeroText').textContent=C.gradeLabel(profile.stage,profile.grade)+' • '+C.typeLabel(profile.educationType)+' — خلّي خطتك واقعية وقابلة للتنفيذ.';
+   if($('plannerHeroAddBtn'))$('plannerHeroAddBtn').onclick=()=>{$('plannerAddCard')?.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>$('plannerTitle')?.focus(),250)};
    const s=await C.db.ref('customSubjects').once('value');data.customSubjects=s.val()||{};
    const subjects=currentSubjects();
    $('plannerSubject').innerHTML=subjects.length?subjects.map(s=>'<option value="'+C.esc(s.id)+'">'+C.esc(s.name)+'</option>').join(''):'<option value="">لا توجد مواد متاحة</option>';
