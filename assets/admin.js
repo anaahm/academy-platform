@@ -571,8 +571,8 @@ async function executeContentCopy(e){
 function bindCurriculumTree(){
  const wrap=$('curriculumTreeWrap');if(!wrap)return;
  $$('.admin-tree-subject',wrap).forEach(details=>details.addEventListener('toggle',()=>{const id=details.dataset.treeSubjectCard;if(!id)return;if(details.open)curriculumOpenSubjects.add(id);else curriculumOpenSubjects.delete(id)}));
- $('[data-review-content]',wrap).forEach(b=>b.onclick=()=>{const [kind,id]=b.dataset.reviewContent.split('|');openContentReview(kind,id)});
- $('[data-tree-edit]',wrap).forEach(b=>b.onclick=()=>editLesson(b.dataset.treeEdit));
+ $$('[data-review-content]',wrap).forEach(b=>b.onclick=()=>{const [kind,id]=b.dataset.reviewContent.split('|');openContentReview(kind,id)});
+ $$('[data-tree-edit]',wrap).forEach(b=>b.onclick=()=>editLesson(b.dataset.treeEdit));
  $$('[data-tree-edit-quiz]',wrap).forEach(b=>b.onclick=()=>editQuiz(b.dataset.treeEditQuiz));
  $$('[data-tree-copy]',wrap).forEach(b=>b.onclick=()=>duplicateCurriculumLesson(b.dataset.treeCopy));
  $$('[data-tree-up]',wrap).forEach(b=>b.onclick=()=>moveCurriculumLessonRelative(b.dataset.treeUp,-1));
@@ -1044,8 +1044,8 @@ function renderLessons(){
        '<div class="mix-admin-card-actions"><button class="admin-action-btn success" type="button" data-review-content="lesson|'+l.id+'" title="معاينة ومراجعة الدرس"><i class="fa-solid fa-eye"></i></button><a class="admin-action-btn" href="'+preview+'" target="_blank" rel="noopener" title="فتح المعاينة في تبويب جديد"><i class="fa-solid fa-arrow-up-right-from-square"></i></a><button class="admin-action-btn" data-edit-lesson="'+l.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><button class="admin-action-btn '+(l.isHidden?'success':'warning')+'" data-toggle-lesson="'+l.id+'" title="'+(l.isHidden?'نشر الدرس':'إخفاء الدرس')+'"><i class="fa-solid '+(l.isHidden?'fa-eye':'fa-eye-slash')+'"></i></button><button class="admin-action-btn danger" data-delete-lesson="'+l.id+'" title="حذف"><i class="fa-solid fa-trash"></i></button></div>'+
      '</div></article>';
  }).join(''):empty('لا توجد دروس','غيّر الفلاتر أو أضف أول درس جديد.');
- $('[data-review-content]').forEach(b=>b.onclick=()=>{const [kind,id]=b.dataset.reviewContent.split('|');openContentReview(kind,id)});
- $('[data-edit-lesson]').forEach(b=>b.onclick=()=>editLesson(b.dataset.editLesson));
+ $$('[data-review-content]').forEach(b=>b.onclick=()=>{const [kind,id]=b.dataset.reviewContent.split('|');openContentReview(kind,id)});
+ $$('[data-edit-lesson]').forEach(b=>b.onclick=()=>editLesson(b.dataset.editLesson));
  $$('[data-toggle-lesson]').forEach(b=>b.onclick=()=>{const l=root.lessons?.[b.dataset.toggleLesson];db.ref('lessons/'+b.dataset.toggleLesson+'/isHidden').set(!l?.isHidden)});
  $$('[data-delete-lesson]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الدرس نهائيًا؟',message:'لن يمكن استرجاع الدرس بعد الحذف من المنصة.',tone:'danger',acceptText:'حذف الدرس'}))await db.ref('lessons/'+b.dataset.deleteLesson).remove()});
  $$('[data-select-lesson]').forEach(input=>input.onchange=()=>{const id=input.dataset.selectLesson;if(input.checked)selectedLessonIds.add(id);else selectedLessonIds.delete(id);updateBulkSelectionUI('lesson')});
@@ -1114,8 +1114,8 @@ function renderQuizzes(){
        '<div class="mix-admin-card-actions"><button class="admin-action-btn success" type="button" data-review-content="quiz|'+q.id+'" title="معاينة ومراجعة الاختبار"><i class="fa-solid fa-eye"></i></button><a class="admin-action-btn" href="'+preview+'" target="_blank" rel="noopener" title="فتح المعاينة في تبويب جديد"><i class="fa-solid fa-arrow-up-right-from-square"></i></a><button class="admin-action-btn" data-edit-quiz="'+q.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><button class="admin-action-btn '+(q.isHidden?'success':'warning')+'" data-toggle-quiz="'+q.id+'" title="'+(q.isHidden?'نشر الاختبار':'إخفاء الاختبار')+'"><i class="fa-solid '+(q.isHidden?'fa-eye':'fa-eye-slash')+'"></i></button><button class="admin-action-btn danger" data-delete-quiz="'+q.id+'" title="حذف"><i class="fa-solid fa-trash"></i></button></div>'+
      '</div></article>';
  }).join(''):empty('لا توجد اختبارات','غيّر الفلاتر أو أنشئ أول اختبار.');
- $('[data-review-content]').forEach(b=>b.onclick=()=>{const [kind,id]=b.dataset.reviewContent.split('|');openContentReview(kind,id)});
- $('[data-edit-quiz]').forEach(b=>b.onclick=()=>editQuiz(b.dataset.editQuiz));
+ $$('[data-review-content]').forEach(b=>b.onclick=()=>{const [kind,id]=b.dataset.reviewContent.split('|');openContentReview(kind,id)});
+ $$('[data-edit-quiz]').forEach(b=>b.onclick=()=>editQuiz(b.dataset.editQuiz));
  $$('[data-toggle-quiz]').forEach(b=>b.onclick=()=>{const q=root.quizzes?.[b.dataset.toggleQuiz];db.ref('quizzes/'+b.dataset.toggleQuiz+'/isHidden').set(!q?.isHidden)});
  $$('[data-delete-quiz]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الاختبار؟',message:'سيتم حذف الاختبار والأسئلة الموجودة بداخله من المنصة.',tone:'danger',acceptText:'حذف الاختبار'}))await db.ref('quizzes/'+b.dataset.deleteQuiz).remove()});
  $$('[data-select-quiz]').forEach(input=>input.onchange=()=>{const id=input.dataset.selectQuiz;if(input.checked)selectedQuizIds.add(id);else selectedQuizIds.delete(id);updateBulkSelectionUI('quiz')});
