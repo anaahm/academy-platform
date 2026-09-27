@@ -1,8 +1,7 @@
 (() => {
 'use strict';
 
-const DAY=86400000;
-const HOUR=3600000;
+const DAY=86400000,HOUR=3600000,MAX_ITEMS=80;
 
 function ensureFirebase(){
   const cfg=window.ACADEMY_FIREBASE_CONFIG;
@@ -12,13 +11,14 @@ function ensureFirebase(){
 }
 function cleanKey(v=''){return String(v).replace(/[.#$\[\]\/]/g,'-').slice(0,180)}
 function dateKey(ts){const d=new Date(ts);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-function matchesStudent(item,profile){
-  return item?.isActive!==false && item?.isHidden!==true &&
-    (!item.type||item.type===profile.educationType) &&
-    (!item.stage||item.stage===profile.stage) &&
+function published(item,now=Date.now()){return item?.isActive!==false&&item?.isHidden!==true&&(!Number(item?.publishAt||0)||Number(item.publishAt)<=now)}
+function matchesStudent(item,profile,now=Date.now()){
+  return published(item,now)&&
+    (!item.type||item.type===profile.educationType)&&
+    (!item.stage||item.stage===profile.stage)&&
     (!item.grade||String(item.grade)===String(profile.grade));
 }
-function assignmentTargetMatches(item,profile,userId){
+function targeted(item,profile,userId){
   const mode=item?.targetMode||'all';
   if(mode==='students'){
     const ids=Array.isArray(item.targetStudentIds)?item.targetStudentIds:Object.keys(item.targetStudentIds||{});
@@ -32,127 +32,192 @@ function assignmentTargetMatches(item,profile,userId){
 }
 function nextRecurringTime(dayOfWeek,time='18:00'){
   const now=new Date(),target=new Date(now);target.setSeconds(0,0);
-  const diff=(Number(dayOfWeek)-now.getDay()+7)%7;
-  target.setDate(now.getDate()+diff);
+  const diff=(Number(dayOfWeek)-now.getDay()+7)%7;target.setDate(now.getDate()+diff);
   const parts=String(time||'18:00').split(':').map(Number);target.setHours(parts[0]||0,parts[1]||0,0,0);
   if(target.getTime()<now.getTime()-60000)target.setDate(target.getDate()+7);
   return target.getTime();
 }
-function hrefFor(kind){
-  if(kind==='assignment')return'./assignments.html';
-  if(kind==='live')return'./live.html';
-  if(kind==='schedule')return'./schedule.html';
-  if(kind==='planner')return'./planner.html';
-  return'./index.html';
-}
 function priorityWeight(p){return p==='urgent'?3:p==='high'?2:1}
+function contextQuery(item,profile){
+  const q=new URLSearchParams({
+    type:item.type||profile.educationType||'public',
+    stage:item.stage||profile.stage||'prep',
+    grade:String(item.grade||profile.grade||1),
+    subject:item.subject||''
+  });
+  return q;
+}
+function assignmentHref(id){return'./assignments.html?id='+encodeURIComponent(id)}
+function liveHref(id){return'./live.html?id='+encodeURIComponent(id)}
+function fileHref(id){return'./library.html?file='+encodeURIComponent(id)}
+function lessonHref(item,id,profile){const q=contextQuery(item,profile);q.set('id',id);return'./lesson.html?'+q.toString()}
+function quizHref(item,id,profile){const q=contextQuery(item,profile);q.set('quiz',id);return'./lesson.html?'+q.toString()}
+function subjectHref(item,profile){return'./subject.html?'+contextQuery(item,profile).toString()}
+function readState(reads,key){return !!reads[cleanKey(key)]}
+function push(items,reads,item){
+  if(!item?.key||!item.title)return;
+  const key=cleanKey(item.key);
+  items.push({...item,key,read:readState(reads,key),createdAt:Number(item.createdAt||Date.now())});
+}
+function liveStatus(s,now){
+  if(s.status==='ended')return'ended';
+  if(s.status==='live')return'live';
+  const at=Number(s.scheduledTime||0),duration=Math.max(10,Number(s.duration||60))*60000;
+  if(at&&now>=at&&now<at+duration)return'live';
+  if(at&&now>=at+duration)return'ended';
+  return'upcoming';
+}
+function studentQuizAttempted(profile,id){
+  return Object.values(profile.quizHistory||{}).some(x=>x?.sourceId===id);
+}
+function broadcastMatches(n,profile){
+  if(!n||n.isActive===false)return false;
+  if(n.type&&n.type!==profile.educationType)return false;
+  if(n.stage&&n.stage!==profile.stage)return false;
+  if(n.grade&&String(n.grade)!==String(profile.grade))return false;
+  return true;
+}
 
 async function loadNotifications(user,profileInput){
-  const {db}=ensureFirebase();
+  const {db}=ensureFirebase(),now=Date.now();
   const profile=profileInput||((await db.ref('studentProfilesV3/'+user.uid).once('value')).val()||{});
   const reads=profile.notificationReads||{};
-  const [assignSnap,liveSnap,scheduleSnap,annSnap,broadcastSnap,reviewSnap]=await Promise.all([
-    db.ref('assignments').orderByChild('stage').equalTo(profile.stage).once('value'),
+
+  const stage=profile.stage||'';
+  const stageQuery=path=>stage?db.ref(path).orderByChild('stage').equalTo(stage):db.ref(path);
+  const [assignSnap,liveSnap,scheduleSnap,annSnap,broadcastSnap,reviewSnap,fileSnap,lessonSnap,quizSnap]=await Promise.all([
+    stageQuery('assignments').once('value'),
     db.ref('liveSessions').once('value'),
     db.ref('scheduleEvents').once('value'),
     db.ref('announcements').once('value'),
     db.ref('notificationBroadcasts').once('value'),
-    db.ref('learningV4/reviews/'+user.uid).once('value')
+    db.ref('learningV4/reviews/'+user.uid).once('value'),
+    stageQuery('files').once('value'),
+    stageQuery('lessons').once('value'),
+    stageQuery('quizzes').once('value')
   ]);
 
-  const assignments=Object.entries(assignSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(a=>matchesStudent(a,profile)&&assignmentTargetMatches(a,profile,user.uid)&&!a.isHidden);
+  const items=[];
+
+  /* Assignments: one useful state per assignment */
+  const assignments=Object.entries(assignSnap.val()||{}).map(([id,v])=>({id,...(v||{})}))
+    .filter(a=>matchesStudent(a,profile,now)&&targeted(a,profile,user.uid));
   const submissionSnaps=await Promise.all(assignments.map(a=>db.ref('assignmentSubmissions/'+a.id+'/'+user.uid).once('value')));
   const submissions={};assignments.forEach((a,i)=>{if(submissionSnaps[i].exists())submissions[a.id]=submissionSnaps[i].val()});
-
-  const now=Date.now(),items=[];
   assignments.forEach(a=>{
-    const s=submissions[a.id],due=Number(a.dueAt||0);
+    const s=submissions[a.id],due=Number(a.dueAt||0),href=assignmentHref(a.id);
     if(s?.status==='graded'){
-      const stamp=Number(s.gradedAt||s.submittedAt||a.createdAt||0);
-      const key=cleanKey('assignment-graded-'+a.id+'-'+stamp);
-      items.push({key,kind:'assignment',category:'academic',icon:'fa-star',tone:'green',title:'تم تصحيح واجبك',text:(a.title||'واجب')+' • '+Number(s.score||0)+' / '+Number(s.maxScore||a.maxScore||100)+(s.feedback?' • '+s.feedback:''),createdAt:stamp||now,href:hrefFor('assignment'),priority:'high',read:!!reads[key]});
+      const stamp=Number(s.gradedAt||s.submittedAt||a.createdAt||now),pct=Math.round(Number(s.percent??(Number(s.score||0)/Math.max(1,Number(s.maxScore||a.maxScore||100))*100)));
+      push(items,reads,{key:'assignment-graded-'+a.id+'-'+stamp,kind:'assignment',group:'assignments',category:'academic',icon:'fa-star',tone:'green',title:'تم تصحيح واجبك',text:(a.title||'واجب')+' • نتيجتك '+pct+'%'+(s.feedback?' • '+s.feedback:''),createdAt:stamp,href,priority:'high',sourceName:a.teacherName||'المدرس'});
       return;
     }
-    if(!s&&due){
-      const diff=due-now;
-      if(diff<0&&diff>-7*DAY){
-        const key=cleanKey('assignment-overdue-'+a.id+'-'+due);
-        items.push({key,kind:'assignment',category:'academic',icon:'fa-triangle-exclamation',tone:'red',title:'موعد واجب فات',text:(a.title||'واجب')+' كان موعده '+new Date(due).toLocaleString('ar-EG'),createdAt:due,href:hrefFor('assignment'),priority:'urgent',read:!!reads[key]});
-      }else if(diff>=0&&diff<=48*HOUR){
-        const key=cleanKey('assignment-due-'+a.id+'-'+due);
-        items.push({key,kind:'assignment',category:'academic',icon:'fa-clock',tone:'amber',title:'واجب قرب موعده',text:(a.title||'واجب')+' • متبقي '+Math.max(1,Math.ceil(diff/HOUR))+' ساعة تقريبًا',createdAt:due-48*HOUR,href:hrefFor('assignment'),priority:diff<=12*HOUR?'urgent':'high',read:!!reads[key]});
-      }
+    if(s)return;
+    const diff=due?due-now:Infinity,created=Number(a.createdAt||0);
+    if(due&&diff<0&&diff>-10*DAY){
+      push(items,reads,{key:'assignment-overdue-'+a.id+'-'+due,kind:'assignment',group:'assignments',category:'academic',icon:'fa-triangle-exclamation',tone:'red',title:'واجب متأخر يحتاج تسليم',text:(a.title||'واجب')+(a.teacherName?' • '+a.teacherName:''),createdAt:Math.max(due,now-6*HOUR),href,priority:'urgent',sourceName:a.teacherName||'المدرس'});
+    }else if(due&&diff>=0&&diff<=48*HOUR){
+      push(items,reads,{key:'assignment-due-'+a.id+'-'+due,kind:'assignment',group:'assignments',category:'academic',icon:'fa-clock',tone:'amber',title:'موعد الواجب اقترب',text:(a.title||'واجب')+' • متبقي '+Math.max(1,Math.ceil(diff/HOUR))+' ساعة تقريبًا',createdAt:Math.max(created,due-48*HOUR),href,priority:diff<=12*HOUR?'urgent':'high',sourceName:a.teacherName||'المدرس'});
+    }else if(created&&now-created<=72*HOUR){
+      push(items,reads,{key:'assignment-new-'+a.id+'-'+created,kind:'assignment',group:'assignments',category:'academic',icon:'fa-clipboard-check',tone:'blue',title:'واجب جديد',text:(a.title||'واجب')+(a.teacherName?' • '+a.teacherName:''),createdAt:created,href,priority:'high',sourceName:a.teacherName||'المدرس'});
     }
   });
 
-  const live=Object.entries(liveSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(s=>matchesStudent(s,profile)&&s.status!=='ended');
-  live.forEach(s=>{
-    const at=Number(s.scheduledTime||0),isLive=s.status==='live',diff=at-now;
-    if(isLive||(at&&diff>=0&&diff<=24*HOUR)){
-      const key=cleanKey('live-'+s.id+'-'+(at||s.updatedAt||s.createdAt||0));
-      items.push({key,kind:'live',category:'schedule',icon:'fa-tower-broadcast',tone:'violet',title:isLive?'البث مباشر الآن':'بث مباشر قريب',text:(s.title||'جلسة مباشرة')+(s.teacher?' • '+s.teacher:''),createdAt:isLive?now:at,href:hrefFor('live'),priority:isLive?'urgent':'high',read:!!reads[key]});
+  /* Live sessions */
+  Object.entries(liveSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(s=>matchesStudent(s,profile,now)).forEach(s=>{
+    const status=liveStatus(s,now),at=Number(s.scheduledTime||0),diff=at-now;
+    if(status==='live'){
+      push(items,reads,{key:'live-now-'+s.id+'-'+(at||s.createdAt||0),kind:'live',group:'live',category:'schedule',icon:'fa-tower-broadcast',tone:'red',title:'🔴 الجلسة مباشرة الآن',text:(s.title||'جلسة مباشرة')+(s.teacher?' • '+s.teacher:''),createdAt:now,href:liveHref(s.id),priority:'urgent',sourceName:s.teacher||'المدرس'});
+    }else if(status==='upcoming'&&at&&diff>=0&&diff<=24*HOUR){
+      push(items,reads,{key:'live-soon-'+s.id+'-'+at,kind:'live',group:'live',category:'schedule',icon:'fa-video',tone:'violet',title:'جلسة مباشرة قريبة',text:(s.title||'جلسة')+' • '+new Date(at).toLocaleString('ar-EG',{weekday:'long',hour:'numeric',minute:'2-digit'}),createdAt:Math.max(Number(s.createdAt||0),at-24*HOUR),href:liveHref(s.id),priority:diff<=2*HOUR?'urgent':'high',sourceName:s.teacher||'المدرس'});
     }
   });
 
-  const schedule=Object.entries(scheduleSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(x=>matchesStudent(x,profile));
-  schedule.forEach(e=>{
+  /* Weekly schedule */
+  Object.entries(scheduleSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(x=>matchesStudent(x,profile,now)).forEach(e=>{
     const at=nextRecurringTime(e.dayOfWeek,e.time||'18:00'),diff=at-now;
     if(diff>=0&&diff<=18*HOUR){
-      const key=cleanKey('schedule-'+e.id+'-'+dateKey(at));
-      items.push({key,kind:'schedule',category:'schedule',icon:'fa-calendar-day',tone:'blue',title:'عندك حصة قريبة',text:(e.title||'حصة')+' • '+new Date(at).toLocaleString('ar-EG',{weekday:'long',hour:'numeric',minute:'2-digit'}),createdAt:at,href:hrefFor('schedule'),priority:diff<=2*HOUR?'urgent':'normal',read:!!reads[key]});
+      push(items,reads,{key:'schedule-'+e.id+'-'+dateKey(at),kind:'schedule',group:'schedule',category:'schedule',icon:'fa-calendar-day',tone:'blue',title:'عندك حصة قريبة',text:(e.title||'حصة')+' • '+new Date(at).toLocaleString('ar-EG',{weekday:'long',hour:'numeric',minute:'2-digit'}),createdAt:at-18*HOUR,href:'./schedule.html',priority:diff<=2*HOUR?'urgent':'normal'});
     }
   });
 
+  /* Personal planner */
   Object.entries(profile.studyPlanner||{}).forEach(([id,t])=>{
     if(t?.done||!t?.date)return;
-    const taskDay=new Date(t.date+'T00:00:00');
-    const today=new Date();today.setHours(0,0,0,0);
+    const taskDay=new Date(t.date+'T00:00:00'),today=new Date();today.setHours(0,0,0,0);
     if(taskDay.getTime()===today.getTime()){
-      const key=cleanKey('planner-'+id+'-'+t.date);
-      items.push({key,kind:'planner',category:'academic',icon:'fa-list-check',tone:'orange',title:'مهمة مذاكرة اليوم',text:t.title||'مهمة مذاكرة',createdAt:taskDay.getTime()+12*HOUR,href:hrefFor('planner'),priority:t.priority==='urgent'?'urgent':t.priority==='high'?'high':'normal',read:!!reads[key]});
+      push(items,reads,{key:'planner-'+id+'-'+t.date,kind:'planner',group:'study',category:'academic',icon:'fa-list-check',tone:'orange',title:'مهمة مذاكرة اليوم',text:t.title||'مهمة مذاكرة',createdAt:taskDay.getTime()+8*HOUR,href:'./planner.html',priority:t.priority==='urgent'?'urgent':t.priority==='high'?'high':'normal'});
     }
   });
 
+  /* Spaced review */
   const dueReviews=Object.values(reviewSnap.val()||{}).filter(x=>x&&x.status!=='mastered'&&Number(x.nextReviewAt||0)<=now);
   if(dueReviews.length){
     const oldest=Math.min(...dueReviews.map(x=>Number(x.nextReviewAt||now)));
-    const key=cleanKey('spaced-review-'+dateKey(now)+'-'+dueReviews.length);
-    items.push({
-      key,kind:'review',category:'academic',icon:'fa-brain',tone:'violet',
-      title:'حان وقت مراجعة أخطائك',
-      text:'لديك '+dueReviews.length+' سؤالًا حان موعد مراجعتها لتثبيت المعلومة.',
-      createdAt:oldest,href:'./pro-center.html',priority:dueReviews.length>=8?'urgent':'high',read:!!reads[key]
-    });
+    push(items,reads,{key:'spaced-review-'+dateKey(now)+'-'+dueReviews.length,kind:'review',group:'study',category:'academic',icon:'fa-brain',tone:'violet',title:'حان وقت مراجعة أخطائك',text:'لديك '+dueReviews.length+' سؤالًا حان موعد مراجعتها لتثبيت المعلومة.',createdAt:oldest,href:'./pro-center.html',priority:dueReviews.length>=8?'urgent':'high'});
   }
 
+  /* Important/new library files */
+  Object.entries(fileSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(f=>matchesStudent(f,profile,now)).forEach(f=>{
+    const created=Number(f.createdAt||f.updatedAt||0),age=now-created,opened=Number(profile.libraryHistory?.[f.id]?.openedAt||0)>0;
+    if(opened||!created)return;
+    if(f.isFeatured&&age<=7*DAY){
+      push(items,reads,{key:'file-featured-'+f.id+'-'+created,kind:'file',group:'content',category:'academic',icon:'fa-file-pdf',tone:'amber',title:'ملف مهم جديد',text:f.title||'ملف تعليمي مهم',createdAt:created,href:fileHref(f.id),priority:'high'});
+    }else if(age<=48*HOUR){
+      push(items,reads,{key:'file-new-'+f.id+'-'+created,kind:'file',group:'content',category:'academic',icon:'fa-folder-open',tone:'blue',title:'ملف جديد في المكتبة',text:f.title||'ملف تعليمي جديد',createdAt:created,href:fileHref(f.id),priority:'normal'});
+    }
+  });
+
+  /* New lessons */
+  Object.entries(lessonSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(l=>matchesStudent(l,profile,now)).forEach(l=>{
+    const created=Number(l.createdAt||0);
+    if(!created||now-created>72*HOUR||profile.learningProgress?.[l.id]?.completed)return;
+    push(items,reads,{key:'lesson-new-'+l.id+'-'+created,kind:'lesson',group:'content',category:'academic',icon:'fa-circle-play',tone:'blue',title:'درس جديد متاح',text:l.title||'درس جديد',createdAt:created,href:lessonHref(l,l.id,profile),priority:'normal',sourceName:l.teacherName||''});
+  });
+
+  /* New quizzes */
+  Object.entries(quizSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(q=>matchesStudent(q,profile,now)&&targeted(q,profile,user.uid)).forEach(q=>{
+    const created=Number(q.createdAt||0);
+    if(!created||now-created>72*HOUR||studentQuizAttempted(profile,q.id))return;
+    push(items,reads,{key:'quiz-new-'+q.id+'-'+created,kind:'quiz',group:'content',category:'academic',icon:'fa-file-circle-question',tone:'violet',title:'اختبار جديد متاح',text:q.name||'اختبار جديد',createdAt:created,href:quizHref(q,q.id,profile),priority:'normal'});
+  });
+
+  /* Academy announcement */
   const ann=annSnap.val()||{};
   if(ann.isActive&&ann.text&&(!ann.expiry||now<Number(ann.expiry))){
     const stamp=Number(ann.updatedAt||ann.expiry||0);
-    const key=cleanKey('announcement-'+stamp);
-    items.push({key,kind:'announcement',category:'system',icon:'fa-bullhorn',tone:'blue',title:'إعلان من الأكاديمية',text:ann.text,createdAt:stamp||now,href:'./index.html',priority:'normal',read:!!reads[key]});
+    push(items,reads,{key:'announcement-'+stamp,kind:'announcement',group:'system',category:'system',icon:'fa-bullhorn',tone:'blue',title:'إعلان من الأكاديمية',text:ann.text,createdAt:stamp||now,href:'./index.html',priority:'normal',sourceName:'إدارة الأكاديمية'});
   }
 
+  /* Directed broadcasts: admin or approved teacher notifications */
   Object.entries(broadcastSnap.val()||{}).forEach(([id,n])=>{
-    if(!n||n.isActive===false)return;
-    if(n.expiresAt&&now>Number(n.expiresAt))return;
-    if(n.type&&n.type!==profile.educationType)return;
-    if(n.stage&&n.stage!==profile.stage)return;
-    if(n.grade&&String(n.grade)!==String(profile.grade))return;
-    const stamp=Number(n.createdAt||0),key=cleanKey('broadcast-'+id+'-'+stamp);
+    if(!broadcastMatches(n,profile)||n.expiresAt&&now>Number(n.expiresAt))return;
+    const stamp=Number(n.createdAt||0),source=n.source==='teacher'?'teacher':'admin';
     let href='./notifications.html';
     if(n.href){
       const raw=String(n.href).trim();
       if(raw.startsWith('./')||raw.startsWith('/')||/^https?:\/\//i.test(raw))href=raw;
+    }else if(n.subject){
+      href=subjectHref(n,profile);
     }
-    items.push({key,kind:'broadcast',category:'system',icon:n.priority==='urgent'?'fa-circle-exclamation':'fa-bell',tone:n.priority==='urgent'?'red':n.priority==='high'?'amber':'blue',title:n.title||'إشعار من الأكاديمية',text:n.text||'',createdAt:stamp||now,href,priority:n.priority||'normal',read:!!reads[key]});
+    push(items,reads,{
+      key:'broadcast-'+id+'-'+stamp,kind:source==='teacher'?'teacher':'broadcast',group:source==='teacher'?'teacher':'system',category:source==='teacher'?'academic':'system',
+      icon:source==='teacher'?'fa-chalkboard-user':n.priority==='urgent'?'fa-circle-exclamation':'fa-bell',
+      tone:source==='teacher'?'violet':n.priority==='urgent'?'red':n.priority==='high'?'amber':'blue',
+      title:n.title||(source==='teacher'?'رسالة من المدرس':'إشعار من الأكاديمية'),
+      text:n.text||'',createdAt:stamp||now,href,priority:n.priority||'normal',sourceName:source==='teacher'?(n.teacherName||'المدرس'):'إدارة الأكاديمية'
+    });
   });
 
-  items.sort((a,b)=>{
+  /* De-duplicate then sort */
+  const unique=new Map();
+  items.forEach(item=>{if(!unique.has(item.key))unique.set(item.key,item)});
+  const sorted=[...unique.values()].sort((a,b)=>{
     const unread=(a.read?1:0)-(b.read?1:0);if(unread!==0)return unread;
     const pri=priorityWeight(b.priority)-priorityWeight(a.priority);if(pri!==0)return pri;
     return Number(b.createdAt||0)-Number(a.createdAt||0);
-  });
-  return{profile,items,unread:items.filter(x=>!x.read).length};
+  }).slice(0,MAX_ITEMS);
+
+  return{profile,items:sorted,unread:sorted.filter(x=>!x.read).length,urgent:sorted.filter(x=>!x.read&&x.priority==='urgent').length};
 }
 
 async function markRead(uid,key){
