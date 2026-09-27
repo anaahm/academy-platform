@@ -1193,8 +1193,8 @@ function renderFiles(){
    const subject=adminSubjectMeta(f.stage,f.grade,f.type,f.subject),lesson=f.lessonId?root.lessons?.[f.lessonId]:null,kind=f.kind||'pdf';
    return '<article class="admin-file-card '+(f.isFeatured?'featured':'')+'"><i class="fa-solid '+fileKindIcon(kind)+'"></i><div><div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:3px"><span class="status-pill info">'+esc(fileKindLabel(kind))+'</span>'+(f.isFeatured?'<span class="status-pill pending">مهم</span>':'')+'</div><strong>'+esc(f.title||'ملف')+'</strong><small>'+esc(gradeLabel(f.stage,f.grade))+' • '+esc(subject.name||f.subject||'')+(lesson?' • مرتبط: '+esc(lesson.title||'درس'):'')+'</small>'+(f.description?'<p style="margin:4px 0 0;font-size:7px;color:#64748b">'+esc(String(f.description).slice(0,130))+'</p>':'')+'</div><div class="admin-action-row"><button class="admin-action-btn" data-edit-file="'+f.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><a class="admin-action-btn success" href="'+cleanUrl(f.url)+'" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i></a><button class="admin-action-btn danger" data-delete-file="'+f.id+'"><i class="fa-solid fa-trash"></i></button></div></article>';
  }).join(''):empty('لا توجد ملفات','أضف ملفات أو مذكرات للمادة.');
- $('[data-edit-file]').forEach(b=>b.onclick=()=>editFile(b.dataset.editFile));
- $('[data-delete-file]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الملف؟',message:'سيتم إزالة الملف من مكتبة المنصة.',tone:'danger',acceptText:'حذف الملف'}))await db.ref('files/'+b.dataset.deleteFile).remove()});
+ $$('[data-edit-file]').forEach(b=>b.onclick=()=>editFile(b.dataset.editFile));
+ $$('[data-delete-file]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الملف؟',message:'سيتم إزالة الملف من مكتبة المنصة.',tone:'danger',acceptText:'حذف الملف'}))await db.ref('files/'+b.dataset.deleteFile).remove()});
 }
 function resetFileEditor(){
  editState.file=null;$('fileForm').reset();$('newFileKind').value='pdf';$('newFileFeatured').checked=false;
