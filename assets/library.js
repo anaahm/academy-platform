@@ -189,6 +189,13 @@ $('libraryHeroRecentBtn').onclick=()=>switchScope('recent',document.querySelecto
    if($('libraryHeroText'))$('libraryHeroText').textContent=C.gradeLabel(profile.stage,profile.grade)+' • '+C.typeLabel(profile.educationType)+' — مذكرات ومراجعات وملفات مرتبطة بموادك ودروسك.';
    const [s,f]=await Promise.all([C.db.ref('customSubjects').once('value'),C.db.ref('files').orderByChild('stage').equalTo(profile.stage).once('value')]);
    data={customSubjects:s.val()||{},files:f.val()||{}};renderFilters();render();
+   const requested=new URLSearchParams(location.search).get('file');
+   if(requested){
+     const file=data.files?.[requested],safe=C.safeUrl(file?.url||'');
+     if(file&&publishedFile(file)&&mineFile(file)&&safe&&safe!=='#'){
+       await recordOpen(requested);location.replace(safe);return;
+     }
+   }
  }catch(err){
    console.error(err);C.toast('تعذر تحميل المكتبة الآن.','error');
    $('libraryGrid').innerHTML=window.AcademyUI?.errorStateHtml('تعذر تحميل المكتبة','تحقق من الإنترنت ثم حاول مرة أخرى.','<button class="btn btn-primary" onclick="location.reload()">إعادة المحاولة</button>')||'';
