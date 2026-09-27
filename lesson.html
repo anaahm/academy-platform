@@ -121,31 +121,72 @@
 
         <section class="lesson-tab-panel hidden" id="lessonQuizPanel" role="tabpanel" aria-labelledby="tabQuiz">
           <section class="linked-lesson-quizzes hidden" id="linkedLessonQuizzes" aria-label="اختبارات مرتبطة بالدرس"></section>
-          <article class="quiz-intro-card" id="quizIntro">
-            <span class="quiz-hero-icon">🎯</span>
-            <div><span class="section-kicker">ثبّت المعلومة</span><h2 id="quizIntroTitle">اختبر فهمك للدرس</h2><p id="quizIntroText">تدريب قصير يساعدك على معرفة ما أتقنته وما يحتاج مراجعة.</p></div>
-            <button class="btn btn-primary btn-lg" id="startQuizBtn">ابدأ التدريب</button>
+          <article class="quiz-intro-card quiz-intro-v5" id="quizIntro">
+            <div class="quiz-intro-icon-v5"><span class="quiz-hero-icon">🎯</span></div>
+            <div class="quiz-intro-copy-v5">
+              <span class="section-kicker">ثبّت المعلومة</span>
+              <h2 id="quizIntroTitle">اختبر فهمك للدرس</h2>
+              <p id="quizIntroText">تدريب قصير يساعدك على معرفة ما أتقنته وما يحتاج مراجعة.</p>
+              <div class="quiz-intro-meta-v5">
+                <span><i class="fa-regular fa-circle-question"></i><b id="quizIntroQuestionCount">0</b> سؤال</span>
+                <span><i class="fa-regular fa-clock"></i><b id="quizIntroTimeLabel">بدون حد زمني</b></span>
+                <span><i class="fa-solid fa-bolt"></i> نتيجة فورية</span>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-lg quiz-start-btn-v5" id="startQuizBtn"><i class="fa-solid fa-play"></i> ابدأ التدريب</button>
           </article>
-          <div class="quiz-engine hidden" id="quizEngine">
-            <div class="quiz-progress-head"><span id="quizProgressText">السؤال 1 من 5</span><strong id="quizScoreLive">0 نقطة</strong></div>
+          <div class="quiz-engine quiz-engine-v5 hidden" id="quizEngine">
+            <header class="quiz-session-head-v5">
+              <div class="quiz-session-progress-v5">
+                <span id="quizProgressText">السؤال 1 من 5</span>
+                <strong><b id="quizAnsweredCount">0</b> مجاب</strong>
+              </div>
+              <div class="quiz-session-timer-v5" id="quizTimerWrap"><i class="fa-regular fa-clock"></i><span id="quizTimerLabel">00:00</span></div>
+            </header>
             <div class="quiz-progress-track" id="quizProgressTrack" role="progressbar" aria-label="تقدم التدريب" aria-valuemin="1" aria-valuemax="1" aria-valuenow="1"><span id="quizProgressBar"></span></div>
-            <article class="question-card" aria-live="polite">
-              <span class="question-number" id="questionNumber">1</span>
+            <div class="quiz-question-map-v5" id="quizQuestionMap" aria-label="خريطة أسئلة الاختبار"></div>
+            <article class="question-card question-card-v5" aria-live="polite">
+              <div class="question-card-head-v5"><span class="question-number" id="questionNumber">1</span><span id="quizScoreLive">0 نقطة</span></div>
               <h3 id="questionText"></h3>
               <div class="question-options" id="questionOptions"></div>
               <div class="question-feedback hidden" id="questionFeedback" role="status" aria-live="polite"></div>
             </article>
-            <div class="quiz-nav">
-              <button class="btn btn-soft" id="prevQuestionBtn">السابق</button>
-              <button class="btn btn-primary" id="nextQuestionBtn">التالي</button>
+            <div class="quiz-nav quiz-nav-v5">
+              <button class="btn btn-soft" id="prevQuestionBtn"><i class="fa-solid fa-arrow-right"></i> السابق</button>
+              <span id="quizNavHint">اختر إجابة للمتابعة</span>
+              <button class="btn btn-primary" id="nextQuestionBtn">التالي <i class="fa-solid fa-arrow-left"></i></button>
             </div>
           </div>
-          <article class="quiz-result hidden" id="quizResult">
-            <div class="result-ring" id="resultRing"><strong id="resultPercent">0%</strong><span>النتيجة</span></div>
-            <div><span class="section-kicker">أحسنت المحاولة</span><h2 id="resultTitle">نتيجتك جاهزة</h2><p id="resultMessage"></p><div class="result-actions"><button class="btn btn-primary" id="retryQuizBtn">إعادة التدريب</button><a class="btn btn-soft hidden" id="openMistakesBtn" href="./profile.html?tab=mistakes">دفتر الأخطاء</a><button class="btn btn-soft" id="reviewLessonBtn">مراجعة الشرح</button></div></div>
+          <article class="quiz-result quiz-result-v5 hidden" id="quizResult">
+            <div class="quiz-result-score-v5">
+              <div class="result-ring" id="resultRing"><strong id="resultPercent">0%</strong><span>النتيجة</span></div>
+              <div class="quiz-result-grade-v5"><small>تقييم المحاولة</small><strong id="resultGradeLabel">—</strong></div>
+            </div>
+            <div class="quiz-result-copy-v5">
+              <span class="section-kicker">نتيجتك جاهزة</span>
+              <h2 id="resultTitle">أحسنت المحاولة</h2>
+              <p id="resultMessage"></p>
+              <div class="quiz-result-metrics-v5">
+                <span class="correct"><i class="fa-solid fa-circle-check"></i><div><b id="resultCorrectCount">0</b><small>إجابة صحيحة</small></div></span>
+                <span class="wrong"><i class="fa-solid fa-circle-xmark"></i><div><b id="resultWrongCount">0</b><small>تحتاج مراجعة</small></div></span>
+                <span class="time"><i class="fa-regular fa-clock"></i><div><b id="resultElapsedTime">00:00</b><small>وقت المحاولة</small></div></span>
+              </div>
+              <div class="result-actions">
+                <button class="btn btn-primary" id="retryQuizBtn"><i class="fa-solid fa-rotate-right"></i> إعادة التدريب</button>
+                <button class="btn btn-soft hidden" id="reviewWrongOnlyBtn"><i class="fa-solid fa-triangle-exclamation"></i> راجع أخطائي فقط</button>
+                <a class="btn btn-soft hidden" id="openMistakesBtn" href="./profile.html?tab=mistakes">دفتر الأخطاء</a>
+                <button class="btn btn-soft" id="reviewLessonBtn">مراجعة الشرح</button>
+              </div>
+            </div>
           </article>
-          <section class="quiz-review hidden" id="quizReview" aria-labelledby="quizReviewTitle">
-            <div class="quiz-review-head"><span class="section-kicker">راجع إجاباتك</span><h2 id="quizReviewTitle">الأسئلة وإجاباتك</h2><p>شاهد اختيارك في كل سؤال والإجابة الصحيحة، ثم جرّب مرة أخرى متى شئت.</p></div>
+          <section class="quiz-review quiz-review-v5 hidden" id="quizReview" aria-labelledby="quizReviewTitle">
+            <div class="quiz-review-head quiz-review-head-v5">
+              <div><span class="section-kicker">راجع إجاباتك</span><h2 id="quizReviewTitle">الأسئلة وإجاباتك</h2><p id="quizReviewSubtitle">شاهد اختيارك في كل سؤال والإجابة الصحيحة، ثم جرّب مرة أخرى متى شئت.</p></div>
+              <div class="quiz-review-filter-v5">
+                <button type="button" class="active" data-review-filter="all">الكل</button>
+                <button type="button" data-review-filter="wrong">الأخطاء فقط</button>
+              </div>
+            </div>
             <div class="quiz-review-list" id="quizReviewList"></div>
             <button class="btn btn-primary" id="retryQuizReviewBtn" type="button"><i class="fa-solid fa-rotate-right"></i> إعادة التدريب</button>
           </section>
