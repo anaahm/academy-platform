@@ -709,11 +709,16 @@
       <form id="liveForm" class="admin-form">
         <label><span>عنوان الجلسة</span><input id="liveTitle" required></label>
         <label><span>اسم المدرس</span><input id="liveTeacher"></label>
+        <label><span>نوع التعليم</span><select id="liveType"><option value="">كل الأنواع</option><option value="public">عام</option><option value="azhar">أزهر</option></select></label>
+        <label><span>المرحلة</span><select id="liveStage"><option value="">كل المراحل</option><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+        <label><span>الصف</span><select id="liveGrade"><option value="">كل الصفوف</option></select></label>
+        <label><span>المادة</span><select id="liveSubject"><option value="">كل المواد</option></select></label>
         <label><span>الحالة</span><select id="liveStatus"><option value="upcoming">قادم</option><option value="live">مباشر</option><option value="ended">منتهي</option></select></label>
         <label><span>موعد الجلسة</span><input id="liveTime" type="datetime-local"></label>
         <label><span>المدة بالدقائق</span><input id="liveDuration" type="number" min="10" value="60"></label>
-        <label class="full"><span>رابط YouTube</span><input id="liveYoutube" type="url" dir="ltr"></label>
-        <label class="full"><span>رابط Zoom</span><input id="liveZoom" type="url" dir="ltr"></label>
+        <label class="full"><span>رابط YouTube للبث</span><input id="liveYoutube" type="url" dir="ltr" placeholder="https://youtube.com/..."></label>
+        <label class="full"><span>رابط Zoom — اختياري</span><input id="liveZoom" type="url" dir="ltr" placeholder="https://zoom.us/..."></label>
+        <label class="full"><span>رابط إعادة المشاهدة — اختياري</span><input id="liveRecording" type="url" dir="ltr" placeholder="رابط YouTube أو أي رابط تسجيل متاح"></label>
         <button class="btn btn-primary full" type="submit">حفظ الجلسة</button>
       </form>
     </div>
