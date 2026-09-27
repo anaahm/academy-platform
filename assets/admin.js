@@ -49,6 +49,7 @@ function openModal(id){
 function closeModal(id){
  const modal=$(id);if(!modal)return;
  modal.classList.add('hidden');modal.setAttribute('aria-hidden','true');document.body.style.overflow='';
+ if(id==='contentReviewModal'){const frame=$('contentReviewFrame');if(frame)frame.src='about:blank';contentReviewTarget=null}
  const target=adminModalTrigger;adminModalTrigger=null;setTimeout(()=>target?.focus(),30);
 }
 function values(obj){return Object.entries(obj||{}).map(([id,v])=>({id,...(v||{})}))}
