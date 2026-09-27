@@ -378,9 +378,15 @@
             </div>
 
             <aside class="ref-content-side">
-              <article class="ref-side-card streak-card">
-                <div><small>أنت الآن في سلسلة</small><strong><span id="streakSideValue">0</span> أيام متتالية! 🔥</strong><p>مواصلة هذا الأداء الرائع!</p></div>
-                <span class="side-art">🏆</span>
+              <article class="ref-side-card streak-card mix-streak-card">
+                <div class="mix-streak-head"><div><small>سلسلة التعلم</small><strong><span id="streakSideValue">0</span> أيام متتالية 🔥</strong><p id="streakSideMessage">ادخل كل يوم وحافظ على السلسلة.</p></div><span class="side-art">🏆</span></div>
+                <div class="mix-streak-week" id="streakWeek" aria-label="نشاط آخر سبعة أيام"></div>
+                <div class="mix-streak-next"><span><i class="fa-solid fa-gift"></i> المكافأة القادمة</span><strong id="streakNextReward">3 أيام</strong></div>
+              </article>
+
+              <article class="ref-side-card mix-achievement-card">
+                <div class="mix-achievement-head"><div><small>إنجازاتك السريعة</small><strong>استمر وافتح المزيد</strong></div><a href="./profile.html?tab=badges">عرض الكل</a></div>
+                <div class="mix-achievement-list" id="dashboardAchievementPreview"></div>
               </article>
 
               <article class="ref-side-card challenge-card">
