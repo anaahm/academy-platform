@@ -608,7 +608,9 @@ auth.onAuthStateChanged(async u=>{
 
    $('teacherAccess').classList.add('hidden');$('teacherPortal').classList.remove('hidden');
    updateGrades();updateAssignmentGrades();updateQuizGrades();updateNotificationGrades();render();renderTeacherProfile(publicProfileSnap.val()||{});
-   const requested=new URLSearchParams(location.search).get('tab')||'home';switchTab(requested,false);
+   let requested=new URLSearchParams(location.search).get('tab')||'home';
+   if(teacher?.role==='assistant'&&['assignments','notifications','students'].includes(requested))requested='home';
+   switchTab(requested,false);
  }catch(err){console.error(err);showNoAccess('تعذر تحميل صلاحيات المدرس الآن.')}
  finally{window.AcademyUI?.hidePageLoading()}
 });
