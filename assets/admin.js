@@ -1567,6 +1567,8 @@ $('importSubjectUnitsLines')?.addEventListener('click',importSubjectUnitsLines);
 ['subjectType','subjectStage','subjectGrade','subjectName','subjectEmoji'].forEach(id=>{const el=$(id);if(!el)return;el.addEventListener(el.tagName==='SELECT'?'change':'input',renderSubjectEditorPreview)});
 bindAdminForm('lessonForm',saveLesson,'حفظ الدرس');
 bindAdminForm('quizForm',saveQuiz,'حفظ الاختبار');
+$('contentCopyForm')?.addEventListener('submit',executeContentCopy);
+$('contentCopyStage')?.addEventListener('change',()=>fillGrades($('contentCopyGrade'),$('contentCopyStage').value));
 bindAdminForm('fileForm',saveFile,'حفظ الملف');
 bindAdminForm('simulationForm',saveSimulation,'حفظ المحاكي');
 bindAdminForm('liveForm',saveLiveSession,'حفظ الجلسة');
