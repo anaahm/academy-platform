@@ -53,7 +53,7 @@ function unitName(c,u){
  return n||['','الوحدة الأولى','الوحدة الثانية','الوحدة الثالثة','الوحدة الرابعة','الوحدة الخامسة','الوحدة السادسة'][Number(u)]||('الوحدة '+u);
 }
 function filterContent(c){
- state.lessons=Object.entries(state.data.lessons||{}).map(([id,v])=>({id,...v})).filter(l=>l.type===c.type&&l.stage===c.stage&&String(l.grade)===String(c.grade)&&l.subject===c.subject&&!l.isHidden).sort((a,b)=>(a.unit||1)-(b.unit||1)||(a.createdAt||0)-(b.createdAt||0));
+ state.lessons=Object.entries(state.data.lessons||{}).map(([id,v])=>({id,...v})).filter(l=>l.type===c.type&&l.stage===c.stage&&String(l.grade)===String(c.grade)&&l.subject===c.subject&&!l.isHidden).sort((a,b)=>(a.unit||1)-(b.unit||1)||(Number.isFinite(Number(a.sortOrder))?Number(a.sortOrder):Number(a.createdAt||0))-(Number.isFinite(Number(b.sortOrder))?Number(b.sortOrder):Number(b.createdAt||0)));
  const targetAllows=item=>{
    const mode=item?.targetMode||'all';
    if(mode==='students'){
