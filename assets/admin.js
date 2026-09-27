@@ -405,6 +405,85 @@ function openCurriculumLessonCreator(subject,unit){
 function openCurriculumQuizCreator(subject,unit){
  const c=curriculumScope();resetQuizEditor();$('newQuizType').value=c.type;$('newQuizStage').value=c.stage;fillGrades($('newQuizGrade'),c.stage,c.grade);$('newQuizGrade').value=String(c.grade);fillSubjects($('newQuizSubject'),c.stage,c.grade,c.type);$('newQuizSubject').value=subject;$('newQuizUnit').value=Number(unit||1);renderQuizEditorPreview();openModal('quizModal');
 }
+function sourceCustomSubjectRecord(scope,subjectId){
+ return customSubjectsFor(scope.stage,String(scope.grade),scope.type).find(x=>x.id===subjectId)||null;
+}
+function openContentCopyModal(kind,subjectId,unit=0){
+ const source=curriculumScope(),subject=adminSubjectMeta(source.stage,source.grade,source.type,subjectId);
+ contentCopySource={kind,subject:subjectId,unit:Number(unit||0),...source};
+ $('contentCopyKind').value=kind;$('contentCopySubject').value=subjectId;$('contentCopySourceUnit').value=String(unit||0);
+ $('contentCopyType').value=source.type;$('contentCopyStage').value=source.stage;
+ const suggested=Number(source.grade)<gradeCount(source.stage)?Number(source.grade)+1:Number(source.grade);
+ fillGrades($('contentCopyGrade'),source.stage,String(suggested));$('contentCopyGrade').value=String(suggested);
+ $('contentCopyTargetUnit').value=String(unit||1);$('contentCopyUnitField').classList.toggle('hidden',kind!=='unit');
+ $('contentCopyLessons').checked=true;$('contentCopyQuizzes').checked=true;
+ if($('contentCopySourceTitle'))$('contentCopySourceTitle').textContent=kind==='unit'?(adminUnitLabel({stage:source.stage,grade:source.grade,type:source.type,subject:subjectId,unit})+' — '+subject.name):subject.name;
+ if($('contentCopySourceMeta'))$('contentCopySourceMeta').textContent=typeLabel(source.type)+' • '+gradeLabel(source.stage,source.grade)+(kind==='unit'?' • الوحدة '+unit:' • المادة كاملة');
+ if($('contentCopyModalTitle'))$('contentCopyModalTitle').textContent=kind==='unit'?'نسخ الوحدة إلى صف آخر':'نسخ المادة إلى صف آخر';
+ openModal('contentCopyModal');
+}
+function targetCustomSubjectUpdate(source,target,kind,targetUnit){
+ const subject=adminSubjectMeta(source.stage,source.grade,source.type,source.subject),sourceCustom=sourceCustomSubjectRecord(source,source.subject);
+ const raw=root.customSubjects?.[target.stage]?.[target.grade],arr=Array.isArray(raw)?[...raw]:Object.values(raw||{}),idx=arr.findIndex(x=>x?.id===source.subject&&(!x.type||x.type===target.type));
+ if(idx>=0){
+   if(kind==='unit'){
+     const current={...arr[idx]},units=Array.isArray(current.units)?[...current.units]:[];
+     const sourceUnitName=subject.units?.[Number(source.unit)-1]?.name||subject.units?.[Number(source.unit)-1]||('الوحدة '+source.unit);
+     while(units.length<targetUnit)units.push({name:'الوحدة '+(units.length+1)});
+     if(!units[targetUnit-1]?.name)units[targetUnit-1]={name:sourceUnitName};
+     current.units=units;current.updatedAt=Date.now();arr[idx]=current;return arr;
+   }
+   return null;
+ }
+ const defaultExists=(defaultSubjects[target.stage]||[]).some(x=>x.id===source.subject);
+ if(!sourceCustom&&defaultExists)return null;
+ const base={id:source.subject,name:subject.name||source.subject,type:target.type,emoji:subject.emoji||'📚',imageUrl:subject.imageUrl||'',createdAt:Date.now(),updatedAt:Date.now()};
+ if(kind==='subject')base.units=(subject.units||[]).map(u=>({name:u?.name||u||''})).filter(u=>u.name);
+ else{
+   const units=[],sourceUnitName=subject.units?.[Number(source.unit)-1]?.name||subject.units?.[Number(source.unit)-1]||('الوحدة '+source.unit);
+   for(let i=1;i<=targetUnit;i++)units.push({name:i===targetUnit?sourceUnitName:'الوحدة '+i});
+   base.units=units;
+ }
+ arr.push(base);return arr;
+}
+async function executeContentCopy(e){
+ e.preventDefault();if(!contentCopySource)return;
+ const source={...contentCopySource},target={type:$('contentCopyType').value,stage:$('contentCopyStage').value,grade:String($('contentCopyGrade').value)},kind=source.kind,targetUnit=Math.max(1,Number($('contentCopyTargetUnit').value||source.unit||1));
+ const includeLessons=$('contentCopyLessons').checked,includeQuizzes=$('contentCopyQuizzes').checked;
+ const sameScope=source.type===target.type&&source.stage===target.stage&&String(source.grade)===String(target.grade);
+ if(kind==='subject'&&sameScope)return toast('اختر صفًا أو مرحلة مختلفة لنسخ المادة كاملة.','error');
+ if(kind==='unit'&&sameScope&&Number(source.unit)===targetUnit)return toast('اختر وحدة مختلفة أو صفًا مختلفًا للنسخ.','error');
+ let sourceLessons=values(root.lessons).filter(l=>l.type===source.type&&l.stage===source.stage&&String(l.grade)===String(source.grade)&&l.subject===source.subject);
+ let sourceQuizzes=values(root.quizzes).filter(q=>q.type===source.type&&q.stage===source.stage&&String(q.grade)===String(source.grade)&&q.subject===source.subject);
+ if(kind==='unit'){sourceLessons=sourceLessons.filter(l=>Number(l.unit||1)===Number(source.unit));sourceQuizzes=sourceQuizzes.filter(q=>curriculumQuizUnit(q)===Number(source.unit))}
+ if(!includeLessons)sourceLessons=[];if(!includeQuizzes)sourceQuizzes=[];
+ if(!sourceLessons.length&&!sourceQuizzes.length)return toast('لا يوجد محتوى مطابق لإعدادات النسخ.','error');
+ const updates={},lessonMap=new Map(),now=Date.now(),orderByUnit=new Map();
+ const existingTarget=values(root.lessons).filter(l=>l.type===target.type&&l.stage===target.stage&&String(l.grade)===String(target.grade)&&l.subject===source.subject);
+ const initialOrder=unit=>Math.max(0,...existingTarget.filter(l=>Number(l.unit||1)===Number(unit)).map(lessonAdminSortValue).filter(Number.isFinite));
+ sourceLessons.sort((a,b)=>Number(a.unit||1)-Number(b.unit||1)||lessonAdminSortValue(a)-lessonAdminSortValue(b)).forEach(l=>{
+   const destUnit=kind==='unit'?targetUnit:Number(l.unit||1),key=String(destUnit);
+   if(!orderByUnit.has(key))orderByUnit.set(key,initialOrder(destUnit));
+   const newId=db.ref('lessons').push().key,order=orderByUnit.get(key)+1000;orderByUnit.set(key,order);lessonMap.set(l.id,newId);
+   const copy={...l,type:target.type,stage:target.stage,grade:target.grade,subject:source.subject,unit:destUnit,sortOrder:order,isHidden:true,createdAt:now,updatedAt:now};
+   if(sameScope)copy.title=(copy.title||'درس')+' — نسخة';
+   delete copy.id;delete copy.teacherSubmissionId;delete copy.orderUpdatedAt;updates['lessons/'+newId]=copy;
+ });
+ sourceQuizzes.forEach(q=>{
+   const sourceUnit=curriculumQuizUnit(q),destUnit=kind==='unit'?targetUnit:Number(sourceUnit||q.unit||0),newId=db.ref('quizzes').push().key;
+   const copy={...q,type:target.type,stage:target.stage,grade:target.grade,subject:source.subject,unit:destUnit,isHidden:true,createdAt:now,updatedAt:now};
+   if(sameScope)copy.name=(copy.name||'اختبار')+' — نسخة';
+   if(q.lessonId&&lessonMap.has(q.lessonId))copy.lessonId=lessonMap.get(q.lessonId);
+   else if(q.lessonId)delete copy.lessonId;
+   delete copy.id;delete copy.teacherSubmissionId;updates['quizzes/'+newId]=copy;quizBankUpdates(newId,copy,updates,now);
+ });
+ const nextCustom=targetCustomSubjectUpdate(source,target,kind,targetUnit);
+ if(nextCustom)updates['customSubjects/'+target.stage+'/'+target.grade]=nextCustom;
+ await db.ref().update(updates);
+ await writeAudit(kind==='unit'?'curriculum.copy_unit':'curriculum.copy_subject','subject',source.subject,{sourceType:source.type,sourceStage:source.stage,sourceGrade:source.grade,sourceUnit:source.unit||0,targetType:target.type,targetStage:target.stage,targetGrade:target.grade,targetUnit:kind==='unit'?targetUnit:0,lessonCount:sourceLessons.length,quizCount:sourceQuizzes.length});
+ closeModal('contentCopyModal');contentCopySource=null;
+ toast('تم النسخ بنجاح: '+sourceLessons.length+' درس و'+sourceQuizzes.length+' اختبار — جميعها مخفية للمراجعة');
+}
 function bindCurriculumTree(){
  const wrap=$('curriculumTreeWrap');if(!wrap)return;
  $$('.admin-tree-subject',wrap).forEach(details=>details.addEventListener('toggle',()=>{const id=details.dataset.treeSubjectCard;if(!id)return;if(details.open)curriculumOpenSubjects.add(id);else curriculumOpenSubjects.delete(id)}));
@@ -413,8 +492,10 @@ function bindCurriculumTree(){
  $$('[data-tree-copy]',wrap).forEach(b=>b.onclick=()=>duplicateCurriculumLesson(b.dataset.treeCopy));
  $$('[data-tree-up]',wrap).forEach(b=>b.onclick=()=>moveCurriculumLessonRelative(b.dataset.treeUp,-1));
  $$('[data-tree-down]',wrap).forEach(b=>b.onclick=()=>moveCurriculumLessonRelative(b.dataset.treeDown,1));
- $$('[data-tree-new-lesson]',wrap).forEach(b=>b.onclick=()=>{const [subject,unit]=b.dataset.treeNewLesson.split('|');openCurriculumLessonCreator(subject,unit)});
- $$('[data-tree-new-quiz]',wrap).forEach(b=>b.onclick=()=>{const [subject,unit]=b.dataset.treeNewQuiz.split('|');openCurriculumQuizCreator(subject,unit)});
+ $('[data-tree-new-lesson]',wrap).forEach(b=>b.onclick=()=>{const [subject,unit]=b.dataset.treeNewLesson.split('|');openCurriculumLessonCreator(subject,unit)});
+ $('[data-tree-new-quiz]',wrap).forEach(b=>b.onclick=()=>{const [subject,unit]=b.dataset.treeNewQuiz.split('|');openCurriculumQuizCreator(subject,unit)});
+ $('[data-tree-copy-unit]',wrap).forEach(b=>b.onclick=()=>{const [subject,unit]=b.dataset.treeCopyUnit.split('|');openContentCopyModal('unit',subject,Number(unit))});
+ $('[data-tree-copy-subject]',wrap).forEach(b=>b.onclick=()=>openContentCopyModal('subject',b.dataset.treeCopySubject,0));
  $$('[data-tree-move-unit]',wrap).forEach(s=>s.onchange=()=>persistCurriculumLessonOrder(s.dataset.treeMoveUnit,Number(s.value),null));
  let draggedId='';
  $$('[data-tree-lesson]',wrap).forEach(row=>{
