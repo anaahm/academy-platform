@@ -250,6 +250,12 @@
 
         <section class="admin-tab" id="admin-tab-teachers">
           <div class="admin-section-head"><div><span class="section-kicker">فريق التدريس</span><h2>المدرسون والمراجعات</h2><p>فعّل المدرسين، اسند لهم المواد، وراجع المحتوى قبل النشر.</p></div><a class="btn btn-soft" href="./teacher.html" target="_blank"><i class="fa-solid fa-eye"></i> معاينة بوابة المدرس</a></div>
+          <section class="mix-admin-section-stats" id="adminTeacherStats">
+            <article><span class="green"><i class="fa-solid fa-user-check"></i></span><div><strong id="adminTeacherActiveCount">0</strong><small>مدرس نشط</small></div></article>
+            <article><span class="gray"><i class="fa-solid fa-user-slash"></i></span><div><strong id="adminTeacherInactiveCount">0</strong><small>مدرس موقوف</small></div></article>
+            <article><span class="orange"><i class="fa-solid fa-clock"></i></span><div><strong id="adminTeacherPendingContent">0</strong><small>محتوى للمراجعة</small></div></article>
+            <article><span class="violet"><i class="fa-solid fa-id-card"></i></span><div><strong id="adminTeacherPendingProfiles">0</strong><small>ملفات للمراجعة</small></div></article>
+          </section>
           <article class="admin-card admin-teacher-create">
             <div class="admin-card-head"><div><span class="section-kicker">حساب مستقل</span><h3>إضافة مدرس جديد</h3><p>حدّد بيانات دخول المدرس، ثم أسند له المادة والصف من النموذج أدناه. كلمة المرور لا تُحفظ في قاعدة البيانات.</p></div><span>🔑</span></div>
             <form id="createTeacherForm" class="admin-teacher-create-form">
@@ -304,7 +310,18 @@
 
         <section class="admin-tab" id="admin-tab-students">
           <div class="admin-section-head"><div><span class="section-kicker">المتعلمون</span><h2>الطلاب</h2><p>متابعة الحسابات والمراحل والتقدم بدون تخزين كلمات المرور.</p></div></div>
-          <div class="admin-filter-bar"><input id="studentSearch" placeholder="ابحث باسم الطالب أو رقم الهاتف أو البريد..."></div>
+          <section class="mix-admin-section-stats" id="adminStudentStats">
+            <article><span class="blue"><i class="fa-solid fa-users"></i></span><div><strong id="adminStudentTotalCount">0</strong><small>إجمالي الطلاب</small></div></article>
+            <article><span class="green"><i class="fa-solid fa-bolt"></i></span><div><strong id="adminStudentActiveCount">0</strong><small>نشط آخر 7 أيام</small></div></article>
+            <article><span class="violet"><i class="fa-solid fa-phone"></i></span><div><strong id="adminStudentPhoneCount">0</strong><small>مسجل برقم هاتف</small></div></article>
+            <article><span class="orange"><i class="fa-solid fa-graduation-cap"></i></span><div><strong id="adminStudentProfiledCount">0</strong><small>بياناتهم مكتملة</small></div></article>
+          </section>
+          <div class="admin-filter-bar mix-admin-student-filters">
+            <input id="studentSearch" placeholder="ابحث باسم الطالب أو رقم الهاتف أو البريد...">
+            <select id="studentFilterType"><option value="">كل المسارات</option><option value="public">تعليم عام</option><option value="azhar">أزهر</option></select>
+            <select id="studentFilterStage"><option value="">كل المراحل</option><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select>
+          </div>
+          <div class="mix-admin-results-meta"><span id="studentResultsCount">0 طالب ظاهر</span><small>يمكنك البحث بالاسم أو الهاتف أو البريد.</small></div>
           <div id="studentsAdminList" class="admin-table-wrap"></div>
         </section>
 
