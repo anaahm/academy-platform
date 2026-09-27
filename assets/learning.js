@@ -1132,8 +1132,23 @@ function renderQuizOnly(c,id){
    toast(q.lessonId?'أكمل الدرس المرتبط أولًا لفتح الاختبار.':unit===0?'أكمل دروس المادة أولًا لفتح الاختبار الشامل.':'أكمل دروس الوحدة أولًا لفتح الاختبار.','error');
    setTimeout(()=>location.replace(url('subject.html',c)),900);return;
  }
- state.subject=subjectFor(c);filterContent(c);$('lessonTitle').textContent=q.name||'اختبار';$('lessonMeta').textContent=(Number(q.unit||0)===0?'اختبار شامل':unitName(c,q.unit))+' • '+state.subject.name;$('lessonSubtitle').textContent='اختبر مستواك واعرف نقاط القوة وما يحتاج للمراجعة.';
- document.querySelector('.video-theater').classList.add('hidden');$('lessonExplanationPanel').classList.add('hidden');$('lessonResourcesPanel').classList.add('hidden');$('lessonTabs').innerHTML='<button class="active"><i class="fa-solid fa-bullseye"></i> الاختبار</button>';$('lessonQuizPanel').classList.remove('hidden');
+ state.subject=subjectFor(c);filterContent(c);
+ const quizKind=Number(q.unit||0)===0?'اختبار شامل':unitName(c,q.unit),quizDuration=Number(q.durationMinutes||0),quizQuestions=q.questions?.length||0;
+ document.title=(q.name||'اختبار')+' | الأكاديمية';$('lessonTitle').textContent=q.name||'اختبار';$('lessonMeta').textContent=quizKind+' • '+state.subject.name;$('lessonSubtitle').textContent='اختبر مستواك واعرف نقاط القوة وما يحتاج للمراجعة.';
+ if($('lessonLiveState'))$('lessonLiveState').innerHTML='<i class="fa-solid fa-bullseye"></i> اختبار جاهز';
+ if($('lessonPositionText'))$('lessonPositionText').textContent=quizKind;
+ if($('lessonVideoCount'))$('lessonVideoCount').textContent=quizDuration?quizDuration+' دقيقة':'بدون حد زمني';
+ if($('lessonQuestionCount'))$('lessonQuestionCount').textContent=quizQuestions+' سؤال';
+ if($('lessonResourceCount'))$('lessonResourceCount').textContent='نتيجة فورية';
+ const quizHero=$('lessonHeroCard'),quizSubjectImage=state.subject?.imageUrl?safeUrl(state.subject.imageUrl):'';
+ if(quizHero){
+   const validImage=quizSubjectImage&&quizSubjectImage!=='#'?quizSubjectImage:'';
+   quizHero.classList.toggle('has-subject-image',!!validImage);
+   quizHero.style.backgroundImage=validImage?'linear-gradient(95deg,rgba(15,23,42,.96) 0%,rgba(30,58,138,.92) 50%,rgba(67,56,202,.48) 78%,rgba(15,23,42,.20) 100%),url("'+validImage.replace(/"/g,'%22')+'")':'';
+   quizHero.style.backgroundSize=validImage?'cover':'';
+   quizHero.style.backgroundPosition=validImage?'center':'';
+ }
+ document.querySelector('.video-theater').classList.add('hidden');$('lessonExplanationPanel').classList.add('hidden');$('lessonResourcesPanel').classList.add('hidden');$('lessonTabs').innerHTML='<button class="active"><span><i class="fa-solid fa-bullseye"></i></span><div><small>ركز وخد وقتك</small><strong>الاختبار</strong></div></button>';$('lessonQuizPanel').classList.remove('hidden');
  $('quizIntroTitle').textContent=q.name||'اختبر معلوماتك';$('quizIntroText').textContent='الاختبار مكوّن من '+(q.questions?.length||0)+' سؤال'+(Number(q.durationMinutes||0)>0?' ومدة محددة '+Number(q.durationMinutes)+' دقيقة.':'. خذ وقتك واقرأ كل سؤال جيدًا.');
  if($('quizIntroQuestionCount'))$('quizIntroQuestionCount').textContent=q.questions?.length||0;
  if($('quizIntroTimeLabel'))$('quizIntroTimeLabel').textContent=Number(q.durationMinutes||0)>0?Number(q.durationMinutes)+' دقيقة':'بدون حد زمني';
