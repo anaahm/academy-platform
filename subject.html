@@ -41,28 +41,39 @@
   <main class="subject-page">
     <section class="subject-hero">
       <div class="container">
-        <div class="subject-hero-card">
-          <div class="subject-hero-copy">
+        <div class="subject-hero-card subject-hero-v4">
+          <div class="subject-hero-copy subject-hero-copy-v4">
             <span class="subject-mini-label" id="subjectStageLabel">مرحلتك الدراسية</span>
-            <div class="subject-title-row">
+            <div class="subject-title-row subject-title-row-v4">
               <span class="subject-big-emoji" id="subjectEmoji">📚</span>
               <div>
+                <span class="subject-hero-kicker">مادتك الحالية</span>
                 <h1 id="subjectTitle">المادة الدراسية</h1>
                 <p id="subjectDescription">خطة منظمة تساعدك على إنهاء المنهج خطوة بخطوة.</p>
               </div>
             </div>
-            <div class="subject-progress-wrap">
+            <div class="subject-progress-wrap subject-progress-v4">
               <div class="subject-progress-meta"><span>تقدمك في المادة</span><strong id="subjectProgressText">0%</strong></div>
               <div class="subject-progress-track" id="subjectProgressTrack" role="progressbar" aria-label="تقدمك في المادة" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="subjectProgressBar"></span></div>
-              <a class="subject-certificate-btn hidden" id="subjectCertificateBtn" href="./certificate.html"><i class="fa-solid fa-award"></i> شهادة إتمام المادة</a>
+            </div>
+            <div class="subject-hero-actions-v4">
+              <button class="subject-hero-main-action" id="subjectHeroContinueBtn" type="button"><i class="fa-solid fa-play"></i><span><small>خطوتك التالية</small><strong id="subjectHeroNextTitle">ابدأ أول درس</strong></span></button>
+              <button class="subject-hero-secondary-action" id="subjectHeroTeachersBtn" type="button"><i class="fa-solid fa-chalkboard-user"></i><span>المدرسون</span></button>
+              <button class="subject-hero-secondary-action" id="subjectHeroTestsBtn" type="button"><i class="fa-solid fa-brain"></i><span>الاختبارات</span></button>
+              <a class="subject-certificate-btn hidden" id="subjectCertificateBtn" href="./certificate.html"><i class="fa-solid fa-award"></i> شهادة الإتمام</a>
             </div>
           </div>
-          <div class="subject-hero-stats">
-            <article><span class="stat-badge blue"><i class="fa-solid fa-circle-play"></i></span><div><strong id="lessonCount">0</strong><small>درس</small></div></article>
-            <article><span class="stat-badge green"><i class="fa-solid fa-circle-check"></i></span><div><strong id="completedCount">0</strong><small>مكتمل</small></div></article>
-            <article><span class="stat-badge violet"><i class="fa-solid fa-file-circle-question"></i></span><div><strong id="quizCount">0</strong><small>اختبار</small></div></article>
-            <article class="subject-next-stat"><span class="stat-badge amber"><i class="fa-solid fa-forward-step"></i></span><div><strong id="nextLessonStat">—</strong><small>خطوتك التالية</small></div></article>
-          </div>
+
+          <aside class="subject-hero-panel-v4">
+            <div class="subject-progress-ring-v4" id="subjectHeroProgressRing"><strong id="subjectHeroProgressValue">0%</strong><span>من المادة</span></div>
+            <div class="subject-hero-panel-copy"><small>رحلتك حتى الآن</small><strong id="subjectHeroProgressMessage">ابدأ أول خطوة</strong><p id="subjectHeroProgressHint">كل درس تكمله يقربك من إنهاء المادة.</p></div>
+            <div class="subject-hero-stats subject-hero-stats-v4">
+              <article><span class="stat-badge blue"><i class="fa-solid fa-circle-play"></i></span><div><strong id="lessonCount">0</strong><small>درس</small></div></article>
+              <article><span class="stat-badge green"><i class="fa-solid fa-circle-check"></i></span><div><strong id="completedCount">0</strong><small>مكتمل</small></div></article>
+              <article><span class="stat-badge violet"><i class="fa-solid fa-file-circle-question"></i></span><div><strong id="quizCount">0</strong><small>اختبار</small></div></article>
+              <article class="subject-next-stat"><span class="stat-badge amber"><i class="fa-solid fa-forward-step"></i></span><div><strong id="nextLessonStat">—</strong><small>التالي</small></div></article>
+            </div>
+          </aside>
         </div>
       </div>
     </section>
@@ -77,11 +88,12 @@
       </div>
     </section>
 
-    <section class="container subject-units-overview">
-      <div class="subject-section-heading compact">
-        <div><span class="section-kicker">المنهج</span><h2>وحدات المادة</h2></div>
+    <section class="container subject-units-overview subject-units-overview-v4">
+      <div class="subject-section-heading subject-section-heading-v4">
+        <div><span class="section-kicker">خريطة المنهج</span><h2>وحدات المادة</h2><p>كل وحدة تظهر لك تقدمك وعدد الدروس والاختبارات قبل ما تدخلها.</p></div>
+        <span class="subject-units-count"><b id="subjectUnitsCount">0</b> وحدة</span>
       </div>
-      <div class="subject-unit-strip" id="subjectUnitStrip"></div>
+      <div class="subject-unit-strip subject-unit-grid-v4" id="subjectUnitStrip"></div>
     </section>
 
     <section class="container subject-path-section">
@@ -96,8 +108,8 @@
 
     <section class="container learning-layout">
       <div class="curriculum-column">
-        <div class="learning-section-head">
-          <div><span class="section-kicker">مسارك داخل المادة</span><h2>الوحدات والدروس</h2><p>ابدأ من أول درس أو أكمل من حيث توقفت.</p></div>
+        <div class="learning-section-head learning-section-head-v4">
+          <div><span class="section-kicker">المحتوى الكامل</span><h2>الدروس والاختبارات</h2><p>كل وحدة مرتبة أمامك، وحالة كل درس واختبار واضحة قبل ما تبدأ.</p></div>
           <div class="curriculum-tools" role="tablist" aria-label="تصفية محتوى المادة">
             <button class="filter-chip active" data-content-filter="all" role="tab" aria-selected="true">الكل</button>
             <button class="filter-chip" data-content-filter="lessons" role="tab" aria-selected="false">الدروس</button>
