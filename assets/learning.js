@@ -422,6 +422,14 @@ function renderLesson(){
  trackContentEvent(id,'views');
  if(state.user&&!state.adminPreview) db.ref('studentProfilesV3/'+state.user.uid).update({lastLessonTitle:lesson.title||'',lastSubjectId:c.subject,lastLessonId:id,lastActiveAt:Date.now()}).catch(()=>{});
  document.title=(lesson.title||'الدرس')+' | الأكاديمية';$('lessonTitle').textContent=lesson.title||'الدرس';$('lessonMeta').textContent=unitName(c,lesson.unit||1)+' • '+state.subject.name;
+ const lessonHero=$('lessonHeroCard'),subjectImage=state.subject?.imageUrl?safeUrl(state.subject.imageUrl):'';
+ if(lessonHero){
+   const validImage=subjectImage&&subjectImage!=='#'?subjectImage:'';
+   lessonHero.classList.toggle('has-subject-image',!!validImage);
+   lessonHero.style.backgroundImage=validImage?'linear-gradient(95deg,rgba(15,23,42,.96) 0%,rgba(30,58,138,.92) 48%,rgba(37,99,235,.42) 76%,rgba(15,23,42,.18) 100%),url("'+validImage.replace(/"/g,'%22')+'")':'';
+   lessonHero.style.backgroundSize=validImage?'cover':'';
+   lessonHero.style.backgroundPosition=validImage?'center':'';
+ }
  const unitIndex=state.unitLessons.findIndex(x=>x.id===id);
  if($('lessonPositionText'))$('lessonPositionText').textContent='الدرس '+(unitIndex+1)+' من '+state.unitLessons.length;
  if($('lessonVideoCount'))$('lessonVideoCount').textContent=(Array.isArray(lesson.videos)?lesson.videos.filter(v=>v?.url).length:0)+' فيديو';
