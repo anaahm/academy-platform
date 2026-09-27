@@ -199,6 +199,17 @@
             <select id="lessonFilterStatus"><option value="">كل الحالات</option><option value="published">منشور</option><option value="hidden">مخفي</option></select>
             <span class="mix-filter-result" id="lessonResultCount">0 نتيجة</span>
           </div>
+          <div class="admin-bulk-action-bar" id="lessonBulkBar">
+            <label class="admin-bulk-select-all"><input type="checkbox" id="selectVisibleLessons"><span><i class="fa-solid fa-check"></i></span><strong>تحديد الظاهر</strong></label>
+            <div class="admin-bulk-count"><b id="selectedLessonCount">0</b><span>درس محدد</span></div>
+            <div class="admin-bulk-actions">
+              <button type="button" data-bulk-lessons="publish"><i class="fa-solid fa-eye"></i> نشر</button>
+              <button type="button" data-bulk-lessons="hide"><i class="fa-solid fa-eye-slash"></i> إخفاء</button>
+              <div class="admin-bulk-unit-move"><input id="bulkLessonUnit" type="number" min="1" value="1" aria-label="رقم الوحدة"><button type="button" data-bulk-lessons="move"><i class="fa-solid fa-right-left"></i> نقل</button></div>
+              <button type="button" data-bulk-lessons="duplicate"><i class="fa-regular fa-copy"></i> نسخ</button>
+              <button type="button" class="danger" data-bulk-lessons="delete"><i class="fa-solid fa-trash"></i> حذف</button>
+            </div>
+          </div>
           <div id="lessonsAdminList" class="admin-content-card-grid"></div>
         </section>
 
@@ -217,6 +228,16 @@
             <select id="quizFilterMode"><option value="">كل الأنواع</option><option value="lesson">مرتبط بدرس</option><option value="unit">اختبار وحدة</option><option value="comprehensive">اختبار شامل</option></select>
             <select id="quizFilterStatus"><option value="">كل الحالات</option><option value="published">منشور</option><option value="hidden">مخفي</option></select>
             <span class="mix-filter-result" id="quizResultCount">0 نتيجة</span>
+          </div>
+          <div class="admin-bulk-action-bar" id="quizBulkBar">
+            <label class="admin-bulk-select-all"><input type="checkbox" id="selectVisibleQuizzes"><span><i class="fa-solid fa-check"></i></span><strong>تحديد الظاهر</strong></label>
+            <div class="admin-bulk-count"><b id="selectedQuizCount">0</b><span>اختبار محدد</span></div>
+            <div class="admin-bulk-actions">
+              <button type="button" data-bulk-quizzes="publish"><i class="fa-solid fa-eye"></i> نشر</button>
+              <button type="button" data-bulk-quizzes="hide"><i class="fa-solid fa-eye-slash"></i> إخفاء</button>
+              <button type="button" data-bulk-quizzes="duplicate"><i class="fa-regular fa-copy"></i> نسخ</button>
+              <button type="button" class="danger" data-bulk-quizzes="delete"><i class="fa-solid fa-trash"></i> حذف</button>
+            </div>
           </div>
           <div id="quizzesAdminList" class="admin-content-card-grid"></div>
         </section>
@@ -584,6 +605,29 @@
           </details>
         </div>
         <button class="btn btn-primary full" type="submit">حفظ الاختبار</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="contentCopyModal" aria-hidden="true">
+    <div class="modal-panel admin-modal" role="dialog" aria-modal="true" aria-labelledby="contentCopyModalTitle" tabindex="-1">
+      <button class="modal-close" data-close-admin-modal="contentCopyModal" aria-label="إغلاق نافذة النسخ"><i class="fa-solid fa-xmark"></i></button>
+      <span class="section-kicker">نسخ المحتوى</span><h2 id="contentCopyModalTitle">نسخ المحتوى إلى صف آخر</h2>
+      <div class="admin-copy-source-card" id="contentCopySourceCard">
+        <span><i class="fa-regular fa-copy"></i></span><div><small>سيتم نسخ</small><strong id="contentCopySourceTitle">—</strong><p id="contentCopySourceMeta">—</p></div>
+      </div>
+      <form id="contentCopyForm" class="admin-form">
+        <input type="hidden" id="contentCopyKind">
+        <input type="hidden" id="contentCopySubject">
+        <input type="hidden" id="contentCopySourceUnit">
+        <label><span>نوع التعليم الهدف</span><select id="contentCopyType"><option value="public">تعليم عام</option><option value="azhar">أزهر</option></select></label>
+        <label><span>المرحلة الهدف</span><select id="contentCopyStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+        <label><span>الصف الهدف</span><select id="contentCopyGrade"></select></label>
+        <label id="contentCopyUnitField"><span>رقم الوحدة في الهدف</span><input id="contentCopyTargetUnit" type="number" min="1" value="1"></label>
+        <label class="switch-field"><span>نسخ الدروس</span><div><input id="contentCopyLessons" type="checkbox" checked><strong>نعم</strong></div></label>
+        <label class="switch-field"><span>نسخ الاختبارات</span><div><input id="contentCopyQuizzes" type="checkbox" checked><strong>نعم</strong></div></label>
+        <div class="full admin-copy-warning"><i class="fa-solid fa-shield-halved"></i><p>النسخ الجديدة ستُنشأ مخفية. الاختبارات المرتبطة بدروس سيتم ربطها تلقائيًا بنسخ الدروس الجديدة.</p></div>
+        <button class="btn btn-primary full" type="submit"><i class="fa-regular fa-copy"></i> بدء النسخ</button>
       </form>
     </div>
   </div>
