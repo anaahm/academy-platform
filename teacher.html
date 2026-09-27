@@ -53,9 +53,19 @@
 
       <div class="teacher-page">
         <section class="teacher-tab" id="teacher-tab-home" role="tabpanel">
-          <article class="teacher-welcome">
-            <div><span class="section-kicker light">مساحتك التعليمية</span><h2>مرحبًا <span id="teacherWelcomeName">أستاذنا</span> 👋</h2><p>أضف محتوى منظم، تابع ما تم اعتماده، وركّز على جودة الشرح.</p><div class="teacher-welcome-actions"><button class="btn teacher-welcome-primary" data-open-teacher-submit><i class="fa-solid fa-circle-plus"></i> إضافة محتوى</button><button class="btn teacher-welcome-secondary" data-teacher-tab="assignments"><i class="fa-solid fa-clipboard-check"></i> إدارة الواجبات</button></div></div>
-            <span class="teacher-welcome-art">📚</span>
+          <article class="teacher-welcome mix-teacher-home-hero" id="teacherHomeHero">
+            <div class="mix-teacher-home-avatar" id="teacherHomeAvatar">م</div>
+            <div class="mix-teacher-home-copy">
+              <span class="section-kicker light">مساحتك التعليمية</span>
+              <h2>مرحبًا <span id="teacherWelcomeName">أستاذنا</span> 👋</h2>
+              <p id="teacherHomeSubtitle">أضف محتوى منظم، تابع ما تم اعتماده، وركّز على جودة الشرح.</p>
+              <div class="mix-teacher-home-badges">
+                <span id="teacherHomeRoleBadge"><i class="fa-solid fa-shield-halved"></i> معلم</span>
+                <span id="teacherHomeProfileStatus"><i class="fa-regular fa-id-card"></i> الملف العام</span>
+              </div>
+              <div class="teacher-welcome-actions"><button class="btn teacher-welcome-primary" data-open-teacher-submit><i class="fa-solid fa-circle-plus"></i> إضافة محتوى</button><button class="btn teacher-welcome-secondary" data-teacher-tab="assignments"><i class="fa-solid fa-clipboard-check"></i> إدارة الواجبات</button></div>
+            </div>
+            <div class="mix-teacher-home-art"><span>📚</span><small>اصنع شرحًا يترك أثرًا</small></div>
           </article>
 
           <section class="teacher-stat-grid">
@@ -63,6 +73,37 @@
             <article><span class="stat-icon orange"><i class="fa-solid fa-clock"></i></span><div><strong id="teacherPendingCount">0</strong><small>قيد المراجعة</small></div></article>
             <article><span class="stat-icon green"><i class="fa-solid fa-book-open"></i></span><div><strong id="teacherSubjectCount">0</strong><small>مواد مسندة</small></div></article>
             <article><span class="stat-icon violet"><i class="fa-solid fa-layer-group"></i></span><div><strong id="teacherGradeCount">0</strong><small>صفوف مسندة</small></div></article>
+          </section>
+
+          <section class="mix-teacher-quick-actions" aria-label="إجراءات سريعة">
+            <button type="button" data-open-teacher-submit><span class="blue"><i class="fa-solid fa-video"></i></span><div><strong>درس جديد</strong><small>أرسل فيديو للمراجعة</small></div><i class="fa-solid fa-chevron-left"></i></button>
+            <button type="button" data-teacher-tab="quizzes"><span class="violet"><i class="fa-solid fa-file-circle-question"></i></span><div><strong>اختبار جديد</strong><small>اربطه بدرس معتمد</small></div><i class="fa-solid fa-chevron-left"></i></button>
+            <button type="button" data-teacher-tab="assignments"><span class="green"><i class="fa-solid fa-clipboard-check"></i></span><div><strong>واجب جديد</strong><small>أرسله لطلابك</small></div><i class="fa-solid fa-chevron-left"></i></button>
+            <button type="button" data-teacher-tab="profile"><span class="orange"><i class="fa-solid fa-id-card"></i></span><div><strong>ملفي العام</strong><small>حدّث صورتك وبياناتك</small></div><i class="fa-solid fa-chevron-left"></i></button>
+          </section>
+
+          <section class="teacher-grid mix-teacher-home-grid">
+            <article class="teacher-card mix-teacher-pipeline-card">
+              <div class="teacher-card-head"><div><span class="section-kicker">رحلة المحتوى</span><h3>حالة ما أرسلته للإدارة</h3></div><span>🚦</span></div>
+              <div class="mix-teacher-pipeline">
+                <div><span class="pending"><i class="fa-solid fa-clock"></i></span><strong id="teacherPipelinePending">0</strong><small>قيد المراجعة</small></div>
+                <i class="fa-solid fa-chevron-left"></i>
+                <div><span class="approved"><i class="fa-solid fa-circle-check"></i></span><strong id="teacherPipelineApproved">0</strong><small>تم اعتماده</small></div>
+                <i class="fa-solid fa-chevron-left"></i>
+                <div><span class="rejected"><i class="fa-solid fa-rotate"></i></span><strong id="teacherPipelineRejected">0</strong><small>يحتاج تعديل</small></div>
+              </div>
+              <p id="teacherPipelineHint" class="mix-teacher-pipeline-hint">أي محتوى جديد لن يظهر للطلاب قبل مراجعة الإدارة.</p>
+            </article>
+
+            <article class="teacher-card mix-teacher-performance-card">
+              <div class="teacher-card-head"><div><span class="section-kicker">لمحة سريعة</span><h3>أداء محتواك</h3></div><button class="btn btn-soft" type="button" data-teacher-tab="analytics">التفاصيل</button></div>
+              <div class="mix-teacher-performance">
+                <div><span><i class="fa-solid fa-eye"></i></span><strong id="teacherHomeViews">0</strong><small>مشاهدة</small></div>
+                <div><span><i class="fa-solid fa-circle-check"></i></span><strong id="teacherHomeCompletions">0</strong><small>إكمال</small></div>
+                <div><span><i class="fa-solid fa-percent"></i></span><strong id="teacherHomeAverageQuiz">0%</strong><small>متوسط التدريب</small></div>
+              </div>
+              <div class="mix-teacher-top-lesson" id="teacherHomeTopLesson"><span>🏆</span><div><small>أكثر درس مشاهدة</small><strong>—</strong></div></div>
+            </article>
           </section>
 
           <section class="teacher-grid">
@@ -223,6 +264,13 @@
         </section>
       </div>
     </main>
+    <nav class="teacher-mobile-bottom-nav" id="teacherMobileBottomNav" aria-label="التنقل السريع للمدرس">
+      <button type="button" class="active" data-teacher-tab="home"><i class="fa-solid fa-house"></i><span>الرئيسية</span></button>
+      <button type="button" data-teacher-tab="content"><i class="fa-solid fa-book-open"></i><span>محتواي</span></button>
+      <button type="button" class="teacher-mobile-add" data-open-teacher-submit><i class="fa-solid fa-plus"></i><span>إضافة</span></button>
+      <button type="button" data-teacher-tab="quizzes"><i class="fa-solid fa-brain"></i><span>الاختبارات</span></button>
+      <button type="button" data-teacher-tab="profile"><i class="fa-regular fa-user"></i><span>ملفي</span></button>
+    </nav>
   </section>
 
   <div class="modal-backdrop hidden" id="teacherGradeModal" aria-hidden="true">
