@@ -486,3 +486,18 @@ input:focus,select:focus,textarea:focus{
   .mix-teacher-choice{flex-basis:225px!important;min-width:225px!important;grid-template-columns:46px minmax(0,1fr) 26px!important}
   .teacher-mini-avatar{width:46px!important;height:46px!important}
 }
+
+/* Weekly streak + achievements */
+.mix-streak-card{background:linear-gradient(180deg,#fff,#fffbeb)!important;border-color:#fde68a!important}
+.mix-streak-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.mix-streak-head small{color:#92400e;font-weight:900}.mix-streak-head strong{display:block;color:#78350f;font-size:15px;margin:3px 0}.mix-streak-head p{font-size:10px;color:#a16207;margin:0}
+.mix-streak-week{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:14px 0 11px}
+.mix-streak-day{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}.mix-streak-day small{font-size:8px;color:#94a3b8;font-weight:800;max-width:100%;overflow:hidden}
+.mix-streak-day span{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#fff;border:1px solid #e2e8f0;color:#94a3b8;font-size:9px;font-weight:900;transition:.2s}
+.mix-streak-day.active span{background:linear-gradient(135deg,#f59e0b,#f97316);border-color:transparent;color:#fff;box-shadow:0 6px 14px rgba(245,158,11,.24)}
+.mix-streak-day.today span{outline:3px solid rgba(37,99,235,.12);border-color:#60a5fa}.mix-streak-day.today small{color:#2563eb}
+.mix-streak-next{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 10px;border-radius:13px;background:rgba(255,255,255,.76);border:1px dashed #fbbf24}.mix-streak-next span{font-size:9px;color:#92400e;font-weight:900}.mix-streak-next i{color:#f59e0b;margin-left:4px}.mix-streak-next strong{font-size:9px;color:#78350f}
+.mix-achievement-card{background:#fff!important}.mix-achievement-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.mix-achievement-head small{display:block;color:#64748b;font-size:9px}.mix-achievement-head strong{font-size:13px;color:var(--mix-ink)}.mix-achievement-head a{font-size:9px;color:var(--mix-primary);font-weight:900;text-decoration:none}
+.mix-achievement-list{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.mix-achievement-mini{min-width:0;position:relative;padding:8px 3px 7px;border-radius:13px;text-align:center;background:#f8fafc;border:1px solid #e2e8f0}.mix-achievement-mini>span{display:block;font-size:20px;filter:grayscale(1);opacity:.38}.mix-achievement-mini small{display:block;margin-top:3px;font-size:7px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mix-achievement-mini>i{position:absolute;top:3px;left:3px;font-size:6px;color:#94a3b8}
+.mix-achievement-mini.unlocked{background:linear-gradient(180deg,#fff,#eff6ff);border-color:#bfdbfe}.mix-achievement-mini.unlocked>span{filter:none;opacity:1}.mix-achievement-mini.unlocked small{color:#334155;font-weight:900}.mix-achievement-mini.unlocked>i{color:#10b981}
+@media(max-width:400px){.mix-streak-day span{width:25px;height:25px}.mix-achievement-list{grid-template-columns:repeat(5,42px);overflow-x:auto;justify-content:start}}
