@@ -1407,6 +1407,7 @@ $('lessonSearch').oninput=renderLessons;$('lessonFilterStage').onchange=renderLe
 $('quizSearch')?.addEventListener('input',renderQuizzes);$('quizFilterStage')?.addEventListener('change',renderQuizzes);$('quizFilterType')?.addEventListener('change',renderQuizzes);$('quizFilterMode')?.addEventListener('change',renderQuizzes);$('quizFilterStatus')?.addEventListener('change',renderQuizzes);
 $('studentSearch').oninput=renderStudents;$('studentFilterType')?.addEventListener('change',renderStudents);$('studentFilterStage')?.addEventListener('change',renderStudents);
 $('curriculumType').onchange=renderCurriculum;$('curriculumStage').onchange=()=>{fillGrades($('curriculumGrade'),$('curriculumStage').value);renderCurriculum()};$('curriculumGrade').onchange=renderCurriculum;
+$('[data-curriculum-view]').forEach(b=>b.onclick=()=>{curriculumViewMode=b.dataset.curriculumView==='cards'?'cards':'tree';localStorage.setItem('academy-admin-curriculum-view',curriculumViewMode);applyCurriculumView()});
 $('assignType').onchange=refreshAssignmentSubjects;$('assignStage').onchange=refreshAssignmentSubjects;$('assignGrade').onchange=refreshAssignmentSubjects;$('addAssignmentBtn').onclick=addAssignment;
 initAdminCollapse();
 $('adminMenuBtn').onclick=()=>{$('adminSidebar').classList.add('open');$('adminOverlay').classList.remove('hidden')};$('adminOverlay').onclick=()=>{$('adminSidebar').classList.remove('open');$('adminOverlay').classList.add('hidden')};
