@@ -346,12 +346,26 @@
 
           <section class="ref-content-grid">
             <div class="ref-content-main">
-              <section class="ref-card ref-subjects-section" id="studentSubjects">
-                <header class="ref-section-head">
-                  <button class="ref-link-btn" id="exploreSubjectsDash">عرض جميع المواد <i class="fa-solid fa-arrow-left"></i></button>
-                  <div><h2><i class="fa-solid fa-book-open"></i> موادي الدراسية</h2></div>
+              <section class="ref-card ref-subjects-section student-subjects-v2" id="studentSubjects">
+                <header class="student-subjects-head">
+                  <div class="student-subjects-title">
+                    <span class="student-subjects-icon"><i class="fa-solid fa-book-open"></i></span>
+                    <div>
+                      <span class="section-kicker">مواد صفك الحالي</span>
+                      <h2>ابدأ من المادة التي تريدها</h2>
+                      <p id="dashboardSubjectsSubtitle">كل موادك في مكان واحد — شرح، مدرسون، اختبارات وتقدمك داخل كل مادة.</p>
+                    </div>
+                  </div>
+                  <div class="student-subjects-head-actions">
+                    <span class="student-subject-count"><b id="dashboardSubjectCount">0</b> مادة</span>
+                    <button class="btn btn-soft" id="exploreSubjectsDash">عرض كل مواد الصف <i class="fa-solid fa-arrow-left"></i></button>
+                  </div>
                 </header>
-                <div class="ref-subject-grid" id="dashboardSubjects"></div>
+                <div class="student-subjects-stage-strip">
+                  <div><small>أنت تدرس الآن</small><strong id="dashboardSubjectsStageLabel">مرحلتك الدراسية</strong></div>
+                  <button type="button" id="dashboardExploreOtherStages"><i class="fa-regular fa-compass"></i> استكشف مرحلة أخرى</button>
+                </div>
+                <div class="ref-subject-grid student-subject-grid-v2" id="dashboardSubjects"></div>
               </section>
 
               <section class="ref-card mix-recommended-section">
