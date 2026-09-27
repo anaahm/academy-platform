@@ -60,7 +60,7 @@ function showPopover(trigger){
   const rect=trigger.getBoundingClientRect(),width=Math.min(390,innerWidth-20);
   box.style.width=width+'px';
   const left=Math.max(10,Math.min(innerWidth-width-10,rect.right-width));
-  box.style.left=left+'px';box.style.top=Math.min(innerHeight-box.offsetHeight-10,rect.bottom+9)+'px';
+  box.style.left=left+'px';box.style.top=Math.max(10,Math.min(innerHeight-box.offsetHeight-10,rect.bottom+9))+'px';
   box.querySelectorAll('[data-widget-notification]').forEach(b=>b.onclick=()=>openItem(items[Number(b.dataset.widgetNotification)]));
   setTimeout(()=>{
     document.addEventListener('click',function outside(e){
