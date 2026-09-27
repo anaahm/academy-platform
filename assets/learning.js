@@ -7,7 +7,7 @@ if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(), db=firebase.database();
 const $=id=>document.getElementById(id), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const page=document.documentElement.dataset.page, params=new URLSearchParams(location.search);
-const state={user:null,profile:null,data:{},lessons:[],quizzes:[],files:[],subject:null,currentLesson:null,unitLessons:[],quiz:null,quizIndex:0};
+const state={user:null,profile:null,data:{},lessons:[],quizzes:[],files:[],subject:null,currentLesson:null,unitLessons:[],quiz:null,quizIndex:0,teacherFilter:''};
 
 const stages={primary:{name:'المرحلة الابتدائية',emoji:'🎒'},prep:{name:'المرحلة الإعدادية',emoji:'📚'},sec:{name:'المرحلة الثانوية',emoji:'🎓'}};
 const grades={
@@ -111,6 +111,66 @@ function unitIsComplete(unit){
 function subjectIsComplete(){
  return !state.lessons.length || state.lessons.every(l=>done(l.id));
 }
+function subjectLessonTeacherIds(lesson){
+ const ids=new Set();
+ if(lesson?.teacherId)ids.add(String(lesson.teacherId));
+ (Array.isArray(lesson?.videos)?lesson.videos:[]).forEach(v=>{if(v?.teacherId)ids.add(String(v.teacherId))});
+ return [...ids];
+}
+function lessonHasTeacher(lesson,teacherId){
+ return !teacherId||subjectLessonTeacherIds(lesson).includes(String(teacherId));
+}
+function subjectTeacherRecords(){
+ const ids=new Set(state.lessons.flatMap(subjectLessonTeacherIds));
+ const publicTeachers=state.data.settings?.publicTeachers||{};
+ return [...ids].map(id=>{
+   const profile=publicTeachers[id]||{};
+   const lesson=state.lessons.find(l=>subjectLessonTeacherIds(l).includes(id));
+   const video=(lesson?.videos||[]).find(v=>String(v?.teacherId||'')===id);
+   return{id,name:profile.name||video?.name||lesson?.teacherName||'مدرس المادة',title:profile.title||'مدرس المادة',photoUrl:profile.photoUrl||'',bio:profile.bio||'',active:profile.active!==false,hasPublicProfile:!!profile.name};
+ }).filter(t=>t.active);
+}
+function renderSubjectTeachers(c){
+ const box=$('subjectTeacherStrip');if(!box)return;
+ const teachers=subjectTeacherRecords();
+ if(!teachers.length){
+   box.innerHTML='<div class="subject-teacher-empty"><span>👨‍🏫</span><div><strong>سيظهر مدرسو المادة هنا</strong><p>عند نشر دروس من أكثر من معلم ستظهر اختياراتهم تلقائيًا.</p></div></div>';
+   $('showAllSubjectTeachers')?.classList.add('hidden');
+   return;
+ }
+ $('showAllSubjectTeachers')?.classList.remove('hidden');
+ box.innerHTML=teachers.map((t,index)=>{
+   const photo=safeUrl(t.photoUrl||'');
+   const avatar=photo&&photo!=='#'?'<img src="'+esc(photo)+'" alt="'+esc(t.name)+'" loading="lazy">':'<span>'+esc(initials(t.name))+'</span>';
+   const lessonCount=state.lessons.filter(l=>lessonHasTeacher(l,t.id)).length;
+   return '<article class="subject-teacher-card '+(state.teacherFilter===t.id?'active':'')+'" data-subject-teacher="'+esc(t.id)+'">'+
+     '<div class="subject-teacher-avatar">'+avatar+'</div>'+
+     '<div class="subject-teacher-copy"><small>مدرس '+esc(state.subject?.name||'المادة')+'</small><h3>'+esc(t.name)+'</h3><p>'+esc(t.title)+'</p><span>'+lessonCount+' درس متاح</span></div>'+
+     '<div class="subject-teacher-actions"><button type="button" class="btn btn-primary" data-filter-teacher="'+esc(t.id)+'">عرض دروسه</button>'+
+     (t.hasPublicProfile?'<a class="subject-teacher-profile" href="./teacher-profile.html?id='+encodeURIComponent(t.id)+'" aria-label="ملف '+esc(t.name)+'"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>':'')+
+     '</div></article>';
+ }).join('');
+ $('[data-filter-teacher]').forEach(btn=>btn.onclick=()=>{
+   state.teacherFilter=state.teacherFilter===btn.dataset.filterTeacher?'':btn.dataset.filterTeacher;
+   const activeFilter=document.querySelector('[data-content-filter].active')?.dataset.contentFilter||'all';
+   renderSubjectTeachers(c);renderCurriculum(c,activeFilter);
+   document.querySelector('.curriculum-column')?.scrollIntoView({behavior:'smooth',block:'start'});
+ });
+ const all=$('showAllSubjectTeachers');
+ if(all){
+   all.classList.toggle('active',!state.teacherFilter);
+   all.onclick=()=>{state.teacherFilter='';renderSubjectTeachers(c);renderCurriculum(c,document.querySelector('[data-content-filter].active')?.dataset.contentFilter||'all');};
+ }
+}
+function renderSubjectUnitStrip(c){
+ const box=$('subjectUnitStrip');if(!box)return;
+ const units=[...new Set(state.lessons.map(l=>Number(l.unit||1)))].sort((a,b)=>a-b);
+ box.innerHTML=units.length?units.map((u,index)=>{
+   const lessons=unitLessonsFor(u),complete=lessons.filter(l=>done(l.id)).length,pct=lessons.length?Math.round(complete/lessons.length*100):0;
+   return '<button type="button" class="subject-unit-chip '+(pct===100?'complete':'')+'" data-jump-unit="'+u+'"><span class="subject-unit-num">'+(pct===100?'<i class="fa-solid fa-check"></i>':(index+1))+'</span><span><small>الوحدة '+(index+1)+'</small><strong>'+esc(unitName(c,u))+'</strong><em>'+complete+' / '+lessons.length+' مكتمل</em></span><b>'+pct+'%</b></button>';
+ }).join(''):'<div class="subject-unit-empty">ستظهر الوحدات عند إضافة الدروس.</div>';
+ $('[data-jump-unit]').forEach(btn=>btn.onclick=()=>document.querySelector('[data-unit-card="'+btn.dataset.jumpUnit+'"]')?.scrollIntoView({behavior:'smooth',block:'start'}));
+}
 function renderSubjectPath(c){
  const track=$('subjectPathTrack'); if(!track)return;
  const units=[...new Set(state.lessons.map(l=>Number(l.unit||1)))].sort((a,b)=>a-b);
@@ -176,7 +236,7 @@ function renderSubject(){
  }
  $('lessonCount').textContent=state.lessons.length;$('completedCount').textContent=complete;$('quizCount').textContent=state.quizzes.length;
  $('subjectBreadcrumb').innerHTML='<a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><span>'+esc(state.subject.name)+'</span>';
- renderSubjectPath(c);renderCurriculum(c,'all');renderSubjectSide(c);
+ renderSubjectTeachers(c);renderSubjectUnitStrip(c);renderSubjectPath(c);renderCurriculum(c,'all');renderSubjectSide(c);
  $$('[data-content-filter]').forEach(b=>b.onclick=()=>{
    $$('[data-content-filter]').forEach(x=>{
      const active=x===b;
@@ -189,7 +249,7 @@ function renderSubject(){
 function renderCurriculum(c,filter){
  $('curriculumSkeleton').classList.add('hidden');
  const map=new Map();
- state.lessons.forEach(l=>{const u=Number(l.unit||1);if(!map.has(u))map.set(u,{lessons:[],quizzes:[]});map.get(u).lessons.push(l)});
+ state.lessons.filter(l=>lessonHasTeacher(l,state.teacherFilter)).forEach(l=>{const u=Number(l.unit||1);if(!map.has(u))map.set(u,{lessons:[],quizzes:[]});map.get(u).lessons.push(l)});
  state.quizzes.filter(q=>q.lessonId||Number(q.unit||0)>0).forEach(q=>{const u=Number(q.lessonId?state.lessons.find(l=>l.id===q.lessonId)?.unit||q.unit||1:q.unit);if(!map.has(u))map.set(u,{lessons:[],quizzes:[]});map.get(u).quizzes.push(q)});
  const comprehensive=state.quizzes.filter(q=>!q.lessonId&&Number(q.unit||0)===0);
  if(!map.size&&!comprehensive.length){$('curriculumEmpty').classList.remove('hidden');$('curriculumList').classList.add('hidden');return}
@@ -841,13 +901,14 @@ async function init(){
    const lessonsRef=requestedSubject?db.ref('lessons').orderByChild('subject').equalTo(requestedSubject):db.ref('lessons');
    const quizzesRef=requestedSubject?db.ref('quizzes').orderByChild('subject').equalTo(requestedSubject):db.ref('quizzes');
    const filesRef=requestedStage?db.ref('files').orderByChild('stage').equalTo(requestedStage):db.ref('files');
-   const [subjectsSnap,lessonsSnap,quizzesSnap,filesSnap]=await Promise.all([
+   const [subjectsSnap,lessonsSnap,quizzesSnap,filesSnap,settingsSnap]=await Promise.all([
      db.ref('customSubjects').once('value'),
      lessonsRef.once('value'),
      quizzesRef.once('value'),
-     filesRef.once('value')
+     filesRef.once('value'),
+     db.ref('settings').once('value')
    ]);
-   state.data={customSubjects:subjectsSnap.val()||{},lessons:lessonsSnap.val()||{},quizzes:quizzesSnap.val()||{},files:filesSnap.val()||{}};
+   state.data={customSubjects:subjectsSnap.val()||{},lessons:lessonsSnap.val()||{},quizzes:quizzesSnap.val()||{},files:filesSnap.val()||{},settings:settingsSnap.val()||{}};
  }catch(e){toast('تعذر تحميل المحتوى الآن.','error')}
  auth.onAuthStateChanged(async user=>{
    state.user=user;
