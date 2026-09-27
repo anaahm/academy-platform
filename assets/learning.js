@@ -292,11 +292,11 @@ function renderSubject(){
      else if(state.lessons.length)document.querySelector('.curriculum-column')?.scrollIntoView({behavior:'smooth',block:'start'});
    };
  }
- $('subjectHeroTeachersBtn')?.addEventListener('click',()=>document.querySelector('.subject-teachers-section')?.scrollIntoView({behavior:'smooth',block:'start'}),{once:true});
- $('subjectHeroTestsBtn')?.addEventListener('click',()=>{
+ if($('subjectHeroTeachersBtn'))$('subjectHeroTeachersBtn').onclick=()=>document.querySelector('.subject-teachers-section')?.scrollIntoView({behavior:'smooth',block:'start'});
+ if($('subjectHeroTestsBtn'))$('subjectHeroTestsBtn').onclick=()=>{
    const quizTab=document.querySelector('[data-content-filter="quizzes"]');
    if(quizTab)quizTab.click();else{renderCurriculum(c,'quizzes');document.querySelector('.curriculum-column')?.scrollIntoView({behavior:'smooth',block:'start'})}
- },{once:true});
+ };
  $$('[data-content-filter]').forEach(b=>b.onclick=()=>{
    $$('[data-content-filter]').forEach(x=>{
      const active=x===b;
