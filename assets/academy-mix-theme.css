@@ -867,3 +867,57 @@ input:focus,select:focus,textarea:focus{
   .admin-mobile-bottom-nav{position:fixed;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;right:10px;left:10px;bottom:10px;z-index:1300;padding:7px;background:rgba(255,255,255,.97);border:1px solid var(--mix-line);border-radius:18px;box-shadow:0 16px 40px rgba(15,23,42,.18);backdrop-filter:blur(17px)}
   .admin-mobile-bottom-nav button{height:50px;min-width:0;border:0;background:transparent;border-radius:12px;color:#64748b;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:9px;font-weight:900}.admin-mobile-bottom-nav button.active{background:#eff6ff;color:#2563eb}.admin-mobile-bottom-nav .admin-mobile-add{background:linear-gradient(135deg,#4f46e5,#2563eb);color:#fff}.admin-mobile-bottom-nav i{font-size:15px}
 }
+
+/* Admin teachers + students management polish */
+.mix-admin-section-stats{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 14px
+}
+.mix-admin-section-stats article{
+  min-height:86px;padding:12px 13px;display:flex;align-items:center;gap:10px;
+  background:#fff;border:1px solid var(--mix-line);border-radius:17px;box-shadow:0 6px 18px rgba(15,23,42,.045);
+}
+.mix-admin-section-stats article>span{
+  width:42px;height:42px;min-width:42px;border-radius:13px;display:grid;place-items:center
+}
+.mix-admin-section-stats .green{background:#ecfdf5;color:#059669}
+.mix-admin-section-stats .gray{background:#f1f5f9;color:#64748b}
+.mix-admin-section-stats .orange{background:#fff7ed;color:#ea580c}
+.mix-admin-section-stats .violet{background:#f5f3ff;color:#7c3aed}
+.mix-admin-section-stats .blue{background:#eff6ff;color:#2563eb}
+.mix-admin-section-stats strong{display:block;font-size:21px;color:var(--mix-ink);line-height:1}
+.mix-admin-section-stats small{display:block;margin-top:5px;font-size:8px;color:var(--mix-muted);font-weight:800}
+
+#admin-tab-teachers .admin-teacher-create{
+  background:linear-gradient(180deg,#fff,#f8fafc)!important;border-color:#dbeafe!important
+}
+#admin-tab-teachers .admin-teacher-grid{gap:14px!important}
+#admin-tab-teachers .admin-form-card,
+#admin-tab-teachers .admin-card{border-radius:20px!important}
+#admin-tab-teachers .teacher-profile-review{
+  margin-top:7px;padding:7px 9px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0
+}
+#admin-tab-teachers .teacher-profile-review summary{cursor:pointer;color:#2563eb;font-size:9px;font-weight:900}
+#admin-tab-teachers .admin-inline-select{border-radius:9px!important;background:#f8fafc!important}
+
+.mix-admin-student-filters{display:grid!important;grid-template-columns:minmax(260px,1fr) 180px 180px!important;gap:8px!important}
+.mix-admin-results-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 2px;color:var(--mix-muted)}
+.mix-admin-results-meta span{font-size:9px;font-weight:900;color:#334155}.mix-admin-results-meta small{font-size:8px}
+.mix-admin-student-table td{vertical-align:middle!important}
+.mix-admin-student-cell{display:flex;align-items:center;gap:9px;min-width:180px}
+.mix-admin-student-cell>span{width:34px;height:34px;min-width:34px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,#e0e7ff,#dbeafe);color:#4338ca;font-weight:900}
+.mix-admin-student-cell strong{display:block;color:var(--mix-ink);font-size:10px}.mix-admin-student-cell small{display:block;color:var(--mix-muted);font-size:8px;margin-top:2px}
+.mix-admin-activity{display:inline-flex;align-items:center;gap:5px;padding:5px 7px;border-radius:999px;background:#f8fafc;color:#64748b;font-size:8px;font-weight:800}
+.mix-admin-activity i{width:6px;height:6px;border-radius:50%;background:#cbd5e1}.mix-admin-activity.active{background:#ecfdf5;color:#047857}.mix-admin-activity.active i{background:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.10)}
+#studentsAdminList{border-radius:18px!important;overflow:auto!important;background:#fff!important;border:1px solid var(--mix-line)!important;box-shadow:var(--mix-shadow)!important}
+
+@media(max-width:900px){
+  .mix-admin-section-stats{grid-template-columns:repeat(2,1fr)}
+  .mix-admin-student-filters{grid-template-columns:1fr 1fr!important}
+  .mix-admin-student-filters>input{grid-column:1/-1}
+}
+@media(max-width:520px){
+  .mix-admin-section-stats{gap:7px}
+  .mix-admin-section-stats article{padding:9px;min-height:74px}.mix-admin-section-stats article>span{width:36px;height:36px;min-width:36px}.mix-admin-section-stats strong{font-size:18px}
+  .mix-admin-student-filters{grid-template-columns:1fr!important}.mix-admin-student-filters>input{grid-column:auto}
+  .mix-admin-results-meta{align-items:flex-start;flex-direction:column}
+}
