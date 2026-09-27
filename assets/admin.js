@@ -1122,11 +1122,11 @@ function renderQuizzes(){
  updateBulkSelectionUI('quiz');
 }
 function resetQuizEditor(){
- editState.quiz=null;$('quizForm').reset();fillGrades($('newQuizGrade'),$('newQuizStage').value);fillSubjects($('newQuizSubject'),$('newQuizStage').value,$('newQuizGrade').value,$('newQuizType').value);$('newQuizQuestions').value='[]';if($('newQuizHidden'))$('newQuizHidden').checked=false;renderQuestionBuilder('quiz',[]);renderQuizEditorPreview();if($('quizModalTitle'))$('quizModalTitle').textContent='إنشاء اختبار';
+ editState.quiz=null;$('quizForm').reset();fillGrades($('newQuizGrade'),$('newQuizStage').value);fillSubjects($('newQuizSubject'),$('newQuizStage').value,$('newQuizGrade').value,$('newQuizType').value);$('newQuizQuestions').value='[]';if($('newQuizHidden'))$('newQuizHidden').checked=false;if($('newQuizDuration'))$('newQuizDuration').value=0;renderQuestionBuilder('quiz',[]);renderQuizEditorPreview();if($('quizModalTitle'))$('quizModalTitle').textContent='إنشاء اختبار';
 }
 function editQuiz(id){
  const q=root.quizzes?.[id];if(!q)return;editState.quiz=id;
- $('newQuizType').value=q.type||'public';$('newQuizStage').value=q.stage||'primary';fillGrades($('newQuizGrade'),q.stage||'primary',q.grade||'1');$('newQuizGrade').value=String(q.grade||'1');fillSubjects($('newQuizSubject'),q.stage||'primary',String(q.grade||'1'),q.type||'public');$('newQuizSubject').value=q.subject||'';$('newQuizUnit').value=Number(q.unit||0);$('newQuizName').value=q.name||'';$('newQuizQuestions').value=JSON.stringify(q.questions||[],null,2);if($('newQuizHidden'))$('newQuizHidden').checked=!!q.isHidden;renderQuestionBuilder('quiz',q.questions||[]);renderQuizEditorPreview();if($('quizModalTitle'))$('quizModalTitle').textContent='تعديل الاختبار';openModal('quizModal');
+ $('newQuizType').value=q.type||'public';$('newQuizStage').value=q.stage||'primary';fillGrades($('newQuizGrade'),q.stage||'primary',q.grade||'1');$('newQuizGrade').value=String(q.grade||'1');fillSubjects($('newQuizSubject'),q.stage||'primary',String(q.grade||'1'),q.type||'public');$('newQuizSubject').value=q.subject||'';$('newQuizUnit').value=Number(q.unit||0);$('newQuizName').value=q.name||'';if($('newQuizDuration'))$('newQuizDuration').value=Number(q.durationMinutes||0);$('newQuizQuestions').value=JSON.stringify(q.questions||[],null,2);if($('newQuizHidden'))$('newQuizHidden').checked=!!q.isHidden;renderQuestionBuilder('quiz',q.questions||[]);renderQuizEditorPreview();if($('quizModalTitle'))$('quizModalTitle').textContent='تعديل الاختبار';openModal('quizModal');
 }
 async function saveQuiz(e){
  e.preventDefault();syncQuestionBuilder('quiz');let questions=[];
@@ -1134,7 +1134,7 @@ async function saveQuiz(e){
  try{questions=window.AcademyUtils.validateQuestions(questions)}catch(err){return toast(err.message,'error')}
  if(!questions.length)return toast('أضف سؤالًا صحيحًا واحدًا على الأقل.','error');
  const existing=editState.quiz?root.quizzes?.[editState.quiz]:null;
- const payload={type:$('newQuizType').value,stage:$('newQuizStage').value,grade:$('newQuizGrade').value,subject:$('newQuizSubject').value,unit:Number($('newQuizUnit').value||0),name:$('newQuizName').value.trim(),questions,isHidden:!!$('newQuizHidden')?.checked,publishAt:$('newQuizHidden')?.checked?null:(existing?.publishAt||null),reviewStatus:existing?.reviewStatus||'approved'};
+ const payload={type:$('newQuizType').value,stage:$('newQuizStage').value,grade:$('newQuizGrade').value,subject:$('newQuizSubject').value,unit:Number($('newQuizUnit').value||0),name:$('newQuizName').value.trim(),durationMinutes:Math.max(0,Number($('newQuizDuration')?.value||0)),questions,isHidden:!!$('newQuizHidden')?.checked,publishAt:$('newQuizHidden')?.checked?null:(existing?.publishAt||null),reviewStatus:existing?.reviewStatus||'approved'};
  if(!payload.name)return toast('اكتب اسم الاختبار.','error');
  if(existing?.lessonId){payload.lessonId=existing.lessonId;payload.teacherId=existing.teacherId||'';payload.teacherSubmissionId=existing.teacherSubmissionId||''}
  const quizId=editState.quiz||db.ref('quizzes').push().key,now=Date.now(),updates={};
