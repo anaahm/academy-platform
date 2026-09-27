@@ -27,10 +27,30 @@
   </header>
 
   <main class="container profile-page">
-    <section class="profile-hero">
-      <div class="profile-avatar-wrap"><span id="profileAvatar" aria-label="الحرف الأول من اسم الطالب">ط</span><i class="profile-online-dot" aria-hidden="true"></i></div>
-      <div class="profile-hero-copy"><span class="section-kicker">ملفك الشخصي</span><h1 id="profileNameTitle">مرحبًا بك</h1><p id="profileStageTitle">رحلتك التعليمية محفوظة هنا.</p></div>
-      <div class="profile-level"><span>🏅</span><div><small>مستواك</small><div class="profile-level-number"><strong id="profileLevel">1</strong><em>المستوى</em></div><p><span id="profileXp">0</span> XP</p><div class="profile-level-progress" id="profileLevelProgressTrack" role="progressbar" aria-label="تقدمك للمستوى التالي" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0"><i id="profileLevelProgress"></i></div><small id="profileNextLevelText">1000 XP للمستوى التالي</small></div></div>
+    <section class="profile-hero profile-hero-v6">
+      <div class="profile-hero-main-v6">
+        <div class="profile-avatar-wrap profile-avatar-v6"><span id="profileAvatar" aria-label="الحرف الأول من اسم الطالب">ط</span><i class="profile-online-dot" aria-hidden="true"></i></div>
+        <div class="profile-hero-copy profile-hero-copy-v6">
+          <span class="section-kicker light">ملفك الشخصي</span>
+          <h1 id="profileNameTitle">مرحبًا بك</h1>
+          <p id="profileStageTitle">رحلتك التعليمية محفوظة هنا.</p>
+          <div class="profile-hero-actions-v6">
+            <a href="./progress.html"><i class="fa-solid fa-chart-line"></i><span>تقدمي</span></a>
+            <a href="./exam-center.html"><i class="fa-solid fa-brain"></i><span>اختباراتي</span></a>
+            <a href="./index.html"><i class="fa-solid fa-book-open"></i><span>موادي</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="profile-level profile-level-v6">
+        <span class="profile-level-medal-v6">🏅</span>
+        <div class="profile-level-copy-v6">
+          <small>مستواك الحالي</small>
+          <div class="profile-level-number"><strong id="profileLevel">1</strong><em>المستوى</em></div>
+          <p><span id="profileXp">0</span> XP</p>
+          <div class="profile-level-progress" id="profileLevelProgressTrack" role="progressbar" aria-label="تقدمك للمستوى التالي" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0"><i id="profileLevelProgress"></i></div>
+          <small id="profileNextLevelText">1000 XP للمستوى التالي</small>
+        </div>
+      </div>
     </section>
 
     <section class="profile-layout">
@@ -46,11 +66,32 @@
 
       <div class="profile-content">
         <section class="profile-tab" id="tab-overview" role="tabpanel">
-          <div class="profile-stat-grid">
+          <div class="profile-stat-grid profile-stat-grid-v6">
             <article><span class="stat-icon green"><i class="fa-solid fa-check"></i></span><div><strong id="profileLessons">0</strong><small>درس مكتمل</small></div></article>
             <article><span class="stat-icon blue"><i class="fa-regular fa-circle-check"></i></span><div><strong id="profileQuizzes">0</strong><small>اختبار مكتمل</small></div></article>
             <article><span class="stat-icon orange"><i class="fa-solid fa-fire"></i></span><div><strong id="profileStreak">0</strong><small>أيام متتالية</small></div></article>
             <article><span class="stat-icon violet"><i class="fa-solid fa-star"></i></span><div><strong id="profileTotalXp">0</strong><small>نقطة خبرة</small></div></article>
+            <article><span class="stat-icon cyan"><i class="fa-solid fa-percent"></i></span><div><strong id="profileAverageScore">0%</strong><small>متوسط الاختبارات</small></div></article>
+            <article><span class="stat-icon gold"><i class="fa-solid fa-trophy"></i></span><div><strong id="profileBestScore">—</strong><small>أفضل نتيجة</small></div></article>
+            <article><span class="stat-icon indigo"><i class="fa-regular fa-clock"></i></span><div><strong id="profileStudyMinutes">0</strong><small>دقيقة دراسة</small></div></article>
+            <article><span class="stat-icon rose"><i class="fa-solid fa-triangle-exclamation"></i></span><div><strong id="profileMistakesTotal">0</strong><small>خطأ للمراجعة</small></div></article>
+          </div>
+
+          <div class="profile-insight-grid-v6">
+            <article class="profile-card profile-week-card-v6">
+              <div class="profile-card-head"><div><span class="section-kicker">آخر 7 أيام</span><h2>نشاطك هذا الأسبوع</h2></div><span>📅</span></div>
+              <div class="profile-week-summary-v6"><strong id="profileWeekMinutes">0</strong><span>دقيقة دراسة خلال الأسبوع</span></div>
+              <div class="profile-week-bars-v6" id="profileWeekBars"></div>
+              <a class="profile-inline-link-v6" href="./progress.html">فتح التحليل الكامل <i class="fa-solid fa-arrow-left"></i></a>
+            </article>
+            <article class="profile-card profile-performance-card-v6">
+              <div class="profile-card-head"><div><span class="section-kicker">أداؤك</span><h2>مؤشر سريع</h2></div><span>📊</span></div>
+              <div class="profile-performance-state-v6"><span id="profilePerformanceIcon">🌱</span><div><strong id="profilePerformanceTitle">ابدأ أول اختبار</strong><p id="profilePerformanceText">سنلخص مستواك هنا مع كل محاولة جديدة.</p></div></div>
+              <div class="profile-performance-actions-v6">
+                <a href="./exam-center.html"><i class="fa-solid fa-bullseye"></i> اختبر نفسك</a>
+                <button type="button" id="profileMistakesShortcut"><i class="fa-solid fa-list-check"></i> راجع أخطاءك</button>
+              </div>
+            </article>
           </div>
 
           <div class="profile-two-col">
