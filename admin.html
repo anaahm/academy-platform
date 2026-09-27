@@ -472,7 +472,10 @@
     <div class="modal-panel admin-modal" role="dialog" aria-modal="true" aria-labelledby="subjectModalTitle" tabindex="-1">
       <button class="modal-close" data-close-admin-modal="subjectModal" aria-label="إغلاق نافذة المادة"><i class="fa-solid fa-xmark"></i></button>
       <span class="section-kicker">المناهج</span><h2 id="subjectModalTitle">إضافة مادة ووحداتها</h2>
-      <form id="subjectForm" class="admin-form">
+      <div class="admin-editor-progress" aria-label="خطوات إعداد المادة">
+        <span class="active"><b>1</b> بيانات المادة</span><i class="fa-solid fa-chevron-left"></i><span><b>2</b> الصورة</span><i class="fa-solid fa-chevron-left"></i><span><b>3</b> الوحدات</span>
+      </div>
+      <form id="subjectForm" class="admin-form admin-content-editor-form">
         <label><span>نوع التعليم</span><select id="subjectType"><option value="public">تعليم عام</option><option value="azhar">أزهر</option></select></label>
         <label><span>المرحلة</span><select id="subjectStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
         <label><span>الصف</span><select id="subjectGrade"></select></label>
@@ -481,7 +484,21 @@
         <label><span>الإيموجي الافتراضي</span><input id="subjectEmoji" value="📚"></label>
         <label class="full"><span>صورة المادة — اختياري</span><input id="subjectImageUrl" type="url" dir="ltr" placeholder="https://example.com/subject-cover.jpg"></label>
         <div class="full admin-subject-image-preview" id="subjectImagePreview" role="img" aria-label="معاينة صورة المادة"><span>سيظهر التصميم التلقائي عند عدم إضافة صورة</span></div>
-        <label class="full"><span>الوحدات — كل وحدة في سطر</span><textarea id="subjectUnits" placeholder="الوحدة الأولى&#10;الوحدة الثانية"></textarea></label>
+        <div class="full admin-editor-live-preview" id="subjectEditorPreview">
+          <div class="admin-editor-preview-art" id="subjectEditorPreviewArt"><span>📚</span></div>
+          <div><small id="subjectEditorPreviewMeta">معاينة بطاقة المادة</small><strong id="subjectEditorPreviewTitle">اسم المادة سيظهر هنا</strong><p id="subjectEditorPreviewText">0 وحدة • ستظهر للطلاب في الصف المحدد.</p></div>
+          <span class="status-pill approved">جاهزة</span>
+        </div>
+        <div class="full admin-subject-units-editor admin-editor-section">
+          <div class="admin-editor-section-title"><span><i class="fa-solid fa-layer-group"></i></span><div><strong>وحدات المادة</strong><small>رتّب وحدات المنهج بالترتيب الذي سيظهر للطالب.</small></div></div>
+          <div class="admin-question-editor-head"><span><b id="subjectUnitCountEditor">0</b> وحدة</span><button class="btn btn-soft" type="button" id="addSubjectUnit"><i class="fa-solid fa-plus"></i> وحدة جديدة</button></div>
+          <div id="subjectUnitsBuilder" class="admin-subject-units-builder"></div>
+          <details class="admin-bulk-question-box">
+            <summary><i class="fa-solid fa-align-justify"></i> إدخال الوحدات دفعة واحدة</summary>
+            <label class="full"><span>كل وحدة في سطر</span><textarea id="subjectUnits" placeholder="الوحدة الأولى&#10;الوحدة الثانية"></textarea></label>
+            <button class="btn btn-soft" type="button" id="importSubjectUnitsLines"><i class="fa-solid fa-file-import"></i> تحميل السطور إلى المحرر</button>
+          </details>
+        </div>
         <button class="btn btn-primary full" type="submit">حفظ المادة</button>
       </form>
     </div>
