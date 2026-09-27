@@ -17,8 +17,13 @@ function targetMatches(a){
 }
 function matching(){
   return assignments
-    .filter(a=>!a.isHidden&&a.type===profile.educationType&&a.stage===profile.stage&&String(a.grade)===String(profile.grade)&&targetMatches(a))
-    .sort((a,b)=>Number(a.dueAt||Infinity)-Number(b.dueAt||Infinity));
+    .filter(a=>!a.isHidden&&(!Number(a.publishAt||0)||Number(a.publishAt)<=Date.now())&&a.type===profile.educationType&&a.stage===profile.stage&&String(a.grade)===String(profile.grade)&&targetMatches(a))
+    .sort((a,b)=>{
+      const as=statusFor(a),bs=statusFor(b),rank={overdue:0,pending:1,submitted:2,graded:3};
+      if(rank[as]!==rank[bs])return rank[as]-rank[bs];
+      if(as==='graded'&&bs==='graded')return Number(submissions[b.id]?.gradedAt||0)-Number(submissions[a.id]?.gradedAt||0);
+      return Number(a.dueAt||Infinity)-Number(b.dueAt||Infinity);
+    });
 }
 function isOverdue(a){
   return !submissions[a.id]&&!!a.dueAt&&Date.now()>Number(a.dueAt);
@@ -58,6 +63,44 @@ function fullDate(ts){
 function subjectName(id){
   return C.subjectName(data,id,profile.stage,String(profile.grade),profile.educationType)||id||'مادة';
 }
+function subjectMeta(id){
+  return (C.subjectsFor(data,profile.stage,String(profile.grade),profile.educationType)||[]).find(s=>String(s.id)===String(id))||{id,name:subjectName(id),emoji:'📚'};
+}
+function isNewAssignment(a){
+  return !submissions[a.id]&&Number(a.createdAt||0)>Date.now()-72*3600000;
+}
+function countdownText(ts){
+  if(!ts)return'بدون موعد';
+  const diff=Number(ts)-Date.now();
+  if(diff<=0){
+    const mins=Math.ceil(Math.abs(diff)/60000);
+    if(mins<60)return'متأخر '+mins+' د';
+    const hours=Math.ceil(mins/60);if(hours<24)return'متأخر '+hours+' س';
+    return'متأخر '+Math.ceil(hours/24)+' يوم';
+  }
+  const mins=Math.ceil(diff/60000);
+  if(mins<60)return'باقي '+mins+' د';
+  const hours=Math.floor(mins/60),rem=mins%60;
+  if(hours<24)return'باقي '+hours+' س'+(rem?' '+rem+' د':'');
+  const days=Math.floor(hours/24),leftHours=hours%24;
+  return'باقي '+days+' يوم'+(leftHours?' '+leftHours+' س':'');
+}
+function renderHero(){
+  const all=matching(),pending=all.filter(a=>statusFor(a)==='pending'),overdue=all.filter(a=>statusFor(a)==='overdue'),graded=all.filter(a=>statusFor(a)==='graded');
+  const candidate=overdue[0]||pending[0]||null;
+  if($('assignmentHeroPending'))$('assignmentHeroPending').textContent=pending.length;
+  if($('assignmentHeroOverdue'))$('assignmentHeroOverdue').textContent=overdue.length;
+  if($('assignmentHeroGraded'))$('assignmentHeroGraded').textContent=graded.length;
+  if($('assignmentHeroCountdown'))$('assignmentHeroCountdown').textContent=candidate?countdownText(candidate.dueAt):'كل شيء منجز';
+  if($('assignmentHeroNextTitle'))$('assignmentHeroNextTitle').textContent=candidate?(candidate.title||'واجب'):'لا يوجد واجب مطلوب 🎉';
+  if($('assignmentHeroNextMeta'))$('assignmentHeroNextMeta').textContent=candidate?(subjectName(candidate.subject)+' • '+(candidate.teacherName||'المدرس')+' • '+fullDate(Number(candidate.dueAt||0))):'كل الواجبات المطلوبة تم تسليمها. راجع المصحح أو تابع موادك.';
+  const btn=$('assignmentHeroOpenBtn');
+  if(btn){
+    btn.disabled=!candidate;
+    btn.innerHTML=candidate?'فتح الواجب <i class="fa-solid fa-arrow-left"></i>':'لا يوجد مطلوب <i class="fa-solid fa-check"></i>';
+    btn.onclick=()=>{if(candidate){lastModalTrigger=btn;openAssignment(candidate.id)}};
+  }
+}
 function filtered(){
   const search=($('assignmentSearchInput')?.value||'').trim().toLowerCase();
   return matching().filter(a=>{
@@ -68,13 +111,17 @@ function filtered(){
   });
 }
 function renderStats(){
-  const arr=matching(),subs=arr.map(a=>submissions[a.id]).filter(Boolean),graded=subs.filter(s=>s.status==='graded'&&Number.isFinite(Number(s.score)));
+  const arr=matching(),pending=arr.filter(a=>statusFor(a)==='pending'),overdue=arr.filter(a=>statusFor(a)==='overdue'),submitted=arr.filter(a=>statusFor(a)==='submitted'),gradedAssignments=arr.filter(a=>statusFor(a)==='graded');
+  const graded=gradedAssignments.map(a=>submissions[a.id]).filter(s=>Number.isFinite(Number(s.score)));
   $('assignmentTotal').textContent=arr.length;
-  $('assignmentPending').textContent=arr.filter(a=>!submissions[a.id]).length;
-  $('assignmentSubmitted').textContent=subs.length;
+  $('assignmentPending').textContent=pending.length;
+  if($('assignmentOverdue'))$('assignmentOverdue').textContent=overdue.length;
+  $('assignmentSubmitted').textContent=submitted.length;
+  if($('assignmentGraded'))$('assignmentGraded').textContent=gradedAssignments.length;
   $('assignmentAverage').textContent=graded.length
     ?Math.round(graded.reduce((n,s)=>n+Number(s.percent ?? (Number(s.score||0)/Math.max(1,Number(s.maxScore||100))*100)),0)/graded.length)+'%'
     :'—';
+  renderHero();
 }
 function render(){
   renderStats();
@@ -88,27 +135,33 @@ function render(){
       :'كل المطلوب منك مرتب حسب أقرب موعد.';
   }
   $('assignmentList').innerHTML=arr.length?arr.map(a=>{
-    const s=submissions[a.id],st=statusFor(a),overdue=st==='overdue',soon=isDueSoon(a);
-    const submittedAt=Number(s?.submittedAt||0);
-    const lateSubmission=!!s&&(s.late===true||(!s.late&&a.dueAt&&submittedAt>Number(a.dueAt)));
+    const s=submissions[a.id],st=statusFor(a),overdue=st==='overdue',soon=isDueSoon(a),fresh=isNewAssignment(a),sub=subjectMeta(a.subject);
+    const submittedAt=Number(s?.submittedAt||0),lateSubmission=!!s&&(s.late===true||(!s.late&&a.dueAt&&submittedAt>Number(a.dueAt)));
     const statusClass=st==='graded'?'approved':st==='submitted'?'info':st==='overdue'?'danger':'pending';
     const icon=st==='graded'?'fa-star':st==='submitted'?'fa-paper-plane':st==='overdue'?'fa-triangle-exclamation':'fa-clipboard-list';
-    return '<article class="assignment-card '+st+' '+(overdue?'overdue ':'')+(soon?'due-soon ':'')+'">'+
-      '<div class="assignment-icon"><i class="fa-solid '+icon+'"></i></div>'+
-      '<div class="assignment-copy">'+
-        '<div class="assignment-topline"><span class="status-pill '+statusClass+'">'+statusLabel(st)+'</span><span>'+C.esc(subjectName(a.subject))+'</span>'+(lateSubmission?'<span class="status-pill danger">تسليم متأخر</span>':'')+'</div>'+
-        '<h3>'+C.esc(a.title||'واجب')+'</h3>'+
-        '<p>'+C.esc((a.instructions||'لا توجد تعليمات مختصرة.').slice(0,150))+'</p>'+
-        '<div class="assignment-meta">'+
-          '<span><i class="fa-solid fa-chalkboard-user"></i> '+C.esc(a.teacherName||'المدرس')+'</span>'+
-          '<span class="'+(overdue?'danger-meta':soon?'warning-meta':'')+'"><i class="fa-regular fa-calendar"></i> '+C.esc(dueText(Number(a.dueAt||0)))+'</span>'+
-          '<span><i class="fa-solid fa-star"></i> '+Number(a.maxScore||100)+' درجة</span>'+
-        '</div>'+
+    const img=C.safeUrl(sub.imageUrl||''),hasImage=img&&img!=='#',percent=st==='graded'?Number(s.percent ?? Math.round(Number(s.score||0)/Math.max(1,Number(s.maxScore||a.maxScore||100))*100)):0;
+    const stepSubmitted=st==='submitted'||st==='graded',stepGraded=st==='graded';
+    return '<article class="assignment-card assignment-card-v8 '+st+' '+(overdue?'overdue ':'')+(soon?'due-soon ':'')+'">'+
+      '<div class="assignment-cover-v8 '+(hasImage?'has-image':'')+'" '+(hasImage?'style="background-image:url(&quot;'+C.esc(img)+'&quot;)"':'')+'>'+
+        (!hasImage?'<span>'+C.esc(sub.emoji||'📝')+'</span>':'')+
+        '<em>'+C.esc(sub.name||subjectName(a.subject))+'</em>'+
+        '<div class="assignment-cover-badges-v8">'+(fresh?'<b class="new">جديد</b>':'')+'<b class="'+statusClass+'">'+statusLabel(st)+'</b></div>'+
       '</div>'+
-      '<div class="assignment-side">'+
-        (st==='graded'?'<strong class="assignment-score">'+Number(s.score||0)+' <small>/ '+Number(s.maxScore||a.maxScore||100)+'</small></strong>':'')+
-        '<button class="btn '+((st==='pending'||st==='overdue')?'btn-primary':'btn-soft')+'" data-open-assignment="'+a.id+'" aria-label="'+(st==='graded'?'عرض نتيجة':st==='submitted'?'عرض أو تحديث تسليم':'فتح وتسليم')+' '+C.esc(a.title||'الواجب')+'">'+
-          (st==='graded'?'عرض النتيجة':st==='submitted'?'عرض التسليم':st==='overdue'?'تسليم الآن':'فتح وتسليم')+
+      '<div class="assignment-card-body-v8">'+
+        '<div class="assignment-card-title-v8"><div><small>'+C.esc(a.teacherName||'المدرس')+'</small><h3>'+C.esc(a.title||'واجب')+'</h3></div>'+(st==='graded'?'<strong class="assignment-score-v8">'+percent+'%</strong>':'<span class="assignment-kind-icon-v8"><i class="fa-solid '+icon+'"></i></span>')+'</div>'+
+        '<p>'+C.esc((a.instructions||'لا توجد تعليمات مختصرة.').slice(0,145))+'</p>'+
+        '<div class="assignment-metrics-v8">'+
+          '<span class="'+(overdue?'danger':soon?'warning':'')+'"><i class="fa-regular fa-clock"></i><b>'+C.esc(countdownText(Number(a.dueAt||0)))+'</b><small>'+C.esc(fullDate(Number(a.dueAt||0)))+'</small></span>'+
+          '<span><i class="fa-solid fa-star"></i><b>'+Number(a.maxScore||100)+'</b><small>درجة</small></span>'+
+        '</div>'+
+        '<div class="assignment-steps-v8">'+
+          '<span class="done"><i class="fa-solid fa-check"></i><small>تم التكليف</small></span><i></i>'+
+          '<span class="'+(stepSubmitted?'done':'')+'"><i class="fa-solid '+(stepSubmitted?'fa-check':'fa-paper-plane')+'"></i><small>تم التسليم</small></span><i></i>'+
+          '<span class="'+(stepGraded?'done':'')+'"><i class="fa-solid '+(stepGraded?'fa-check':'fa-star')+'"></i><small>تم التصحيح</small></span>'+
+        '</div>'+
+        (lateSubmission?'<div class="assignment-late-note-v8"><i class="fa-solid fa-clock"></i> تم التسليم بعد الموعد المحدد</div>':'')+
+        '<button class="btn '+((st==='pending'||st==='overdue')?'btn-primary':'btn-soft')+'" data-open-assignment="'+a.id+'">'+
+          (st==='graded'?'عرض النتيجة والملاحظات':st==='submitted'?'عرض أو تحديث التسليم':st==='overdue'?'تسليم الآن':'فتح الواجب وتسليمه')+' <i class="fa-solid fa-arrow-left"></i>'+
         '</button>'+
       '</div>'+
     '</article>';
@@ -129,18 +182,20 @@ function openAssignment(id){
   const percent=s?.status==='graded'
     ?Number(s.percent ?? Math.round(Number(s.score||0)/Math.max(1,Number(s.maxScore||a.maxScore||100))*100))
     :0;
+  const sub=subjectMeta(a.subject),fresh=isNewAssignment(a);
   $('assignmentModalBody').innerHTML=
-    '<div class="assignment-modal-head"><span class="section-kicker">'+C.esc(subjectName(a.subject))+'</span><h2 id="assignmentModalTitle">'+C.esc(a.title||'واجب')+'</h2><p>'+C.esc(a.instructions||'لا توجد تعليمات إضافية.')+'</p></div>'+
-    '<div class="assignment-detail-grid">'+
-      '<div><small>المدرس</small><strong>'+C.esc(a.teacherName||'المدرس')+'</strong></div>'+
-      '<div><small>آخر موعد</small><strong class="'+(overdue?'danger-text':'')+'">'+C.esc(fullDate(Number(a.dueAt||0)))+'</strong></div>'+
-      '<div><small>الدرجة</small><strong>'+Number(a.maxScore||100)+' درجة</strong></div>'+
+    '<div class="assignment-modal-head assignment-modal-head-v8"><div><span class="section-kicker">'+C.esc(sub.name||subjectName(a.subject))+'</span><h2 id="assignmentModalTitle">'+C.esc(a.title||'واجب')+'</h2><p>'+C.esc(a.instructions||'لا توجد تعليمات إضافية.')+'</p></div><span class="assignment-modal-status-v8 '+st+'">'+(fresh?'جديد • ':'')+statusLabel(st)+'</span></div>'+
+    '<div class="assignment-modal-progress-v8"><span class="done"><i class="fa-solid fa-check"></i><b>تم التكليف</b></span><i></i><span class="'+(s?'done':'')+'"><i class="fa-solid '+(s?'fa-check':'fa-paper-plane')+'"></i><b>تم التسليم</b></span><i></i><span class="'+(st==='graded'?'done':'')+'"><i class="fa-solid '+(st==='graded'?'fa-check':'fa-star')+'"></i><b>تم التصحيح</b></span></div>'+
+    '<div class="assignment-detail-grid assignment-detail-grid-v8">'+
+      '<div><span><i class="fa-solid fa-chalkboard-user"></i></span><small>المدرس</small><strong>'+C.esc(a.teacherName||'المدرس')+'</strong></div>'+
+      '<div><span><i class="fa-regular fa-calendar"></i></span><small>آخر موعد</small><strong class="'+(overdue?'danger-text':'')+'">'+C.esc(fullDate(Number(a.dueAt||0)))+'</strong><em>'+C.esc(countdownText(Number(a.dueAt||0)))+'</em></div>'+
+      '<div><span><i class="fa-solid fa-star"></i></span><small>الدرجة النهائية</small><strong>'+Number(a.maxScore||100)+' درجة</strong></div>'+
     '</div>'+
     (overdue?'<div class="assignment-deadline-warning"><i class="fa-solid fa-triangle-exclamation"></i><div><strong>انتهى الموعد المحدد</strong><p>يمكنك إرسال الواجب الآن، وسيتم تسجيله كتسليم متأخر.</p></div></div>':'')+
     submissionStateBlock(a,s)+
     (st==='graded'
-      ?'<div class="assignment-feedback"><span class="assignment-grade-ring" style="--grade:'+Math.max(0,Math.min(100,percent))+'"><strong>'+percent+'%</strong></span><div><strong>تم التصحيح • '+Number(s.score||0)+' / '+Number(s.maxScore||a.maxScore||100)+'</strong><p>'+C.esc(s.feedback||'لا توجد ملاحظات إضافية من المدرس.')+'</p></div></div>'+
-       '<div class="assignment-submission-preview"><small>إجابتك</small><p>'+C.esc(s.answer||'—')+'</p>'+((s.link&&C.safeUrl(s.link)!=='#')?'<a href="'+C.safeUrl(s.link)+'" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> فتح الرابط المرفق</a>':'')+'</div>'
+      ?'<div class="assignment-feedback assignment-feedback-v8"><span class="assignment-grade-ring" style="--grade:'+Math.max(0,Math.min(100,percent))+'"><strong>'+percent+'%</strong></span><div><span class="section-kicker">نتيجة التصحيح</span><strong>'+Number(s.score||0)+' / '+Number(s.maxScore||a.maxScore||100)+'</strong><p>'+C.esc(s.feedback||'لا توجد ملاحظات إضافية من المدرس.')+'</p></div></div>'+
+       '<div class="assignment-submission-preview assignment-submission-preview-v8"><small><i class="fa-solid fa-file-lines"></i> إجابتك التي تم تصحيحها</small><p>'+C.esc(s.answer||'—')+'</p>'+((s.link&&C.safeUrl(s.link)!=='#')?'<a href="'+C.safeUrl(s.link)+'" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> فتح الرابط المرفق</a>':'')+'</div>'
       :'<form id="assignmentSubmitForm" class="assignment-submit-form">'+
          '<label><span>إجابتك أو ملاحظاتك</span><textarea id="assignmentAnswer" maxlength="5000" placeholder="اكتب إجابتك هنا...">'+C.esc(s?.answer||'')+'</textarea><small class="assignment-character-count"><span id="assignmentCharCount">'+String(s?.answer||'').length+'</span> / 5000</small></label>'+
          '<label><span>رابط ملف أو Google Drive — اختياري</span><input id="assignmentLink" type="url" dir="ltr" value="'+C.esc(s?.link||'')+'" placeholder="https://..."><small>تأكد أن الرابط متاح للمدرس قبل الإرسال.</small></label>'+
@@ -220,6 +275,10 @@ $('assignmentSearchInput')?.addEventListener('input',render);
   try{
     ({user,profile}=await C.requireStudent());
     $('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
+    if($('assignmentStudentName'))$('assignmentStudentName').textContent=profile.name||user.displayName||'طالبنا';
+    if($('assignmentHeroText'))$('assignmentHeroText').textContent=C.gradeLabel(profile.stage,profile.grade)+' • '+C.typeLabel(profile.educationType)+' — تابع المطلوب وسلّم قبل الموعد، وكل تصحيح هيوصل لك هنا.';
+    if($('assignmentHeroPendingBtn'))$('assignmentHeroPendingBtn').onclick=()=>document.querySelector('[data-assignment-filter="pending"]')?.click();
+    if($('assignmentHeroGradedBtn'))$('assignmentHeroGradedBtn').onclick=()=>document.querySelector('[data-assignment-filter="graded"]')?.click();
     window.AcademyUI?.showPageLoading('جاري تحميل واجباتك وتسليماتك...');
     const [a,subjectsSnap]=await Promise.all([
       C.db.ref('assignments').orderByChild('stage').equalTo(profile.stage).once('value'),
@@ -235,6 +294,8 @@ $('assignmentSearchInput')?.addEventListener('input',render);
       render();
     }));
     render();
+    const requested=new URLSearchParams(location.search).get('id');
+    if(requested&&matching().some(x=>x.id===requested))setTimeout(()=>openAssignment(requested),80);
   }catch(err){
     console.error(err);C.toast('تعذر تحميل الواجبات الآن.','error');
     $('assignmentList').innerHTML=window.AcademyUI?.errorStateHtml('تعذر تحميل الواجبات','تحقق من الاتصال ثم حاول مرة أخرى.','<button class="btn btn-primary" onclick="location.reload()">إعادة المحاولة</button>')||'';
