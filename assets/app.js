@@ -668,11 +668,17 @@
         subject: s.id
       });
       const subjectImage=safeDashboardImage(s.imageUrl||'');
-      return `<a class="ref-subject-card ${palettes[index%palettes.length]} ${subjectImage?'has-image':''}" href="./subject.html?${q.toString()}" aria-label="فتح مادة ${safeHtml(s.name)}">
-        <div class="ref-subject-art">${subjectImage?'<img data-subject-image data-fallback="'+safeHtml(s.emoji||'📚')+'" src="'+safeHtml(subjectImage)+'" alt="" loading="lazy">':'<span>'+safeHtml(s.emoji || '📚')+'</span>'}<i></i></div>
-        <h3>${safeHtml(s.name)}</h3>
-        <div class="ref-subject-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}"><span style="width:${progress}%"></span></div>
-        <div class="ref-subject-footer"><small>${progress}%</small><strong>ادخل المادة <i class="fa-solid fa-chevron-left"></i></strong></div>
+      const subjectLessons=Object.values(state.dbData.lessons||{}).filter(l=>l&&!l.isHidden&&l.type===p.educationType&&l.stage===p.stage&&String(l.grade)===String(p.grade)&&l.subject===s.id);
+      const teacherIds=new Set();
+      subjectLessons.forEach(l=>{if(l.teacherId)teacherIds.add(String(l.teacherId));(Array.isArray(l.videos)?l.videos:[]).forEach(v=>{if(v?.teacherId)teacherIds.add(String(v.teacherId))})});
+      return `<a class="ref-subject-card mix-subject-card ${palettes[index%palettes.length]} ${subjectImage?'has-image':''}" href="./subject.html?${q.toString()}" aria-label="فتح مادة ${safeHtml(s.name)}">
+        <div class="ref-subject-art">${subjectImage?'<img data-subject-image data-fallback="'+safeHtml(s.emoji||'📚')+'" src="'+safeHtml(subjectImage)+'" alt="" loading="lazy">':'<span>'+safeHtml(s.emoji || '📚')+'</span>'}<i></i><em class="mix-subject-progress-badge">${progress}%</em></div>
+        <div class="mix-subject-card-body">
+          <h3>${safeHtml(s.name)}</h3>
+          <div class="mix-subject-meta"><span><i class="fa-solid fa-circle-play"></i> ${subjectLessons.length} درس</span><span><i class="fa-solid fa-chalkboard-user"></i> ${teacherIds.size||'—'} مدرس</span></div>
+          <div class="ref-subject-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}"><span style="width:${progress}%"></span></div>
+          <div class="ref-subject-footer"><small>تقدمك ${progress}%</small><strong>فتح المادة <i class="fa-solid fa-arrow-left"></i></strong></div>
+        </div>
       </a>`;
     }).join('');
 
