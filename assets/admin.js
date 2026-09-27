@@ -8,7 +8,8 @@ const auth=firebase.auth(),db=firebase.database();
 const $=id=>document.getElementById(id), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const askConfirm=opts=>window.AcademyUI?.confirm?window.AcademyUI.confirm(opts):(console.error('AcademyUI confirm unavailable'),Promise.resolve(false));
 
-let currentUser=null,root={},unsubscribe=null,currentAdminTab='overview',adminModalTrigger=null,curriculumViewMode=localStorage.getItem('academy-admin-curriculum-view')||'tree',curriculumOpenSubjects=new Set();
+let currentUser=null,root={},unsubscribe=null,currentAdminTab='overview',adminModalTrigger=null,curriculumViewMode=localStorage.getItem('academy-admin-curriculum-view')||'tree',curriculumOpenSubjects=new Set(),contentCopySource=null;
+const selectedLessonIds=new Set(),selectedQuizIds=new Set();
 const adminPathStops=new Map(),adminPathPromises=new Map();
 const editState={subject:null,lesson:null,quiz:null,file:null,simulation:null,live:null,schedule:null,news:null};
 const stageNames={primary:'ابتدائي',prep:'إعدادي',sec:'ثانوي'};
@@ -752,6 +753,97 @@ function resetLessonEditor(){
 }
 
 /* Lessons */
+function pruneContentSelections(){
+ [...selectedLessonIds].forEach(id=>{if(!root.lessons?.[id])selectedLessonIds.delete(id)});
+ [...selectedQuizIds].forEach(id=>{if(!root.quizzes?.[id])selectedQuizIds.delete(id)});
+}
+function updateBulkSelectionUI(kind){
+ pruneContentSelections();
+ const lessonMode=kind!=='quiz',set=lessonMode?selectedLessonIds:selectedQuizIds;
+ const visible=lessonMode?filteredLessons():filteredQuizzes(),prefix=lessonMode?'Lesson':'Quiz',selectAll=$(lessonMode?'selectVisibleLessons':'selectVisibleQuizzes');
+ if($(lessonMode?'selectedLessonCount':'selectedQuizCount'))$(lessonMode?'selectedLessonCount':'selectedQuizCount').textContent=set.size;
+ if(selectAll){
+   const ids=visible.map(x=>x.id),count=ids.filter(id=>set.has(id)).length;
+   selectAll.checked=!!ids.length&&count===ids.length;selectAll.indeterminate=count>0&&count<ids.length;
+ }
+ $$('[data-select-'+(lessonMode?'lesson':'quiz')+']').forEach(input=>{
+   const id=lessonMode?input.dataset.selectLesson:input.dataset.selectQuiz,checked=set.has(id);
+   input.checked=checked;input.closest('.admin-content-card')?.classList.toggle('selected',checked);
+ });
+ $$('[data-bulk-'+(lessonMode?'lessons':'quizzes')+']').forEach(b=>b.disabled=!set.size);
+}
+function clearBulkSelection(kind){
+ const lessonMode=kind!=='quiz';(lessonMode?selectedLessonIds:selectedQuizIds).clear();updateBulkSelectionUI(lessonMode?'lesson':'quiz');
+}
+async function bulkLessonVisibility(hidden){
+ const ids=[...selectedLessonIds];if(!ids.length)return;
+ const updates={};ids.forEach(id=>updates['lessons/'+id+'/isHidden']=!!hidden);await db.ref().update(updates);
+ await writeAudit(hidden?'lesson.bulk_hide':'lesson.bulk_publish','lesson','bulk',{count:ids.length,ids});clearBulkSelection('lesson');toast((hidden?'تم إخفاء ':'تم نشر ')+ids.length+' درس');
+}
+async function bulkMoveLessons(){
+ const ids=[...selectedLessonIds],targetUnit=Math.max(1,Number($('bulkLessonUnit')?.value||1));if(!ids.length)return;
+ const groups=new Map();
+ ids.forEach(id=>{const l=root.lessons?.[id];if(!l)return;const key=[l.type,l.stage,String(l.grade),l.subject].join('|');if(!groups.has(key))groups.set(key,[]);groups.get(key).push({id,...l})});
+ const updates={},now=Date.now();
+ groups.forEach(items=>{
+   const sample=items[0],selected=new Set(items.map(x=>x.id));
+   const existing=values(root.lessons).filter(l=>!selected.has(l.id)&&l.type===sample.type&&l.stage===sample.stage&&String(l.grade)===String(sample.grade)&&l.subject===sample.subject&&Number(l.unit||1)===targetUnit);
+   let order=Math.max(0,...existing.map(lessonAdminSortValue).filter(Number.isFinite));
+   items.sort((a,b)=>lessonAdminSortValue(a)-lessonAdminSortValue(b)).forEach(l=>{order+=1000;updates['lessons/'+l.id+'/unit']=targetUnit;updates['lessons/'+l.id+'/sortOrder']=order;updates['lessons/'+l.id+'/orderUpdatedAt']=now});
+ });
+ await db.ref().update(updates);await writeAudit('lesson.bulk_move','lesson','bulk',{count:ids.length,targetUnit,ids});clearBulkSelection('lesson');toast('تم نقل '+ids.length+' درس إلى الوحدة '+targetUnit);
+}
+async function bulkDuplicateLessons(){
+ const ids=[...selectedLessonIds];if(!ids.length)return;
+ const ok=await askConfirm({title:'نسخ '+ids.length+' درس؟',message:'سيتم إنشاء نسخ مخفية للمراجعة قبل النشر.',acceptText:'إنشاء النسخ'});if(!ok)return;
+ const updates={},groupOrder=new Map(),now=Date.now();
+ ids.map(id=>({id,...(root.lessons?.[id]||{})})).filter(x=>x.id&&x.title).sort((a,b)=>lessonAdminSortValue(a)-lessonAdminSortValue(b)).forEach(l=>{
+   const key=[l.type,l.stage,String(l.grade),l.subject,Number(l.unit||1)].join('|');
+   if(!groupOrder.has(key)){
+     const max=Math.max(0,...values(root.lessons).filter(x=>x.type===l.type&&x.stage===l.stage&&String(x.grade)===String(l.grade)&&x.subject===l.subject&&Number(x.unit||1)===Number(l.unit||1)).map(lessonAdminSortValue).filter(Number.isFinite));
+     groupOrder.set(key,max);
+   }
+   const newId=db.ref('lessons').push().key,order=groupOrder.get(key)+1000;groupOrder.set(key,order);
+   const copy={...l,title:(l.title||'درس')+' — نسخة',isHidden:true,createdAt:now,updatedAt:now,sortOrder:order};
+   delete copy.id;delete copy.teacherSubmissionId;delete copy.orderUpdatedAt;updates['lessons/'+newId]=copy;
+ });
+ await db.ref().update(updates);await writeAudit('lesson.bulk_duplicate','lesson','bulk',{count:ids.length,ids});clearBulkSelection('lesson');toast('تم إنشاء '+ids.length+' نسخة مخفية');
+}
+async function bulkDeleteLessons(){
+ const ids=[...selectedLessonIds];if(!ids.length)return;
+ const ok=await askConfirm({title:'حذف '+ids.length+' درس نهائيًا؟',message:'سيتم حذف الدروس المحددة. الاختبارات المرتبطة لن تُحذف تلقائيًا.',tone:'danger',acceptText:'حذف الدروس'});if(!ok)return;
+ const updates={};ids.forEach(id=>updates['lessons/'+id]=null);await db.ref().update(updates);await writeAudit('lesson.bulk_delete','lesson','bulk',{count:ids.length,ids});clearBulkSelection('lesson');toast('تم حذف '+ids.length+' درس');
+}
+function quizBankUpdates(quizId,quiz,updates,now){
+ (Array.isArray(quiz.questions)?quiz.questions:[]).forEach((q,qi)=>{
+   const bankId='quiz-'+quizId+'-'+qi;
+   updates['questionBankV4/'+bankId]={id:bankId,question:q.text,options:q.opts,correctAnswer:Number(q.correctAnswer),explanation:q.explanation||'',difficulty:Number(q.difficulty||2),type:quiz.type,stage:quiz.stage,grade:String(quiz.grade),subject:quiz.subject,unit:Number(quiz.unit||0),lessonId:quiz.lessonId||'',sourceQuizId:quizId,authorUid:currentUser?.uid||'',authorRole:'admin',status:'approved',createdAt:now,updatedAt:now};
+ });
+}
+async function bulkQuizVisibility(hidden){
+ const ids=[...selectedQuizIds];if(!ids.length)return;const updates={};ids.forEach(id=>updates['quizzes/'+id+'/isHidden']=!!hidden);await db.ref().update(updates);
+ await writeAudit(hidden?'quiz.bulk_hide':'quiz.bulk_publish','quiz','bulk',{count:ids.length,ids});clearBulkSelection('quiz');toast((hidden?'تم إخفاء ':'تم نشر ')+ids.length+' اختبار');
+}
+async function bulkDuplicateQuizzes(){
+ const ids=[...selectedQuizIds];if(!ids.length)return;
+ const ok=await askConfirm({title:'نسخ '+ids.length+' اختبار؟',message:'سيتم إنشاء نسخ مخفية مع نسخ أسئلتها إلى بنك الأسئلة.',acceptText:'إنشاء النسخ'});if(!ok)return;
+ const updates={},now=Date.now();
+ ids.forEach(id=>{const q=root.quizzes?.[id];if(!q)return;const newId=db.ref('quizzes').push().key,copy={...q,name:(q.name||'اختبار')+' — نسخة',isHidden:true,createdAt:now,updatedAt:now};delete copy.id;delete copy.teacherSubmissionId;updates['quizzes/'+newId]=copy;quizBankUpdates(newId,copy,updates,now)});
+ await db.ref().update(updates);await writeAudit('quiz.bulk_duplicate','quiz','bulk',{count:ids.length,ids});clearBulkSelection('quiz');toast('تم إنشاء '+ids.length+' نسخة اختبار مخفية');
+}
+async function bulkDeleteQuizzes(){
+ const ids=[...selectedQuizIds];if(!ids.length)return;
+ const ok=await askConfirm({title:'حذف '+ids.length+' اختبار؟',message:'سيتم حذف الاختبارات المحددة وأسئلتها المرتبطة من بنك الأسئلة.',tone:'danger',acceptText:'حذف الاختبارات'});if(!ok)return;
+ const updates={};ids.forEach(id=>{const q=root.quizzes?.[id];updates['quizzes/'+id]=null;(Array.isArray(q?.questions)?q.questions:[]).forEach((_,i)=>updates['questionBankV4/quiz-'+id+'-'+i]=null)});
+ await db.ref().update(updates);await writeAudit('quiz.bulk_delete','quiz','bulk',{count:ids.length,ids});clearBulkSelection('quiz');toast('تم حذف '+ids.length+' اختبار');
+}
+async function handleBulkLessonAction(action){
+ if(action==='publish')return bulkLessonVisibility(false);if(action==='hide')return bulkLessonVisibility(true);if(action==='move')return bulkMoveLessons();if(action==='duplicate')return bulkDuplicateLessons();if(action==='delete')return bulkDeleteLessons();
+}
+async function handleBulkQuizAction(action){
+ if(action==='publish')return bulkQuizVisibility(false);if(action==='hide')return bulkQuizVisibility(true);if(action==='duplicate')return bulkDuplicateQuizzes();if(action==='delete')return bulkDeleteQuizzes();
+}
+
 function filteredLessons(){
  const q=($('lessonSearch')?.value||'').trim().toLowerCase(),stage=$('lessonFilterStage')?.value||'',type=$('lessonFilterType')?.value||'',status=$('lessonFilterStatus')?.value||'';
  return values(root.lessons).filter(l=>{
