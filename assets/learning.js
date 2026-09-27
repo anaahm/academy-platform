@@ -707,7 +707,10 @@ function renderLessonJourney(){
  $$('[data-journey-target]',strip).forEach((btn,i)=>{
    const item=steps[i]||{};btn.classList.toggle('complete',!!item.done);btn.classList.toggle('current',!!item.current);
    const icon=btn.querySelector('span');
-   if(icon&&item.done)icon.innerHTML='<i class="fa-solid fa-check"></i>';
+   if(icon){
+     const icons={explanation:'fa-circle-play',quiz:'fa-bullseye',mistakes:'fa-rotate',complete:'fa-trophy'};
+     icon.innerHTML=item.done?'<i class="fa-solid fa-check"></i>':'<i class="fa-solid '+(icons[item.key]||'fa-circle')+'"></i>';
+   }
  });
 }
 function renderLessonFinish(c){
@@ -929,6 +932,9 @@ async function finishQuiz(){
  }
 }
 function renderQuizOnly(c,id){
+ $('lessonJourneyStrip')?.classList.add('hidden');
+ $('lessonFinishCard')?.classList.add('hidden');
+ $('lessonMobileActions')?.classList.add('hidden');
  const q=state.data.quizzes?.[id];
  if(q){
    const mode=q.targetMode||'all';
