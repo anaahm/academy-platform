@@ -26,39 +26,65 @@
   </header>
 
   <main>
-    <section class="feature-hero">
+    <section class="feature-hero notification-hero-v11">
       <div class="container">
-        <div class="feature-hero-card">
-          <div><span class="section-kicker light">كل المهم في مكان واحد</span><h1>مركز الإشعارات</h1><p>تصحيح الواجبات، المواعيد، الحصص، البث، مهام المذاكرة، وإعلانات الأكاديمية.</p></div>
-          <span class="feature-hero-art">🔔</span>
+        <div class="feature-hero-card notification-hero-card-v11">
+          <div class="notification-hero-copy-v11">
+            <span class="section-kicker light">كل المهم في مكان واحد</span>
+            <h1>إشعارات <span id="notificationStudentName">طالبنا</span></h1>
+            <p id="notificationHeroText">الواجبات والبث والمحتوى الجديد ورسائل المدرسين وإعلانات الأكاديمية في مركز واحد.</p>
+            <div class="notification-hero-actions-v11">
+              <button type="button" id="notificationHeroUnreadBtn"><i class="fa-regular fa-envelope"></i> غير المقروء</button>
+              <button type="button" id="notificationHeroAssignmentsBtn"><i class="fa-solid fa-clipboard-check"></i> الواجبات</button>
+              <a href="./planner.html"><i class="fa-regular fa-calendar-check"></i> خطتي</a>
+            </div>
+          </div>
+          <aside class="notification-focus-panel-v11">
+            <div class="notification-focus-head-v11"><span><i class="fa-solid fa-bolt"></i> الأهم الآن</span><b id="notificationHeroPriority">—</b></div>
+            <strong id="notificationHeroTitle">لا يوجد شيء عاجل</strong>
+            <p id="notificationHeroMessage">أنت متابع كل التحديثات المهمة حاليًا.</p>
+            <div class="notification-focus-summary-v11">
+              <span><small>غير مقروء</small><b id="notificationHeroUnread">0</b></span>
+              <span><small>عاجل</small><b id="notificationHeroUrgent">0</b></span>
+              <span><small>اليوم</small><b id="notificationHeroToday">0</b></span>
+            </div>
+            <button type="button" id="notificationHeroOpenBtn" disabled>فتح الإشعار <i class="fa-solid fa-arrow-left"></i></button>
+          </aside>
         </div>
       </div>
     </section>
 
     <section class="container feature-page-content">
-      <section class="feature-stat-grid">
+      <section class="feature-stat-grid notification-stats-v11">
         <article><span class="feature-card-icon blue"><i class="fa-regular fa-bell"></i></span><div><strong id="notificationTotal">0</strong><small>إجمالي الإشعارات</small></div></article>
-        <article><span class="feature-card-icon amber"><i class="fa-solid fa-envelope-open-text"></i></span><div><strong id="notificationUnread">0</strong><small>غير مقروء</small></div></article>
-        <article><span class="feature-card-icon green"><i class="fa-solid fa-graduation-cap"></i></span><div><strong id="notificationAcademic">0</strong><small>دراسي</small></div></article>
-        <article><span class="feature-card-icon violet"><i class="fa-regular fa-calendar"></i></span><div><strong id="notificationSchedule">0</strong><small>مواعيد</small></div></article>
+        <article><span class="feature-card-icon amber"><i class="fa-regular fa-envelope"></i></span><div><strong id="notificationUnread">0</strong><small>غير مقروء</small></div></article>
+        <article><span class="feature-card-icon rose"><i class="fa-solid fa-circle-exclamation"></i></span><div><strong id="notificationUrgent">0</strong><small>عاجل</small></div></article>
+        <article><span class="feature-card-icon green"><i class="fa-solid fa-clipboard-check"></i></span><div><strong id="notificationAssignments">0</strong><small>واجبات</small></div></article>
+        <article><span class="feature-card-icon violet"><i class="fa-solid fa-tower-broadcast"></i></span><div><strong id="notificationLive">0</strong><small>بث وجلسات</small></div></article>
+        <article><span class="feature-card-icon cyan"><i class="fa-solid fa-sparkles"></i></span><div><strong id="notificationContent">0</strong><small>محتوى جديد</small></div></article>
       </section>
 
       <section class="notification-center-layout">
         <aside class="feature-card notification-filter-card">
           <div class="feature-card-head"><div><span class="section-kicker">فلترة</span><h3>اعرض</h3></div><span>🎛️</span></div>
-          <div class="notification-filter-list" role="tablist" aria-label="تصفية الإشعارات">
+          <div class="notification-filter-list notification-filter-list-v11" role="tablist" aria-label="تصفية الإشعارات">
             <button class="active" data-notification-filter="all" role="tab" aria-selected="true"><i class="fa-solid fa-border-all"></i> الكل <span id="filterCountAll">0</span></button>
             <button data-notification-filter="unread" role="tab" aria-selected="false"><i class="fa-regular fa-envelope"></i> غير المقروء <span id="filterCountUnread">0</span></button>
-            <button data-notification-filter="academic" role="tab" aria-selected="false"><i class="fa-solid fa-graduation-cap"></i> دراسي <span id="filterCountAcademic">0</span></button>
-            <button data-notification-filter="schedule" role="tab" aria-selected="false"><i class="fa-regular fa-calendar"></i> المواعيد <span id="filterCountSchedule">0</span></button>
-            <button data-notification-filter="system" role="tab" aria-selected="false"><i class="fa-solid fa-bullhorn"></i> المنصة <span id="filterCountSystem">0</span></button>
+            <button data-notification-filter="assignments" role="tab" aria-selected="false"><i class="fa-solid fa-clipboard-check"></i> الواجبات <span id="filterCountAssignments">0</span></button>
+            <button data-notification-filter="live" role="tab" aria-selected="false"><i class="fa-solid fa-tower-broadcast"></i> البث المباشر <span id="filterCountLive">0</span></button>
+            <button data-notification-filter="content" role="tab" aria-selected="false"><i class="fa-solid fa-book-open"></i> محتوى جديد <span id="filterCountContent">0</span></button>
+            <button data-notification-filter="teacher" role="tab" aria-selected="false"><i class="fa-solid fa-chalkboard-user"></i> المدرسون <span id="filterCountTeacher">0</span></button>
+            <button data-notification-filter="system" role="tab" aria-selected="false"><i class="fa-solid fa-bullhorn"></i> الإدارة <span id="filterCountSystem">0</span></button>
           </div>
         </aside>
 
         <div class="notification-center-main">
-          <div class="notification-center-head">
-            <div><span class="section-kicker">آخر التحديثات</span><h2 id="notificationListTitle">كل الإشعارات</h2></div>
-            <span id="notificationMeta">0 إشعار</span>
+          <div class="notification-center-head notification-center-head-v11">
+            <div><span class="section-kicker">آخر التحديثات</span><h2 id="notificationListTitle">كل الإشعارات</h2><p id="notificationListHint">مرتبة حسب الأهمية ثم الأحدث.</p></div>
+            <div class="notification-list-tools-v11">
+              <label><i class="fa-solid fa-magnifying-glass"></i><input id="notificationSearch" type="search" placeholder="ابحث في الإشعارات..."></label>
+              <span id="notificationMeta">0 إشعار</span>
+            </div>
           </div>
           <div id="notificationList" class="notification-center-list"></div>
         </div>
