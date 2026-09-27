@@ -338,20 +338,20 @@
   }
 
   async function updateDailyActivity(uid) {
-    const now=new Date(),yesterdayDate=new Date(now);
-    yesterdayDate.setDate(now.getDate()-1);
-    const today = localDateKey(now);
-    const yesterday = localDateKey(yesterdayDate);
+    const now=new Date(),yesterdayDate=new Date(now),cutoffDate=new Date(now);
+    yesterdayDate.setDate(now.getDate()-1);cutoffDate.setDate(now.getDate()-45);
+    const today=localDateKey(now),yesterday=localDateKey(yesterdayDate),cutoff=localDateKey(cutoffDate);
     await database.ref('studentProfilesV3/' + uid).transaction(profile => {
       if (!profile) return profile;
-      profile.activity = profile.activity || {};
-      profile.stats = profile.stats || {};
-      const last = profile.activity.lastDate || '';
-      if (last !== today) {
-        profile.stats.streak = last === yesterday ? Number(profile.stats.streak || 0) + 1 : 1;
-        profile.activity.lastDate = today;
+      profile.activity=profile.activity||{};profile.activity.days=profile.activity.days||{};profile.stats=profile.stats||{};
+      const last=profile.activity.lastDate||'';
+      if(last!==today){
+        profile.stats.streak=last===yesterday?Number(profile.stats.streak||0)+1:1;
+        profile.activity.lastDate=today;
       }
-      profile.activity.lastSeenAt = Date.now();
+      profile.activity.days[today]=true;
+      Object.keys(profile.activity.days).forEach(key=>{if(key<cutoff)delete profile.activity.days[key]});
+      profile.activity.lastSeenAt=Date.now();
       return profile;
     });
   }
@@ -674,6 +674,32 @@
     if(refresh)refresh.onclick=()=>{state.recommendedOffset=((Number(state.recommendedOffset||0)+1)%ordered.length);renderRecommendedLessons(profile,subjects)};
   }
 
+  function renderDashboardStreak(profile,stats){
+    const box=$('streakWeek'),days=profile?.activity?.days||{},lastDate=profile?.activity?.lastDate||'',streak=Math.max(0,Number(stats?.streak||0));
+    if(box){
+      const today=new Date(),items=[];
+      for(let offset=6;offset>=0;offset--){
+        const d=new Date(today);d.setDate(today.getDate()-offset);
+        const key=localDateKey(d),legacyActive=!Object.keys(days).length&&offset<streak,active=!!days[key]||key===lastDate||legacyActive,isToday=offset===0;
+        const label=new Intl.DateTimeFormat('ar-EG',{weekday:'short'}).format(d).replace('،','');
+        items.push('<div class="mix-streak-day '+(active?'active ':'')+(isToday?'today':'')+'"><small>'+safeHtml(label)+'</small><span>'+(active?'<i class="fa-solid fa-check"></i>':d.getDate())+'</span></div>');
+      }
+      box.innerHTML=items.join('');
+    }
+    const milestones=[3,7,14,30],next=milestones.find(n=>n>streak);
+    if($('streakNextReward'))$('streakNextReward').textContent=next?(next-streak)+' يوم حتى مكافأة '+next+' أيام':'سلسلة أسطورية!';
+    if($('streakSideMessage'))$('streakSideMessage').textContent=streak>=7?'أسبوع كامل من الاستمرار، ممتاز جدًا!':streak>=3?'بداية قوية، كمّل بنفس الإيقاع.':'ادخل كل يوم وحافظ على السلسلة.';
+
+    const achievements=[
+      {icon:'🚀',label:'البداية',ok:Number(stats?.lessons||0)>=1},
+      {icon:'📚',label:'5 دروس',ok:Number(stats?.lessons||0)>=5},
+      {icon:'🎯',label:'أول اختبار',ok:Number(stats?.quizzes||0)>=1},
+      {icon:'🔥',label:'3 أيام',ok:streak>=3},
+      {icon:'⭐',label:'500 XP',ok:Number(stats?.xp||0)>=500}
+    ];
+    if($('dashboardAchievementPreview'))$('dashboardAchievementPreview').innerHTML=achievements.map(a=>'<div class="mix-achievement-mini '+(a.ok?'unlocked':'locked')+'"><span>'+a.icon+'</span><small>'+safeHtml(a.label)+'</small><i class="fa-solid '+(a.ok?'fa-check':'fa-lock')+'"></i></div>').join('');
+  }
+
   function renderDashboard() {
     const p = state.profile;
     const name = p.name || state.user.displayName || 'طالبنا';
@@ -709,6 +735,7 @@
     if($('dashboardOverallPercent'))$('dashboardOverallPercent').textContent=overall+'%';
     if($('dashboardOverallRing'))$('dashboardOverallRing').style.setProperty('--progress',(overall*3.6)+'deg');
     if($('streakSideValue')) $('streakSideValue').textContent=stats.streak;
+    renderDashboardStreak(p,stats);
 
     const palettes=['subject-pink','subject-blue','subject-green','subject-gold','subject-purple','subject-teal'];
     $('dashboardSubjects').innerHTML = subjects.map((s,index) => {
