@@ -1201,7 +1201,7 @@ function renderLiveSessions(){
  $('liveAdminGrid').innerHTML=arr.length?arr.map(s=>{
    const cls=s.status==='live'?'rejected':s.status==='upcoming'?'info':'approved';
    const label=s.status==='live'?'مباشر':s.status==='upcoming'?'قادم':'منتهي';
-   const target=[s.type?typeLabel(s.type):'كل الأنواع',s.stage?stageLabel(s.stage):'كل المراحل',s.grade?'صف '+esc(s.grade):'كل الصفوف',s.subjectName||s.subject||'كل المواد'].join(' • ');
+   const target=[s.type?typeLabel(s.type):'كل الأنواع',s.stage?(stageNames[s.stage]||s.stage):'كل المراحل',s.grade?'صف '+esc(s.grade):'كل الصفوف',s.subjectName||s.subject||'كل المواد'].join(' • ');
    return '<article class="admin-subject-card"><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="status-pill '+cls+'">'+label+'</span>'+(s.recordingUrl?'<span class="status-pill approved">إعادة متاحة</span>':'')+'</div><h3 style="margin-top:10px">📡 '+esc(s.title||'جلسة')+'</h3><p>👨‍🏫 '+esc(s.teacher||'غير محدد')+' • ⏱️ '+Number(s.duration||60)+' دقيقة</p><p>'+esc(target)+'</p><p>'+(s.scheduledTime?new Date(s.scheduledTime).toLocaleString('ar-EG'):'موعد غير محدد')+'</p><div class="admin-action-row" style="margin-top:12px"><button class="admin-action-btn" data-edit-live="'+s.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><a class="admin-action-btn success" href="'+cleanUrl(s.recordingUrl||s.youtubeLiveUrl||s.zoomLink||'#')+'" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i></a><button class="admin-action-btn danger" data-delete-live="'+s.id+'"><i class="fa-solid fa-trash"></i></button></div></article>';
  }).join(''):empty('لا توجد جلسات','أضف أول بث مباشر أو جلسة قادمة.');
  $$('[data-edit-live]').forEach(b=>b.onclick=()=>editLiveSession(b.dataset.editLive));
