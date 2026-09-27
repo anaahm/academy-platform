@@ -27,10 +27,15 @@
   </header>
 
   <main>
-    <section class="explore-hero">
+    <section class="explore-hero explore-hero-v2">
       <div class="container explore-hero-inner">
-        <div><span class="section-kicker">المعرفة أوسع من صفك الحالي</span><h1>استكشف كل المراحل والمواد</h1><p>تصفّح أي مرحلة أو صف أو مادة بدون تغيير مرحلتك الأساسية. حسابك وتقدمك يفضلوا زي ما هم.</p></div>
-        <span class="explore-hero-art">🧭</span>
+        <div class="explore-hero-copy-v2">
+          <span class="section-kicker">كل المواد أمامك بشكل أوضح</span>
+          <h1>اختر صفك... وشاهد مواده مباشرة</h1>
+          <p>مش هتدخل على قوائم صغيرة متكدسة. اختر نوع التعليم والمرحلة والصف، وهتظهر لك المواد كبطاقات كبيرة بصورها ومحتواها.</p>
+          <div class="explore-hero-points"><span><i class="fa-solid fa-book-open"></i> مواد واضحة</span><span><i class="fa-solid fa-chalkboard-user"></i> أكثر من مدرس</span><span><i class="fa-solid fa-chart-simple"></i> محتوى منظم</span></div>
+        </div>
+        <div class="explore-hero-art-v2"><span>🧭</span><strong>استكشف براحتك</strong><small>من غير ما نغيّر صفك الأساسي</small></div>
       </div>
     </section>
 
@@ -43,9 +48,16 @@
       </aside>
 
       <div class="explore-main">
-        <div class="explore-toolbar">
-          <div><span class="section-kicker" id="activeTypeLabel">التعليم العام</span><h2>اختر المرحلة الدراسية</h2></div>
-          <label class="explore-page-search"><i class="fa-solid fa-magnifying-glass"></i><input id="explorePageSearch" type="search" aria-label="البحث عن مادة" placeholder="ابحث عن مادة..."></label>
+        <div class="explore-toolbar explore-toolbar-v2">
+          <div><span class="section-kicker" id="activeTypeLabel">التعليم العام</span><h2>اختر المرحلة والصف</h2><p>بمجرد اختيار الصف ستظهر كل مواده كبطاقات كبيرة.</p></div>
+          <label class="explore-page-search"><i class="fa-solid fa-magnifying-glass"></i><input id="explorePageSearch" type="search" aria-label="البحث عن مادة" placeholder="ابحث باسم المادة..."></label>
+        </div>
+        <div class="explore-current-path" id="exploreCurrentPath">
+          <span><i class="fa-solid fa-school"></i><b id="explorePathType">التعليم العام</b></span>
+          <i class="fa-solid fa-chevron-left"></i>
+          <span><i class="fa-solid fa-layer-group"></i><b id="explorePathStage">المرحلة الابتدائية</b></span>
+          <i class="fa-solid fa-chevron-left"></i>
+          <span class="muted"><i class="fa-solid fa-graduation-cap"></i><b id="explorePathGrade">اختر الصف</b></span>
         </div>
 
         <div class="explore-stage-tabs" id="exploreStageTabs" role="tablist" aria-label="المرحلة الدراسية">
@@ -54,14 +66,17 @@
           <button data-stage="sec" role="tab" aria-selected="false"><span>🎓</span><div><strong>ثانوي</strong><small>3 صفوف</small></div></button>
         </div>
 
-        <div class="explore-grade-block">
-          <div class="explore-block-head"><h3>الصف الدراسي</h3><span id="gradeHint">اختر الصف لعرض مواده</span></div>
-          <div class="explore-grade-grid" id="exploreGradeGrid"></div>
+        <div class="explore-grade-block explore-grade-block-v2">
+          <div class="explore-block-head"><div><span class="section-kicker">الخطوة الثانية</span><h3>اختر صفك الدراسي</h3><p>كل صف له مواده ومحتواه الخاص.</p></div><span id="gradeHint">اختر الصف لعرض مواده</span></div>
+          <div class="explore-grade-grid explore-grade-grid-v2" id="exploreGradeGrid"></div>
         </div>
 
-        <div class="explore-subject-block hidden" id="exploreSubjectBlock">
-          <div class="explore-block-head"><div><span class="section-kicker">المواد المتاحة</span><h3 id="exploreSubjectsTitle">مواد الصف</h3></div><span id="exploreSubjectCount"></span></div>
-          <div class="explore-subject-grid" id="exploreSubjectGrid"></div>
+        <div class="explore-subject-block explore-subject-block-v2 hidden" id="exploreSubjectBlock">
+          <div class="explore-block-head">
+            <div><span class="section-kicker">مواد الصف</span><h3 id="exploreSubjectsTitle">مواد الصف</h3><p>اضغط على أي مادة لتدخل وحداتها ودروسها ومدرسيها.</p></div>
+            <span class="explore-subject-count-pill" id="exploreSubjectCount"></span>
+          </div>
+          <div class="explore-subject-grid explore-subject-grid-v2" id="exploreSubjectGrid"></div>
         </div>
       </div>
     </section>
