@@ -324,10 +324,13 @@
     const settings=state.dbData.settings||{},root=document.documentElement;
     const publicHero=safeDashboardImage(settings.publicHeroUrl||'');
     const authVisual=safeDashboardImage(settings.authVisualUrl||'');
+    const dashboardHero=safeDashboardImage(settings.dashboardHeroUrl||'');
     if(publicHero)root.style.setProperty('--future-public-hero-image','url("'+publicHero.replace(/"/g,'%22')+'")');
     else root.style.removeProperty('--future-public-hero-image');
     if(authVisual)root.style.setProperty('--future-auth-image','url("'+authVisual.replace(/"/g,'%22')+'")');
     else root.style.removeProperty('--future-auth-image');
+    if(dashboardHero)root.style.setProperty('--future-dashboard-image','url("'+dashboardHero.replace(/"/g,'%22')+'")');
+    else root.style.removeProperty('--future-dashboard-image');
     const map={primary:'stageImagePrimary',prep:'stageImagePrep',sec:'stageImageSec',azhar:'stageImageAzhar'};
     Object.entries(map).forEach(([key,id])=>{
       const el=$(id),image=safeDashboardImage(settings.stageImages?.[key]||'');
@@ -761,9 +764,8 @@
     const hero=$('dashboardHero');
     const customHero=safeDashboardImage(settings.dashboardHeroUrl||'');
     if(hero){
-      hero.style.backgroundImage = customHero
-        ? `linear-gradient(90deg,rgba(7,35,111,.98) 0%,rgba(11,64,171,.88) 30%,rgba(8,41,119,.14) 58%,rgba(5,29,86,.04) 100%),url("${customHero}")`
-        : '';
+      if(customHero)hero.style.setProperty('--future-dashboard-image','url("'+customHero.replace(/"/g,'%22')+'")');
+      else hero.style.removeProperty('--future-dashboard-image');
     }
     if($('dashboardHeroSubtitle')) $('dashboardHeroSubtitle').textContent = settings.dashboardHeroSubtitle || 'كل يوم هو فرصة جديدة للتعلم وتقترب من أهدافك';
 
