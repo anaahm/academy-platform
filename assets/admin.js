@@ -1023,7 +1023,9 @@ $('resetDashboardHero')?.addEventListener('click',()=>{
   renderDashboardHeroSettingPreview();
   toast('تم اختيار كل الصور الافتراضية. اضغط حفظ الإعدادات لتطبيقها.');
 });
-$('lessonSearch').oninput=renderLessons;$('lessonFilterStage').onchange=renderLessons;$('lessonFilterType').onchange=renderLessons;$('studentSearch').oninput=renderStudents;$('studentFilterType')?.addEventListener('change',renderStudents);$('studentFilterStage')?.addEventListener('change',renderStudents);
+$('lessonSearch').oninput=renderLessons;$('lessonFilterStage').onchange=renderLessons;$('lessonFilterType').onchange=renderLessons;$('lessonFilterStatus')?.addEventListener('change',renderLessons);
+$('quizSearch')?.addEventListener('input',renderQuizzes);$('quizFilterStage')?.addEventListener('change',renderQuizzes);$('quizFilterType')?.addEventListener('change',renderQuizzes);$('quizFilterMode')?.addEventListener('change',renderQuizzes);$('quizFilterStatus')?.addEventListener('change',renderQuizzes);
+$('studentSearch').oninput=renderStudents;$('studentFilterType')?.addEventListener('change',renderStudents);$('studentFilterStage')?.addEventListener('change',renderStudents);
 $('curriculumType').onchange=renderCurriculum;$('curriculumStage').onchange=()=>{fillGrades($('curriculumGrade'),$('curriculumStage').value);renderCurriculum()};$('curriculumGrade').onchange=renderCurriculum;
 $('assignType').onchange=refreshAssignmentSubjects;$('assignStage').onchange=refreshAssignmentSubjects;$('assignGrade').onchange=refreshAssignmentSubjects;$('addAssignmentBtn').onclick=addAssignment;
 initAdminCollapse();
@@ -1089,7 +1091,7 @@ function renderGlobalSearch(q){
    }else if(type==='teacher'){
      await setTab('teachers');
    }else if(type==='quiz'){
-     await setTab('quizzes');
+     await setTab('quizzes');const item=root.quizzes?.[id];if($('quizSearch'))$('quizSearch').value=item?.name||'';renderQuizzes();
    }
    $('adminGlobalSearch').value='';hideGlobalSearch();
  });
