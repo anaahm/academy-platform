@@ -398,15 +398,15 @@ function curriculumLessonTreeRow(l,index,total,units,linkedQuizzes=[]){
  const teachers=adminLessonTeachers(l),videos=Array.isArray(l.videos)?l.videos.filter(v=>v?.url).length:0,questions=Array.isArray(l.questions)?l.questions.length:0;
  const available=units?.length?units:[{number:Number(l.unit||1),name:'الوحدة '+Number(l.unit||1)}];
  const options=available.map(u=>'<option value="'+u.number+'" '+(Number(l.unit||1)===Number(u.number)?'selected':'')+'>'+esc(u.name||('الوحدة '+u.number))+'</option>').join('');
- return '<div class="admin-tree-lesson-block"><article class="admin-tree-lesson '+(l.isHidden?'is-hidden':'')+'" draggable="true" data-tree-lesson="'+esc(l.id)+'">'+
+ return '<div class="admin-tree-lesson-block"><article class="admin-tree-lesson '+(publicationState(l)==='hidden'?'is-hidden ':publicationState(l)==='scheduled'?'is-scheduled ':'')+'" draggable="true" data-tree-lesson="'+esc(l.id)+'">'+
   '<button type="button" class="admin-tree-drag" title="اسحب لإعادة الترتيب" aria-label="اسحب لإعادة ترتيب الدرس"><i class="fa-solid fa-grip-vertical"></i></button>'+
   '<span class="admin-tree-index">'+(index+1)+'</span>'+
-  '<div class="admin-tree-lesson-copy"><div><strong>'+esc(l.title||'درس')+'</strong><span class="status-pill '+(l.isHidden?'rejected':'approved')+'">'+(l.isHidden?'مخفي':'منشور')+'</span></div><small>'+videos+' فيديو • '+questions+' سؤال'+(teachers.length?' • '+esc(teachers.slice(0,2).join('، ')):'')+'</small></div>'+
+  '<div class="admin-tree-lesson-copy"><div><strong>'+esc(l.title||'درس')+'</strong><span class="status-pill '+publicationPillClass(l)+'">'+publicationLabel(l)+'</span></div><small>'+videos+' فيديو • '+questions+' سؤال'+(teachers.length?' • '+esc(teachers.slice(0,2).join('، ')):'')+(publicationState(l)==='scheduled'?' • النشر '+esc(formatAdminDateTime(l.publishAt)):'')+'</small></div>'+
   '<div class="admin-tree-move"><select data-tree-move-unit="'+esc(l.id)+'" title="نقل إلى وحدة">'+options+'</select></div>'+
   '<div class="admin-tree-actions">'+
    '<button type="button" data-tree-up="'+esc(l.id)+'" '+(index===0?'disabled':'')+' title="تحريك لأعلى"><i class="fa-solid fa-arrow-up"></i></button>'+
    '<button type="button" data-tree-down="'+esc(l.id)+'" '+(index===total-1?'disabled':'')+' title="تحريك لأسفل"><i class="fa-solid fa-arrow-down"></i></button>'+
-   '<a href="'+lessonAdminPreviewUrl(l)+'" target="_blank" rel="noopener" title="معاينة"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>'+
+   '<button type="button" data-review-content="lesson|'+esc(l.id)+'" title="معاينة ومراجعة"><i class="fa-solid fa-eye"></i></button><a href="'+lessonAdminPreviewUrl(l)+'" target="_blank" rel="noopener" title="فتح المعاينة"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>'+
    '<button type="button" data-tree-edit="'+esc(l.id)+'" title="تعديل"><i class="fa-solid fa-pen"></i></button>'+
    '<button type="button" data-tree-copy="'+esc(l.id)+'" title="نسخ الدرس"><i class="fa-regular fa-copy"></i></button>'+
   '</div>'+
@@ -416,7 +416,7 @@ function curriculumLessonTreeRow(l,index,total,units,linkedQuizzes=[]){
 }
 function curriculumQuizTreeRow(q,linked=false){
  const lesson=q.lessonId?root.lessons?.[q.lessonId]:null,count=Array.isArray(q.questions)?q.questions.length:0;
- return '<article class="admin-tree-quiz '+(linked?'linked ':'')+(q.isHidden?'is-hidden':'')+'"><span><i class="fa-solid '+(linked?'fa-link':'fa-brain')+'"></i></span><div><strong>'+esc(q.name||'اختبار')+'</strong><small>'+count+' سؤال'+(linked?' • اختبار مرتبط بهذا الدرس':lesson?' • مرتبط بـ '+esc(lesson.title||'درس'):'')+'</small></div><span class="status-pill '+(q.isHidden?'rejected':'approved')+'">'+(q.isHidden?'مخفي':'منشور')+'</span><button type="button" data-tree-edit-quiz="'+esc(q.id)+'" title="تعديل الاختبار"><i class="fa-solid fa-pen"></i></button></article>';
+ return '<article class="admin-tree-quiz '+(linked?'linked ':'')+(publicationState(q)==='hidden'?'is-hidden ':publicationState(q)==='scheduled'?'is-scheduled ':'')+'"><span><i class="fa-solid '+(linked?'fa-link':'fa-brain')+'"></i></span><div><strong>'+esc(q.name||'اختبار')+'</strong><small>'+count+' سؤال'+(linked?' • اختبار مرتبط بهذا الدرس':lesson?' • مرتبط بـ '+esc(lesson.title||'درس'):'')+(publicationState(q)==='scheduled'?' • النشر '+esc(formatAdminDateTime(q.publishAt)):'')+'</small></div><span class="status-pill '+publicationPillClass(q)+'">'+publicationLabel(q)+'</span><div class="admin-tree-quiz-actions"><button type="button" data-review-content="quiz|'+esc(q.id)+'" title="معاينة ومراجعة"><i class="fa-solid fa-eye"></i></button><button type="button" data-tree-edit-quiz="'+esc(q.id)+'" title="تعديل الاختبار"><i class="fa-solid fa-pen"></i></button></div></article>';
 }
 function renderCurriculumTree(type,stage,grade,subjects,scopeLessons,scopeQuizzes){
  const wrap=$('curriculumTreeWrap');if(!wrap)return;
@@ -570,7 +570,8 @@ async function executeContentCopy(e){
 function bindCurriculumTree(){
  const wrap=$('curriculumTreeWrap');if(!wrap)return;
  $$('.admin-tree-subject',wrap).forEach(details=>details.addEventListener('toggle',()=>{const id=details.dataset.treeSubjectCard;if(!id)return;if(details.open)curriculumOpenSubjects.add(id);else curriculumOpenSubjects.delete(id)}));
- $$('[data-tree-edit]',wrap).forEach(b=>b.onclick=()=>editLesson(b.dataset.treeEdit));
+ $('[data-review-content]',wrap).forEach(b=>b.onclick=()=>{const [kind,id]=b.dataset.reviewContent.split('|');openContentReview(kind,id)});
+ $('[data-tree-edit]',wrap).forEach(b=>b.onclick=()=>editLesson(b.dataset.treeEdit));
  $$('[data-tree-edit-quiz]',wrap).forEach(b=>b.onclick=()=>editQuiz(b.dataset.treeEditQuiz));
  $$('[data-tree-copy]',wrap).forEach(b=>b.onclick=()=>duplicateCurriculumLesson(b.dataset.treeCopy));
  $$('[data-tree-up]',wrap).forEach(b=>b.onclick=()=>moveCurriculumLessonRelative(b.dataset.treeUp,-1));
