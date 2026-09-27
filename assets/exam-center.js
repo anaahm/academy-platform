@@ -2,6 +2,21 @@
 'use strict';
 const C=window.AcademyCore,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 let profile,user,data={customSubjects:{},quizzes:{},lessons:{}},filter='all';
+function contentVisible(item){
+ if(!item||item.isHidden)return false;
+ const at=Number(item.publishAt||0);
+ return !at||at<=Date.now();
+}
+function formatDuration(seconds){
+ const sec=Math.max(0,Number(seconds||0)),m=Math.floor(sec/60),s=Math.floor(sec%60);
+ return m?(m+' د '+(s?String(s).padStart(2,'0')+' ث':'')):(s+' ث');
+}
+function subjectMeta(id){
+ const rows=C.subjectsFor(data,profile.stage,String(profile.grade),profile.educationType)||[];
+ return rows.find(s=>String(s.id)===String(id))||{id,name:C.subjectName(data,id,profile.stage,String(profile.grade),profile.educationType),emoji:'📚'};
+}
+function quizHref(q){return C.quizUrl({type:q.type,stage:q.stage,grade:q.grade,subject:q.subject},q.id)}
+
 
 function historyItems(){
  const raw=profile.quizHistory||{};
@@ -16,7 +31,7 @@ function bestAttempt(sourceId){
 function lessonDone(id){return !!profile.learningProgress?.[id]?.completed}
 function relevantLessons(subject){
  return Object.entries(data.lessons||{}).map(([id,v])=>({id,...v})).filter(l=>
-   !l.isHidden&&l.subject===subject&&l.type===profile.educationType&&l.stage===profile.stage&&String(l.grade)===String(profile.grade)
+   contentVisible(l)&&l.subject===subject&&l.type===profile.educationType&&l.stage===profile.stage&&String(l.grade)===String(profile.grade)
  );
 }
 function quizUnlockInfo(q){
@@ -69,7 +84,7 @@ function renderHistory(){
      '<div class="exam-history-card-head"><span class="exam-icon history"><i class="fa-solid fa-chart-simple"></i></span><strong class="score-pill '+scoreClass(score)+'">'+score+'%</strong></div>'+
      '<h3>'+C.esc(historyTitle(x))+'</h3>'+
      '<p>'+C.esc(sub)+' • '+new Date(x.createdAt||Date.now()).toLocaleString('ar-EG')+'</p>'+
-     '<div class="exam-history-meta"><span><i class="fa-solid fa-check"></i> '+Number(x.correct||0)+' صحيحة</span><span><i class="fa-solid fa-list"></i> '+Number(x.total||0)+' سؤال</span></div>'+
+     '<div class="exam-history-meta"><span><i class="fa-solid fa-check"></i> '+Number(x.correct||0)+' صحيحة</span><span><i class="fa-solid fa-list"></i> '+Number(x.total||0)+' سؤال</span>'+(Number(x.durationSeconds||0)?'<span><i class="fa-regular fa-clock"></i> '+formatDuration(x.durationSeconds)+'</span>':'')+'</div>'+
      (href?'<a class="btn btn-soft btn-block" href="'+href+'"><i class="fa-solid fa-rotate-right"></i> إعادة المحاولة</a>':'')+
    '</article>';
  }).join('')+'</div>':'<div class="feature-empty"><span>📝</span><h3>لا يوجد سجل نتائج بعد</h3><p>أكمل أول اختبار وسيظهر هنا.</p></div>';
@@ -88,18 +103,37 @@ function quizTargetMatches(q){
 }
 function quizzes(){
  return Object.entries(data.quizzes||{}).map(([id,v])=>({id,...v})).filter(q=>
-   !q.isHidden&&q.type===profile.educationType&&q.stage===profile.stage&&String(q.grade)===String(profile.grade)&&quizTargetMatches(q)
+   contentVisible(q)&&q.type===profile.educationType&&q.stage===profile.stage&&String(q.grade)===String(profile.grade)&&quizTargetMatches(q)
  );
 }
 function renderSubjects(){
  const subs=C.subjectsFor(data,profile.stage,String(profile.grade),profile.educationType);
  $('examSubjectFilter').innerHTML='<option value="">كل المواد</option>'+subs.map(s=>'<option value="'+C.esc(s.id)+'">'+C.esc(s.name)+'</option>').join('');
 }
+function renderRecommended(all){
+ const box=$('examRecommendedCard');if(!box)return;
+ const unlocked=all.filter(q=>quizUnlockInfo(q).unlocked);
+ if(!unlocked.length){box.classList.add('hidden');return}
+ const fresh=unlocked.filter(q=>!bestAttempt(q.id));
+ let pick=fresh[0];
+ if(!pick){
+   pick=unlocked.slice().sort((a,b)=>Number(bestAttempt(a.id)?.score||100)-Number(bestAttempt(b.id)?.score||100))[0];
+ }
+ if(!pick){box.classList.add('hidden');return}
+ const best=bestAttempt(pick.id),sub=subjectMeta(pick.subject),unit=Number(pick.unit||0),questions=pick.questions?.length||0,duration=Number(pick.durationMinutes||0);
+ box.classList.remove('hidden');
+ $('examRecommendedTitle').textContent=pick.name||'اختبار مقترح';
+ $('examRecommendedText').textContent=best?'دي أقل نتيجة محتاجة تحسين عندك حاليًا — جرّب مرة تانية بعد مراجعة سريعة.':'اختبار متاح لم تجربه بعد، وده أفضل وقت تبدأ به.';
+ $('examRecommendedMeta').innerHTML='<span><i class="fa-solid fa-book-open"></i> '+C.esc(sub.name||'المادة')+'</span><span><i class="fa-regular fa-circle-question"></i> '+questions+' سؤال</span><span><i class="fa-regular fa-clock"></i> '+(duration?duration+' دقيقة':'بدون حد زمني')+'</span>'+(best?'<span><i class="fa-solid fa-trophy"></i> أفضل نتيجة '+Number(best.score||0)+'%</span>':'')+'<span><i class="fa-solid fa-layer-group"></i> '+(unit===0?'اختبار شامل':'الوحدة '+unit)+'</span>';
+ $('examRecommendedAction').href=quizHref(pick);
+ $('examRecommendedAction').innerHTML=best?'حسّن نتيجتك <i class="fa-solid fa-arrow-left"></i>':'ابدأ الآن <i class="fa-solid fa-arrow-left"></i>';
+}
 function render(){
  renderHistory();
  $('examStreak').textContent=profile.stats?.streak||0;
  const all=quizzes(),available=all.filter(q=>quizUnlockInfo(q).unlocked);
  $('availableExamCount').textContent=available.length;
+ renderRecommended(all);
 
  if(filter==='history'){
    $('examList').classList.add('hidden');$('examHistoryFull').classList.remove('hidden');
@@ -120,24 +154,25 @@ function render(){
  $('examResultCount').textContent=list.length+' اختبار';
  $('examListHint').textContent=list.length?'اختر اختبارًا مناسبًا وابدأ عندما تكون جاهزًا.':'غيّر الفلاتر أو ابحث باسم مادة أخرى.';
 
- $('examList').innerHTML=list.length?list.map(q=>{
-   const ctx={type:q.type,stage:q.stage,grade:q.grade,subject:q.subject};
-   const sub=C.subjectName(data,q.subject,q.stage,String(q.grade),q.type);
-   const unlock=quizUnlockInfo(q),best=bestAttempt(q.id),unit=Number(q.unit||0),questions=q.questions?.length||0;
-   const kind=unit===0?'اختبار شامل':'اختبار الوحدة '+unit;
-   const status=unlock.unlocked?(best?'تمت المحاولة':'جاهز الآن'):'مغلق';
-   return '<article class="exam-card '+(unlock.unlocked?'available':'locked')+'">'+
-     '<div class="exam-card-main"><span class="exam-icon '+(unlock.unlocked?'':'locked')+'"><i class="fa-solid '+(unlock.unlocked?'fa-file-circle-question':'fa-lock')+'"></i></span>'+
-     '<div class="exam-card-copy"><div class="exam-card-title-row"><h3>'+C.esc(q.name||'اختبار')+'</h3><span class="exam-status '+(unlock.unlocked?(best?'attempted':'ready'):'locked')+'">'+status+'</span></div>'+
-     '<p>'+C.esc(sub)+' • '+kind+'</p>'+
-     '<div class="exam-meta"><span><i class="fa-regular fa-circle-question"></i> '+questions+' سؤال</span>'+
-     (unlock.total?'<span><i class="fa-solid fa-book-open"></i> '+unlock.complete+'/'+unlock.total+' دروس مكتملة</span>':'')+
-     (best?'<span><i class="fa-solid fa-trophy"></i> أفضل نتيجة '+Number(best.score||0)+'%</span>':'')+
-     '</div></div></div>'+
-     '<div class="exam-card-action">'+
-     (unlock.unlocked
-       ?'<a class="btn btn-primary" href="'+C.quizUrl(ctx,q.id)+'">'+(best?'إعادة الاختبار':'ابدأ الاختبار')+' <i class="fa-solid fa-arrow-left"></i></a>'
-       :'<button class="btn btn-soft locked-exam-btn" data-locked-exam="'+q.id+'" data-lock-reason="'+C.esc(unlock.reason)+'"><i class="fa-solid fa-lock"></i> مغلق</button>')+
+ $('examList').innerHTML=list.length?list.map((q,index)=>{
+   const sub=subjectMeta(q.subject),unlock=quizUnlockInfo(q),best=bestAttempt(q.id),unit=Number(q.unit||0),questions=q.questions?.length||0,duration=Number(q.durationMinutes||0);
+   const kind=unit===0?'اختبار شامل':'اختبار الوحدة '+unit,status=unlock.unlocked?(best?'تمت المحاولة':'جاهز الآن'):'مغلق';
+   const safeImage=window.AcademyUtils?.safeUrl(sub.imageUrl||'')||'',progress=unlock.total?Math.round(unlock.complete/unlock.total*100):unlock.unlocked?100:0;
+   const palette=['blue','violet','green','orange','rose','teal'][index%6];
+   return '<article class="exam-card-v5 '+palette+' '+(unlock.unlocked?'available':'locked')+'">'+
+     '<div class="exam-card-cover-v5 '+(safeImage?'has-image':'')+'" '+(safeImage?'style="background-image:url(&quot;'+C.esc(safeImage)+'&quot;)"':'')+'>'+
+       (!safeImage?'<span>'+C.esc(sub.emoji||'🧠')+'</span>':'')+
+       '<em>'+C.esc(sub.name||'المادة')+'</em><b class="exam-status '+(unlock.unlocked?(best?'attempted':'ready'):'locked')+'">'+status+'</b>'+
+     '</div>'+
+     '<div class="exam-card-body-v5">'+
+       '<div class="exam-card-title-row-v5"><div><small>'+kind+'</small><h3>'+C.esc(q.name||'اختبار')+'</h3></div><span class="exam-card-arrow-v5"><i class="fa-solid '+(unlock.unlocked?'fa-arrow-left':'fa-lock')+'"></i></span></div>'+
+       '<div class="exam-card-metrics-v5"><span><i class="fa-regular fa-circle-question"></i><b>'+questions+'</b><small>سؤال</small></span><span><i class="fa-regular fa-clock"></i><b>'+(duration||'∞')+'</b><small>'+(duration?'دقيقة':'بدون حد')+'</small></span><span><i class="fa-solid fa-trophy"></i><b>'+(best?Number(best.score||0)+'%':'—')+'</b><small>أفضل نتيجة</small></span></div>'+
+       (unlock.total?'<div class="exam-unlock-progress-v5"><div><span style="width:'+progress+'%"></span></div><small>'+unlock.complete+' من '+unlock.total+' دروس مكتملة</small></div>':'')+
+       '<div class="exam-card-foot-v5">'+
+       (unlock.unlocked
+         ?'<a class="btn btn-primary" href="'+quizHref(q)+'">'+(best?'إعادة الاختبار':'ابدأ الاختبار')+' <i class="fa-solid fa-arrow-left"></i></a>'
+         :'<button class="btn btn-soft locked-exam-btn" data-locked-exam="'+q.id+'" data-lock-reason="'+C.esc(unlock.reason)+'"><i class="fa-solid fa-lock"></i> أكمل المتطلبات أولًا</button>')+
+       '</div>'+
      '</div></article>';
  }).join(''):'<div class="feature-empty"><span>📭</span><h3>لا توجد اختبارات مطابقة</h3><p>جرّب مادة أخرى أو غيّر عبارة البحث.</p></div>';
 
