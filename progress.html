@@ -26,8 +26,26 @@
   </header>
 
   <main>
-    <section class="feature-hero">
-      <div class="container"><div class="feature-hero-card"><div class="feature-hero-copy"><span class="section-kicker light">اعرف أنت واقف فين</span><h1>متابعة تقدمك</h1><p>شوف تقدم المواد، نتائج الاختبارات، وقت الدراسة، ونشاطك الأسبوعي في لوحة واحدة.</p></div><span class="feature-hero-art">📈</span></div></div></section>
+    <section class="feature-hero progress-hero-v6">
+      <div class="container">
+        <div class="feature-hero-card progress-hero-card-v6">
+          <div class="progress-hero-copy-v6">
+            <span class="section-kicker light">اعرف أنت واقف فين</span>
+            <h1>تقدمك يا <span id="progressStudentName">طالبنا</span></h1>
+            <p id="progressStageTitle">شوف تقدم المواد، نتائج الاختبارات، وقت الدراسة، ونشاطك الأسبوعي في لوحة واحدة.</p>
+            <div class="progress-hero-actions-v6">
+              <a href="./exam-center.html"><i class="fa-solid fa-bullseye"></i> اختبر نفسك</a>
+              <a href="./profile.html?tab=mistakes"><i class="fa-solid fa-list-check"></i> دفتر الأخطاء</a>
+              <a href="./index.html"><i class="fa-solid fa-book-open"></i> موادي</a>
+            </div>
+          </div>
+          <aside class="progress-hero-panel-v6">
+            <div class="progress-overall-ring-v6" id="progressOverallRing"><strong id="progressOverall">0%</strong><span>التقدم العام</span></div>
+            <div class="progress-level-copy-v6"><small>مستواك الحالي</small><strong>المستوى <b id="progressLevel">1</b></strong><p><b id="progressXp">0</b> XP</p><div><span id="progressLevelBar"></span></div><em id="progressNextLevel">1000 XP للمستوى التالي</em></div>
+          </aside>
+        </div>
+      </div>
+    </section>
 
     <section class="container learning-tools-nav-wrap">
       <nav class="learning-tools-nav" aria-label="أدوات تنظيم ومتابعة الدراسة">
@@ -39,34 +57,57 @@
     </section>
 
     <section class="container feature-container">
-      <div class="feature-stat-row">
+      <div class="feature-stat-row progress-stat-row-v6">
         <article><span class="stat-icon green"><i class="fa-solid fa-check"></i></span><div><strong id="progressLessons">0</strong><small>درس مكتمل</small></div></article>
-        <article><span class="stat-icon blue"><i class="fa-solid fa-percent"></i></span><div><strong id="progressAverage">0%</strong><small>متوسط الاختبارات</small></div></article>
+        <article><span class="stat-icon blue"><i class="fa-solid fa-percent"></i></span><div><strong id="progressAverage">—</strong><small>متوسط الاختبارات</small></div></article>
         <article><span class="stat-icon violet"><i class="fa-solid fa-clock"></i></span><div><strong id="progressMinutes">0</strong><small>دقيقة دراسة</small></div></article>
         <article><span class="stat-icon orange"><i class="fa-solid fa-fire"></i></span><div><strong id="progressStreak">0</strong><small>أيام متتالية</small></div></article>
+        <article><span class="stat-icon gold"><i class="fa-solid fa-trophy"></i></span><div><strong id="progressBest">—</strong><small>أفضل نتيجة</small></div></article>
+        <article><span class="stat-icon rose"><i class="fa-solid fa-triangle-exclamation"></i></span><div><strong id="progressMistakes">0</strong><small>خطأ للمراجعة</small></div></article>
       </div>
 
-      <div class="analytics-grid">
-        <article class="analytics-card">
-          <span class="section-kicker">المواد</span><h3>تقدمك في كل مادة</h3>
-          <div class="subject-progress-list" id="subjectProgressList"></div>
+      <section class="progress-section-v6">
+        <div class="progress-section-head-v6">
+          <div><span class="section-kicker">المواد</span><h2>تقدمك مادة بمادة</h2><p>اعرف أي مادة متقدمة وأي مادة تحتاج تركيز أكبر.</p></div>
+          <span class="progress-section-count-v6"><b id="progressSubjectCount">0</b> مادة</span>
+        </div>
+        <div class="progress-subject-grid-v6" id="subjectProgressList"></div>
+      </section>
+
+      <div class="progress-analytics-grid-v6">
+        <article class="analytics-card progress-week-card-v6">
+          <div class="progress-card-head-v6"><div><span class="section-kicker">آخر 7 أيام</span><h3>نشاط الدراسة</h3></div><span><b id="progressWeekMinutes">0</b> دقيقة</span></div>
+          <div class="progress-week-summary-v6"><strong id="progressActiveDays">0</strong><p>أيام نشطة هذا الأسبوع</p></div>
+          <div class="activity-bars progress-activity-bars-v6" id="activityBars"></div>
         </article>
 
-        <article class="analytics-card">
-          <span class="section-kicker">آخر 7 أيام</span><h3>نشاط الدراسة</h3>
-          <div class="activity-bars" id="activityBars"></div>
+        <article class="analytics-card progress-insight-card-v6">
+          <div class="progress-card-head-v6"><div><span class="section-kicker">تحليل الأداء</span><h3 id="progressInsightTitle">ابدأ أول اختبار</h3></div><span id="progressInsightIcon">🌱</span></div>
+          <p id="progressInsightText">بعد أول محاولاتك سنوضح لك أين أنت قوي وأين تحتاج مراجعة.</p>
+          <div class="progress-insight-columns-v6">
+            <div><small><i class="fa-solid fa-arrow-trend-up"></i> أقوى المواد</small><div id="progressStrengthList"></div></div>
+            <div><small><i class="fa-solid fa-bullseye"></i> تحتاج تركيز</small><div id="progressWeakList"></div></div>
+          </div>
         </article>
+      </div>
 
-        <article class="analytics-card">
-          <span class="section-kicker">الاختبارات</span><h3>آخر النتائج</h3>
+      <section class="progress-section-v6">
+        <div class="progress-section-head-v6">
+          <div><span class="section-kicker">إنجازاتك</span><h2>شارات الرحلة</h2><p>إنجازات حقيقية تُفتح حسب تقدمك ونشاطك.</p></div>
+          <a class="progress-inline-action-v6" href="./profile.html">فتح حسابي <i class="fa-solid fa-arrow-left"></i></a>
+        </div>
+        <div class="progress-achievement-grid-v6" id="progressAchievements"></div>
+      </section>
+
+      <div class="progress-history-grid-v6">
+        <article class="analytics-card progress-history-card-v6">
+          <div class="progress-card-head-v6"><div><span class="section-kicker">الاختبارات</span><h3>آخر النتائج</h3></div><a href="./exam-center.html">كل الاختبارات <i class="fa-solid fa-arrow-left"></i></a></div>
           <div class="exam-history-list" id="progressQuizHistory"></div>
-          <a class="btn btn-soft btn-block progress-card-action" href="./exam-center.html">فتح مركز الاختبارات</a>
         </article>
 
-        <article class="analytics-card">
-          <span class="section-kicker">المحاكيات</span><h3>مستواك في الامتحانات التجريبية</h3>
+        <article class="analytics-card progress-history-card-v6">
+          <div class="progress-card-head-v6"><div><span class="section-kicker">المحاكيات</span><h3>الامتحانات التجريبية</h3></div><a href="./simulations.html">كل المحاكيات <i class="fa-solid fa-arrow-left"></i></a></div>
           <div class="exam-history-list" id="progressSimulationHistory"></div>
-          <a class="btn btn-soft btn-block progress-card-action" href="./simulations.html">فتح المحاكيات</a>
         </article>
       </div>
     </section>
