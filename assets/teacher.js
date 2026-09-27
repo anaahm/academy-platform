@@ -164,7 +164,7 @@ function initTeacherCollapse(){
  window.addEventListener('resize',apply,{passive:true});
 }
 function switchTab(tab,updateUrl=true){
- const allowed=['home','content','submit','quizzes','assignments','students','analytics','profile'];
+ const allowed=['home','content','submit','quizzes','assignments','notifications','students','analytics','profile'];
  if(!allowed.includes(tab))tab='home';
  const labels={
    home:['الرئيسية','ملخص عملك التعليمي اليوم'],
@@ -172,6 +172,7 @@ function switchTab(tab,updateUrl=true){
    submit:['إضافة محتوى','أرسل درسًا جديدًا لمراجعة الإدارة'],
    quizzes:['إنشاء اختبار','أضف أسئلة مرتبطة بدرس وأرسلها لاعتماد الإدارة'],
    assignments:['الواجبات','إنشاء الواجبات ومتابعة تسليمات الطلاب'],
+   notifications:['إشعارات الطلاب','أرسل رسالة لطلاب موادك بعد اعتماد الإدارة'],
    students:['تفاعل الطلاب','إحصائيات مجمعة لأداء محتواك'],
    analytics:['الإحصائيات','تحليل المشاهدات والإكمال ونتائج التدريبات'],
    profile:['ملفي العام','معلوماتك التي يراها الطلاب بعد الموافقة']
@@ -381,6 +382,48 @@ async function saveGrade(e){
  finally{window.AcademyUI?.setButtonLoading(btn,false)}
 }
 
+function updateNotificationGrades(){
+ const stage=$('teacherNotificationStage')?.value||'primary',max=stage==='primary'?6:3,current=$('teacherNotificationGrade')?.value;
+ if(!$('teacherNotificationGrade'))return;
+ $('teacherNotificationGrade').innerHTML=Array.from({length:max},(_,i)=>'<option value="'+(i+1)+'">الصف '+(i+1)+'</option>').join('');
+ if(current&&Number(current)<=max)$('teacherNotificationGrade').value=current;
+ updateNotificationSubjects();
+}
+function updateNotificationSubjects(){
+ if(!$('teacherNotificationSubject'))return;
+ const type=$('teacherNotificationType')?.value||'public',stage=$('teacherNotificationStage')?.value||'primary',grade=$('teacherNotificationGrade')?.value||'1',current=$('teacherNotificationSubject').value;
+ const list=getSubjects(stage,grade,type);
+ $('teacherNotificationSubject').innerHTML=list.length?list.map(s=>'<option value="'+escapeHtml(s.id)+'">'+escapeHtml(s.name)+'</option>').join(''):'<option value="">لا توجد مادة مسندة لهذا الصف</option>';
+ if(list.some(s=>s.id===current))$('teacherNotificationSubject').value=current;
+ if($('teacherNotificationSubmitBtn'))$('teacherNotificationSubmitBtn').disabled=!list.length;
+}
+function renderTeacherNotifications(){
+ const rows=Object.entries(submissions||{}).filter(([,v])=>v?.submissionKind==='notification').map(([id,v])=>({id,...(v||{})})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+ const box=$('teacherNotificationRequests');if(!box)return;
+ box.innerHTML=rows.length?rows.map(n=>{
+   const status=n.status||'pending',label=statusLabel(status);
+   return '<article class="submission-item teacher-notification-request-v11"><div><h4><i class="fa-regular fa-bell"></i> '+escapeHtml(n.title||'إشعار')+'</h4><p>'+escapeHtml(n.subjectName||n.subject||'مادة')+' • '+(stageName[n.stage]||n.stage||'')+' • صف '+escapeHtml(n.grade||'')+'</p><small>'+escapeHtml((n.text||'').slice(0,120))+'</small></div><span class="status-pill '+status+'">'+label+'</span></article>';
+ }).join(''):'<div class="portal-empty-state"><span>🔔</span><h3>لم ترسل إشعارات بعد</h3><p>أي رسالة ترسلها ستظهر هنا أثناء مراجعتها من الإدارة.</p></div>';
+}
+async function submitTeacherNotification(e){
+ e.preventDefault();
+ if(teacher?.role==='assistant')return toast('مساعد المعلم لا يملك صلاحية إرسال إشعارات للطلاب.','error');
+ const type=$('teacherNotificationType').value,stage=$('teacherNotificationStage').value,grade=$('teacherNotificationGrade').value,subject=$('teacherNotificationSubject').value;
+ const title=$('teacherNotificationTitle').value.trim(),text=$('teacherNotificationText').value.trim(),priority=$('teacherNotificationPriority').value;
+ const subjectName=$('teacherNotificationSubject').selectedOptions[0]?.textContent||subject,durationDays=Math.max(1,Math.min(14,Number($('teacherNotificationDays').value||5)));
+ const href=$('teacherNotificationHref').value.trim();
+ if(!title||!text||!subject)return toast('أكمل المادة والعنوان ونص الإشعار.','error');
+ if(!assignmentAllowed(type,stage,grade,subject))return toast('لا يمكنك إرسال إشعار لمادة غير مسندة إلى حسابك.','error');
+ if(href&&!href.startsWith('./')&&!href.startsWith('/')&&!/^https?:\/\//i.test(href))return toast('رابط الإجراء غير صالح. استخدم رابطًا داخليًا يبدأ بـ ./ أو رابط https.','error');
+ const payload={submissionKind:'notification',title,text,type,stage,grade,subject,subjectName,priority,durationDays,href,status:'pending',teacherId:user.uid,teacherName:teacher.name||user.displayName||'المدرس',createdAt:Date.now()};
+ const btn=$('teacherNotificationSubmitBtn');window.AcademyUI?.setButtonLoading(btn,true,'إرسال');
+ try{
+   const ref=db.ref('teacherSubmissions/'+user.uid).push();await ref.set(payload);submissions[ref.key]=payload;
+   e.target.reset();$('teacherNotificationDays').value=5;updateNotificationGrades();render();toast('تم إرسال الإشعار للإدارة للمراجعة ✅');
+ }catch(err){console.error(err);toast('تعذر إرسال الإشعار الآن.','error')}
+ finally{window.AcademyUI?.setButtonLoading(btn,false);updateNotificationSubjects()}
+}
+
 function render(){
  const name=teacher.name||user.displayName||user.email.split('@')[0]||'أستاذنا';
  $('teacherTopName').textContent='أهلًا '+name+' 👋';$('teacherWelcomeName').textContent=name;
@@ -412,6 +455,7 @@ function render(){
  renderSubmissionList('teacherRecentSubmissions',subs.slice(0,5));
  renderSubmissionList('teacherQuizRequests',subs.filter(s=>s.submissionKind==='quiz'));
  renderSubmissionList('teacherAssignmentRequests',subs.filter(s=>s.submissionKind==='assignment'));
+ renderTeacherNotifications();
  if($('teacherApprovedList')){
    $('teacherApprovedList').innerHTML=lessons.length?lessons.map(l=>'<article class="submission-item"><div><h4>'+escapeHtml(l.title||'درس')+'</h4><p>'+(stageName[l.stage]||l.stage||'')+' • صف '+(l.grade||'')+' • '+(l.subject||'')+'</p></div><span class="status-pill approved">منشور</span></article>').join(''):'<p class="profile-muted">لا يوجد محتوى منشور حتى الآن.</p>';
  }
@@ -490,6 +534,10 @@ $('teacherGenerateQuestions').onclick=generateQuizQuestionsFromBank;
 $('teacherQuizForm').addEventListener('submit',submitTeacherQuiz);
 $('teacherProfileForm')?.addEventListener('submit',submitTeacherProfile);
 $('teacherAssignmentForm')?.addEventListener('submit',submitTeacherAssignment);
+$('teacherNotificationForm')?.addEventListener('submit',submitTeacherNotification);
+$('teacherNotificationType')?.addEventListener('change',updateNotificationSubjects);
+$('teacherNotificationStage')?.addEventListener('change',updateNotificationGrades);
+$('teacherNotificationGrade')?.addEventListener('change',updateNotificationSubjects);
 $('assignmentStage')?.addEventListener('change',updateAssignmentGrades);
 $('assignmentGrade')?.addEventListener('change',updateAssignmentSubjects);
 $('assignmentEducationType')?.addEventListener('change',updateAssignmentSubjects);
@@ -514,11 +562,13 @@ auth.onAuthStateChanged(async u=>{
    const t=await db.ref('teacherProfiles/'+u.uid).once('value');
    teacher=t.val();
    if(teacher?.role==='assistant'){
-     $$('[data-teacher-tab="assignments"]').forEach(el=>el.classList.add('hidden'));
-     $$('[data-teacher-tab="students"]').forEach(el=>el.classList.add('hidden'));
+     $('[data-teacher-tab="assignments"]').forEach(el=>el.classList.add('hidden'));
+     $('[data-teacher-tab="notifications"]').forEach(el=>el.classList.add('hidden'));
+     $('[data-teacher-tab="students"]').forEach(el=>el.classList.add('hidden'));
    }else{
-     $$('[data-teacher-tab="assignments"]').forEach(el=>el.classList.remove('hidden'));
-     $$('[data-teacher-tab="students"]').forEach(el=>el.classList.remove('hidden'));
+     $('[data-teacher-tab="assignments"]').forEach(el=>el.classList.remove('hidden'));
+     $('[data-teacher-tab="notifications"]').forEach(el=>el.classList.remove('hidden'));
+     $('[data-teacher-tab="students"]').forEach(el=>el.classList.remove('hidden'));
    }
    if($('teacherTopRole')){
      $('teacherTopRole').textContent=teacher?.role==='assistant'?'مساعد معلم • إعداد محتوى واختبارات':teacher?.role==='supervisor'?'مشرف مادة • متابعة المحتوى والتحليلات':'بوابة إدارة المحتوى التعليمي';
@@ -557,7 +607,7 @@ auth.onAuthStateChanged(async u=>{
    if(unavailableSubmissions.size)toast('تم فتح البوابة، لكن تعذر تحميل بعض تسليمات الواجبات.','error');
 
    $('teacherAccess').classList.add('hidden');$('teacherPortal').classList.remove('hidden');
-   updateGrades();updateAssignmentGrades();updateQuizGrades();render();renderTeacherProfile(publicProfileSnap.val()||{});
+   updateGrades();updateAssignmentGrades();updateQuizGrades();updateNotificationGrades();render();renderTeacherProfile(publicProfileSnap.val()||{});
    const requested=new URLSearchParams(location.search).get('tab')||'home';switchTab(requested,false);
  }catch(err){console.error(err);showNoAccess('تعذر تحميل صلاحيات المدرس الآن.')}
  finally{window.AcademyUI?.hidePageLoading()}
