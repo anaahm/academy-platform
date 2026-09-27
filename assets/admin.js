@@ -1172,7 +1172,13 @@ document.addEventListener('keydown',e=>{
 });
 $('openSubjectModal').onclick=()=>{resetSubjectEditor();openModal('subjectModal')};$('openLessonModal').onclick=()=>{resetLessonEditor();openModal('lessonModal')};$('openQuizModal').onclick=()=>{resetQuizEditor();openModal('quizModal')};$('openFileModal').onclick=()=>{resetFileEditor();openModal('fileModal')};$('openSimulationModal').onclick=()=>{resetSimulationEditor();openModal('simulationModal')};$('openLiveModal').onclick=()=>{resetLiveEditor();openModal('liveModal')};
 $('addLessonVideoRow').onclick=addLessonVideoRow;
-renderLessonVideosEditor([{name:'',url:''}]);
+$('addLessonQuestion')?.addEventListener('click',()=>addAdminQuestion('lesson'));
+$('addQuizQuestion')?.addEventListener('click',()=>addAdminQuestion('quiz'));
+$('importLessonQuestionsJson')?.addEventListener('click',()=>importQuestionJson('lesson'));
+$('importQuizQuestionsJson')?.addEventListener('click',()=>importQuestionJson('quiz'));
+renderLessonVideosEditor([{name:'',url:'',teacherId:''}]);
+renderQuestionBuilder('lesson',[]);
+renderQuestionBuilder('quiz',[]);
 bindAdminForm('newsForm',saveNews,'نشر');
 $('newsCancelEdit').onclick=resetNewsEditor;
 bindAdminForm('subjectForm',saveSubject,'حفظ المادة');
@@ -1287,6 +1293,12 @@ bindHierarchy('subjectType','subjectStage','subjectGrade',null);
 bindHierarchy('newLessonType','newLessonStage','newLessonGrade','newLessonSubject');
 bindHierarchy('newQuizType','newQuizStage','newQuizGrade','newQuizSubject');
 bindHierarchy('newFileType','newFileStage','newFileGrade','newFileSubject');
+['newLessonType','newLessonStage','newLessonGrade','newLessonSubject','newLessonUnit','newLessonTitle','newLessonContent','newLessonImage','newLessonImagePosition','newLessonHidden'].forEach(id=>{
+ const el=$(id);if(!el)return;el.addEventListener(el.tagName==='SELECT'||el.type==='checkbox'?'change':'input',renderLessonEditorPreview);
+});
+['newQuizType','newQuizStage','newQuizGrade','newQuizSubject','newQuizUnit','newQuizName','newQuizHidden'].forEach(id=>{
+ const el=$(id);if(!el)return;el.addEventListener(el.tagName==='SELECT'||el.type==='checkbox'?'change':'input',renderQuizEditorPreview);
+});
 bindHierarchy('scheduleType','scheduleStage','scheduleGrade','scheduleSubject');
 bindHierarchy('simType','simStage','simGrade',null);
 fillGrades($('curriculumGrade'),$('curriculumStage').value);
