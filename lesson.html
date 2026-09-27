@@ -58,6 +58,15 @@
             <button class="btn btn-primary" id="nextLessonBtn">التالي <i class="fa-solid fa-arrow-left"></i></button>
           </div>
         </div>
+        <div class="lesson-journey-strip" id="lessonJourneyStrip" aria-label="رحلة الدرس">
+          <button type="button" data-journey-target="explanation"><span><i class="fa-solid fa-circle-play"></i></span><div><small>1</small><strong>شاهد وافهم</strong></div></button>
+          <i class="fa-solid fa-chevron-left"></i>
+          <button type="button" data-journey-target="quiz"><span><i class="fa-solid fa-bullseye"></i></span><div><small>2</small><strong>حل التدريب</strong></div></button>
+          <i class="fa-solid fa-chevron-left"></i>
+          <button type="button" data-journey-target="mistakes"><span><i class="fa-solid fa-rotate"></i></span><div><small>3</small><strong>راجع أخطاءك</strong></div></button>
+          <i class="fa-solid fa-chevron-left"></i>
+          <button type="button" data-journey-target="complete"><span><i class="fa-solid fa-trophy"></i></span><div><small>4</small><strong>أكمل الدرس</strong></div></button>
+        </div>
       </div>
     </section>
 
@@ -66,6 +75,11 @@
         <article class="video-theater">
           <div class="video-frame" id="videoFrame">
             <div class="video-placeholder"><span><i class="fa-solid fa-circle-play"></i></span><h3>لا يوجد فيديو لهذا الدرس</h3><p>يمكنك متابعة الشرح المكتوب والتدريب.</p></div>
+          </div>
+          <div class="active-teacher-bar hidden" id="activeTeacherBar">
+            <div class="active-teacher-avatar" id="activeTeacherAvatar">م</div>
+            <div><small>تتابع الآن شرح</small><strong id="activeTeacherName">مدرس المادة</strong><span id="activeTeacherTitle">فريق الأكاديمية</span></div>
+            <a id="activeTeacherProfileLink" class="active-teacher-profile hidden" href="#" aria-label="فتح ملف المدرس"><i class="fa-solid fa-user"></i> ملف المدرس</a>
           </div>
           <div class="teacher-switcher-wrap hidden" id="teacherSwitcherWrap">
             <div class="teacher-switcher-head"><div><span class="section-kicker">اختر أسلوب الشرح</span><h3>مدرسو هذا الدرس</h3></div><span id="teacherCountBadge" class="teacher-count">0 مدرس</span></div>
@@ -137,6 +151,15 @@
             <div class="lesson-notes-footer"><span id="lessonNotesStatus">لم يتم الحفظ بعد</span><button class="btn btn-primary" id="saveLessonNotesBtn"><i class="fa-solid fa-floppy-disk"></i> حفظ الملاحظات</button></div>
           </article>
         </section>
+
+        <article class="lesson-finish-card" id="lessonFinishCard">
+          <div class="lesson-finish-icon" id="lessonFinishIcon"><i class="fa-solid fa-route"></i></div>
+          <div class="lesson-finish-copy"><span class="section-kicker">بعد ما تخلص</span><h2 id="lessonFinishTitle">كمّل خطوات الدرس</h2><p id="lessonFinishText">شاهد الشرح، حل التدريب، ثم علّم الدرس كمكتمل.</p></div>
+          <div class="lesson-finish-actions">
+            <button class="btn btn-soft" type="button" id="lessonFinishReview"><i class="fa-solid fa-book-open"></i> راجع الشرح</button>
+            <button class="btn btn-primary" type="button" id="lessonFinishAction">الخطوة التالية <i class="fa-solid fa-arrow-left"></i></button>
+          </div>
+        </article>
       </div>
 
       <aside class="lesson-sidebar">
@@ -176,13 +199,19 @@
     </section>
   </main>
 
+  <nav class="lesson-mobile-actions" id="lessonMobileActions" aria-label="إجراءات الدرس السريعة">
+    <button type="button" data-mobile-lesson-tab="explanation"><i class="fa-solid fa-book-open"></i><span>الشرح</span></button>
+    <button type="button" data-mobile-lesson-tab="quiz"><i class="fa-solid fa-bullseye"></i><span>التدريب</span></button>
+    <button type="button" id="mobileCompleteLesson"><i class="fa-regular fa-circle-check"></i><span>إكمال</span></button>
+  </nav>
+
   <script src="./assets/ui-kit.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="./assets/firebase-config.js"></script>
   <script src="./assets/student-core.js"></script>\n  <script src="./assets/pro-features.js"></script>
-  <script src="./assets/learning.js?v=45"></script>\n  <script src="./assets/video-resume.js"></script>
+  <script src="./assets/learning.js?v=46"></script>\n  <script src="./assets/video-resume.js"></script>
   <script src="./assets/activity-tracker.js"></script>
   <script src="./assets/pwa.js"></script>
   <script src="./assets/student-shell.js"></script>
