@@ -26,11 +26,29 @@
   </header>
 
   <main>
-    <section class="feature-hero">
+    <section class="feature-hero schedule-hero-v7">
       <div class="container">
-        <div class="feature-hero-card">
-          <div><span class="section-kicker light">كل مواعيدك في مكان واحد</span><h1>جدولي الذكي</h1><p>حصص الأكاديمية، البث المباشر، ومهام المذاكرة اليومية مرتبة في أسبوع واضح.</p></div>
-          <span class="feature-hero-art">📅</span>
+        <div class="feature-hero-card schedule-hero-card-v7">
+          <div class="schedule-hero-copy-v7">
+            <span class="section-kicker light">كل مواعيدك في مكان واحد</span>
+            <h1>أسبوعك مرتب أمامك</h1>
+            <p id="scheduleHeroText">حصص الأكاديمية، البث المباشر، ومهام المذاكرة اليومية مرتبة في أسبوع واضح.</p>
+            <div class="schedule-hero-actions-v7">
+              <a href="./planner.html"><i class="fa-solid fa-plus"></i> أضف مهمة مذاكرة</a>
+              <a href="./weekly-report.html"><i class="fa-solid fa-chart-column"></i> تقرير الأسبوع</a>
+            </div>
+          </div>
+          <aside class="schedule-next-panel-v7">
+            <div class="schedule-next-kicker-v7"><span><i class="fa-regular fa-clock"></i> أقرب موعد</span><b id="scheduleHeroCountdown">—</b></div>
+            <strong id="scheduleHeroNextTitle">لا يوجد موعد قريب</strong>
+            <p id="scheduleHeroNextMeta">سيظهر أقرب موعد تلقائيًا.</p>
+            <div class="schedule-next-summary-v7">
+              <span><small>اليوم</small><b id="scheduleHeroToday">0</b></span>
+              <span><small>الأسبوع</small><b id="scheduleHeroWeek">0</b></span>
+              <span><small>مباشر</small><b id="scheduleHeroLive">0</b></span>
+            </div>
+            <a class="hidden" id="scheduleHeroNextAction" href="#">فتح الموعد <i class="fa-solid fa-arrow-left"></i></a>
+          </aside>
         </div>
       </div></section>
 
@@ -44,20 +62,22 @@
     </section>
 
     <section class="container feature-page-content">
-      <section class="feature-stat-grid">
+      <section class="feature-stat-grid schedule-stats-v7">
         <article><span class="feature-card-icon blue"><i class="fa-solid fa-calendar-day"></i></span><div><strong id="scheduleTodayCount">0</strong><small>موعد اليوم</small></div></article>
         <article><span class="feature-card-icon violet"><i class="fa-solid fa-calendar-week"></i></span><div><strong id="scheduleWeekCount">0</strong><small>هذا الأسبوع</small></div></article>
         <article><span class="feature-card-icon green"><i class="fa-solid fa-tower-broadcast"></i></span><div><strong id="scheduleLiveCount">0</strong><small>جلسات مباشرة</small></div></article>
         <article><span class="feature-card-icon amber"><i class="fa-solid fa-list-check"></i></span><div><strong id="scheduleTaskCount">0</strong><small>مهام مذاكرة</small></div></article>
+        <article><span class="feature-card-icon cyan"><i class="fa-solid fa-chalkboard-user"></i></span><div><strong id="scheduleClassCount">0</strong><small>حصص</small></div></article>
+        <article><span class="feature-card-icon rose"><i class="fa-solid fa-mug-hot"></i></span><div><strong id="scheduleFreeDays">0</strong><small>أيام بدون مواعيد</small></div></article>
       </section>
 
-      <section class="schedule-layout">
-        <article class="feature-card schedule-calendar-card">
+      <section class="schedule-layout schedule-layout-v7">
+        <article class="feature-card schedule-calendar-card schedule-calendar-card-v7">
           <div class="feature-card-head"><div><span class="section-kicker">الأسبوع الحالي</span><h2 id="scheduleWeekLabel">جدول الأسبوع</h2></div><a class="btn btn-soft" href="./planner.html"><i class="fa-solid fa-plus"></i> أضف مهمة مذاكرة</a></div>
           <div id="scheduleWeek" class="schedule-week"></div>
         </article>
 
-        <aside class="schedule-side">
+        <aside class="schedule-side schedule-side-v7">
           <article class="feature-card">
             <div class="feature-card-head"><div><span class="section-kicker">القادم</span><h3>أقرب موعد</h3></div><span>⏳</span></div>
             <div id="nextScheduleItem" class="next-schedule-item"></div>
