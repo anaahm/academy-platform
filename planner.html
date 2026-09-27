@@ -27,11 +27,28 @@
   </header>
 
   <main>
-    <section class="feature-hero">
+    <section class="feature-hero planner-hero-v7">
       <div class="container">
-        <div class="feature-hero-card">
-          <div><span class="section-kicker light">نظّم وقتك بدل ما تذاكر عشوائي</span><h1>مخطط المذاكرة الشخصي</h1><p>حدد مهامك اليومية، رتّب الأولويات، واتبع خطة واقعية مرتبطة بموادك وتقدمك.</p></div>
-          <span class="feature-hero-art">🗓️</span>
+        <div class="feature-hero-card planner-hero-card-v7">
+          <div class="planner-hero-copy-v7">
+            <span class="section-kicker light">نظّم وقتك بدل ما تذاكر عشوائي</span>
+            <h1>خطتك اليوم يا <span id="plannerStudentName">طالبنا</span></h1>
+            <p id="plannerHeroText">حدد مهامك اليومية، رتّب الأولويات، واتبع خطة واقعية مرتبطة بموادك وتقدمك.</p>
+            <div class="planner-hero-actions-v7">
+              <button type="button" id="plannerHeroAddBtn"><i class="fa-solid fa-plus"></i> أضف مهمة</button>
+              <a href="./schedule.html"><i class="fa-regular fa-calendar-days"></i> جدول الأسبوع</a>
+              <a href="./weekly-report.html"><i class="fa-solid fa-chart-column"></i> تقرير الأسبوع</a>
+            </div>
+          </div>
+          <aside class="planner-today-panel-v7">
+            <div class="planner-today-date-v7"><span id="plannerTodayDay">اليوم</span><strong id="plannerTodayDate">—</strong></div>
+            <div class="planner-today-summary-v7">
+              <div><small>مهام اليوم</small><strong id="plannerHeroTodayCount">0</strong></div>
+              <div><small>وقت اليوم</small><strong><b id="plannerHeroTodayMinutes">0</b> د</strong></div>
+              <div><small>متأخرة</small><strong id="plannerHeroOverdue">0</strong></div>
+            </div>
+            <div class="planner-today-next-v7"><small>ابدأ الآن بـ</small><strong id="plannerHeroNextTask">لا توجد مهمة محددة</strong><button type="button" id="plannerHeroNextBtn">عرض المهمة <i class="fa-solid fa-arrow-left"></i></button></div>
+          </aside>
         </div>
       </div></section>
 
@@ -45,16 +62,18 @@
     </section>
 
     <section class="container feature-page-content">
-      <section class="feature-stat-grid planner-stats">
-        <article><span class="feature-card-icon blue"><i class="fa-solid fa-list-check"></i></span><div><strong id="plannerTotal">0</strong><small>مهمة</small></div></article>
+      <section class="feature-stat-grid planner-stats planner-stats-v7">
+        <article><span class="feature-card-icon blue"><i class="fa-solid fa-list-check"></i></span><div><strong id="plannerTotal">0</strong><small>إجمالي المهام</small></div></article>
         <article><span class="feature-card-icon green"><i class="fa-solid fa-check-double"></i></span><div><strong id="plannerDone">0</strong><small>مكتملة</small></div></article>
-        <article><span class="feature-card-icon amber"><i class="fa-solid fa-clock"></i></span><div><strong id="plannerToday">0</strong><small>اليوم</small></div></article>
+        <article><span class="feature-card-icon amber"><i class="fa-solid fa-clock"></i></span><div><strong id="plannerToday">0</strong><small>متبقي اليوم</small></div></article>
         <article><span class="feature-card-icon violet"><i class="fa-solid fa-bullseye"></i></span><div><strong id="plannerRate">0%</strong><small>نسبة الإنجاز</small></div></article>
+        <article><span class="feature-card-icon rose"><i class="fa-solid fa-triangle-exclamation"></i></span><div><strong id="plannerOverdueCount">0</strong><small>متأخرة</small></div></article>
+        <article><span class="feature-card-icon cyan"><i class="fa-regular fa-clock"></i></span><div><strong id="plannerPendingMinutes">0</strong><small>دقيقة متبقية</small></div></article>
       </section>
 
       <section class="planner-layout">
         <div class="planner-main">
-          <article class="feature-card planner-add-card">
+          <article class="feature-card planner-add-card planner-add-card-v7" id="plannerAddCard">
             <div class="feature-card-head"><div><span class="section-kicker">أضف خطوة واضحة</span><h2>مهمة مذاكرة جديدة</h2></div><span class="feature-card-icon blue"><i class="fa-solid fa-plus"></i></span></div>
             <form id="plannerForm" class="planner-form">
               <label class="planner-full"><span>المهمة</span><input id="plannerTitle" required maxlength="100" placeholder="مثال: مراجعة الوحدة الثانية"></label>
@@ -66,7 +85,7 @@
             </form>
           </article>
 
-          <article class="feature-card planner-list-card">
+          <article class="feature-card planner-list-card planner-list-card-v7">
             <div class="feature-card-head"><div><span class="section-kicker">خطة التنفيذ</span><h2>مهامك</h2></div>
               <div class="feature-filter-chips" role="tablist" aria-label="تصفية مهام المذاكرة">
                 <button class="active" data-planner-filter="all" role="tab" aria-selected="true">الكل</button>
@@ -79,7 +98,7 @@
           </article>
         </div>
 
-        <aside class="planner-side">
+        <aside class="planner-side planner-side-v7">
           <article class="feature-card">
             <div class="feature-card-head"><div><span class="section-kicker">اقتراح تلقائي</span><h3>ابدأ من هنا</h3></div><span>✨</span></div>
             <div id="plannerSuggestion" class="planner-suggestion"></div>
