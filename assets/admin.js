@@ -801,7 +801,12 @@ async function saveLesson(e){
  const rawImage=$('newLessonImage').value.trim(),imageUrl=rawImage?safeSubjectImageUrl(rawImage):'';
  if(rawImage&&!imageUrl)return toast('رابط صورة الدرس غير صحيح.','error');
  if(videos.some(v=>!window.AcademyUtils.safeUrl(v.url)))return toast('راجع روابط فيديوهات الدرس.','error');
- const payload={type:$('newLessonType').value,stage:$('newLessonStage').value,grade:$('newLessonGrade').value,subject:$('newLessonSubject').value,unit:Number($('newLessonUnit').value||1),title:$('newLessonTitle').value.trim(),content:$('newLessonContent').value.trim(),imageUrl,imagePosition:$('newLessonImagePosition').value,videos,questions,isLocked:existing?.isLocked||false,isHidden:$('newLessonHidden').checked};
+ const targetType=$('newLessonType').value,targetStage=$('newLessonStage').value,targetGrade=$('newLessonGrade').value,targetSubject=$('newLessonSubject').value,targetUnit=Number($('newLessonUnit').value||1);
+ const sameSlot=existing&&existing.type===targetType&&existing.stage===targetStage&&String(existing.grade)===String(targetGrade)&&existing.subject===targetSubject&&Number(existing.unit||1)===targetUnit;
+ const siblings=values(root.lessons).filter(l=>l.id!==editState.lesson&&l.type===targetType&&l.stage===targetStage&&String(l.grade)===String(targetGrade)&&l.subject===targetSubject&&Number(l.unit||1)===targetUnit);
+ const maxOrder=Math.max(0,...siblings.map(lessonAdminSortValue).filter(Number.isFinite));
+ const sortOrder=sameSlot&&Number.isFinite(Number(existing?.sortOrder))?Number(existing.sortOrder):maxOrder+1000;
+ const payload={type:targetType,stage:targetStage,grade:targetGrade,subject:targetSubject,unit:targetUnit,sortOrder,title:$('newLessonTitle').value.trim(),content:$('newLessonContent').value.trim(),imageUrl,imagePosition:$('newLessonImagePosition').value,videos,questions,isLocked:existing?.isLocked||false,isHidden:$('newLessonHidden').checked};
  if(!payload.title)return toast('اكتب عنوان الدرس.','error');
  if(!videos.length&&!payload.content)return toast('أضف فيديو شرح أو شرحًا مكتوبًا للدرس.','error');
  if(editState.lesson){payload.updatedAt=Date.now();await db.ref('lessons/'+editState.lesson).update(payload);toast('تم تحديث الدرس')}
