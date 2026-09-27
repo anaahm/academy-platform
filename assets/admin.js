@@ -535,24 +535,26 @@ async function createTeacherAccount(event){
    $('newTeacherPassword').value='';button.disabled=false;
  }
 }
-const publicProfileFields=['name','title','photoUrl','bio','qualifications','experience','teachingStyle'];
+const publicProfileFields=['name','title','photoUrl','coverUrl','bio','qualifications','experience','teachingStyle'];
 function cleanPublicProfile(raw={}){
- const limits={name:80,title:100,photoUrl:500,bio:1200,qualifications:200,experience:200,teachingStyle:450},out={};
+ const limits={name:80,title:100,photoUrl:500,coverUrl:500,bio:1200,qualifications:200,experience:200,teachingStyle:450},out={};
  publicProfileFields.forEach(key=>out[key]=String(raw[key]||'').trim().slice(0,limits[key]));
  out.photoUrl=out.photoUrl&&cleanUrl(out.photoUrl)!=='#'?out.photoUrl:'';
+ out.coverUrl=out.coverUrl&&cleanUrl(out.coverUrl)!=='#'?out.coverUrl:'';
  return out;
 }
 function fillTeacherProfileEditor(){
  const uid=$('profileTeacherId').value,t=root.teacherProfiles?.[uid]||{},p=root.settings?.publicTeachers?.[uid]||{};
- const fields={Name:p.name||t.name||'',Title:p.title||'',Photo:p.photoUrl||'',Bio:p.bio||'',Qualifications:p.qualifications||'',Experience:p.experience||'',Style:p.teachingStyle||''};
+ const fields={Name:p.name||t.name||'',Title:p.title||'',Photo:p.photoUrl||'',Cover:p.coverUrl||'',Bio:p.bio||'',Qualifications:p.qualifications||'',Experience:p.experience||'',Style:p.teachingStyle||''};
  Object.entries(fields).forEach(([key,value])=>{$('profileTeacher'+key).value=value});
 }
 async function saveTeacherProfile(e){
  e.preventDefault();const uid=$('profileTeacherId').value,t=root.teacherProfiles?.[uid];
  if(!t||t.isActive===false)return toast('اختر مدرسًا نشطًا أولًا.','error');
- const raw={name:$('profileTeacherName').value,title:$('profileTeacherTitle').value,photoUrl:$('profileTeacherPhoto').value,bio:$('profileTeacherBio').value,qualifications:$('profileTeacherQualifications').value,experience:$('profileTeacherExperience').value,teachingStyle:$('profileTeacherStyle').value};
+ const raw={name:$('profileTeacherName').value,title:$('profileTeacherTitle').value,photoUrl:$('profileTeacherPhoto').value,coverUrl:$('profileTeacherCover').value,bio:$('profileTeacherBio').value,qualifications:$('profileTeacherQualifications').value,experience:$('profileTeacherExperience').value,teachingStyle:$('profileTeacherStyle').value};
  const profile=cleanPublicProfile(raw);if(!profile.name||!profile.title)return toast('الاسم والتخصص مطلوبان.','error');
  if(raw.photoUrl.trim()&&!profile.photoUrl)return toast('رابط الصورة يجب أن يبدأ بـ https:// أو http://.','error');
+ if(raw.coverUrl.trim()&&!profile.coverUrl)return toast('رابط الغلاف يجب أن يبدأ بـ https:// أو http://.','error');
  try{await db.ref('settings/publicTeachers/'+uid).set({...profile,active:true,updatedAt:Date.now()});toast('تم نشر ملف المدرس للطلاب')}catch(err){console.error(err);toast('تعذر حفظ ملف المدرس.','error')}
 }
 async function reviewTeacherProfile(key,approved){
@@ -573,7 +575,7 @@ function renderTeachers(){
  $('profileTeacherId').value=teachers.some(t=>t.id===selected&&t.isActive!==false)?selected:'';
  if(!$('profileTeacherId').value&&teachers.some(t=>t.isActive!==false))$('profileTeacherId').value=teachers.find(t=>t.isActive!==false).id;
  if(document.activeElement?.closest('#adminTeacherProfileForm')===null||document.activeElement===$('profileTeacherId'))fillTeacherProfileEditor();
- $('teacherProfileRequestsList').innerHTML=profileRequests.length?profileRequests.map(s=>{const p=s.profile||{},photo=cleanUrl(p.photoUrl||'');return '<div class="admin-list-item"><div><strong>'+esc(p.name||root.teacherProfiles?.[s.uid]?.name||'مدرس')+'</strong><small>'+esc(p.title||'')+'</small><details class="teacher-profile-review"><summary>عرض المعلومات المقترحة</summary>'+(photo!=='#'?'<img src="'+esc(photo)+'" alt="الصورة المقترحة" loading="lazy">':'')+'<p><b>النبذة:</b> '+esc(p.bio||'—')+'</p><p><b>المؤهلات:</b> '+esc(p.qualifications||'—')+'</p><p><b>الخبرة:</b> '+esc(p.experience||'—')+'</p><p><b>أسلوب الشرح:</b> '+esc(p.teachingStyle||'—')+'</p></details></div><div class="admin-action-row">'+(s.status==='pending'?'<button class="admin-action-btn success" data-approve-profile="'+s.uid+'|'+s.id+'" title="اعتماد ونشر" aria-label="اعتماد ملف '+esc(p.name||'المدرس')+'">✓</button><button class="admin-action-btn danger" data-reject-profile="'+s.uid+'|'+s.id+'" title="رفض" aria-label="رفض ملف '+esc(p.name||'المدرس')+'">✕</button>':'<span class="status-pill '+(s.status==='approved'?'approved':'rejected')+'">'+(s.status==='approved'?'معتمد':'مرفوض')+'</span>')+'</div></div>'}).join(''):empty('لا توجد طلبات ملفات','يمكن للمدرس تقديم معلومات ملفه من بوابته.');
+ $('teacherProfileRequestsList').innerHTML=profileRequests.length?profileRequests.map(s=>{const p=s.profile||{},photo=cleanUrl(p.photoUrl||'');return '<div class="admin-list-item"><div><strong>'+esc(p.name||root.teacherProfiles?.[s.uid]?.name||'مدرس')+'</strong><small>'+esc(p.title||'')+'</small><details class="teacher-profile-review"><summary>عرض المعلومات المقترحة</summary>'+(photo!=='#'?'<img src="'+esc(photo)+'" alt="الصورة المقترحة" loading="lazy">':'')+(cleanUrl(p.coverUrl||'')!=='#'?'<p><a href="'+esc(cleanUrl(p.coverUrl||''))+'" target="_blank" rel="noopener">فتح صورة الغلاف المقترحة</a></p>':'')+'<p><b>النبذة:</b> '+esc(p.bio||'—')+'</p><p><b>المؤهلات:</b> '+esc(p.qualifications||'—')+'</p><p><b>الخبرة:</b> '+esc(p.experience||'—')+'</p><p><b>أسلوب الشرح:</b> '+esc(p.teachingStyle||'—')+'</p></details></div><div class="admin-action-row">'+(s.status==='pending'?'<button class="admin-action-btn success" data-approve-profile="'+s.uid+'|'+s.id+'" title="اعتماد ونشر" aria-label="اعتماد ملف '+esc(p.name||'المدرس')+'">✓</button><button class="admin-action-btn danger" data-reject-profile="'+s.uid+'|'+s.id+'" title="رفض" aria-label="رفض ملف '+esc(p.name||'المدرس')+'">✕</button>':'<span class="status-pill '+(s.status==='approved'?'approved':'rejected')+'">'+(s.status==='approved'?'معتمد':'مرفوض')+'</span>')+'</div></div>'}).join(''):empty('لا توجد طلبات ملفات','يمكن للمدرس تقديم معلومات ملفه من بوابته.');
  $$('[data-approve-profile]').forEach(b=>b.onclick=()=>reviewTeacherProfile(b.dataset.approveProfile,true));
  $$('[data-reject-profile]').forEach(b=>b.onclick=()=>reviewTeacherProfile(b.dataset.rejectProfile,false));
  $('pendingCountText').textContent=pending.length+' قيد المراجعة';
