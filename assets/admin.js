@@ -941,7 +941,7 @@ function clearBulkSelection(kind){
 }
 async function bulkLessonVisibility(hidden){
  const ids=[...selectedLessonIds];if(!ids.length)return;
- const updates={};ids.forEach(id=>updates['lessons/'+id+'/isHidden']=!!hidden);await db.ref().update(updates);
+ const updates={},now=Date.now();ids.forEach(id=>{updates['lessons/'+id+'/isHidden']=!!hidden;updates['lessons/'+id+'/publishAt']=null;if(!hidden){updates['lessons/'+id+'/reviewStatus']='approved';updates['lessons/'+id+'/reviewedAt']=now;updates['lessons/'+id+'/reviewedBy']=currentUser?.uid||'';updates['lessons/'+id+'/publishedAt']=now}});await db.ref().update(updates);
  await writeAudit(hidden?'lesson.bulk_hide':'lesson.bulk_publish','lesson','bulk',{count:ids.length,ids});clearBulkSelection('lesson');toast((hidden?'تم إخفاء ':'تم نشر ')+ids.length+' درس');
 }
 async function bulkMoveLessons(){
@@ -988,7 +988,7 @@ function quizBankUpdates(quizId,quiz,updates,now){
  });
 }
 async function bulkQuizVisibility(hidden){
- const ids=[...selectedQuizIds];if(!ids.length)return;const updates={};ids.forEach(id=>updates['quizzes/'+id+'/isHidden']=!!hidden);await db.ref().update(updates);
+ const ids=[...selectedQuizIds];if(!ids.length)return;const updates={},now=Date.now();ids.forEach(id=>{updates['quizzes/'+id+'/isHidden']=!!hidden;updates['quizzes/'+id+'/publishAt']=null;if(!hidden){updates['quizzes/'+id+'/reviewStatus']='approved';updates['quizzes/'+id+'/reviewedAt']=now;updates['quizzes/'+id+'/reviewedBy']=currentUser?.uid||'';updates['quizzes/'+id+'/publishedAt']=now}});await db.ref().update(updates);
  await writeAudit(hidden?'quiz.bulk_hide':'quiz.bulk_publish','quiz','bulk',{count:ids.length,ids});clearBulkSelection('quiz');toast((hidden?'تم إخفاء ':'تم نشر ')+ids.length+' اختبار');
 }
 async function bulkDuplicateQuizzes(){
@@ -1073,7 +1073,7 @@ async function saveLesson(e){
  const siblings=values(root.lessons).filter(l=>l.id!==editState.lesson&&l.type===targetType&&l.stage===targetStage&&String(l.grade)===String(targetGrade)&&l.subject===targetSubject&&Number(l.unit||1)===targetUnit);
  const maxOrder=Math.max(0,...siblings.map(lessonAdminSortValue).filter(Number.isFinite));
  const sortOrder=sameSlot&&Number.isFinite(Number(existing?.sortOrder))?Number(existing.sortOrder):maxOrder+1000;
- const payload={type:targetType,stage:targetStage,grade:targetGrade,subject:targetSubject,unit:targetUnit,sortOrder,title:$('newLessonTitle').value.trim(),content:$('newLessonContent').value.trim(),imageUrl,imagePosition:$('newLessonImagePosition').value,videos,questions,isLocked:existing?.isLocked||false,isHidden:$('newLessonHidden').checked};
+ const payload={type:targetType,stage:targetStage,grade:targetGrade,subject:targetSubject,unit:targetUnit,sortOrder,title:$('newLessonTitle').value.trim(),content:$('newLessonContent').value.trim(),imageUrl,imagePosition:$('newLessonImagePosition').value,videos,questions,isLocked:existing?.isLocked||false,isHidden:$('newLessonHidden').checked,publishAt:$('newLessonHidden').checked?null:(existing?.publishAt||null),reviewStatus:existing?.reviewStatus||'approved'};
  if(!payload.title)return toast('اكتب عنوان الدرس.','error');
  if(!videos.length&&!payload.content)return toast('أضف فيديو شرح أو شرحًا مكتوبًا للدرس.','error');
  if(editState.lesson){payload.updatedAt=Date.now();await db.ref('lessons/'+editState.lesson).update(payload);toast('تم تحديث الدرس')}
@@ -1132,7 +1132,7 @@ async function saveQuiz(e){
  try{questions=window.AcademyUtils.validateQuestions(questions)}catch(err){return toast(err.message,'error')}
  if(!questions.length)return toast('أضف سؤالًا صحيحًا واحدًا على الأقل.','error');
  const existing=editState.quiz?root.quizzes?.[editState.quiz]:null;
- const payload={type:$('newQuizType').value,stage:$('newQuizStage').value,grade:$('newQuizGrade').value,subject:$('newQuizSubject').value,unit:Number($('newQuizUnit').value||0),name:$('newQuizName').value.trim(),questions,isHidden:!!$('newQuizHidden')?.checked};
+ const payload={type:$('newQuizType').value,stage:$('newQuizStage').value,grade:$('newQuizGrade').value,subject:$('newQuizSubject').value,unit:Number($('newQuizUnit').value||0),name:$('newQuizName').value.trim(),questions,isHidden:!!$('newQuizHidden')?.checked,publishAt:$('newQuizHidden')?.checked?null:(existing?.publishAt||null),reviewStatus:existing?.reviewStatus||'approved'};
  if(!payload.name)return toast('اكتب اسم الاختبار.','error');
  if(existing?.lessonId){payload.lessonId=existing.lessonId;payload.teacherId=existing.teacherId||'';payload.teacherSubmissionId=existing.teacherSubmissionId||''}
  const quizId=editState.quiz||db.ref('quizzes').push().key,now=Date.now(),updates={};
@@ -1657,6 +1657,13 @@ bindAdminForm('lessonForm',saveLesson,'حفظ الدرس');
 bindAdminForm('quizForm',saveQuiz,'حفظ الاختبار');
 $('contentCopyForm')?.addEventListener('submit',executeContentCopy);
 $('contentCopyStage')?.addEventListener('change',()=>fillGrades($('contentCopyGrade'),$('contentCopyStage').value));
+$('contentReviewEdit')?.addEventListener('click',editReviewedContent);
+$('contentReviewApprove')?.addEventListener('click',approveReviewedContent);
+$('contentReviewPublish')?.addEventListener('click',publishReviewedContent);
+$('contentReviewHide')?.addEventListener('click',hideReviewedContent);
+$('contentReviewSchedule')?.addEventListener('click',scheduleReviewedContent);
+$('contentReviewCancelSchedule')?.addEventListener('click',cancelReviewedSchedule);
+$('contentReviewReload')?.addEventListener('click',refreshContentReviewFrame);
 bindAdminForm('fileForm',saveFile,'حفظ الملف');
 bindAdminForm('simulationForm',saveSimulation,'حفظ المحاكي');
 bindAdminForm('liveForm',saveLiveSession,'حفظ الجلسة');
