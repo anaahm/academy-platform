@@ -111,6 +111,7 @@ try{
     document.title=p.name+' | معلمو الأكاديمية';
     if(breadcrumb)breadcrumb.textContent=p.name;
     const photo=safeUrl(p.photoUrl||'');
+    const cover=safeUrl(p.coverUrl||'');
     const initials=String(p.name||'م').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('');
 
     const subjectCards=scopes.length?scopes.slice(0,8).map(scope=>{
@@ -139,7 +140,7 @@ try{
 
     view.innerHTML=
       '<section class="teacher-showcase-hero">'+
-        '<div class="teacher-showcase-cover"><span class="teacher-showcase-orb one"></span><span class="teacher-showcase-orb two"></span></div>'+
+        '<div class="teacher-showcase-cover '+(cover?'has-cover':'')+'" '+(cover?'style="--teacher-cover-image:url(&quot;'+esc(cover)+'&quot;)"':'')+'><span class="teacher-showcase-orb one"></span><span class="teacher-showcase-orb two"></span></div>'+
         '<div class="teacher-showcase-content">'+
           '<div class="teacher-showcase-photo">'+(photo?'<img src="'+esc(photo)+'" alt="صورة '+esc(p.name)+'" loading="eager">':'<span>'+esc(initials)+'</span>')+'<i class="fa-solid fa-circle-check" title="ملف منشور من الأكاديمية"></i></div>'+
           '<div class="teacher-showcase-identity"><span class="teacher-profile-eyebrow"><i class="fa-solid fa-shield-halved"></i> من فريق الأكاديمية</span><h1>'+esc(p.name)+'</h1><p>'+esc(p.title||'معلم في الأكاديمية')+'</p>'+
