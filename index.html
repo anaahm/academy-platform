@@ -277,79 +277,110 @@
         </header>
 
         <main class="ref-dashboard-page">
-          <section class="ref-hero-card" id="dashboardHero">
+          <section class="ref-hero-card student-home-hero-v3" id="dashboardHero">
             <div class="ref-hero-overlay"></div>
-            <div class="ref-hero-copy">
-              <h1>مرحبًا <span id="heroStudentName">طالبنا</span> <span class="wave">👋</span></h1>
-              <p id="dashboardHeroSubtitle">كل يوم هو فرصة جديدة للتعلم وتقترب من أهدافك</p>
-              <div class="ref-hero-badges">
-                <button type="button" id="dashChangeStudyBtn" class="hero-badge grade"><i class="fa-solid fa-graduation-cap"></i><span id="currentGradeTitle">الصف الدراسي</span></button>
-                <span class="hero-badge type" id="currentEducationTitle">التعليم العام</span>
+            <div class="student-home-hero-content">
+              <div class="ref-hero-copy student-home-hero-copy">
+                <div class="student-home-kicker">
+                  <span><i class="fa-regular fa-sun"></i> <b id="dashboardGreetingLabel">مرحبًا بك</b></span>
+                  <small id="dashboardDateLabel">يوم جديد للتعلم</small>
+                </div>
+                <h1>أهلًا <span id="heroStudentName">طالبنا</span> <span class="wave">👋</span></h1>
+                <p id="dashboardHeroSubtitle">كل يوم هو فرصة جديدة للتعلم وتقترب من أهدافك</p>
+                <div class="ref-hero-badges">
+                  <button type="button" id="dashChangeStudyBtn" class="hero-badge grade"><i class="fa-solid fa-graduation-cap"></i><span id="currentGradeTitle">الصف الدراسي</span></button>
+                  <span class="hero-badge type" id="currentEducationTitle">التعليم العام</span>
+                </div>
+                <div class="student-home-hero-actions">
+                  <button type="button" class="hero-main-action" id="heroContinueBtn"><i class="fa-solid fa-play"></i><span><small>كمّل رحلتك</small><strong>تابع آخر درس</strong></span></button>
+                  <button type="button" class="hero-quick-action" id="heroSubjectsBtn"><i class="fa-solid fa-book-open"></i><span>موادي</span></button>
+                  <button type="button" class="hero-quick-action" id="heroQuizBtn"><i class="fa-solid fa-brain"></i><span>اختبار</span></button>
+                </div>
               </div>
+
+              <aside class="student-home-hero-panel" aria-label="ملخص مستواك">
+                <div class="student-home-level-head">
+                  <div><small>مستواك الحالي</small><strong>المستوى <span id="heroLevelValue">1</span></strong></div>
+                  <span class="student-home-level-badge"><i class="fa-solid fa-crown"></i></span>
+                </div>
+                <div class="student-home-level-progress"><span id="heroLevelProgress"></span></div>
+                <div class="student-home-level-xp"><span><b id="heroXpValue">0</b> XP</span><small id="heroNextLevelText">استمر للتقدم للمستوى التالي</small></div>
+                <div class="student-home-hero-mini-grid">
+                  <div><span class="blue"><i class="fa-solid fa-chart-line"></i></span><small>التقدم العام</small><strong id="heroOverallPercent">0%</strong></div>
+                  <div><span class="orange"><i class="fa-solid fa-fire"></i></span><small>السلسلة</small><strong><b id="heroStreakValue">0</b> يوم</strong></div>
+                </div>
+              </aside>
             </div>
           </section>
 
-          <section class="future-progress-overview" aria-label="ملخص تقدم الطالب">
-            <article class="future-overall-progress">
+          <section class="future-progress-overview dashboard-stat-band-v3" aria-label="ملخص تقدم الطالب">
+            <article class="future-overall-progress dashboard-overall-v3">
               <div class="future-ring" id="dashboardOverallRing"><strong id="dashboardOverallPercent">0%</strong></div>
-              <div><small>التقدم العام</small><h3>أنت على الطريق الصحيح</h3><p>استمر في إكمال دروسك واختباراتك.</p></div>
+              <div><small>تقدمك في موادك</small><h3 id="dashboardProgressMessage">أنت على الطريق الصحيح</h3><p id="dashboardProgressHint">استمر في إكمال دروسك واختباراتك.</p></div>
+              <a href="./progress.html" aria-label="عرض تفاصيل التقدم"><i class="fa-solid fa-arrow-left"></i></a>
             </article>
-            <article class="future-mini-stat"><span class="future-mini-icon fire"><i class="fa-solid fa-fire"></i></span><div><small>سلسلة التعلم</small><strong id="streakValue">0</strong><p>يوم متتالٍ</p></div></article>
-            <article class="future-mini-stat"><span class="future-mini-icon blue"><i class="fa-solid fa-graduation-cap"></i></span><div><small>الدروس المكتملة</small><strong id="completedLessons">0</strong><p>درس</p></div></article>
-            <article class="future-mini-stat"><span class="future-mini-icon green"><i class="fa-solid fa-file-circle-check"></i></span><div><small>الاختبارات</small><strong id="completedQuizzes">0</strong><p>اختبار</p></div></article>
-            <article class="future-mini-stat"><span class="future-mini-icon purple"><i class="fa-solid fa-star"></i></span><div><small>نقاط الخبرة</small><strong id="xpStat">0</strong><p>XP</p></div></article>
+            <article class="future-mini-stat dashboard-stat-v3 streak"><span class="future-mini-icon fire"><i class="fa-solid fa-fire"></i></span><div><small>سلسلة التعلم</small><strong id="streakValue">0</strong><p>يوم متتالٍ</p></div><i class="fa-solid fa-chevron-left stat-arrow"></i></article>
+            <article class="future-mini-stat dashboard-stat-v3 lessons"><span class="future-mini-icon blue"><i class="fa-solid fa-graduation-cap"></i></span><div><small>الدروس المكتملة</small><strong id="completedLessons">0</strong><p>درس أنهيته</p></div><i class="fa-solid fa-chevron-left stat-arrow"></i></article>
+            <article class="future-mini-stat dashboard-stat-v3 quizzes"><span class="future-mini-icon green"><i class="fa-solid fa-file-circle-check"></i></span><div><small>الاختبارات</small><strong id="completedQuizzes">0</strong><p>اختبار مكتمل</p></div><i class="fa-solid fa-chevron-left stat-arrow"></i></article>
+            <article class="future-mini-stat dashboard-stat-v3 xp"><span class="future-mini-icon purple"><i class="fa-solid fa-star"></i></span><div><small>نقاط الخبرة</small><strong id="xpStat">0</strong><p>XP إجمالي</p></div><i class="fa-solid fa-chevron-left stat-arrow"></i></article>
           </section>
 
           <section class="ref-main-grid">
-            <article class="ref-card ref-continue-card">
-              <header class="ref-card-head">
-                <div><i class="fa-solid fa-circle-play"></i><h2>تابع من حيث توقفت</h2></div>
+            <article class="ref-card ref-continue-card continue-card-v3">
+              <header class="ref-card-head continue-head-v3">
+                <div><span class="continue-head-icon"><i class="fa-solid fa-circle-play"></i></span><div><small>عودة سريعة</small><h2>تابع من حيث توقفت</h2></div></div>
+                <span class="continue-status-pill" id="continueStatusLabel">جاهز للمتابعة</span>
               </header>
-              <div class="ref-continue-layout">
-                <div class="ref-continue-visual" id="continueLessonVisual">
-                  <span class="continue-subject-tag">موادك</span>
+              <div class="ref-continue-layout continue-layout-v3">
+                <div class="ref-continue-visual continue-visual-v3" id="continueLessonVisual">
+                  <span class="continue-subject-tag" id="continueVisualSubject">موادك</span>
                   <button type="button" class="continue-play" id="continuePlayBtn" aria-label="متابعة الدرس"><i class="fa-solid fa-play"></i></button>
+                  <div class="continue-visual-foot"><span><i class="fa-solid fa-book-open"></i> <b id="continueLessonCount">0</b> درس في المادة</span></div>
                 </div>
-                <div class="ref-continue-copy">
+                <div class="ref-continue-copy continue-copy-v3">
                   <span class="ref-muted" id="continueSubjectName">المادة الدراسية</span>
                   <h3 id="continueTitle">اختر أول مادة وابدأ رحلتك</h3>
                   <p id="continueMeta">سنحفظ تقدمك تلقائيًا.</p>
-                  <div class="continue-progress-line"><span style="width:58%"></span></div>
-                  <div class="continue-time"><span>تقدمك في المادة</span><span id="continueProgressLabel">0%</span></div>
-                  <button class="btn ref-primary-btn" id="continueLearningBtn">متابعة الدرس <i class="fa-solid fa-play"></i></button>
+                  <div class="continue-progress-title"><span>تقدمك في المادة</span><strong id="continueProgressLabel">0%</strong></div>
+                  <div class="continue-progress-line"><span id="continueProgressBar" style="width:0%"></span></div>
+                  <div class="continue-actions-v3">
+                    <button class="btn ref-primary-btn" id="continueLearningBtn">متابعة الدرس <i class="fa-solid fa-play"></i></button>
+                    <button class="continue-secondary-action" id="continueOpenSubjectBtn" type="button">كل محتوى المادة <i class="fa-solid fa-arrow-left"></i></button>
+                  </div>
                 </div>
               </div>
             </article>
 
-            <article class="ref-card ref-next-card">
-              <header class="ref-card-head"><div><i class="fa-solid fa-bullseye"></i><h2>ماذا تفعل اليوم؟</h2></div></header>
-              <div class="next-step-pill">الخطوة التالية لك</div>
-              <div class="next-step-content">
+            <article class="ref-card ref-next-card next-card-v3">
+              <header class="ref-card-head"><div><span class="next-head-icon"><i class="fa-solid fa-bullseye"></i></span><div><small>اقتراح ذكي</small><h2>أهم خطوة ليك اليوم</h2></div></div></header>
+              <div class="next-step-pill"><i class="fa-solid fa-wand-magic-sparkles"></i> اخترناها حسب يومك</div>
+              <div class="next-step-content next-step-content-v3">
                 <span class="next-step-art">📋</span>
                 <div>
                   <h3 id="pulseActionTitle">جاري تجهيز أهم خطوة ليك...</h3>
                   <p id="pulseActionText">هنعرض المطلوب الأهم فقط.</p>
-                  <small>القادم: <strong id="pulseNextTime">—</strong></small>
+                  <small><i class="fa-regular fa-clock"></i> القادم: <strong id="pulseNextTime">—</strong></small>
                 </div>
               </div>
-              <button class="btn ref-primary-btn" id="pulseActionBtn">ابدأ الآن <i class="fa-solid fa-arrow-left"></i></button>
+              <button class="btn ref-primary-btn next-main-action" id="pulseActionBtn">ابدأ الآن <i class="fa-solid fa-arrow-left"></i></button>
             </article>
 
-            <article class="ref-card ref-goals-card">
+            <article class="ref-card ref-goals-card goals-card-v3">
               <header class="ref-card-head goals-head">
-                <div><i class="fa-solid fa-bullseye"></i><h2>أهدافك اليومية</h2></div>
+                <div><span class="goals-head-icon"><i class="fa-solid fa-check-double"></i></span><div><small>خطوات صغيرة كل يوم</small><h2>أهدافك اليومية</h2></div></div>
                 <strong id="dailyGoalCount">0 من 4 مكتملة</strong>
               </header>
+              <div class="goals-summary-v3">
+                <div class="goals-ring-v3" id="dailyGoalRing"><strong id="dailyGoalPercent">0%</strong><span>اليوم</span></div>
+                <div><h3 id="dailyGoalHeadline">ابدأ بخطوة واحدة</h3><p id="dailyGoalMessage">ابدأ بخطوة صغيرة وخلي اليوم يتحسب لك.</p></div>
+              </div>
               <div class="ref-goal-progress"><span id="dailyGoalProgress"></span></div>
               <div class="ref-goal-list">
-                <button data-daily-goal="lesson"><i class="fa-regular fa-circle goal-state"></i><span>مشاهدة درس جديد</span></button>
-                <button data-daily-goal="assignment"><i class="fa-regular fa-circle goal-state"></i><span>حل واجب مدرسي</span></button>
-                <button data-daily-goal="quiz"><i class="fa-regular fa-circle goal-state"></i><span>إجراء اختبار قصير</span></button>
-                <button data-daily-goal="review"><i class="fa-regular fa-circle goal-state"></i><span>مذاكرة لمدة 30 دقيقة</span></button>
+                <button data-daily-goal="lesson"><i class="fa-regular fa-circle goal-state"></i><span>مشاهدة درس جديد</span><em>+25 XP</em></button>
+                <button data-daily-goal="assignment"><i class="fa-regular fa-circle goal-state"></i><span>حل واجب مدرسي</span><em>+25 XP</em></button>
+                <button data-daily-goal="quiz"><i class="fa-regular fa-circle goal-state"></i><span>إجراء اختبار قصير</span><em>+25 XP</em></button>
+                <button data-daily-goal="review"><i class="fa-regular fa-circle goal-state"></i><span>مذاكرة لمدة 30 دقيقة</span><em>+25 XP</em></button>
               </div>
-              <p class="hidden" id="dailyGoalMessage"></p>
-              <span class="hidden" id="dailyGoalRing"></span>
-              <span class="hidden" id="dailyGoalPercent"></span>
               <button class="hidden" id="dailyQuickStart"></button>
             </article>
           </section>
