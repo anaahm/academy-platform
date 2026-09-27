@@ -220,7 +220,7 @@ function renderOverview(){
  $('overviewStats').innerHTML=stats.map((s,i)=>'<article class="mix-admin-stat stat-'+i+'"><span><i class="fa-solid '+s[0]+'"></i></span><div><strong>'+s[1]+'</strong><small>'+s[2]+'</small></div></article>').join('');
 
  if($('adminOverviewGreeting'))$('adminOverviewGreeting').textContent='أهلًا '+adminName()+'، هذه أهم حالة للأكاديمية الآن.';
- if($('adminOverviewHealth'))$('adminOverviewHealth').textContent=readiness+'%';
+ if($('adminOverviewHealth')){$('adminOverviewHealth').textContent=readiness+'%';$('adminOverviewHealth').closest('.mix-admin-command-ring')?.style.setProperty('--health-angle',(readiness*3.6)+'deg')}
  if($('adminOverviewAttention')){
    const totalAttention=pending.length+reports+inactiveTeachers.length;
    $('adminOverviewAttention').innerHTML='<i class="fa-solid fa-bell"></i> '+(totalAttention?totalAttention+' عناصر تحتاج متابعة':'لا توجد مهام عاجلة');
@@ -250,7 +250,7 @@ function renderOverview(){
  $('latestContentList').innerHTML=latest.length?latest.map(l=>'<div class="admin-list-item"><div><strong>'+esc(l.title||'درس')+'</strong><small>'+esc(typeLabel(l.type))+' • '+esc(stageNames[l.stage]||l.stage)+' • '+esc(l.subject||'')+'</small></div><span class="status-pill info">درس</span></div>').join(''):empty('لا يوجد محتوى بعد','أضف أول درس من قسم الدروس.');
  $('overviewPendingList').innerHTML=pending.length?pending.slice(0,5).map(s=>'<div class="admin-list-item"><div><strong>'+esc(s.title||'محتوى')+'</strong><small>'+esc(s.teacherName||'مدرس')+'</small></div><span class="status-pill pending">مراجعة</span></div>').join(''):empty('لا توجد مراجعات معلقة','كل محتوى المدرسين تمت مراجعته.');
 
- $('[data-jump-tab]',$('admin-tab-overview')).forEach(b=>b.onclick=()=>setTab(b.dataset.jumpTab));
+ $$('[data-jump-tab]',$('admin-tab-overview')).forEach(b=>b.onclick=()=>setTab(b.dataset.jumpTab));
 }
 
 /* Curriculum */
