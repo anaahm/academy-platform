@@ -475,6 +475,7 @@
     if($('dailyGoalCount')) $('dailyGoalCount').textContent=done+' من 4 مكتملة';
     if($('pulseChallengeState')) $('pulseChallengeState').textContent=done+' / 4';
     if($('dailyGoalProgress')) $('dailyGoalProgress').style.width=pct+'%';
+    if($('dailyGoalHeadline'))$('dailyGoalHeadline').textContent=done===4?'أنجزت يومك بالكامل 🎉':done===3?'باقي هدف واحد فقط':done>=1?'أنت بدأت اليوم بشكل ممتاز':'ابدأ بخطوة واحدة';
     if($('dailyGoalMessage')) {
       $('dailyGoalMessage').textContent=done===4?'ممتاز! أنهيت أهداف اليوم بالكامل 🎉':done===3?'باقي خطوة واحدة فقط، كمّلها 💪':done?'بداية ممتازة، استمر.':'ابدأ بخطوة صغيرة وخلي اليوم يتحسب لك.';
     }
@@ -707,8 +708,10 @@
     const subjects = getSubjects(p.stage, String(p.grade), p.educationType);
     const settings = state.dbData.settings || {};
 
-    const hour = new Date().getHours();
+    const nowDate=new Date(),hour=nowDate.getHours();
     const greeting = hour < 12 ? 'صباح الخير' : hour < 18 ? 'مرحبًا' : 'مساء الخير';
+    if($('dashboardGreetingLabel'))$('dashboardGreetingLabel').textContent=greeting;
+    if($('dashboardDateLabel'))$('dashboardDateLabel').textContent=nowDate.toLocaleDateString('ar-EG',{weekday:'long',day:'numeric',month:'long'});
     if($('dashStudentName')) $('dashStudentName').textContent = name;
     if($('heroStudentName')) $('heroStudentName').textContent = name;
     if($('dashTodayLabel')) $('dashTodayLabel').textContent = settings.dashboardProfileSubtitle || 'طالب مجتهد يصنع الفرق';
@@ -734,6 +737,17 @@
     const progressValues=subjects.map(s=>Math.max(0,Math.min(100,subjectProgressOf(p,s.id)))),overall=progressValues.length?Math.round(progressValues.reduce((a,b)=>a+b,0)/progressValues.length):0;
     if($('dashboardOverallPercent'))$('dashboardOverallPercent').textContent=overall+'%';
     if($('dashboardOverallRing'))$('dashboardOverallRing').style.setProperty('--progress',(overall*3.6)+'deg');
+    if($('heroOverallPercent'))$('heroOverallPercent').textContent=overall+'%';
+    if($('heroXpValue'))$('heroXpValue').textContent=stats.xp;
+    if($('heroStreakValue'))$('heroStreakValue').textContent=stats.streak;
+    if($('heroLevelValue'))$('heroLevelValue').textContent=stats.level;
+    const xpInLevel=Math.max(0,stats.xp%1000),xpToNext=xpInLevel===0&&stats.xp>0?1000:1000-xpInLevel,levelPct=stats.xp>0&&xpInLevel===0?100:Math.round(xpInLevel/1000*100);
+    if($('heroLevelProgress'))$('heroLevelProgress').style.width=levelPct+'%';
+    if($('heroNextLevelText'))$('heroNextLevelText').textContent=levelPct===100?'جاهز للمستوى التالي':('باقي '+xpToNext+' XP للمستوى التالي');
+    const progressMessage=overall>=80?'ممتاز! أنت قريب من إنهاء جزء كبير من صفك':overall>=50?'تقدم قوي — حافظ على نفس الإيقاع':overall>=20?'بداية جيدة، وكل درس يصنع فرقًا':'ابدأ أول مادة وخلي تقدمك يظهر هنا';
+    const progressHint=overall>=80?'راجع المواد الأقل تقدمًا وأكمل الاختبارات المتبقية.':overall>=50?'ركز على مادة واحدة يوميًا بدل التشتت بين كل المواد.':overall>=20?'كمّل درسًا واختبارًا قصيرًا اليوم لرفع تقدمك.':'اختر مادة واحدة وابدأ بأول درس؛ سنحفظ كل خطوة.';
+    if($('dashboardProgressMessage'))$('dashboardProgressMessage').textContent=progressMessage;
+    if($('dashboardProgressHint'))$('dashboardProgressHint').textContent=progressHint;
     if($('streakSideValue')) $('streakSideValue').textContent=stats.streak;
     renderDashboardStreak(p,stats);
 
@@ -785,17 +799,27 @@
     const first = subjects[0];
     const lastSubject = subjects.find(s => s.id === p.lastSubjectId) || first;
     if (lastSubject) {
+      const continueProgress=Math.max(0,Math.min(100,subjectProgressOf(p,lastSubject.id)));
+      const visibleSubjectLessons=Object.values(state.dbData.lessons||{}).filter(l=>l&&!l.isHidden&&(!Number(l.publishAt||0)||Number(l.publishAt)<=Date.now())&&l.type===p.educationType&&l.stage===p.stage&&String(l.grade)===String(p.grade)&&l.subject===lastSubject.id);
       if($('continueSubjectName')) $('continueSubjectName').textContent=lastSubject.name;
-      if($('continueProgressLabel')) $('continueProgressLabel').textContent=Math.max(0,Math.min(100,subjectProgressOf(p,lastSubject.id)))+'%';
+      if($('continueVisualSubject'))$('continueVisualSubject').textContent=lastSubject.name;
+      if($('continueProgressLabel')) $('continueProgressLabel').textContent=continueProgress+'%';
+      if($('continueProgressBar'))$('continueProgressBar').style.width=continueProgress+'%';
+      if($('continueLessonCount'))$('continueLessonCount').textContent=visibleSubjectLessons.length;
+      if($('continueStatusLabel'))$('continueStatusLabel').textContent=p.lastLessonId?'جاهز للمتابعة':continueProgress?'كمّل تقدمك':'ابدأ الآن';
       const continueImage=safeDashboardImage(lastSubject.imageUrl||'');
       if($('continueLessonVisual')){
-        $('continueLessonVisual').style.backgroundImage=continueImage?'linear-gradient(rgba(15,23,42,.12),rgba(15,23,42,.28)),url("'+continueImage.replace(/"/g,'%22')+'")':'';
+        $('continueLessonVisual').style.backgroundImage=continueImage?'linear-gradient(rgba(15,23,42,.10),rgba(15,23,42,.46)),url("'+continueImage.replace(/"/g,'%22')+'")':'';
         $('continueLessonVisual').classList.toggle('has-image',!!continueImage);
       }
       $('continueTitle').textContent = p.lastLessonTitle || `ابدأ أول درس في ${lastSubject.name}`;
       $('continueMeta').textContent = p.lastLessonTitle
-        ? `${lastSubject.name} • ${gradeLabels[p.stage]?.[p.grade] || ''}`
+        ? `${lastSubject.name} • ${gradeLabels[p.stage]?.[p.grade] || ''} • سنفتح آخر نقطة وصلت لها`
         : 'اختر المادة وابدأ، وسنحفظ تقدمك تلقائيًا.';
+      const subjectUrl=()=>{
+        const q=new URLSearchParams({type:p.educationType,stage:p.stage,grade:String(p.grade),subject:lastSubject.id});
+        return './subject.html?'+q.toString();
+      };
       const go=() => {
         const q = new URLSearchParams({
           type: p.educationType,
@@ -808,6 +832,8 @@
       };
       $('continueLearningBtn').onclick=go;
       if($('continuePlayBtn')) $('continuePlayBtn').onclick=go;
+      if($('heroContinueBtn'))$('heroContinueBtn').onclick=go;
+      if($('continueOpenSubjectBtn'))$('continueOpenSubjectBtn').onclick=()=>location.href=subjectUrl();
     }
 
     loadDailyGoals();
@@ -1077,6 +1103,8 @@
     $('exploreAllStagesMain')?.addEventListener('click', () => location.href='./explore.html');
     $('dashHomeBtn')?.addEventListener('click', () => window.scrollTo({top:0,behavior:'smooth'}));
     $('dashSubjectsBtn')?.addEventListener('click', () => document.getElementById('studentSubjects')?.scrollIntoView({behavior:'smooth'}));
+    $('heroSubjectsBtn')?.addEventListener('click', () => document.getElementById('studentSubjects')?.scrollIntoView({behavior:'smooth',block:'start'}));
+    $('heroQuizBtn')?.addEventListener('click', () => location.href='./exam-center.html');
     $('dashTestsBtn')?.addEventListener('click', () => location.href='./exam-center.html');
     $('dashProgressBtn')?.addEventListener('click', () => location.href='./progress.html');
     $('dashPlannerBtn')?.addEventListener('click', () => location.href='./planner.html');
