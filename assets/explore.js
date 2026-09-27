@@ -54,11 +54,22 @@ function stageData(){
  const cached=state.stageCache[state.stage];
  return cached&&typeof cached.then!=='function'?cached:{lessons:{},quizzes:{}};
 }
+function contentVisible(item){
+ if(!item||item.isHidden)return false;
+ const at=Number(item.publishAt||0);
+ return !at||at<=Date.now();
+}
 function countContent(subjectId){
  const data=stageData();
- const lessons=Object.values(data.lessons||{}).filter(l=>l.type===state.type&&String(l.grade)===String(state.grade)&&l.subject===subjectId&&!l.isHidden).length;
- const quizzes=Object.values(data.quizzes||{}).filter(q=>q.type===state.type&&String(q.grade)===String(state.grade)&&q.subject===subjectId&&!q.isHidden).length;
- return {lessons,quizzes};
+ const lessonRows=Object.values(data.lessons||{}).filter(l=>contentVisible(l)&&l.type===state.type&&String(l.grade)===String(state.grade)&&l.subject===subjectId);
+ const quizRows=Object.values(data.quizzes||{}).filter(q=>contentVisible(q)&&q.type===state.type&&String(q.grade)===String(state.grade)&&q.subject===subjectId);
+ const teachers=new Set(),units=new Set();
+ lessonRows.forEach(l=>{
+   units.add(Number(l.unit||1));
+   if(l.teacherId)teachers.add(String(l.teacherId));
+   (Array.isArray(l.videos)?l.videos:[]).forEach(v=>{if(v?.teacherId)teachers.add(String(v.teacherId))});
+ });
+ return {lessons:lessonRows.length,quizzes:quizRows.length,teachers:teachers.size,units:units.size};
 }
 function safeImageUrl(value=''){
  try{if(!value)return'';const u=new URL(value,location.href);return ['http:','https:'].includes(u.protocol)?u.href:''}catch{return''}
@@ -73,14 +84,32 @@ function syncUrl(){
  if(state.grade)url.searchParams.set('grade',String(state.grade));else url.searchParams.delete('grade');
  history.replaceState({},'',url);
 }
+function updateExplorePath(){
+ if($('explorePathType'))$('explorePathType').textContent=state.type==='azhar'?'التعليم الأزهري':'التعليم العام';
+ if($('explorePathStage'))$('explorePathStage').textContent=state.stage==='primary'?'المرحلة الابتدائية':state.stage==='prep'?'المرحلة الإعدادية':'المرحلة الثانوية';
+ if($('explorePathGrade')){
+   $('explorePathGrade').textContent=state.grade?gradeNames[state.stage][state.grade]:'اختر الصف';
+   $('explorePathGrade').closest('span')?.classList.toggle('muted',!state.grade);
+ }
+}
 function renderGrades(){
- $('exploreGradeGrid').innerHTML=grades[state.stage].map(g=>'<button class="'+(state.grade===g?'active':'')+'" data-grade="'+g+'" aria-pressed="'+(state.grade===g?'true':'false')+'"><strong>'+g+'</strong><span>'+esc(gradeNames[state.stage][g])+'</span></button>').join('');
- $$('[data-grade]').forEach(b=>b.onclick=async()=>{
+ const stageIcon=state.stage==='primary'?'🎒':state.stage==='prep'?'📚':'🎓';
+ $('exploreGradeGrid').innerHTML=grades[state.stage].map(g=>{
+   const active=state.grade===g;
+   return '<button class="explore-grade-card '+(active?'active':'')+'" data-grade="'+g+'" aria-pressed="'+(active?'true':'false')+'">'+
+     '<span class="explore-grade-number">'+g+'</span>'+
+     '<div><small>'+stageIcon+' الصف</small><strong>'+esc(gradeNames[state.stage][g])+'</strong><p>اضغط لعرض المواد والدروس المتاحة</p></div>'+
+     '<span class="explore-grade-arrow"><i class="fa-solid fa-arrow-left"></i></span>'+
+   '</button>';
+ }).join('');
+ $('[data-grade]').forEach(b=>b.onclick=async()=>{
    state.grade=Number(b.dataset.grade);syncUrl();
-   $$('[data-grade]').forEach(x=>{const active=x===b;x.classList.toggle('active',active);x.setAttribute('aria-pressed',active?'true':'false')});
+   $('[data-grade]').forEach(x=>{const active=x===b;x.classList.toggle('active',active);x.setAttribute('aria-pressed',active?'true':'false')});
+   updateExplorePath();
    await loadAndRenderSubjects();
  });
  if(!state.grade){$('exploreSubjectBlock').classList.add('hidden');$('gradeHint').textContent='اختر الصف لعرض مواده'}
+ updateExplorePath();
 }
 function renderSubjects(){
  const term=state.search.trim().toLowerCase();
@@ -89,11 +118,20 @@ function renderSubjects(){
  $('gradeHint').textContent=gradeNames[state.stage][state.grade];
  $('exploreSubjectsTitle').textContent='مواد '+gradeNames[state.stage][state.grade];
  $('exploreSubjectCount').textContent=subjects.length+' مادة';
- $('exploreSubjectGrid').innerHTML=subjects.map(s=>{
-   const counts=countContent(s.id);
-   const image=safeImageUrl(s.imageUrl||'');
-   return '<a class="explore-subject-card '+(image?'has-image':'')+'" href="'+subjectUrl(s.id)+'"><span class="explore-subject-emoji">'+(image?'<img data-subject-image data-fallback="'+esc(s.emoji||'📚')+'" src="'+esc(image)+'" alt="" loading="lazy">':esc(s.emoji||'📚'))+'</span><div><h3>'+esc(s.name)+'</h3><p>'+counts.lessons+' درس • '+counts.quizzes+' اختبار</p></div><span class="explore-open"><i class="fa-solid fa-arrow-left"></i></span></a>';
+ $('exploreSubjectGrid').innerHTML=subjects.map((s,index)=>{
+   const counts=countContent(s.id),image=safeImageUrl(s.imageUrl||''),palette=['blue','violet','green','orange','rose','teal'][index%6];
+   return '<a class="explore-subject-card explore-subject-card-v2 '+palette+' '+(image?'has-image':'')+'" href="'+subjectUrl(s.id)+'">'+
+     '<div class="explore-subject-cover">'+
+       (image?'<img data-subject-image data-fallback="'+esc(s.emoji||'📚')+'" src="'+esc(image)+'" alt="" loading="lazy">':'<span>'+esc(s.emoji||'📚')+'</span>')+
+       '<em>'+esc(gradeNames[state.stage][state.grade])+'</em>'+
+     '</div>'+
+     '<div class="explore-subject-body"><div class="explore-subject-title-row"><div><small>'+esc(state.type==='azhar'?'التعليم الأزهري':'التعليم العام')+'</small><h3>'+esc(s.name)+'</h3></div><span class="explore-open"><i class="fa-solid fa-arrow-left"></i></span></div>'+
+       '<div class="explore-subject-metrics"><span><i class="fa-solid fa-circle-play"></i><b>'+counts.lessons+'</b><small>درس</small></span><span><i class="fa-solid fa-brain"></i><b>'+counts.quizzes+'</b><small>اختبار</small></span><span><i class="fa-solid fa-layer-group"></i><b>'+(counts.units||'—')+'</b><small>وحدة</small></span><span><i class="fa-solid fa-chalkboard-user"></i><b>'+(counts.teachers||'—')+'</b><small>مدرس</small></span></div>'+
+       '<div class="explore-subject-footer"><span>استكشف محتوى المادة</span><strong>فتح المادة <i class="fa-solid fa-arrow-left"></i></strong></div>'+
+     '</div>'+
+   '</a>';
  }).join('')||'<div class="empty-state"><span>🔎</span><h3>لا توجد مادة مطابقة</h3><p>جرّب كلمة أقصر أو صفًا آخر.</p></div>';
+ updateExplorePath();
 }
 async function loadAndRenderSubjects(){
  const requestedStage=state.stage,requestedGrade=state.grade;
@@ -113,12 +151,12 @@ function selectType(type){
  state.type=type;state.grade=null;syncUrl();
  $$('[data-type]').forEach(b=>{const active=b.dataset.type===type;b.classList.toggle('active',active);b.setAttribute('aria-pressed',active?'true':'false')});
  $('activeTypeLabel').textContent=type==='azhar'?'التعليم الأزهري':'التعليم العام';
- renderGrades();
+ renderGrades();updateExplorePath();
 }
 function selectStage(stage){
  state.stage=stage;state.grade=null;syncUrl();
- $$('[data-stage]').forEach(b=>{const active=b.dataset.stage===stage;b.classList.toggle('active',active);b.setAttribute('aria-selected',active?'true':'false')});
- renderGrades();
+ $('[data-stage]').forEach(b=>{const active=b.dataset.stage===stage;b.classList.toggle('active',active);b.setAttribute('aria-selected',active?'true':'false')});
+ renderGrades();updateExplorePath();
 }
 
 $$('[data-type]').forEach(b=>b.onclick=()=>selectType(b.dataset.type));
