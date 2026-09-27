@@ -406,7 +406,7 @@ function openCurriculumQuizCreator(subject,unit){
 }
 function bindCurriculumTree(){
  const wrap=$('curriculumTreeWrap');if(!wrap)return;
- $('.admin-tree-subject',wrap).forEach(details=>details.addEventListener('toggle',()=>{const id=details.dataset.treeSubjectCard;if(!id)return;if(details.open)curriculumOpenSubjects.add(id);else curriculumOpenSubjects.delete(id)}));
+ $$('.admin-tree-subject',wrap).forEach(details=>details.addEventListener('toggle',()=>{const id=details.dataset.treeSubjectCard;if(!id)return;if(details.open)curriculumOpenSubjects.add(id);else curriculumOpenSubjects.delete(id)}));
  $$('[data-tree-edit]',wrap).forEach(b=>b.onclick=()=>editLesson(b.dataset.treeEdit));
  $$('[data-tree-edit-quiz]',wrap).forEach(b=>b.onclick=()=>editQuiz(b.dataset.treeEditQuiz));
  $$('[data-tree-copy]',wrap).forEach(b=>b.onclick=()=>duplicateCurriculumLesson(b.dataset.treeCopy));
@@ -459,8 +459,8 @@ function renderCurriculum(){
        '<div class="mix-admin-card-actions"><a class="admin-action-btn success" href="'+preview+'" target="_blank" rel="noopener" title="فتح المادة"><i class="fa-solid fa-arrow-up-right-from-square"></i></a><button class="admin-action-btn" data-edit-subject="'+esc(s.id)+'" title="تعديل المادة"><i class="fa-solid fa-pen"></i></button>'+(custom?'<button class="admin-action-btn danger" data-delete-subject="'+esc(s.id)+'" title="حذف التخصيص والعودة للوضع الافتراضي"><i class="fa-solid fa-rotate-left"></i></button>':'')+'</div>'+
      '</div></article>';
  }).join(''):empty();
- $('[data-edit-subject]').forEach(b=>b.onclick=()=>editSubject(b.dataset.editSubject));
- $('[data-delete-subject]').forEach(b=>b.onclick=()=>deleteSubject(b.dataset.deleteSubject));
+ $$('[data-edit-subject]').forEach(b=>b.onclick=()=>editSubject(b.dataset.editSubject));
+ $$('[data-delete-subject]').forEach(b=>b.onclick=()=>deleteSubject(b.dataset.deleteSubject));
  renderCurriculumTree(type,stage,grade,list,scopeLessons,scopeQuizzes);applyCurriculumView();
 }
 function safeSubjectImageUrl(value=''){
@@ -475,7 +475,7 @@ function renderSubjectImagePreview(){
  renderSubjectEditorPreview();
 }
 function collectSubjectUnits(){
- return $('.admin-subject-unit-row',$('subjectUnitsBuilder')||document).map(row=>row.querySelector('input')?.value.trim()||'').filter(Boolean);
+ return $$('.admin-subject-unit-row',$('subjectUnitsBuilder')||document).map(row=>row.querySelector('input')?.value.trim()||'').filter(Boolean);
 }
 function syncSubjectUnits(){
  const units=collectSubjectUnits();if($('subjectUnits'))$('subjectUnits').value=units.join('\n');if($('subjectUnitCountEditor'))$('subjectUnitCountEditor').textContent=units.length;renderSubjectEditorPreview();
@@ -488,10 +488,10 @@ function renderSubjectUnitsEditor(units=[]){
  const names=(Array.isArray(units)?units:[]).map(u=>String(u?.name??u??'').trim()).filter(Boolean);
  wrap.innerHTML=names.length?names.map((name,i)=>subjectUnitRowHtml(name,i,names.length)).join(''):'<div class="admin-question-empty"><span>📚</span><strong>لا توجد وحدات بعد</strong><p>أضف أول وحدة أو استورد قائمة كاملة.</p></div>';
  if($('subjectUnitCountEditor'))$('subjectUnitCountEditor').textContent=names.length;
- $('.admin-subject-unit-row input',wrap).forEach(input=>input.addEventListener('input',syncSubjectUnits));
- $('[data-unit-remove]',wrap).forEach(b=>b.onclick=()=>{const rows=collectSubjectUnits();rows.splice(Number(b.dataset.unitRemove),1);renderSubjectUnitsEditor(rows);syncSubjectUnits()});
- $('[data-unit-up]',wrap).forEach(b=>b.onclick=()=>{const rows=collectSubjectUnits(),i=Number(b.dataset.unitUp);if(i>0)[rows[i-1],rows[i]]=[rows[i],rows[i-1]];renderSubjectUnitsEditor(rows);syncSubjectUnits()});
- $('[data-unit-down]',wrap).forEach(b=>b.onclick=()=>{const rows=collectSubjectUnits(),i=Number(b.dataset.unitDown);if(i<rows.length-1)[rows[i+1],rows[i]]=[rows[i],rows[i+1]];renderSubjectUnitsEditor(rows);syncSubjectUnits()});
+ $$('.admin-subject-unit-row input',wrap).forEach(input=>input.addEventListener('input',syncSubjectUnits));
+ $$('[data-unit-remove]',wrap).forEach(b=>b.onclick=()=>{const rows=collectSubjectUnits();rows.splice(Number(b.dataset.unitRemove),1);renderSubjectUnitsEditor(rows);syncSubjectUnits()});
+ $$('[data-unit-up]',wrap).forEach(b=>b.onclick=()=>{const rows=collectSubjectUnits(),i=Number(b.dataset.unitUp);if(i>0)[rows[i-1],rows[i]]=[rows[i],rows[i-1]];renderSubjectUnitsEditor(rows);syncSubjectUnits()});
+ $$('[data-unit-down]',wrap).forEach(b=>b.onclick=()=>{const rows=collectSubjectUnits(),i=Number(b.dataset.unitDown);if(i<rows.length-1)[rows[i+1],rows[i]]=[rows[i],rows[i+1]];renderSubjectUnitsEditor(rows);syncSubjectUnits()});
  if($('subjectUnits')&&!$('subjectUnits').value.trim())$('subjectUnits').value=names.join('\n');
  renderSubjectEditorPreview();
 }
@@ -499,10 +499,10 @@ function addSubjectUnit(){
  const rows=collectSubjectUnits();rows.push('');const wrap=$('subjectUnitsBuilder');
  wrap.innerHTML=(rows.length?rows.map((name,i)=>subjectUnitRowHtml(name,i,rows.length)).join(''):'');
  if($('subjectUnitCountEditor'))$('subjectUnitCountEditor').textContent=rows.filter(Boolean).length;
- $('.admin-subject-unit-row input',wrap).forEach(input=>input.addEventListener('input',syncSubjectUnits));
- $('[data-unit-remove]',wrap).forEach(b=>b.onclick=()=>{const list=$('.admin-subject-unit-row',wrap).map(r=>r.querySelector('input')?.value||'');list.splice(Number(b.dataset.unitRemove),1);renderSubjectUnitsEditor(list);syncSubjectUnits()});
- $('[data-unit-up]',wrap).forEach(b=>b.onclick=()=>{const list=$('.admin-subject-unit-row',wrap).map(r=>r.querySelector('input')?.value||''),i=Number(b.dataset.unitUp);if(i>0)[list[i-1],list[i]]=[list[i],list[i-1]];renderSubjectUnitsEditor(list);syncSubjectUnits()});
- $('[data-unit-down]',wrap).forEach(b=>b.onclick=()=>{const list=$('.admin-subject-unit-row',wrap).map(r=>r.querySelector('input')?.value||''),i=Number(b.dataset.unitDown);if(i<list.length-1)[list[i+1],list[i]]=[list[i],list[i+1]];renderSubjectUnitsEditor(list);syncSubjectUnits()});
+ $$('.admin-subject-unit-row input',wrap).forEach(input=>input.addEventListener('input',syncSubjectUnits));
+ $$('[data-unit-remove]',wrap).forEach(b=>b.onclick=()=>{const list=$$('.admin-subject-unit-row',wrap).map(r=>r.querySelector('input')?.value||'');list.splice(Number(b.dataset.unitRemove),1);renderSubjectUnitsEditor(list);syncSubjectUnits()});
+ $$('[data-unit-up]',wrap).forEach(b=>b.onclick=()=>{const list=$$('.admin-subject-unit-row',wrap).map(r=>r.querySelector('input')?.value||''),i=Number(b.dataset.unitUp);if(i>0)[list[i-1],list[i]]=[list[i],list[i-1]];renderSubjectUnitsEditor(list);syncSubjectUnits()});
+ $$('[data-unit-down]',wrap).forEach(b=>b.onclick=()=>{const list=$$('.admin-subject-unit-row',wrap).map(r=>r.querySelector('input')?.value||''),i=Number(b.dataset.unitDown);if(i<list.length-1)[list[i+1],list[i]]=[list[i],list[i+1]];renderSubjectUnitsEditor(list);syncSubjectUnits()});
  wrap?.lastElementChild?.querySelector('input')?.focus();
 }
 function importSubjectUnitsLines(){
@@ -1407,7 +1407,7 @@ $('lessonSearch').oninput=renderLessons;$('lessonFilterStage').onchange=renderLe
 $('quizSearch')?.addEventListener('input',renderQuizzes);$('quizFilterStage')?.addEventListener('change',renderQuizzes);$('quizFilterType')?.addEventListener('change',renderQuizzes);$('quizFilterMode')?.addEventListener('change',renderQuizzes);$('quizFilterStatus')?.addEventListener('change',renderQuizzes);
 $('studentSearch').oninput=renderStudents;$('studentFilterType')?.addEventListener('change',renderStudents);$('studentFilterStage')?.addEventListener('change',renderStudents);
 $('curriculumType').onchange=renderCurriculum;$('curriculumStage').onchange=()=>{fillGrades($('curriculumGrade'),$('curriculumStage').value);renderCurriculum()};$('curriculumGrade').onchange=renderCurriculum;
-$('[data-curriculum-view]').forEach(b=>b.onclick=()=>{curriculumViewMode=b.dataset.curriculumView==='cards'?'cards':'tree';localStorage.setItem('academy-admin-curriculum-view',curriculumViewMode);applyCurriculumView()});
+$$('[data-curriculum-view]').forEach(b=>b.onclick=()=>{curriculumViewMode=b.dataset.curriculumView==='cards'?'cards':'tree';localStorage.setItem('academy-admin-curriculum-view',curriculumViewMode);applyCurriculumView()});
 $('assignType').onchange=refreshAssignmentSubjects;$('assignStage').onchange=refreshAssignmentSubjects;$('assignGrade').onchange=refreshAssignmentSubjects;$('addAssignmentBtn').onclick=addAssignment;
 initAdminCollapse();
 $('adminMenuBtn').onclick=()=>{$('adminSidebar').classList.add('open');$('adminOverlay').classList.remove('hidden')};$('adminOverlay').onclick=()=>{$('adminSidebar').classList.remove('open');$('adminOverlay').classList.add('hidden')};
