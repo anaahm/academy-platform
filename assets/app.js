@@ -189,16 +189,30 @@
       state.dbData = {};
     }
   }
+  async function loadDashboardLessonCatalog(profile){
+    if(!profile?.stage)return;
+    try{
+      const snap=await database.ref('lessons').orderByChild('stage').equalTo(profile.stage).once('value');
+      state.dbData.lessons=snap.val()||{};
+    }catch(error){
+      console.warn('Dashboard lesson catalog unavailable',error);
+      state.dbData.lessons=state.dbData.lessons||{};
+    }
+  }
 
   function renderPublicTeachers(teachers={}) {
     const container=$('publicTeacherCards');if(!container)return;
-    const list=Object.entries(teachers||{}).filter(([,p])=>p&&p.active!==false&&p.name).slice(0,6);
-    container.innerHTML=list.length?list.map(([id,p])=>{
+    const list=Object.entries(teachers||{}).filter(([,p])=>p&&p.active!==false&&p.name).slice(0,8);
+    container.innerHTML=list.length?list.map(([id,p],index)=>{
       const name=safeHtml(String(p.name).slice(0,80)),title=safeHtml(String(p.title||'عضو فريق التدريس').slice(0,100));
       const image=safeDashboardImage(p.photoUrl||'');
-      return '<a class="teacher-public-card" href="./teacher-profile.html?id='+encodeURIComponent(id)+'"><span class="teacher-avatar">'+(image?'<img data-teacher-photo src="'+safeHtml(image)+'" alt="" loading="lazy">':safeHtml((p.name||'م')[0]))+'</span><span><strong>'+name+'</strong><small>'+title+'</small></span><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></a>';
+      const badge=index===0?'الأكثر مشاهدة':index===1?'شرح مميز':'فريق الأكاديمية';
+      return '<a class="teacher-public-card mix-public-teacher-card" href="./teacher-profile.html?id='+encodeURIComponent(id)+'">'+
+        '<div class="mix-public-teacher-photo">'+(image?'<img data-teacher-photo src="'+safeHtml(image)+'" alt="" loading="lazy">':'<span>'+safeHtml((p.name||'م')[0])+'</span>')+'<em>'+badge+'</em></div>'+
+        '<div class="mix-public-teacher-copy"><small>مدرس معتمد</small><strong>'+name+'</strong><p>'+title+'</p><span>عرض الملف والدروس <i class="fa-solid fa-arrow-left"></i></span></div>'+
+      '</a>';
     }).join(''):'<p class="teacher-empty">ستظهر هنا ملفات المعلمين بعد اعتمادها من الإدارة.</p>';
-    container.querySelectorAll('[data-teacher-photo]').forEach(img=>img.addEventListener('error',()=>{img.parentElement.textContent=img.closest('a')?.querySelector('strong')?.textContent?.[0]||'م'},{once:true}));
+    container.querySelectorAll('[data-teacher-photo]').forEach(img=>img.addEventListener('error',()=>{img.parentElement.innerHTML='<span>'+(img.closest('a')?.querySelector('strong')?.textContent?.[0]||'م')+'</span>'},{once:true}));
   }
 
   async function loadProfile(uid) {
@@ -1059,6 +1073,7 @@
       state.profile = await loadProfile(user.uid);
       await updateDailyActivity(user.uid);
       state.profile = await loadProfile(user.uid);
+      if(state.profile?.stage)await loadDashboardLessonCatalog(state.profile);
     } catch (e) {
       console.warn(e);
       state.profile = null;showPublicExperience();
