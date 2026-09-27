@@ -737,7 +737,11 @@
     if($('streakSideValue')) $('streakSideValue').textContent=stats.streak;
     renderDashboardStreak(p,stats);
 
+    const now=Date.now(),isVisibleContent=item=>item&&!item.isHidden&&(!Number(item.publishAt||0)||Number(item.publishAt)<=now);
     const palettes=['subject-pink','subject-blue','subject-green','subject-gold','subject-purple','subject-teal'];
+    if($('dashboardSubjectCount'))$('dashboardSubjectCount').textContent=subjects.length;
+    if($('dashboardSubjectsStageLabel'))$('dashboardSubjectsStageLabel').textContent=(gradeLabels[p.stage]?.[p.grade]||stageLabels[p.stage]||'مرحلتك')+' • '+educationLabel(p.educationType);
+    if($('dashboardSubjectsSubtitle'))$('dashboardSubjectsSubtitle').textContent='مواد '+(gradeLabels[p.stage]?.[p.grade]||'صفك')+' — اختر المادة وابدأ أو تابع من آخر نقطة وصلت لها.';
     $('dashboardSubjects').innerHTML = subjects.map((s,index) => {
       const progress = Math.max(0, Math.min(100, subjectProgressOf(p,s.id)));
       const q = new URLSearchParams({
@@ -747,16 +751,31 @@
         subject: s.id
       });
       const subjectImage=safeDashboardImage(s.imageUrl||'');
-      const subjectLessons=Object.values(state.dbData.lessons||{}).filter(l=>l&&!l.isHidden&&l.type===p.educationType&&l.stage===p.stage&&String(l.grade)===String(p.grade)&&l.subject===s.id);
-      const teacherIds=new Set();
-      subjectLessons.forEach(l=>{if(l.teacherId)teacherIds.add(String(l.teacherId));(Array.isArray(l.videos)?l.videos:[]).forEach(v=>{if(v?.teacherId)teacherIds.add(String(v.teacherId))})});
-      return `<a class="ref-subject-card mix-subject-card ${palettes[index%palettes.length]} ${subjectImage?'has-image':''}" href="./subject.html?${q.toString()}" aria-label="فتح مادة ${safeHtml(s.name)}">
-        <div class="ref-subject-art">${subjectImage?'<img data-subject-image data-fallback="'+safeHtml(s.emoji||'📚')+'" src="'+safeHtml(subjectImage)+'" alt="" loading="lazy">':'<span>'+safeHtml(s.emoji || '📚')+'</span>'}<i></i><em class="mix-subject-progress-badge">${progress}%</em></div>
-        <div class="mix-subject-card-body">
-          <h3>${safeHtml(s.name)}</h3>
-          <div class="mix-subject-meta"><span><i class="fa-solid fa-circle-play"></i> ${subjectLessons.length} درس</span><span><i class="fa-solid fa-chalkboard-user"></i> ${teacherIds.size||'—'} مدرس</span></div>
-          <div class="ref-subject-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}"><span style="width:${progress}%"></span></div>
-          <div class="ref-subject-footer"><small>تقدمك ${progress}%</small><strong>فتح المادة <i class="fa-solid fa-arrow-left"></i></strong></div>
+      const subjectLessons=Object.values(state.dbData.lessons||{}).filter(l=>isVisibleContent(l)&&l.type===p.educationType&&l.stage===p.stage&&String(l.grade)===String(p.grade)&&l.subject===s.id);
+      const subjectQuizzes=Object.values(state.dbData.quizzes||{}).filter(qz=>isVisibleContent(qz)&&qz.type===p.educationType&&qz.stage===p.stage&&String(qz.grade)===String(p.grade)&&qz.subject===s.id);
+      const teacherIds=new Set(),units=new Set();
+      subjectLessons.forEach(l=>{
+        units.add(Number(l.unit||1));
+        if(l.teacherId)teacherIds.add(String(l.teacherId));
+        (Array.isArray(l.videos)?l.videos:[]).forEach(v=>{if(v?.teacherId)teacherIds.add(String(v.teacherId))});
+      });
+      const stateLabel=progress<=0?'ابدأ المادة':progress>=100?'مكتملة 🎉':progress>=70?'اقتربت من الإكمال':progress>=25?'استمر من حيث توقفت':'بداية موفقة';
+      return `<a class="ref-subject-card mix-subject-card student-subject-card-v2 ${palettes[index%palettes.length]} ${subjectImage?'has-image':''}" href="./subject.html?${q.toString()}" aria-label="فتح مادة ${safeHtml(s.name)}">
+        <div class="student-subject-cover">
+          <div class="student-subject-cover-media">${subjectImage?'<img data-subject-image data-fallback="'+safeHtml(s.emoji||'📚')+'" src="'+safeHtml(subjectImage)+'" alt="" loading="lazy">':'<span>'+safeHtml(s.emoji || '📚')+'</span>'}</div>
+          <span class="student-subject-progress-pill"><i class="fa-solid fa-chart-simple"></i> ${progress}%</span>
+          <span class="student-subject-state">${stateLabel}</span>
+        </div>
+        <div class="student-subject-body">
+          <div class="student-subject-title-row"><div><small>${safeHtml(gradeLabels[p.stage]?.[p.grade]||stageLabels[p.stage]||'')}</small><h3>${safeHtml(s.name)}</h3></div><span class="student-subject-arrow"><i class="fa-solid fa-arrow-left"></i></span></div>
+          <div class="student-subject-metrics">
+            <span><i class="fa-solid fa-circle-play"></i><b>${subjectLessons.length}</b><small>درس</small></span>
+            <span><i class="fa-solid fa-brain"></i><b>${subjectQuizzes.length}</b><small>اختبار</small></span>
+            <span><i class="fa-solid fa-layer-group"></i><b>${units.size||'—'}</b><small>وحدة</small></span>
+            <span><i class="fa-solid fa-chalkboard-user"></i><b>${teacherIds.size||'—'}</b><small>مدرس</small></span>
+          </div>
+          <div class="student-subject-progress-row"><div class="ref-subject-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}"><span style="width:${progress}%"></span></div><small>${progress}%</small></div>
+          <div class="student-subject-footer"><span>${progress>0&&progress<100?'كمّل رحلتك في المادة':'افتح المادة واستكشف محتواها'}</span><strong>${progress>0&&progress<100?'متابعة':'فتح المادة'} <i class="fa-solid fa-arrow-left"></i></strong></div>
         </div>
       </a>`;
     }).join('');
@@ -1068,7 +1087,16 @@
     $('dashLeaderboardBtn')?.addEventListener('click', () => location.href='./leaderboard.html');
     $('exploreAllStagesSide')?.addEventListener('click', () => location.href='./explore.html');
     $('sidebarExplorePromo')?.addEventListener('click', () => location.href='./explore.html');
-    $('exploreSubjectsDash')?.addEventListener('click', () => location.href='./explore.html');
+    const currentMaterialsUrl=()=>{
+      const p=state.profile||{};
+      const q=new URLSearchParams();
+      if(p.educationType)q.set('type',p.educationType);
+      if(p.stage)q.set('stage',p.stage);
+      if(p.grade)q.set('grade',String(p.grade));
+      return './explore.html?'+q.toString();
+    };
+    $('exploreSubjectsDash')?.addEventListener('click', () => location.href=currentMaterialsUrl());
+    $('dashboardExploreOtherStages')?.addEventListener('click', () => location.href='./explore.html?'+new URLSearchParams({type:state.profile?.educationType||'public'}));
     $('mobileExploreBtn')?.addEventListener('click', () => location.href='./explore.html');
     $('mobileSubjectsBtn')?.addEventListener('click', () => document.getElementById('studentSubjects')?.scrollIntoView({behavior:'smooth'}));
     $('mobileTestsBtn')?.addEventListener('click', () => location.href='./exam-center.html');
