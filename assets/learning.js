@@ -207,7 +207,7 @@ function renderSubjectUnitStrip(c){
      '<div class="subject-unit-card-foot"><span>'+complete+' من '+lessons.length+' درس مكتمل</span><b>فتح الوحدة <i class="fa-solid fa-arrow-left"></i></b></div>'+
    '</button>';
  }).join(''):'<div class="subject-unit-empty subject-unit-empty-v4"><span>📚</span><strong>ستظهر وحدات المادة هنا</strong><p>عند إضافة الدروس ستجد كل وحدة في بطاقة مستقلة.</p></div>';
- $('[data-jump-unit]').forEach(btn=>btn.onclick=()=>document.querySelector('[data-unit-card="'+btn.dataset.jumpUnit+'"]')?.scrollIntoView({behavior:'smooth',block:'start'}));
+ $$('[data-jump-unit]').forEach(btn=>btn.onclick=()=>document.querySelector('[data-unit-card="'+btn.dataset.jumpUnit+'"]')?.scrollIntoView({behavior:'smooth',block:'start'}));
 }
 function renderSubjectPath(c){
  const track=$('subjectPathTrack'); if(!track)return;
@@ -297,7 +297,7 @@ function renderSubject(){
    const quizTab=document.querySelector('[data-content-filter="quizzes"]');
    if(quizTab)quizTab.click();else{renderCurriculum(c,'quizzes');document.querySelector('.curriculum-column')?.scrollIntoView({behavior:'smooth',block:'start'})}
  },{once:true});
- $('[data-content-filter]').forEach(b=>b.onclick=()=>{
+ $$('[data-content-filter]').forEach(b=>b.onclick=()=>{
    $$('[data-content-filter]').forEach(x=>{
      const active=x===b;
      x.classList.toggle('active',active);
