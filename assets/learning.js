@@ -1019,7 +1019,7 @@ function renderQuestion(){
  feedback.innerHTML=answered?(answer===correct
    ?'<i class="fa-solid fa-circle-check" aria-hidden="true"></i><span><strong>إجابة صحيحة! أحسنت.</strong>'+(q.explanation?'<small class="answer-explanation">'+esc(q.explanation)+'</small>':'')+'</span>'
    :'<i class="fa-solid fa-circle-xmark" aria-hidden="true"></i><span><strong>إجابة غير صحيحة.</strong> الإجابة الصحيحة: <strong>'+esc(q.opts[correct])+'</strong>'+(q.explanation?'<small class="answer-explanation">'+esc(q.explanation)+'</small>':'')+'</span>'):'';
- $('[data-a]').forEach(b=>b.onclick=()=>{if(qz.answers[i]!==null)return;const chosen=Number(b.dataset.a);qz.answers[i]=chosen;if(!state.adminPreview){try{const pq={...q,id:q.id||String(qz.sourceId||'quiz')+'-'+String(q._sourceIndex??i),question:q.text||'',options:q.opts||[],correct:q.opts?.[Number(q.correctAnswer)]};window.AcademyPro?.submitAnswer(pq,chosen===Number(q.correctAnswer),q.opts?.[chosen]??chosen,{lessonId:state.currentLesson?.id||'',subject:qz.c?.subject||''})}catch(e){console.warn('Pro answer tracking',e)}}renderQuestion()});
+ $$('[data-a]').forEach(b=>b.onclick=()=>{if(qz.answers[i]!==null)return;const chosen=Number(b.dataset.a);qz.answers[i]=chosen;if(!state.adminPreview){try{const pq={...q,id:q.id||String(qz.sourceId||'quiz')+'-'+String(q._sourceIndex??i),question:q.text||'',options:q.opts||[],correct:q.opts?.[Number(q.correctAnswer)]};window.AcademyPro?.submitAnswer(pq,chosen===Number(q.correctAnswer),q.opts?.[chosen]??chosen,{lessonId:state.currentLesson?.id||'',subject:qz.c?.subject||''})}catch(e){console.warn('Pro answer tracking',e)}}renderQuestion()});
  renderQuestionMap();
  $('prevQuestionBtn').disabled=i===0;
  $('nextQuestionBtn').innerHTML=i===total-1?'عرض النتيجة <i class="fa-solid fa-chart-column"></i>':'التالي <i class="fa-solid fa-arrow-left"></i>';
@@ -1039,7 +1039,7 @@ function renderQuizReview(qz,filter=qz?.reviewFilter||'all'){
      '<p class="quiz-review-correct">الإجابة الصحيحة: <strong>'+esc(q.opts[correct])+'</strong></p>'+(q.explanation?'<p class="quiz-review-explanation"><strong>لماذا؟</strong> '+esc(q.explanation)+'</p>':'')+'</article>';
  }).join(''):'<div class="feature-empty quiz-review-empty-v5"><span>🎉</span><h3>لا توجد أخطاء للمراجعة</h3><p>أجبت عن كل الأسئلة بشكل صحيح.</p></div>';
  if($('quizReviewSubtitle'))$('quizReviewSubtitle').textContent=filter==='wrong'?'نعرض هنا الأسئلة التي تحتاج مراجعة فقط.':'شاهد اختيارك في كل سؤال والإجابة الصحيحة.';
- $('[data-review-filter]').forEach(b=>{const active=b.dataset.reviewFilter===filter;b.classList.toggle('active',active);b.onclick=()=>renderQuizReview(qz,b.dataset.reviewFilter)});
+ $$('[data-review-filter]').forEach(b=>{const active=b.dataset.reviewFilter===filter;b.classList.toggle('active',active);b.onclick=()=>renderQuizReview(qz,b.dataset.reviewFilter)});
  $('quizReview').classList.remove('hidden');
 }
 async function finishQuiz(force=false){
