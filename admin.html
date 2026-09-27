@@ -672,12 +672,16 @@
       <span class="section-kicker">المكتبة</span><h2 id="fileModalTitle">إضافة ملف</h2>
       <form id="fileForm" class="admin-form">
         <label><span>العنوان</span><input id="newFileTitle" required></label>
-        <label><span>الرابط</span><input id="newFileUrl" required type="url" dir="ltr"></label>
+        <label><span>نوع الملف</span><select id="newFileKind"><option value="pdf">PDF</option><option value="note">مذكرة</option><option value="review">مراجعة</option><option value="reference">مرجع</option></select></label>
+        <label class="full"><span>الرابط</span><input id="newFileUrl" required type="url" dir="ltr" placeholder="https://..."></label>
         <label><span>نوع التعليم</span><select id="newFileType"><option value="public">عام</option><option value="azhar">أزهر</option></select></label>
         <label><span>المرحلة</span><select id="newFileStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
         <label><span>الصف</span><select id="newFileGrade"></select></label>
         <label><span>المادة</span><select id="newFileSubject"></select></label>
-        <button class="btn btn-primary full" type="submit">إضافة الملف</button>
+        <label class="full"><span>ربط بدرس — اختياري</span><select id="newFileLesson"><option value="">بدون ربط بدرس</option></select></label>
+        <label class="full"><span>وصف مختصر</span><textarea id="newFileDescription" rows="3" maxlength="400" placeholder="مثال: مراجعة شاملة على الوحدة الأولى مع أهم الأسئلة."></textarea></label>
+        <label class="switch-field full"><span>تمييز الملف</span><div><input id="newFileFeatured" type="checkbox"><strong>ملف مهم / موصى به</strong></div></label>
+        <button class="btn btn-primary full" type="submit">حفظ الملف</button>
       </form>
     </div>
   </div>
