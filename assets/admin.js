@@ -345,7 +345,7 @@ function renderCurriculumTree(type,stage,grade,subjects,scopeLessons,scopeQuizze
      const rows=lessons.filter(l=>Number(l.unit||1)===u.number).sort((a,b)=>lessonAdminSortValue(a)-lessonAdminSortValue(b)||(a.createdAt||0)-(b.createdAt||0));
      const qs=quizzes.filter(q=>curriculumQuizUnit(q)===u.number),unitOnlyQs=qs.filter(q=>!q.lessonId);
      return '<section class="admin-tree-unit" data-tree-subject="'+esc(subject.id)+'" data-tree-unit="'+u.number+'">'+
-       '<header><div><span class="admin-tree-unit-number">'+u.number+'</span><div><strong>'+esc(u.name)+'</strong><small>'+rows.length+' درس • '+qs.length+' اختبار</small></div></div><div class="admin-tree-unit-head-actions"><button type="button" data-tree-new-lesson="'+esc(subject.id)+'|'+u.number+'"><i class="fa-solid fa-plus"></i> درس</button><button type="button" data-tree-new-quiz="'+esc(subject.id)+'|'+u.number+'"><i class="fa-solid fa-plus"></i> اختبار</button></div></header>'+
+       '<header><div><span class="admin-tree-unit-number">'+u.number+'</span><div><strong>'+esc(u.name)+'</strong><small>'+rows.length+' درس • '+qs.length+' اختبار</small></div></div><div class="admin-tree-unit-head-actions"><button type="button" data-tree-new-lesson="'+esc(subject.id)+'|'+u.number+'"><i class="fa-solid fa-plus"></i> درس</button><button type="button" data-tree-new-quiz="'+esc(subject.id)+'|'+u.number+'"><i class="fa-solid fa-plus"></i> اختبار</button><button type="button" data-tree-copy-unit="'+esc(subject.id)+'|'+u.number+'"><i class="fa-regular fa-copy"></i> نسخ الوحدة</button></div></header>'+
        '<div class="admin-tree-lesson-list '+(!rows.length?'is-empty':'')+'" data-tree-drop-subject="'+esc(subject.id)+'" data-tree-drop-unit="'+u.number+'">'+
          (rows.length?rows.map((l,i)=>curriculumLessonTreeRow(l,i,rows.length,units,qs.filter(q=>String(q.lessonId||'')===String(l.id)))).join(''):'<div class="admin-tree-drop-empty"><i class="fa-solid fa-arrow-down"></i><span>اسحب درسًا إلى هنا أو أضف درسًا جديدًا</span></div>')+
        '</div>'+
@@ -358,7 +358,7 @@ function renderCurriculumTree(type,stage,grade,subjects,scopeLessons,scopeQuizze
      '<div class="admin-tree-subject-copy"><strong>'+esc(subject.name)+'</strong><small>'+lessons.length+' درس • '+quizzes.length+' اختبار • '+units.length+' وحدة</small></div>'+
      '<span class="admin-tree-chevron"><i class="fa-solid fa-chevron-down"></i></span>'+
    '</summary><div class="admin-tree-subject-body">'+
-     '<div class="admin-tree-subject-tools"><button type="button" data-edit-subject="'+esc(subject.id)+'"><i class="fa-solid fa-pen"></i> تعديل المادة</button><a href="./subject.html?'+adminPreviewQuery({type,stage,grade,subject:subject.id})+'" target="_blank" rel="noopener"><i class="fa-solid fa-eye"></i> معاينة المادة</a></div>'+
+     '<div class="admin-tree-subject-tools"><button type="button" data-edit-subject="'+esc(subject.id)+'"><i class="fa-solid fa-pen"></i> تعديل المادة</button><button type="button" data-tree-copy-subject="'+esc(subject.id)+'"><i class="fa-regular fa-copy"></i> نسخ المادة</button><a href="./subject.html?'+adminPreviewQuery({type,stage,grade,subject:subject.id})+'" target="_blank" rel="noopener"><i class="fa-solid fa-eye"></i> معاينة المادة</a></div>'+
      unitHtml+
      (comprehensive.length?'<section class="admin-tree-comprehensive"><header><strong><i class="fa-solid fa-award"></i> اختبارات شاملة للمادة</strong><small>'+comprehensive.length+' اختبار</small></header>'+comprehensive.map(curriculumQuizTreeRow).join('')+'</section>':'')+
    '</div></details>';
