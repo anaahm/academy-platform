@@ -806,6 +806,10 @@
     }));
 
     $('mobileMenuBtn').addEventListener('click', () => $('mobileMenu').classList.toggle('hidden'));
+    document.querySelectorAll('[data-mobile-dash-target]').forEach(btn=>btn.addEventListener('click',()=>{
+      const target=$(btn.dataset.mobileDashTarget);if(target)target.click();
+      document.querySelectorAll('#academyMobileBottomNav button').forEach(x=>x.classList.toggle('active',x===btn));
+    }));
     const dashSearchInput = $('dashSearchInput');
     const dashSearchForm = $('dashSearchForm');
     dashSearchForm?.addEventListener('submit',e=>{
