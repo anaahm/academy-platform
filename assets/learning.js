@@ -73,7 +73,9 @@ function pLesson(id){return state.profile?.learningProgress?.[id]||{}}
 function done(id){return !!pLesson(id).completed}
 function progress(){return state.lessons.length?Math.round(state.lessons.filter(l=>done(l.id)).length/state.lessons.length*100):0}
 function url(file,c,extra={}){
- const q=new URLSearchParams({type:c.type,stage:c.stage,grade:String(c.grade),subject:c.subject,...extra});
+ const payload={type:c.type,stage:c.stage,grade:String(c.grade),subject:c.subject,...extra};
+ if(page==='subject'&&state.teacherFilter&&!Object.prototype.hasOwnProperty.call(extra,'teacher'))payload.teacher=state.teacherFilter;
+ const q=new URLSearchParams(payload);
  return './'+file+'?'+q.toString();
 }
 function yt(raw=''){
@@ -209,6 +211,8 @@ function renderSubjectPath(c){
 function renderSubject(){
  const c=ctx(); if(!c.subject){location.replace('./index.html');return}
  state.subject=subjectFor(c);filterContent(c);
+ const requestedTeacher=params.get('teacher')||'';
+ state.teacherFilter=requestedTeacher&&state.lessons.some(l=>lessonHasTeacher(l,requestedTeacher))?requestedTeacher:'';
  const pct=progress(), complete=state.lessons.filter(l=>done(l.id)).length,next=firstIncompleteLesson();
  document.title=state.subject.name+' | الأكاديمية';
  $('subjectTitle').textContent=state.subject.name;
