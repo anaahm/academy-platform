@@ -8,7 +8,7 @@ const auth=firebase.auth(),db=firebase.database();
 const $=id=>document.getElementById(id), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const askConfirm=opts=>window.AcademyUI?.confirm?window.AcademyUI.confirm(opts):(console.error('AcademyUI confirm unavailable'),Promise.resolve(false));
 
-let currentUser=null,root={},unsubscribe=null,currentAdminTab='overview',adminModalTrigger=null,curriculumViewMode=localStorage.getItem('academy-admin-curriculum-view')||'tree',curriculumOpenSubjects=new Set(),contentCopySource=null;
+let currentUser=null,root={},unsubscribe=null,currentAdminTab='overview',adminModalTrigger=null,curriculumViewMode=localStorage.getItem('academy-admin-curriculum-view')||'tree',curriculumOpenSubjects=new Set(),contentCopySource=null,contentReviewTarget=null;
 const selectedLessonIds=new Set(),selectedQuizIds=new Set();
 const adminPathStops=new Map(),adminPathPromises=new Map();
 const editState={subject:null,lesson:null,quiz:null,file:null,simulation:null,live:null,schedule:null,news:null};
@@ -97,8 +97,91 @@ function adminPreviewQuery(item,extra={}){
  const q=new URLSearchParams({type:item?.type||'public',stage:item?.stage||'prep',grade:String(item?.grade||1),subject:item?.subject||'',...extra});
  return q.toString();
 }
-function lessonAdminPreviewUrl(lesson){return './lesson.html?'+adminPreviewQuery(lesson,{id:lesson.id})}
-function quizAdminPreviewUrl(quiz){return './lesson.html?'+adminPreviewQuery(quiz,{quiz:quiz.id})}
+function publicationState(item,now=Date.now()){
+ if(item?.isHidden)return'hidden';
+ const at=Number(item?.publishAt||0);
+ if(at&&at>now)return'scheduled';
+ return'published';
+}
+function publicationLabel(item){
+ const s=publicationState(item);return s==='hidden'?'مخفي':s==='scheduled'?'مجدول':'منشور';
+}
+function publicationPillClass(item){const s=publicationState(item);return s==='hidden'?'rejected':s==='scheduled'?'pending':'approved'}
+function formatAdminDateTime(value){
+ const n=Number(value||0);if(!n)return'';try{return new Date(n).toLocaleString('ar-EG',{dateStyle:'medium',timeStyle:'short'})}catch{return new Date(n).toLocaleString('ar-EG')}
+}
+function toLocalDateTimeInput(value){
+ const d=new Date(Number(value||Date.now()));const pad=n=>String(n).padStart(2,'0');
+ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes());
+}
+function lessonAdminPreviewUrl(lesson){return './lesson.html?'+adminPreviewQuery(lesson,{id:lesson.id,adminPreview:'1'})}
+function quizAdminPreviewUrl(quiz){return './lesson.html?'+adminPreviewQuery(quiz,{quiz:quiz.id,adminPreview:'1'})}
+function reviewRecord(kind,id){
+ const collection=kind==='quiz'?'quizzes':'lessons',item=root[collection]?.[id];return item?{kind,id,collection,item}:null;
+}
+function renderContentReviewState(){
+ if(!contentReviewTarget)return;
+ const rec=reviewRecord(contentReviewTarget.kind,contentReviewTarget.id);if(!rec)return;
+ const {item}=rec,stateName=publicationState(item),status=$('contentReviewStatus'),approval=$('contentReviewApproval'),note=$('contentReviewScheduleNote'),cancel=$('contentReviewCancelSchedule');
+ if(status){status.textContent=publicationLabel(item);status.className='status-pill '+publicationPillClass(item)}
+ if(approval){
+   const approved=item.reviewStatus==='approved';
+   approval.classList.toggle('approved',approved);
+   approval.innerHTML='<i class="fa-'+(approved?'solid':'regular')+' fa-circle-check"></i> '+(approved?'معتمد':'غير معتمد');
+ }
+ if($('contentReviewScheduleAt'))$('contentReviewScheduleAt').value=toLocalDateTimeInput(item.publishAt&&Number(item.publishAt)>Date.now()?item.publishAt:Date.now()+3600000);
+ if(note){
+   const scheduled=stateName==='scheduled';note.classList.toggle('hidden',!scheduled);
+   note.innerHTML=scheduled?'<i class="fa-regular fa-clock"></i> سيتم النشر تلقائيًا في <strong>'+esc(formatAdminDateTime(item.publishAt))+'</strong>':'';
+ }
+ if(cancel)cancel.classList.toggle('hidden',stateName!=='scheduled');
+}
+function refreshContentReviewFrame(){
+ if(!contentReviewTarget)return;
+ const rec=reviewRecord(contentReviewTarget.kind,contentReviewTarget.id);if(!rec)return;
+ const url=contentReviewTarget.kind==='quiz'?quizAdminPreviewUrl({...rec.item,id:rec.id}):lessonAdminPreviewUrl({...rec.item,id:rec.id});
+ const frame=$('contentReviewFrame'),open=$('contentReviewOpenNew');
+ if(frame)frame.src=url+'&previewNonce='+Date.now();
+ if(open)open.href=url;
+}
+function openContentReview(kind,id){
+ const rec=reviewRecord(kind,id);if(!rec)return;
+ contentReviewTarget={kind,id};
+ const item=rec.item,subject=adminSubjectMeta(item.stage,item.grade,item.type,item.subject);
+ if($('contentReviewModalTitle'))$('contentReviewModalTitle').textContent=(kind==='quiz'?item.name:item.title)||'معاينة المحتوى';
+ if($('contentReviewMeta'))$('contentReviewMeta').textContent=subject.name+' • '+gradeLabel(item.stage,item.grade)+' • '+adminUnitLabel(item);
+ renderContentReviewState();refreshContentReviewFrame();openModal('contentReviewModal');
+}
+async function updateContentReview(changes,action,label){
+ if(!contentReviewTarget)return;
+ const rec=reviewRecord(contentReviewTarget.kind,contentReviewTarget.id);if(!rec)return;
+ const now=Date.now(),payload={...changes,updatedAt:now};
+ await db.ref(rec.collection+'/'+rec.id).update(payload);
+ Object.assign(rec.item,payload);
+ await writeAudit(action,contentReviewTarget.kind,rec.id,{...changes});
+ renderContentReviewState();refreshContentReviewFrame();toast(label);
+}
+async function approveReviewedContent(){
+ return updateContentReview({reviewStatus:'approved',reviewedAt:Date.now(),reviewedBy:currentUser?.uid||''},'content.approve','تم اعتماد المحتوى');
+}
+async function publishReviewedContent(){
+ return updateContentReview({isHidden:false,publishAt:null,reviewStatus:'approved',reviewedAt:Date.now(),reviewedBy:currentUser?.uid||'',publishedAt:Date.now()},'content.publish_now','تم نشر المحتوى الآن');
+}
+async function hideReviewedContent(){
+ return updateContentReview({isHidden:true,publishAt:null},'content.hide','تم إخفاء المحتوى');
+}
+async function scheduleReviewedContent(){
+ const raw=$('contentReviewScheduleAt')?.value||'',at=new Date(raw).getTime();
+ if(!raw||!Number.isFinite(at)||at<=Date.now()+60000)return toast('اختر موعدًا مستقبليًا بعد دقيقة على الأقل.','error');
+ return updateContentReview({isHidden:false,publishAt:at,reviewStatus:'approved',reviewedAt:Date.now(),reviewedBy:currentUser?.uid||''},'content.schedule_publish','تمت جدولة النشر في '+formatAdminDateTime(at));
+}
+async function cancelReviewedSchedule(){
+ return updateContentReview({isHidden:true,publishAt:null},'content.cancel_schedule','تم إلغاء الجدولة وإبقاء المحتوى مخفيًا');
+}
+function editReviewedContent(){
+ if(!contentReviewTarget)return;const {kind,id}=contentReviewTarget;closeModal('contentReviewModal');
+ if(kind==='quiz')editQuiz(id);else editLesson(id);
+}
 
 function fillGrades(select,stage,keep){
  if(!select)return;const max=gradeCount(stage),current=keep||select.value||'1';
