@@ -74,7 +74,8 @@ function done(id){return !!pLesson(id).completed}
 function progress(){return state.lessons.length?Math.round(state.lessons.filter(l=>done(l.id)).length/state.lessons.length*100):0}
 function url(file,c,extra={}){
  const payload={type:c.type,stage:c.stage,grade:String(c.grade),subject:c.subject,...extra};
- if(page==='subject'&&state.teacherFilter&&!Object.prototype.hasOwnProperty.call(extra,'teacher'))payload.teacher=state.teacherFilter;
+ const routeTeacher=page==='subject'?state.teacherFilter:(page==='lesson'?params.get('teacher')||'':'');
+ if(routeTeacher&&!Object.prototype.hasOwnProperty.call(extra,'teacher'))payload.teacher=routeTeacher;
  const q=new URLSearchParams(payload);
  return './'+file+'?'+q.toString();
 }
@@ -542,9 +543,9 @@ function renderVideo(l){
    return '<button class="teacher-choice mix-teacher-choice '+(active?'active':'')+'" data-v="'+i+'" aria-pressed="'+(active?'true':'false')+'">'+
      '<span class="teacher-mini-avatar">'+avatar+'</span><span class="mix-teacher-choice-copy"><strong>'+esc(t.name)+'</strong><em>'+esc(t.title)+'</em><small>'+(active?'يتم العرض الآن':'اضغط لاختيار هذا الشرح')+'</small></span><i class="fa-solid '+(active?'fa-circle-play':'fa-play')+'"></i></button>';
  }).join('');
- $('[data-v]').forEach(b=>b.onclick=()=>{
+ $$('[data-v]').forEach(b=>b.onclick=()=>{
    const i=Number(b.dataset.v),html=frameHtml(vids[i],i);if(html){stopVideoProgressTracker();$('videoFrame').innerHTML=html;attachVideoProgress('lessonVideoFrame'+i,l,i)}
-   $('[data-v]').forEach(x=>{
+   $$('[data-v]').forEach(x=>{
      const active=x===b;x.classList.toggle('active',active);x.setAttribute('aria-pressed',active?'true':'false');
      const small=x.querySelector('small');if(small)small.textContent=active?'يتم العرض الآن':'اضغط لاختيار هذا الشرح';
      const icon=x.querySelector(':scope > i');if(icon)icon.className='fa-solid '+(active?'fa-circle-play':'fa-play');
