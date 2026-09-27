@@ -63,7 +63,7 @@ function renderTodayFocus(arr=taskArray()){
    btn.onclick=()=>{
      if(!candidate){$('plannerAddCard')?.scrollIntoView({behavior:'smooth',block:'start'});$('plannerTitle')?.focus();return}
      filter=candidate.date===today()?'today':'pending';
-     $('[data-planner-filter]').forEach(x=>{const active=x.dataset.plannerFilter===filter;x.classList.toggle('active',active);x.setAttribute('aria-selected',active?'true':'false')});
+     $$('[data-planner-filter]').forEach(x=>{const active=x.dataset.plannerFilter===filter;x.classList.toggle('active',active);x.setAttribute('aria-selected',active?'true':'false')});
      renderTasks();
      requestAnimationFrame(()=>{
        const row=document.querySelector('[data-task-id="'+candidate.id+'"]');
@@ -92,13 +92,13 @@ function renderSuggestion(){
  if(overdue.length){
    const t=overdue[0],sub=subjects.find(s=>s.id===t.subject);
    box.innerHTML='<span class="planner-suggest-emoji">⚠️</span><strong>رتّب مهمة متأخرة</strong><p>'+C.esc(t.title||'مهمة')+(sub?' • '+C.esc(sub.name):'')+' — ابدأ بها قبل إضافة شيء جديد.</p><button class="btn btn-soft btn-block" id="useSuggestion">اعرض المهمة</button>';
-   $('useSuggestion').onclick=()=>{$('[data-planner-filter="pending"]')?.click();setTimeout(()=>document.querySelector('[data-task-id="'+t.id+'"]')?.scrollIntoView({behavior:'smooth',block:'center'}),120)};
+   $('useSuggestion').onclick=()=>{document.querySelector('[data-planner-filter="pending"]')?.click();setTimeout(()=>document.querySelector('[data-task-id="'+t.id+'"]')?.scrollIntoView({behavior:'smooth',block:'center'}),120)};
    return;
  }
  if(todayPending.length){
    const minutes=todayPending.reduce((n,x)=>n+Number(x.duration||30),0);
    box.innerHTML='<span class="planner-suggest-emoji">✅</span><strong>خطتك لليوم جاهزة</strong><p>عندك '+todayPending.length+' مهمة بإجمالي '+minutes+' دقيقة. خلّصها قبل إضافة مهام جديدة.</p><button class="btn btn-soft btn-block" id="useSuggestion">افتح مهام اليوم</button>';
-   $('useSuggestion').onclick=()=>$('[data-planner-filter="today"]')?.click();
+   $('useSuggestion').onclick=()=>document.querySelector('[data-planner-filter="today"]')?.click();
    return;
  }
  if(!weak){box.innerHTML='<p>ابدأ بإضافة أول مهمة مذاكرة.</p>';return}
