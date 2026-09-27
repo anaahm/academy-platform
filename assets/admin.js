@@ -892,8 +892,11 @@ async function bulkDuplicateLessons(){
 }
 async function bulkDeleteLessons(){
  const ids=[...selectedLessonIds];if(!ids.length)return;
- const ok=await askConfirm({title:'حذف '+ids.length+' درس نهائيًا؟',message:'سيتم حذف الدروس المحددة. الاختبارات المرتبطة لن تُحذف تلقائيًا.',tone:'danger',acceptText:'حذف الدروس'});if(!ok)return;
- const updates={};ids.forEach(id=>updates['lessons/'+id]=null);await db.ref().update(updates);await writeAudit('lesson.bulk_delete','lesson','bulk',{count:ids.length,ids});clearBulkSelection('lesson');toast('تم حذف '+ids.length+' درس');
+ const idSet=new Set(ids),linked=values(root.quizzes).filter(q=>q.lessonId&&idSet.has(String(q.lessonId)));
+ const ok=await askConfirm({title:'حذف '+ids.length+' درس نهائيًا؟',message:'سيتم حذف الدروس المحددة'+(linked.length?' ومعها '+linked.length+' اختبار مرتبط بها وأسئلته من بنك الأسئلة.':'.'),tone:'danger',acceptText:'حذف المحتوى'});if(!ok)return;
+ const updates={};ids.forEach(id=>updates['lessons/'+id]=null);
+ linked.forEach(q=>{updates['quizzes/'+q.id]=null;(Array.isArray(q.questions)?q.questions:[]).forEach((_,i)=>updates['questionBankV4/quiz-'+q.id+'-'+i]=null)});
+ await db.ref().update(updates);await writeAudit('lesson.bulk_delete','lesson','bulk',{count:ids.length,linkedQuizCount:linked.length,ids});clearBulkSelection('lesson');toast('تم حذف '+ids.length+' درس'+(linked.length?' و'+linked.length+' اختبار مرتبط':''));
 }
 function quizBankUpdates(quizId,quiz,updates,now){
  (Array.isArray(quiz.questions)?quiz.questions:[]).forEach((q,qi)=>{
