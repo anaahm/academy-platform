@@ -1503,6 +1503,10 @@ $('resetDashboardHero')?.addEventListener('click',()=>{
 });
 $('lessonSearch').oninput=renderLessons;$('lessonFilterStage').onchange=renderLessons;$('lessonFilterType').onchange=renderLessons;$('lessonFilterStatus')?.addEventListener('change',renderLessons);
 $('quizSearch')?.addEventListener('input',renderQuizzes);$('quizFilterStage')?.addEventListener('change',renderQuizzes);$('quizFilterType')?.addEventListener('change',renderQuizzes);$('quizFilterMode')?.addEventListener('change',renderQuizzes);$('quizFilterStatus')?.addEventListener('change',renderQuizzes);
+$('selectVisibleLessons')?.addEventListener('change',e=>{const ids=filteredLessons().map(x=>x.id);ids.forEach(id=>e.target.checked?selectedLessonIds.add(id):selectedLessonIds.delete(id));updateBulkSelectionUI('lesson')});
+$('selectVisibleQuizzes')?.addEventListener('change',e=>{const ids=filteredQuizzes().map(x=>x.id);ids.forEach(id=>e.target.checked?selectedQuizIds.add(id):selectedQuizIds.delete(id));updateBulkSelectionUI('quiz')});
+$('[data-bulk-lessons]').forEach(b=>b.onclick=()=>handleBulkLessonAction(b.dataset.bulkLessons));
+$('[data-bulk-quizzes]').forEach(b=>b.onclick=()=>handleBulkQuizAction(b.dataset.bulkQuizzes));
 $('studentSearch').oninput=renderStudents;$('studentFilterType')?.addEventListener('change',renderStudents);$('studentFilterStage')?.addEventListener('change',renderStudents);
 $('curriculumType').onchange=renderCurriculum;$('curriculumStage').onchange=()=>{fillGrades($('curriculumGrade'),$('curriculumStage').value);renderCurriculum()};$('curriculumGrade').onchange=renderCurriculum;
 $$('[data-curriculum-view]').forEach(b=>b.onclick=()=>{curriculumViewMode=b.dataset.curriculumView==='cards'?'cards':'tree';localStorage.setItem('academy-admin-curriculum-view',curriculumViewMode);applyCurriculumView()});
