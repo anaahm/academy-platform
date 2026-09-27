@@ -102,9 +102,9 @@ function renderGrades(){
      '<span class="explore-grade-arrow"><i class="fa-solid fa-arrow-left"></i></span>'+
    '</button>';
  }).join('');
- $('[data-grade]').forEach(b=>b.onclick=async()=>{
+ $$('[data-grade]').forEach(b=>b.onclick=async()=>{
    state.grade=Number(b.dataset.grade);syncUrl();
-   $('[data-grade]').forEach(x=>{const active=x===b;x.classList.toggle('active',active);x.setAttribute('aria-pressed',active?'true':'false')});
+   $$('[data-grade]').forEach(x=>{const active=x===b;x.classList.toggle('active',active);x.setAttribute('aria-pressed',active?'true':'false')});
    updateExplorePath();
    await loadAndRenderSubjects();
  });
@@ -155,7 +155,7 @@ function selectType(type){
 }
 function selectStage(stage){
  state.stage=stage;state.grade=null;syncUrl();
- $('[data-stage]').forEach(b=>{const active=b.dataset.stage===stage;b.classList.toggle('active',active);b.setAttribute('aria-selected',active?'true':'false')});
+ $$('[data-stage]').forEach(b=>{const active=b.dataset.stage===stage;b.classList.toggle('active',active);b.setAttribute('aria-selected',active?'true':'false')});
  renderGrades();updateExplorePath();
 }
 
