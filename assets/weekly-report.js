@@ -28,8 +28,8 @@ function activityMinutes(start,end){
 function weeklySeries(start){
  const out=[];
  for(let i=0;i<7;i++){
-   const d=new Date(start.getTime()+i*DAY),key=localDateKey(d);
-   out.push({date:d,key,label:d.toLocaleDateString('ar-EG',{weekday:'short'}),minutes:Number(profile.activityDaily?.[key]?.minutes||0)});
+   const d=new Date(start.getTime()+i*DAY),key=localDateKey(d),minutes=Number(profile.activityDaily?.[key]?.minutes||0);
+   out.push({date:d,key,label:d.toLocaleDateString('ar-EG',{weekday:'short'}),minutes,active:minutes>0||!!profile.activity?.days?.[key]});
  }
  return out;
 }
@@ -49,6 +49,15 @@ function currentWeekPlanner(start,end){
    const d=new Date(x.date+'T12:00:00');return d>=start&&d<end;
  });
 }
+function weeklyScore({minutes,lessons,quizzes,tasksDone,tasksTotal,activeDays,avg}){
+ const studyScore=Math.min(30,Math.round(minutes/180*30));
+ const lessonScore=Math.min(20,lessons*4);
+ const quizScore=Math.min(15,quizzes*5);
+ const taskScore=tasksTotal?Math.min(20,Math.round(tasksDone/tasksTotal*20)):0;
+ const activeScore=Math.min(10,Math.round(activeDays/5*10));
+ const qualityScore=quizzes?Math.min(5,Math.round(avg/100*5)):0;
+ return Math.max(0,Math.min(100,studyScore+lessonScore+quizScore+taskScore+activeScore+qualityScore));
+}
 
 function render(){
  const currentStart=mondayOf(),currentEnd=new Date(currentStart.getTime()+7*DAY),prevStart=new Date(currentStart.getTime()-7*DAY),prevEnd=currentStart;
@@ -63,20 +72,31 @@ function render(){
  const avg=currentQ.length?Math.round(currentQ.reduce((a,x)=>a+Number(x.score||0),0)/currentQ.length):0;
  const prevAvg=prevQ.length?Math.round(prevQ.reduce((a,x)=>a+Number(x.score||0),0)/prevQ.length):0;
  const weekTasks=currentWeekPlanner(currentStart,currentEnd),weekTasksDone=weekTasks.filter(x=>x.done).length,overdue=overduePlanner();
+ const series=weeklySeries(currentStart),activeDays=series.filter(x=>x.active).length;
+ const score=weeklyScore({minutes,lessons:currentL.length,quizzes:currentQ.length,tasksDone:weekTasksDone,tasksTotal:weekTasks.length,activeDays,avg});
 
  $('weeklyMinutes').textContent=minutes;
  $('weeklyLessons').textContent=currentL.length;
  $('weeklyQuizzes').textContent=currentQ.length;
  $('weeklyAverage').textContent=currentQ.length?avg+'%':'—';
+ if($('weeklyTasksDone'))$('weeklyTasksDone').textContent=weekTasksDone;
+ if($('weeklyOverdue'))$('weeklyOverdue').textContent=overdue.length;
+ if($('weeklyActiveDays'))$('weeklyActiveDays').textContent=activeDays+'/7';
+ if($('weeklyTasksMini'))$('weeklyTasksMini').textContent=weekTasksDone+'/'+weekTasks.length;
+ if($('weeklyScoreValue'))$('weeklyScoreValue').textContent=score;
+ if($('weeklyScoreRing'))$('weeklyScoreRing').style.setProperty('--weekly-score',(score*3.6)+'deg');
+ const scoreTitle=score>=85?'أسبوع ممتاز جدًا':score>=70?'أسبوع قوي':score>=50?'أسبوع جيد':score>=30?'بداية تحتاج انتظام':'أسبوع هادئ';
+ const scoreHint=score>=85?'استمر بنفس الإيقاع بدون ضغط زائد.':score>=70?'خطوتان صغيرتان إضافيتان سترفعان الأسبوع القادم.':score>=50?'ركز على الاستمرارية وإنهاء مهام الخطة.':score>=30?'وزع 20–30 دقيقة على أيام أكثر.':'ابدأ بثلاث جلسات قصيرة في الأسبوع القادم.';
+ if($('weeklyScoreTitle'))$('weeklyScoreTitle').textContent=scoreTitle;
+ if($('weeklyScoreHint'))$('weeklyScoreHint').textContent=scoreHint;
 
- const score=currentL.length*2+currentQ.length*2+currentS.length*3+Math.min(10,Math.round(minutes/30))+Math.min(5,weekTasksDone);
- let summary=score>=18?'أسبوع قوي جدًا 👏 حافظ على نفس الإيقاع.':score>=9?'أسبوع جيد، ومع تنظيم بسيط تقدر ترفع مستواك أكتر.':'الأسبوع كان هادئ. ابدأ بخطوات صغيرة ومنتظمة بدل ضغط يوم واحد.';
+ let summary=score>=85?'أسبوع قوي جدًا 👏 حافظ على نفس الإيقاع.':score>=60?'أسبوع جيد، ومع تنظيم بسيط تقدر ترفع مستواك أكتر.':'الأسبوع كان هادئ. ابدأ بخطوات صغيرة ومنتظمة بدل ضغط يوم واحد.';
  if(overdue.length)summary+=' عندك '+overdue.length+' مهمة متأخرة تحتاج ترتيب.';
  $('weeklySummary').textContent=summary;
 
- const series=weeklySeries(currentStart),max=Math.max(1,...series.map(x=>x.minutes));
+ const max=Math.max(1,...series.map(x=>x.minutes));
  $('weeklyBars').innerHTML=series.map(x=>
-   '<div class="weekly-bar-col" title="'+x.minutes+' دقيقة">'+
+   '<div class="weekly-bar-col '+(x.active?'active':'')+'" title="'+x.minutes+' دقيقة">'+
    '<div class="weekly-bar-value">'+x.minutes+'</div>'+
    '<div class="weekly-bar-track"><span style="height:'+Math.max(4,Math.round(x.minutes/max*100))+'%"></span></div>'+
    '<strong>'+C.esc(x.label)+'</strong></div>'
@@ -126,6 +146,8 @@ $('printWeeklyReport').onclick=()=>window.print();
  try{
    ({user,profile}=await C.requireStudent());
    $('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
+   if($('weeklyStudentName'))$('weeklyStudentName').textContent=profile.name||user.displayName||'طالبنا';
+   if($('weeklyHeroText'))$('weeklyHeroText').textContent=C.gradeLabel(profile.stage,profile.grade)+' • '+C.typeLabel(profile.educationType)+' — ملخص حقيقي لما أنجزته وما يحتاج تركيزًا في الأسبوع القادم.';
    const [s,p]=await Promise.all([
      C.db.ref('customSubjects').once('value'),
      C.db.ref('studentProfilesV3/'+user.uid+'/studyPlanner').once('value')
