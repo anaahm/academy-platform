@@ -636,6 +636,44 @@
     }
   }
 
+  function renderRecommendedLessons(profile,subjects){
+    const box=$('dashboardRecommendedLessons');if(!box)return;
+    const subjectMap=new Map(subjects.map(s=>[s.id,s]));
+    const progress=profile?.learningProgress||{},teachers=state.dbData.settings?.publicTeachers||{};
+    const rows=Object.entries(state.dbData.lessons||{}).map(([id,v])=>({id,...(v||{})}))
+      .filter(l=>l&&!l.isHidden&&l.type===profile.educationType&&l.stage===profile.stage&&String(l.grade)===String(profile.grade)&&subjectMap.has(l.subject));
+    if(!rows.length){
+      box.innerHTML='<div class="mix-recommended-empty"><span>🎓</span><div><strong>نجهز لك الدروس المناسبة</strong><p>ستظهر هنا أحدث دروس صفك فور نشرها.</p></div></div>';
+      return;
+    }
+    const ordered=rows.sort((a,b)=>{
+      const ad=progress[a.id]?.completed?1:0,bd=progress[b.id]?.completed?1:0;
+      if(ad!==bd)return ad-bd;
+      const ap=subjectProgressOf(profile,a.subject),bp=subjectProgressOf(profile,b.subject);
+      if(ap!==bp)return ap-bp;
+      return Number(b.createdAt||0)-Number(a.createdAt||0);
+    });
+    const offset=Math.min(Number(state.recommendedOffset||0),Math.max(0,ordered.length-1));
+    const picks=[...ordered.slice(offset),...ordered.slice(0,offset)].slice(0,4);
+    box.innerHTML=picks.map(l=>{
+      const s=subjectMap.get(l.subject)||{name:'المادة',emoji:'📚'},subjectImage=safeDashboardImage(s.imageUrl||'');
+      const ids=new Set();if(l.teacherId)ids.add(String(l.teacherId));(Array.isArray(l.videos)?l.videos:[]).forEach(v=>{if(v?.teacherId)ids.add(String(v.teacherId))});
+      const teacherNames=[...ids].map(id=>teachers[id]?.name||(l.videos||[]).find(v=>String(v?.teacherId||'')===id)?.name).filter(Boolean);
+      const teacherText=teacherNames.length?teacherNames.slice(0,2).join(' • '):(l.teacherName||'فريق الأكاديمية');
+      const done=!!progress[l.id]?.completed;
+      const q=new URLSearchParams({type:profile.educationType,stage:profile.stage,grade:String(profile.grade),subject:l.subject,id:l.id});
+      return '<a class="mix-recommended-card '+(done?'completed':'')+'" href="./lesson.html?'+q.toString()+'">'+
+        '<div class="mix-recommended-art '+(subjectImage?'has-image':'')+'" '+(subjectImage?'style="background-image:url(&quot;'+safeHtml(subjectImage)+'&quot;)"':'')+'>'+
+          (!subjectImage?'<span>'+safeHtml(s.emoji||'📚')+'</span>':'')+
+          '<em>'+(done?'مكتمل':'مقترح لك')+'</em>'+
+        '</div>'+
+        '<div class="mix-recommended-copy"><small>'+safeHtml(s.name)+'</small><h3>'+safeHtml(l.title||'درس جديد')+'</h3><p><i class="fa-solid fa-chalkboard-user"></i> '+safeHtml(teacherText)+'</p><div><span><i class="fa-solid fa-circle-play"></i> '+Number((l.videos||[]).length)+' فيديو</span><strong>'+(done?'راجع الدرس':'ابدأ الآن')+' <i class="fa-solid fa-arrow-left"></i></strong></div></div>'+
+      '</a>';
+    }).join('');
+    const refresh=$('recommendedRefreshBtn');
+    if(refresh)refresh.onclick=()=>{state.recommendedOffset=((Number(state.recommendedOffset||0)+1)%ordered.length);renderRecommendedLessons(profile,subjects)};
+  }
+
   function renderDashboard() {
     const p = state.profile;
     const name = p.name || state.user.displayName || 'طالبنا';
@@ -696,11 +734,18 @@
       </a>`;
     }).join('');
 
+    renderRecommendedLessons(p,subjects);
+
     const first = subjects[0];
     const lastSubject = subjects.find(s => s.id === p.lastSubjectId) || first;
     if (lastSubject) {
       if($('continueSubjectName')) $('continueSubjectName').textContent=lastSubject.name;
       if($('continueProgressLabel')) $('continueProgressLabel').textContent=Math.max(0,Math.min(100,subjectProgressOf(p,lastSubject.id)))+'%';
+      const continueImage=safeDashboardImage(lastSubject.imageUrl||'');
+      if($('continueLessonVisual')){
+        $('continueLessonVisual').style.backgroundImage=continueImage?'linear-gradient(rgba(15,23,42,.12),rgba(15,23,42,.28)),url("'+continueImage.replace(/"/g,'%22')+'")':'';
+        $('continueLessonVisual').classList.toggle('has-image',!!continueImage);
+      }
       $('continueTitle').textContent = p.lastLessonTitle || `ابدأ أول درس في ${lastSubject.name}`;
       $('continueMeta').textContent = p.lastLessonTitle
         ? `${lastSubject.name} • ${gradeLabels[p.stage]?.[p.grade] || ''}`
