@@ -441,3 +441,48 @@ input:focus,select:focus,textarea:focus{
 .ref-continue-visual.has-image{background-size:cover!important;background-position:center!important;position:relative!important}.ref-continue-visual.has-image::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,23,42,.05),rgba(15,23,42,.35));pointer-events:none}.ref-continue-visual.has-image>*{position:relative;z-index:2}
 @media(max-width:900px){.mix-recommended-grid{grid-template-columns:1fr}}
 @media(max-width:560px){.mix-recommended-card{grid-template-columns:105px 1fr}.mix-recommended-art{min-height:125px}}
+
+/* Lesson teacher switcher — multi-teacher academy */
+.teacher-switcher-wrap{
+  margin-top:14px!important;padding:15px!important;
+  background:linear-gradient(180deg,#fff,#f8fafc)!important;
+  border:1px solid var(--mix-line)!important;border-radius:18px!important;
+}
+.teacher-switcher-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;margin-bottom:12px!important}
+.teacher-switcher-head h3{margin:2px 0 0!important;font-size:15px!important;color:var(--mix-ink)!important}
+.teacher-count{background:#eef2ff!important;color:#4338ca!important;border:1px solid #e0e7ff!important;border-radius:999px!important;padding:6px 10px!important;font-size:10px!important;font-weight:900!important}
+.teacher-switcher{
+  display:flex!important;gap:10px!important;overflow-x:auto!important;padding:2px 1px 8px!important;
+  scroll-snap-type:x mandatory!important;scrollbar-width:none!important;
+}
+.teacher-switcher::-webkit-scrollbar{display:none}
+.mix-teacher-choice{
+  flex:0 0 255px!important;min-width:255px!important;scroll-snap-align:start!important;
+  display:grid!important;grid-template-columns:52px minmax(0,1fr) 28px!important;align-items:center!important;gap:10px!important;
+  padding:11px!important;background:#fff!important;border:2px solid var(--mix-line)!important;border-radius:16px!important;
+  text-align:right!important;color:var(--mix-ink)!important;box-shadow:0 5px 14px rgba(15,23,42,.04)!important;
+  transition:var(--mix-transition)!important;cursor:pointer!important;
+}
+.mix-teacher-choice:hover{transform:translateY(-3px)!important;border-color:#bfdbfe!important;box-shadow:0 10px 22px rgba(15,23,42,.08)!important}
+.mix-teacher-choice.active{
+  border-color:#60a5fa!important;background:linear-gradient(180deg,#fff,#eff6ff)!important;
+  box-shadow:0 12px 25px rgba(37,99,235,.12)!important;
+}
+.teacher-mini-avatar{
+  width:52px!important;height:52px!important;border-radius:15px!important;overflow:hidden!important;
+  display:grid!important;place-items:center!important;background:linear-gradient(135deg,#e0e7ff,#dbeafe)!important;
+  color:#4338ca!important;font-size:17px!important;font-weight:900!important;border:2px solid #fff!important;
+  box-shadow:0 5px 14px rgba(15,23,42,.08)!important;
+}
+.teacher-mini-avatar img{width:100%!important;height:100%!important;object-fit:cover!important}
+.mix-teacher-choice-copy{display:block!important;min-width:0!important}
+.mix-teacher-choice-copy strong{display:block!important;font-size:12px!important;color:var(--mix-ink)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.mix-teacher-choice-copy em{display:block!important;font-size:9px!important;color:var(--mix-muted)!important;font-style:normal!important;margin:1px 0 3px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.mix-teacher-choice-copy small{display:block!important;font-size:8px!important;color:#94a3b8!important}
+.mix-teacher-choice.active .mix-teacher-choice-copy small{color:var(--mix-primary)!important;font-weight:900!important}
+.mix-teacher-choice>i{width:26px!important;height:26px!important;border-radius:50%!important;display:grid!important;place-items:center!important;background:#f1f5f9!important;color:#64748b!important;font-size:10px!important}
+.mix-teacher-choice.active>i{background:linear-gradient(135deg,var(--mix-primary-2),var(--mix-primary))!important;color:#fff!important}
+@media(max-width:600px){
+  .mix-teacher-choice{flex-basis:225px!important;min-width:225px!important;grid-template-columns:46px minmax(0,1fr) 26px!important}
+  .teacher-mini-avatar{width:46px!important;height:46px!important}
+}
