@@ -564,21 +564,31 @@
         }
       });
 
+      const profileGroups=Array.isArray(p.groupIds)?p.groupIds:Object.keys(p.groupIds||{});
+      const assignmentTargetsStudent=a=>{
+        const mode=a.targetMode||'all';
+        if(mode==='students'){
+          const ids=Array.isArray(a.targetStudentIds)?a.targetStudentIds:Object.keys(a.targetStudentIds||{});
+          return ids.includes(uid);
+        }
+        if(mode==='group')return !!a.targetGroupId&&(p.classGroupId===a.targetGroupId||profileGroups.includes(a.targetGroupId));
+        return true;
+      };
       const assignments=Object.entries(assignSnap.val()||{}).map(([id,a])=>({id,...(a||{})}))
-        .filter(a=>!a.isHidden && a.type===p.educationType && a.stage===p.stage && String(a.grade)===String(p.grade) && Number(a.dueAt||0)>=now);
-      const nearAssignments=assignments.sort((a,b)=>Number(a.dueAt||0)-Number(b.dueAt||0)).slice(0,8);
+        .filter(a=>!a.isHidden && (!Number(a.publishAt||0)||Number(a.publishAt)<=now) && a.type===p.educationType && a.stage===p.stage && String(a.grade)===String(p.grade) && assignmentTargetsStudent(a));
+      const nearAssignments=assignments.sort((a,b)=>Number(a.dueAt||Infinity)-Number(b.dueAt||Infinity)).slice(0,12);
       const submissionSnaps=await Promise.all(nearAssignments.map(a=>database.ref('assignmentSubmissions/'+a.id+'/'+uid).once('value')));
       nearAssignments.forEach((a,i)=>{
         const s=submissionSnaps[i].val();
         if(s)return;
-        const diff=Number(a.dueAt)-now;
+        const due=Number(a.dueAt||0),diff=due?due-now:Infinity,overdue=Number.isFinite(diff)&&diff<0;
         candidates.push({
           kind:'assignment',
-          rank:diff<=86400000?1:3,
-          at:Number(a.dueAt),
-          title:diff<=86400000?'واجب محتاج تسليمه قريب':'عندك واجب قادم',
-          text:a.title||'واجب دراسي',
-          href:'./assignments.html'
+          rank:overdue?-1:diff<=86400000?1:3,
+          at:due||now,
+          title:overdue?'عندك واجب متأخر محتاج تسليم':diff<=86400000?'واجب محتاج تسليمه قريب':'عندك واجب قادم',
+          text:(a.title||'واجب دراسي')+(a.teacherName?' • '+a.teacherName:''),
+          href:'./assignments.html?id='+encodeURIComponent(a.id)
         });
       });
 
