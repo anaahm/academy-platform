@@ -41,6 +41,7 @@ function openMore(trigger){
       <a href="./progress.html"><i class="fa-solid fa-chart-line"></i><span><strong>التقدم</strong><small>نتائجك ونشاطك</small></span></a>
       <a href="./library.html"><i class="fa-solid fa-folder-open"></i><span><strong>المكتبة</strong><small>ملفات ومراجع</small></span></a>
       <a href="./live.html"><i class="fa-solid fa-tower-broadcast"></i><span><strong>البث</strong><small>الجلسات المباشرة</small></span></a>
+      <a href="./notifications.html"><i class="fa-regular fa-bell"></i><span><strong>الإشعارات</strong><small>كل المهم والجديد</small></span></a>
       <a href="./community.html"><i class="fa-solid fa-users"></i><span><strong>المجتمع</strong><small>المنتدى والمجموعات</small></span></a>
       <a href="./leaderboard.html"><i class="fa-solid fa-ranking-star"></i><span><strong>المتصدرون</strong><small>الترتيب والتحديات</small></span></a>
       <a href="./weekly-report.html"><i class="fa-solid fa-chart-column"></i><span><strong>تقريري</strong><small>ملخص الأسبوع</small></span></a>
@@ -106,8 +107,27 @@ function addBackButton(){
   };
   nav.prepend(btn);
 }
+function loadStudentScript(src,flag){
+  if(flag&&window[flag])return Promise.resolve();
+  const existing=[...document.scripts].find(s=>s.src&&s.src.includes(src.replace('./','')));
+  if(existing)return new Promise(resolve=>{if(flag&&window[flag])return resolve();existing.addEventListener('load',resolve,{once:true});existing.addEventListener('error',resolve,{once:true});setTimeout(resolve,1200)});
+  return new Promise(resolve=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=resolve;document.body.appendChild(s)});
+}
+function injectNotificationButton(){
+  if(path==='notifications.html'||path==='index.html'||path==='')return;
+  const wrap=document.querySelector('.learning-user');if(!wrap||wrap.querySelector('.student-notification-trigger'))return;
+  const btn=document.createElement('button');btn.type='button';btn.className='icon-btn student-notification-trigger';btn.setAttribute('aria-label','الإشعارات');btn.innerHTML='<i class="fa-regular fa-bell"></i>';
+  const avatar=wrap.querySelector('#pageAvatar,.avatar');if(avatar)wrap.insertBefore(btn,avatar);else wrap.prepend(btn);
+}
+async function initGlobalNotifications(){
+  injectNotificationButton();
+  if(!window.firebase||!window.ACADEMY_FIREBASE_CONFIG)return;
+  if(!window.AcademyNotifications)await loadStudentScript('./assets/notification-engine.js?v=2','AcademyNotifications');
+  if(!window.AcademyNotificationWidget)await loadStudentScript('./assets/notification-widget.js?v=2','AcademyNotificationWidget');
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
   if(path==='index.html'||path==='')injectIndexNavWhenReady();else injectMobileNav();
-  addBackButton();enhancePageAvatar();
+  addBackButton();enhancePageAvatar();initGlobalNotifications();
 });
 })();
