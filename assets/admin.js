@@ -492,10 +492,10 @@ function bindCurriculumTree(){
  $$('[data-tree-copy]',wrap).forEach(b=>b.onclick=()=>duplicateCurriculumLesson(b.dataset.treeCopy));
  $$('[data-tree-up]',wrap).forEach(b=>b.onclick=()=>moveCurriculumLessonRelative(b.dataset.treeUp,-1));
  $$('[data-tree-down]',wrap).forEach(b=>b.onclick=()=>moveCurriculumLessonRelative(b.dataset.treeDown,1));
- $('[data-tree-new-lesson]',wrap).forEach(b=>b.onclick=()=>{const [subject,unit]=b.dataset.treeNewLesson.split('|');openCurriculumLessonCreator(subject,unit)});
- $('[data-tree-new-quiz]',wrap).forEach(b=>b.onclick=()=>{const [subject,unit]=b.dataset.treeNewQuiz.split('|');openCurriculumQuizCreator(subject,unit)});
- $('[data-tree-copy-unit]',wrap).forEach(b=>b.onclick=()=>{const [subject,unit]=b.dataset.treeCopyUnit.split('|');openContentCopyModal('unit',subject,Number(unit))});
- $('[data-tree-copy-subject]',wrap).forEach(b=>b.onclick=()=>openContentCopyModal('subject',b.dataset.treeCopySubject,0));
+ $$('[data-tree-new-lesson]',wrap).forEach(b=>b.onclick=()=>{const [subject,unit]=b.dataset.treeNewLesson.split('|');openCurriculumLessonCreator(subject,unit)});
+ $$('[data-tree-new-quiz]',wrap).forEach(b=>b.onclick=()=>{const [subject,unit]=b.dataset.treeNewQuiz.split('|');openCurriculumQuizCreator(subject,unit)});
+ $$('[data-tree-copy-unit]',wrap).forEach(b=>b.onclick=()=>{const [subject,unit]=b.dataset.treeCopyUnit.split('|');openContentCopyModal('unit',subject,Number(unit))});
+ $$('[data-tree-copy-subject]',wrap).forEach(b=>b.onclick=()=>openContentCopyModal('subject',b.dataset.treeCopySubject,0));
  $$('[data-tree-move-unit]',wrap).forEach(s=>s.onchange=()=>persistCurriculumLessonOrder(s.dataset.treeMoveUnit,Number(s.value),null));
  let draggedId='';
  $$('[data-tree-lesson]',wrap).forEach(row=>{
@@ -961,8 +961,8 @@ function renderLessons(){
  }).join(''):empty('لا توجد دروس','غيّر الفلاتر أو أضف أول درس جديد.');
  $$('[data-edit-lesson]').forEach(b=>b.onclick=()=>editLesson(b.dataset.editLesson));
  $$('[data-toggle-lesson]').forEach(b=>b.onclick=()=>{const l=root.lessons?.[b.dataset.toggleLesson];db.ref('lessons/'+b.dataset.toggleLesson+'/isHidden').set(!l?.isHidden)});
- $('[data-delete-lesson]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الدرس نهائيًا؟',message:'لن يمكن استرجاع الدرس بعد الحذف من المنصة.',tone:'danger',acceptText:'حذف الدرس'}))await db.ref('lessons/'+b.dataset.deleteLesson).remove()});
- $('[data-select-lesson]').forEach(input=>input.onchange=()=>{const id=input.dataset.selectLesson;if(input.checked)selectedLessonIds.add(id);else selectedLessonIds.delete(id);updateBulkSelectionUI('lesson')});
+ $$('[data-delete-lesson]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الدرس نهائيًا؟',message:'لن يمكن استرجاع الدرس بعد الحذف من المنصة.',tone:'danger',acceptText:'حذف الدرس'}))await db.ref('lessons/'+b.dataset.deleteLesson).remove()});
+ $$('[data-select-lesson]').forEach(input=>input.onchange=()=>{const id=input.dataset.selectLesson;if(input.checked)selectedLessonIds.add(id);else selectedLessonIds.delete(id);updateBulkSelectionUI('lesson')});
  updateBulkSelectionUI('lesson');
 }
 async function editLesson(id){
@@ -1030,8 +1030,8 @@ function renderQuizzes(){
  }).join(''):empty('لا توجد اختبارات','غيّر الفلاتر أو أنشئ أول اختبار.');
  $$('[data-edit-quiz]').forEach(b=>b.onclick=()=>editQuiz(b.dataset.editQuiz));
  $$('[data-toggle-quiz]').forEach(b=>b.onclick=()=>{const q=root.quizzes?.[b.dataset.toggleQuiz];db.ref('quizzes/'+b.dataset.toggleQuiz+'/isHidden').set(!q?.isHidden)});
- $('[data-delete-quiz]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الاختبار؟',message:'سيتم حذف الاختبار والأسئلة الموجودة بداخله من المنصة.',tone:'danger',acceptText:'حذف الاختبار'}))await db.ref('quizzes/'+b.dataset.deleteQuiz).remove()});
- $('[data-select-quiz]').forEach(input=>input.onchange=()=>{const id=input.dataset.selectQuiz;if(input.checked)selectedQuizIds.add(id);else selectedQuizIds.delete(id);updateBulkSelectionUI('quiz')});
+ $$('[data-delete-quiz]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الاختبار؟',message:'سيتم حذف الاختبار والأسئلة الموجودة بداخله من المنصة.',tone:'danger',acceptText:'حذف الاختبار'}))await db.ref('quizzes/'+b.dataset.deleteQuiz).remove()});
+ $$('[data-select-quiz]').forEach(input=>input.onchange=()=>{const id=input.dataset.selectQuiz;if(input.checked)selectedQuizIds.add(id);else selectedQuizIds.delete(id);updateBulkSelectionUI('quiz')});
  updateBulkSelectionUI('quiz');
 }
 function resetQuizEditor(){
@@ -1591,8 +1591,8 @@ $('lessonSearch').oninput=renderLessons;$('lessonFilterStage').onchange=renderLe
 $('quizSearch')?.addEventListener('input',renderQuizzes);$('quizFilterStage')?.addEventListener('change',renderQuizzes);$('quizFilterType')?.addEventListener('change',renderQuizzes);$('quizFilterMode')?.addEventListener('change',renderQuizzes);$('quizFilterStatus')?.addEventListener('change',renderQuizzes);
 $('selectVisibleLessons')?.addEventListener('change',e=>{const ids=filteredLessons().map(x=>x.id);ids.forEach(id=>e.target.checked?selectedLessonIds.add(id):selectedLessonIds.delete(id));updateBulkSelectionUI('lesson')});
 $('selectVisibleQuizzes')?.addEventListener('change',e=>{const ids=filteredQuizzes().map(x=>x.id);ids.forEach(id=>e.target.checked?selectedQuizIds.add(id):selectedQuizIds.delete(id));updateBulkSelectionUI('quiz')});
-$('[data-bulk-lessons]').forEach(b=>b.onclick=()=>handleBulkLessonAction(b.dataset.bulkLessons));
-$('[data-bulk-quizzes]').forEach(b=>b.onclick=()=>handleBulkQuizAction(b.dataset.bulkQuizzes));
+$$('[data-bulk-lessons]').forEach(b=>b.onclick=()=>handleBulkLessonAction(b.dataset.bulkLessons));
+$$('[data-bulk-quizzes]').forEach(b=>b.onclick=()=>handleBulkQuizAction(b.dataset.bulkQuizzes));
 $('studentSearch').oninput=renderStudents;$('studentFilterType')?.addEventListener('change',renderStudents);$('studentFilterStage')?.addEventListener('change',renderStudents);
 $('curriculumType').onchange=renderCurriculum;$('curriculumStage').onchange=()=>{fillGrades($('curriculumGrade'),$('curriculumStage').value);renderCurriculum()};$('curriculumGrade').onchange=renderCurriculum;
 $$('[data-curriculum-view]').forEach(b=>b.onclick=()=>{curriculumViewMode=b.dataset.curriculumView==='cards'?'cards':'tree';localStorage.setItem('academy-admin-curriculum-view',curriculumViewMode);applyCurriculumView()});
