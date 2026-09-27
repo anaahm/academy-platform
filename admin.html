@@ -491,21 +491,40 @@
     <div class="modal-panel admin-modal admin-modal-wide" role="dialog" aria-modal="true" aria-labelledby="lessonModalTitle" tabindex="-1">
       <button class="modal-close" data-close-admin-modal="lessonModal" aria-label="إغلاق نافذة الدرس"><i class="fa-solid fa-xmark"></i></button>
       <span class="section-kicker">محتوى تعليمي</span><h2 id="lessonModalTitle">إضافة درس جديد</h2>
-      <form id="lessonForm" class="admin-form">
+      <div class="admin-editor-progress" aria-label="خطوات إعداد الدرس">
+        <span class="active"><b>1</b> البيانات</span><i class="fa-solid fa-chevron-left"></i><span><b>2</b> الشروحات</span><i class="fa-solid fa-chevron-left"></i><span><b>3</b> الشرح</span><i class="fa-solid fa-chevron-left"></i><span><b>4</b> التدريب</span>
+      </div>
+      <form id="lessonForm" class="admin-form admin-content-editor-form">
         <label><span>نوع التعليم</span><select id="newLessonType"><option value="public">عام</option><option value="azhar">أزهر</option></select></label>
         <label><span>المرحلة</span><select id="newLessonStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
         <label><span>الصف</span><select id="newLessonGrade"></select></label>
         <label><span>المادة</span><select id="newLessonSubject"></select></label>
         <label><span>الوحدة</span><input id="newLessonUnit" type="number" min="1" value="1"></label>
         <label><span>عنوان الدرس</span><input id="newLessonTitle" required></label>
-        <div class="full admin-video-editor-wrap">
-          <div class="admin-video-editor-head"><span>فيديوهات المدرسين</span><button class="btn btn-soft" type="button" id="addLessonVideoRow"><i class="fa-solid fa-plus"></i> إضافة مدرس/فيديو</button></div>
+        <div class="full admin-editor-live-preview" id="lessonEditorPreview">
+          <div class="admin-editor-preview-art" id="lessonEditorPreviewArt"><span>📚</span></div>
+          <div><small id="lessonEditorPreviewMeta">معاينة الدرس</small><strong id="lessonEditorPreviewTitle">عنوان الدرس سيظهر هنا</strong><p id="lessonEditorPreviewText">اختر المادة والوحدة وأضف فيديو أو شرحًا مكتوبًا.</p></div>
+          <span class="status-pill approved" id="lessonEditorPreviewStatus">منشور</span>
+        </div>
+        <div class="full admin-video-editor-wrap admin-editor-section">
+          <div class="admin-editor-section-title"><span><i class="fa-solid fa-chalkboard-user"></i></span><div><strong>شروحات المدرسين</strong><small>يمكن أن يحتوي الدرس على أكثر من شرح لنفس الدرس.</small></div></div>
+          <div class="admin-video-editor-head"><span><b id="lessonVideoEditorCount">0</b> فيديو مضاف</span><button class="btn btn-soft" type="button" id="addLessonVideoRow"><i class="fa-solid fa-plus"></i> إضافة مدرس/فيديو</button></div>
           <div id="lessonVideosEditor" class="admin-video-editor"></div>
         </div>
         <label><span>صورة توضيحية — اختياري</span><input id="newLessonImage" type="url" dir="ltr" placeholder="https://..."></label>
         <label><span>مكان الصورة</span><select id="newLessonImagePosition"><option value="top">أعلى الشرح</option><option value="bottom">أسفل الشرح</option></select></label>
-        <label class="full"><span>الشرح المكتوب</span><textarea id="newLessonContent" rows="7"></textarea></label>
-        <label class="full"><span>أسئلة تدريب الدرس بصيغة JSON — اختياري</span><textarea id="newLessonQuestions" rows="8" dir="ltr" placeholder='[{"text":"السؤال","opts":["أ","ب","ج","د"],"correctAnswer":0}]'></textarea></label>
+        <div class="full admin-inline-image-preview" id="lessonImagePreview"><span><i class="fa-regular fa-image"></i></span><div><strong>معاينة صورة الدرس</strong><small>إذا لم تضف صورة سيستخدم تصميم المادة تلقائيًا.</small></div></div>
+        <label class="full"><span>الشرح المكتوب</span><textarea id="newLessonContent" rows="7" placeholder="اكتب شرح الدرس هنا..."></textarea></label>
+        <div class="full admin-question-editor-wrap admin-editor-section">
+          <div class="admin-editor-section-title"><span><i class="fa-solid fa-bullseye"></i></span><div><strong>تدريب الدرس</strong><small>أضف الأسئلة واحدًا واحدًا، أو استورد مجموعة JSON دفعة واحدة.</small></div></div>
+          <div class="admin-question-editor-head"><span><b id="lessonQuestionCountEditor">0</b> سؤال</span><button class="btn btn-soft" type="button" id="addLessonQuestion"><i class="fa-solid fa-plus"></i> سؤال جديد</button></div>
+          <div id="lessonQuestionBuilder" class="admin-question-builder"></div>
+          <details class="admin-bulk-question-box">
+            <summary><i class="fa-solid fa-code"></i> إدخال أو استيراد JSON دفعة واحدة</summary>
+            <label class="full"><span>JSON الأسئلة</span><textarea id="newLessonQuestions" rows="8" dir="ltr" placeholder='[{"text":"السؤال","opts":["أ","ب","ج","د"],"correctAnswer":0}]'></textarea></label>
+            <button class="btn btn-soft" type="button" id="importLessonQuestionsJson"><i class="fa-solid fa-file-import"></i> تحميل JSON إلى المحرر</button>
+          </details>
+        </div>
         <label class="switch-field"><span>مخفي عن الطلاب</span><div><input id="newLessonHidden" type="checkbox"><strong>مخفي</strong></div></label>
         <button class="btn btn-primary full" type="submit">نشر الدرس</button>
       </form>
@@ -516,14 +535,32 @@
     <div class="modal-panel admin-modal admin-modal-wide" role="dialog" aria-modal="true" aria-labelledby="quizModalTitle" tabindex="-1">
       <button class="modal-close" data-close-admin-modal="quizModal" aria-label="إغلاق نافذة الاختبار"><i class="fa-solid fa-xmark"></i></button>
       <span class="section-kicker">اختبار جديد</span><h2 id="quizModalTitle">إنشاء اختبار</h2>
-      <form id="quizForm" class="admin-form">
+      <div class="admin-editor-progress" aria-label="خطوات إعداد الاختبار">
+        <span class="active"><b>1</b> البيانات</span><i class="fa-solid fa-chevron-left"></i><span><b>2</b> الأسئلة</span><i class="fa-solid fa-chevron-left"></i><span><b>3</b> المراجعة</span>
+      </div>
+      <form id="quizForm" class="admin-form admin-content-editor-form">
         <label><span>نوع التعليم</span><select id="newQuizType"><option value="public">عام</option><option value="azhar">أزهر</option></select></label>
         <label><span>المرحلة</span><select id="newQuizStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
         <label><span>الصف</span><select id="newQuizGrade"></select></label>
         <label><span>المادة</span><select id="newQuizSubject"></select></label>
         <label><span>الوحدة — 0 للشامل</span><input id="newQuizUnit" type="number" min="0" value="1"></label>
         <label><span>اسم الاختبار</span><input id="newQuizName" required></label>
-        <label class="full"><span>الأسئلة بصيغة JSON</span><textarea id="newQuizQuestions" rows="10" dir="ltr" placeholder='[{"text":"السؤال","opts":["أ","ب","ج","د"],"correctAnswer":0}]'></textarea></label>
+        <label class="switch-field"><span>مخفي عن الطلاب</span><div><input id="newQuizHidden" type="checkbox"><strong>مخفي</strong></div></label>
+        <div class="full admin-editor-live-preview quiz-preview" id="quizEditorPreview">
+          <div class="admin-editor-preview-art"><span>🧠</span></div>
+          <div><small id="quizEditorPreviewMeta">معاينة الاختبار</small><strong id="quizEditorPreviewTitle">اسم الاختبار سيظهر هنا</strong><p id="quizEditorPreviewText">0 سؤال • اختبار وحدة</p></div>
+          <span class="status-pill approved" id="quizEditorPreviewStatus">منشور</span>
+        </div>
+        <div class="full admin-question-editor-wrap admin-editor-section">
+          <div class="admin-editor-section-title"><span><i class="fa-solid fa-list-check"></i></span><div><strong>أسئلة الاختبار</strong><small>حدد الإجابة الصحيحة والشرح بعد الإجابة لكل سؤال.</small></div></div>
+          <div class="admin-question-editor-head"><span><b id="quizQuestionCountEditor">0</b> سؤال</span><button class="btn btn-soft" type="button" id="addQuizQuestion"><i class="fa-solid fa-plus"></i> سؤال جديد</button></div>
+          <div id="quizQuestionBuilder" class="admin-question-builder"></div>
+          <details class="admin-bulk-question-box">
+            <summary><i class="fa-solid fa-code"></i> إدخال أو استيراد JSON دفعة واحدة</summary>
+            <label class="full"><span>JSON الأسئلة</span><textarea id="newQuizQuestions" rows="10" dir="ltr" placeholder='[{"text":"السؤال","opts":["أ","ب","ج","د"],"correctAnswer":0}]'></textarea></label>
+            <button class="btn btn-soft" type="button" id="importQuizQuestionsJson"><i class="fa-solid fa-file-import"></i> تحميل JSON إلى المحرر</button>
+          </details>
+        </div>
         <button class="btn btn-primary full" type="submit">حفظ الاختبار</button>
       </form>
     </div>
