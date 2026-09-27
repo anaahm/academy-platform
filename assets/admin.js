@@ -1468,7 +1468,19 @@ async function approveSubmission(key){
    const kind=s.submissionKind||'lesson',now=Date.now(),updates={};let publishedId='',publishedType='';
    const scopes=assignmentsOf(t).length?assignmentsOf(t):(Array.isArray(t.subjects)?t.subjects:[]);
    if(!scopes.some(raw=>{const item=typeof raw==='string'?{subject:raw}:raw;return item&&(!item.type||item.type===s.type)&&(!item.stage||item.stage===s.stage)&&(!item.grade||String(item.grade)===String(s.grade))&&(!item.subject||item.subject===s.subject)}))throw Error('المادة والصف غير مسندين إلى هذا المعلم');
-   if(kind==='quiz'){
+   if(kind==='notification'){
+     if(!s.title||!s.text||!s.subject||!s.grade)throw Error('بيانات الإشعار غير مكتملة');
+     const href=String(s.href||'').trim();
+     if(href&&!href.startsWith('./')&&!href.startsWith('/')&&!/^https?:\/\//i.test(href))throw Error('رابط الإشعار غير صالح');
+     const durationDays=Math.max(1,Math.min(14,Number(s.durationDays||5)));
+     publishedType='notificationBroadcasts';publishedId=db.ref('notificationBroadcasts').push().key;
+     updates['notificationBroadcasts/'+publishedId]={
+       source:'teacher',teacherId:uid,teacherName:s.teacherName||t.name||'المدرس',
+       title:s.title,text:s.text,type:s.type,stage:s.stage,grade:String(s.grade),subject:s.subject,subjectName:s.subjectName||'',
+       priority:['normal','high','urgent'].includes(s.priority)?s.priority:'normal',href,isActive:true,
+       createdAt:now,expiresAt:now+durationDays*86400000,teacherSubmissionId:id
+     };
+   }else if(kind==='quiz'){
      const lesson=root.lessons?.[s.lessonId];
      if(!lesson||lesson.isHidden)throw Error('الدرس المرتبط غير متاح');
      if(lesson.type!==s.type||lesson.stage!==s.stage||String(lesson.grade)!==String(s.grade)||lesson.subject!==s.subject)throw Error('بيانات الاختبار لا تطابق الدرس');
@@ -1491,14 +1503,15 @@ async function approveSubmission(key){
    }else throw Error('نوع الطلب غير معروف');
    updates['teacherSubmissions/'+uid+'/'+id+'/status']='approved';
    updates['teacherSubmissions/'+uid+'/'+id+'/reviewedAt']=now;
-   updates['teacherSubmissions/'+uid+'/'+id+'/'+({lessons:'lessonId',quizzes:'quizId',assignments:'assignmentId'}[publishedType])]=publishedId;
+   const publishedField={lessons:'lessonId',quizzes:'quizId',assignments:'assignmentId',notificationBroadcasts:'notificationId'}[publishedType];
+   if(publishedField)updates['teacherSubmissions/'+uid+'/'+id+'/'+publishedField]=publishedId;
    const statusRef=db.ref('teacherSubmissions/'+uid+'/'+id+'/status');
    const claim=await statusRef.transaction(current=>!current||current==='pending'?'approving':undefined);
    if(!claim.committed)return toast('هذا الطلب قيد المراجعة أو تم اعتماده بالفعل.','error');
    claimed=true;
    await db.ref().update(updates);
    await writeAudit('teacher_submission.approve','teacherSubmission',id,{teacherUid:uid,kind,publishedType,publishedId});
-   toast('تم اعتماد '+(kind==='quiz'?'الاختبار':kind==='assignment'?'الواجب':'الدرس')+' ونشره');
+   toast('تم اعتماد '+(kind==='quiz'?'الاختبار':kind==='assignment'?'الواجب':kind==='notification'?'الإشعار':'الدرس')+' ونشره');
  }catch(err){
    if(claimed)await db.ref('teacherSubmissions/'+uid+'/'+id+'/status').transaction(current=>current==='approving'?'pending':undefined).catch(console.error);
    console.error(err);toast('تعذر اعتماد المحتوى: '+err.message,'error');
