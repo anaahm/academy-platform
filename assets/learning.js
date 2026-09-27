@@ -82,6 +82,16 @@ function filterContent(c){
  state.quizzes=Object.entries(state.data.quizzes||{}).map(([id,v])=>({id,...v})).filter(q=>q.type===c.type&&q.stage===c.stage&&String(q.grade)===String(c.grade)&&q.subject===c.subject&&contentAvailable(q)&&(state.adminPreview||targetAllows(q))).sort((a,b)=>(a.unit||0)-(b.unit||0)||(a.createdAt||0)-(b.createdAt||0));
  state.files=Object.entries(state.data.files||{}).map(([id,v])=>({id,...v})).filter(f=>f.type===c.type&&f.stage===c.stage&&String(f.grade)===String(c.grade)&&(!f.subject||f.subject===c.subject));
 }
+let contentVisibilityTimer=null;
+function scheduleContentVisibilityRefresh(c){
+ clearTimeout(contentVisibilityTimer);contentVisibilityTimer=null;if(state.adminPreview)return;
+ const now=Date.now(),times=[...Object.values(state.data.lessons||{}),...Object.values(state.data.quizzes||{})]
+   .filter(x=>x&&x.type===c.type&&x.stage===c.stage&&String(x.grade)===String(c.grade)&&x.subject===c.subject&&!x.isHidden&&Number(x.publishAt||0)>now)
+   .map(x=>Number(x.publishAt)).sort((a,b)=>a-b);
+ if(!times.length)return;
+ const wait=Math.min(2147483000,Math.max(1000,times[0]-now+250));
+ contentVisibilityTimer=setTimeout(()=>{if(page==='subject')renderSubject()},wait);
+}
 function pLesson(id){return state.profile?.learningProgress?.[id]||{}}
 function done(id){return !!pLesson(id).completed}
 function progress(){return state.lessons.length?Math.round(state.lessons.filter(l=>done(l.id)).length/state.lessons.length*100):0}
