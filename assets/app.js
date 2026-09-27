@@ -540,10 +540,11 @@
     if(!state.user||!state.profile)return;
     const p=state.profile,uid=state.user.uid,now=Date.now();
     try{
-      const [plannerSnap,assignSnap,scheduleSnap]=await Promise.all([
+      const [plannerSnap,assignSnap,scheduleSnap,liveSnap]=await Promise.all([
         database.ref('studentProfilesV3/'+uid+'/studyPlanner').once('value'),
         database.ref('assignments').orderByChild('stage').equalTo(p.stage).once('value'),
-        database.ref('scheduleEvents').orderByChild('stage').equalTo(p.stage).once('value')
+        database.ref('scheduleEvents').orderByChild('stage').equalTo(p.stage).once('value'),
+        database.ref('liveSessions').once('value')
       ]);
       const candidates=[];
       const today=todayKey();
@@ -589,6 +590,32 @@
           title:overdue?'عندك واجب متأخر محتاج تسليم':diff<=86400000?'واجب محتاج تسليمه قريب':'عندك واجب قادم',
           text:(a.title||'واجب دراسي')+(a.teacherName?' • '+a.teacherName:''),
           href:'./assignments.html?id='+encodeURIComponent(a.id)
+        });
+      });
+
+      const liveStatus=s=>{
+        if(s.status==='ended')return'ended';
+        if(s.status==='live')return'live';
+        const at=Number(s.scheduledTime||0),duration=Math.max(10,Number(s.duration||60))*60000;
+        if(at&&now>=at&&now<at+duration)return'live';
+        if(at&&now>=at+duration)return'ended';
+        return'upcoming';
+      };
+      Object.entries(liveSnap.val()||{}).forEach(([id,s])=>{
+        if(!s||s.isHidden===true||Number(s.publishAt||0)>now)return;
+        if(s.type&&s.type!==p.educationType)return;
+        if(s.stage&&s.stage!==p.stage)return;
+        if(s.grade&&String(s.grade)!==String(p.grade))return;
+        const st=liveStatus(s),at=Number(s.scheduledTime||0),diff=at-now;
+        if(st==='ended')return;
+        if(st==='upcoming'&&(!at||diff>24*3600000))return;
+        candidates.push({
+          kind:'live',
+          rank:st==='live'?-2:diff<=2*3600000?-.5:2.5,
+          at:at||now,
+          title:st==='live'?'🔴 جلسة مباشرة الآن':diff<=2*3600000?'جلسة مباشرة هتبدأ قريب':'جلسة مباشرة قادمة',
+          text:(s.title||'جلسة مباشرة')+(s.teacher?' • '+s.teacher:''),
+          href:'./live.html?id='+encodeURIComponent(id)
         });
       });
 
