@@ -200,15 +200,16 @@ function escapeHtml(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','
 function renderTeacherProfile(published={}){
  const pending=Object.values(submissions||{}).filter(s=>s?.type==='profile'&&s.status==='pending').sort((a,b)=>(b.createdAt||0)-(a.createdAt||0))[0];
  const current=pending?.profile||published;
- const fields={Name:current.name||teacher.name||'',Title:current.title||'',Photo:current.photoUrl||'',Bio:current.bio||'',Qualifications:current.qualifications||'',Experience:current.experience||'',Style:current.teachingStyle||''};
+ const fields={Name:current.name||teacher.name||'',Title:current.title||'',Photo:current.photoUrl||'',Cover:current.coverUrl||'',Bio:current.bio||'',Qualifications:current.qualifications||'',Experience:current.experience||'',Style:current.teachingStyle||''};
  Object.entries(fields).forEach(([key,value])=>{$('teacherProfile'+key).value=value});
  $('teacherProfileStatus').textContent=pending?'لديك تحديث قيد مراجعة الإدارة. يمكنك إرسال طلب جديد لتصحيحه.':published.name?'ملفك منشور للطلاب. أي تعديل جديد يحتاج موافقة الإدارة.':'لم يُنشر ملفك بعد. أرسل بياناتك للمراجعة.';
  const link=$('teacherProfilePublicLink');link.classList.toggle('hidden',!published.name||published.active===false);link.href='./teacher-profile.html?id='+encodeURIComponent(user.uid);
 }
 async function submitTeacherProfile(e){
- e.preventDefault();const profile={name:$('teacherProfileName').value.trim().slice(0,80),title:$('teacherProfileTitle').value.trim().slice(0,100),photoUrl:$('teacherProfilePhoto').value.trim().slice(0,500),bio:$('teacherProfileBio').value.trim().slice(0,1200),qualifications:$('teacherProfileQualifications').value.trim().slice(0,200),experience:$('teacherProfileExperience').value.trim().slice(0,200),teachingStyle:$('teacherProfileStyle').value.trim().slice(0,450)};
+ e.preventDefault();const profile={name:$('teacherProfileName').value.trim().slice(0,80),title:$('teacherProfileTitle').value.trim().slice(0,100),photoUrl:$('teacherProfilePhoto').value.trim().slice(0,500),coverUrl:$('teacherProfileCover').value.trim().slice(0,500),bio:$('teacherProfileBio').value.trim().slice(0,1200),qualifications:$('teacherProfileQualifications').value.trim().slice(0,200),experience:$('teacherProfileExperience').value.trim().slice(0,200),teachingStyle:$('teacherProfileStyle').value.trim().slice(0,450)};
  if(!profile.name||!profile.title)return toast('أدخل الاسم والتخصص.','error');
  if(profile.photoUrl&&safeUrl(profile.photoUrl)==='#')return toast('أدخل رابط صورة صالحًا.','error');
+ if(profile.coverUrl&&safeUrl(profile.coverUrl)==='#')return toast('أدخل رابط غلاف صالحًا.','error');
  const payload={type:'profile',title:'طلب تحديث الملف التعريفي',teacherName:teacher.name||profile.name,profile,status:'pending',createdAt:Date.now()};
  try{const ref=db.ref('teacherSubmissions/'+user.uid).push();await ref.set(payload);submissions[ref.key]=payload;$('teacherProfileStatus').textContent='أُرسل طلبك للإدارة. سيظهر بعد الموافقة.';toast('تم إرسال ملفك للمراجعة')}catch(err){console.error(err);toast('تعذر إرسال الملف الآن.','error')}
 }
