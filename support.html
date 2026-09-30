@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-page="support">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="theme-color" content="#114cb5">
+  <title>الدعم والبلاغات | الأكاديمية</title>
+  <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./assets/app-icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/learning.css"><link rel="stylesheet" href="./assets/hub.css">
+  <link rel="stylesheet" href="./assets/ui-kit.css?v=35"><link rel="stylesheet" href="./assets/experience.css?v=39"><link rel="stylesheet" href="./assets/future-theme.css?v=1"><link rel="stylesheet" href="./assets/academy-mix-theme.css?v=26">
+  <link rel="stylesheet" href="./assets/ui-polish.css?v=1"><link rel="stylesheet" href="./assets/support.css?v=1">
+  <script src="./assets/academy-utils.js"></script>
+</head>
+<body class="feature-page">
+<div id="toast" class="toast" role="status"></div>
+<header class="learning-header"><div class="container learning-nav">
+  <a class="brand" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-headset"></i></span><span><strong>الأكاديمية</strong><small>الدعم والبلاغات</small></span></a>
+  <div class="learning-breadcrumb"><a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><span>الدعم</span></div>
+  <div class="learning-user"><a class="icon-btn" href="./notifications.html" aria-label="الإشعارات"><i class="fa-regular fa-bell"></i></a><span class="avatar" id="supportAvatar">ط</span></div>
+</div></header>
+
+<main class="support-shell">
+  <section class="support-hero">
+    <div><span class="section-kicker light">نساعدك بسرعة</span><h1>كل مشكلة لها تذكرة واضحة وحالة متابعة</h1><p>بلغ عن درس أو سؤال أو فيديو أو ملف، أو افتح مشكلة عامة. الإدارة ترى السياق تلقائيًا وتقدر ترد عليك وتغيّر حالة التذكرة حتى الحل.</p></div>
+    <div class="support-hero-stats">
+      <article><strong id="supportOpenCount">0</strong><small>تذاكر مفتوحة</small></article>
+      <article><strong id="supportWaitingCount">0</strong><small>مطلوب رد منك</small></article>
+      <article><strong id="supportResolvedCount">0</strong><small>تم حلها</small></article>
+      <article><strong id="supportTotalCount">0</strong><small>كل التذاكر</small></article>
+    </div>
+  </section>
+
+  <section class="support-grid">
+    <article class="support-card">
+      <div class="support-card-head"><div><span class="section-kicker">تذكرة جديدة</span><h2 id="supportFormTitle">أخبرنا بالمشكلة</h2><p>سنرفق تلقائيًا الصفحة الحالية والسياق الذي وصلت منه إن وجد.</p></div><span>🎫</span></div>
+      <form id="supportTicketForm" class="support-form">
+        <label><span>نوع المشكلة</span><select id="supportCategory">
+          <option value="technical">مشكلة تقنية</option><option value="lesson">مشكلة في درس</option><option value="quiz_question">سؤال أو إجابة خاطئة</option><option value="video">فيديو لا يعمل</option><option value="file">ملف غير متاح</option><option value="assignment">مشكلة في واجب</option><option value="account">مشكلة في الحساب أو الدخول</option><option value="general">مشكلة أو شكوى عامة</option>
+        </select></label>
+        <label><span>الأولوية</span><select id="supportPriority"><option value="normal">عادي</option><option value="high">مهم</option><option value="urgent">عاجل</option></select></label>
+        <label class="full"><span>عنوان المشكلة</span><input id="supportTitle" required maxlength="140" placeholder="مثال: الفيديو لا يعمل في درس المفعول المطلق"></label>
+        <label class="full"><span>التفاصيل</span><textarea id="supportDescription" required minlength="5" maxlength="2200" placeholder="اشرح المشكلة وما الذي ظهر لك..."></textarea></label>
+        <label class="full"><span>رابط صورة أو لقطة شاشة — اختياري</span><input id="supportScreenshotUrl" type="url" dir="ltr" maxlength="700" placeholder="https://..."></label>
+        <div class="full support-context" id="supportContext"></div>
+        <div class="full support-note"><i class="fa-solid fa-circle-info"></i><span>لو البلاغ جاء من درس أو اختبار، هنحفظ اسم المحتوى ورقمه والسؤال المرتبط تلقائيًا لتسهيل المراجعة على الإدارة.</span></div>
+        <button class="btn btn-primary full" id="supportSubmitBtn" type="submit"><i class="fa-solid fa-paper-plane"></i> فتح التذكرة</button>
+      </form>
+    </article>
+
+    <article class="support-card">
+      <div class="support-card-head"><div><span class="section-kicker">متابعة طلباتك</span><h2>تذاكر الدعم</h2><p>تابع الحالة ورد على الإدارة عندما تطلب معلومات إضافية.</p></div><span>🧭</span></div>
+      <div class="support-toolbar" id="supportFilters"><button class="active" data-support-filter="all">الكل</button><button data-support-filter="open">المفتوحة</button><button data-support-filter="waiting_user">مطلوب رد</button><button data-support-filter="resolved">تم الحل</button></div>
+      <div id="supportTicketList" class="support-list"></div>
+    </article>
+  </section>
+</main>
+
+<script src="./assets/ui-kit.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="./assets/firebase-config.js"></script><script src="./assets/student-core.js"></script><script src="./assets/support.js?v=1"></script><script src="./assets/activity-tracker.js"></script><script src="./assets/pwa.js"></script><script src="./assets/student-shell.js"></script><script src="./assets/ui-polish.js?v=1"></script>
+</body></html>
