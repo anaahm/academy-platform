@@ -119,8 +119,21 @@ async function syncDailyMissionRewards(userId=auth.currentUser?.uid,knownProfile
  }
  return{profile,gained};
 }
+async function syncWeeklyMissionRewards(userId=auth.currentUser?.uid,knownProfile=null){
+ if(!userId)return{profile:knownProfile||{},gained:0};
+ let profile=knownProfile||await getProfile(userId),gained=0;
+ const wk=weekStartKey(),missions=weeklyMissions(profile);
+ for(const m of missions.filter(x=>x.done)){
+   const id='week-mission-'+wk+'-'+m.id;if(profile?.gamificationV5?.claims?.[id])continue;
+   try{
+     const out=await claimReward({id,label:'مهمة الأسبوع — '+m.title,xp:Number(m.xp||0),ready:true},userId);
+     gained+=Number(out.xp||0);profile=out.profile||profile;
+   }catch{}
+ }
+ return{profile,gained};
+}
 function actionForMission(id){
  return id==='assignment'?'./assignments.html':id==='quiz'?'./exam-center.html':id==='review'?'./planner.html':'./index.html';
 }
-window.AcademyGame={dateKey,weekStartKey,dailyMissions,weeklyMissions,dailyReward,weeklyReward,streakRewards,badges,leagueForXP,getProfile,getWeeklyXP,claimReward,syncDailyMissionRewards,rewardHistory,actionForMission,streakMilestones,leagues};
+window.AcademyGame={dateKey,weekStartKey,dailyMissions,weeklyMissions,dailyReward,weeklyReward,streakRewards,badges,leagueForXP,getProfile,getWeeklyXP,claimReward,syncDailyMissionRewards,syncWeeklyMissionRewards,rewardHistory,actionForMission,streakMilestones,leagues};
 })();
