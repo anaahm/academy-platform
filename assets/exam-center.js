@@ -1,7 +1,7 @@
 (() => {
 'use strict';
-const C=window.AcademyCore,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-let profile,user,data={customSubjects:{},quizzes:{},lessons:{}},filter='all';
+const C=window.AcademyCore,S=window.AcademySubscription,$=id=>document.getElementById(id),$=(s,r=document)=>[...r.querySelectorAll(s)];
+let profile,user,access=null,data={customSubjects:{},quizzes:{},lessons:{}},filter='all';
 function contentVisible(item){
  if(!item||item.isHidden||item.workflowStatus==='draft')return false;
  const at=Number(item.publishAt||0);
@@ -115,7 +115,7 @@ function renderSubjects(){
 }
 function renderRecommended(all){
  const box=$('examRecommendedCard');if(!box)return;
- const unlocked=all.filter(q=>quizUnlockInfo(q).unlocked);
+ const unlocked=all.filter(q=>quizUnlockInfo(q).unlocked&&(!S||S.canAccess(q,access,q.subject)));
  if(!unlocked.length){box.classList.add('hidden');return}
  const fresh=unlocked.filter(q=>!bestAttempt(q.id));
  let pick=fresh[0];
@@ -134,7 +134,7 @@ function renderRecommended(all){
 function render(){
  renderHistory();
  $('examStreak').textContent=profile.stats?.streak||0;
- const all=quizzes(),available=all.filter(q=>quizUnlockInfo(q).unlocked);
+ const all=quizzes(),available=all.filter(q=>quizUnlockInfo(q).unlocked&&(!S||S.canAccess(q,access,q.subject)));
  $('availableExamCount').textContent=available.length;
 
  if(filter==='history'){
@@ -159,29 +159,28 @@ function render(){
  $('examListHint').textContent=list.length?'اختر اختبارًا مناسبًا وابدأ عندما تكون جاهزًا.':'غيّر الفلاتر أو ابحث باسم مادة أخرى.';
 
  $('examList').innerHTML=list.length?list.map((q,index)=>{
-   const sub=subjectMeta(q.subject),unlock=quizUnlockInfo(q),best=bestAttempt(q.id),unit=Number(q.unit||0),questions=q.questions?.length||0,duration=Number(q.durationMinutes||0);
-   const kind=unit===0?'اختبار شامل':'اختبار الوحدة '+unit,status=unlock.unlocked?(best?'تمت المحاولة':'جاهز الآن'):'مغلق';
+   const sub=subjectMeta(q.subject),unlock=quizUnlockInfo(q),subLocked=!!S&&!S.canAccess(q,access,q.subject),best=bestAttempt(q.id),unit=Number(q.unit||0),questions=q.questions?.length||0,duration=Number(q.durationMinutes||0);
+   const kind=unit===0?'اختبار شامل':'اختبار الوحدة '+unit,status=subLocked?'يتطلب اشتراك':unlock.unlocked?(best?'تمت المحاولة':'جاهز الآن'):'مغلق';
    const safeImage=window.AcademyUtils?.safeUrl(sub.imageUrl||'')||'',progress=unlock.total?Math.round(unlock.complete/unlock.total*100):unlock.unlocked?100:0;
    const palette=['blue','violet','green','orange','rose','teal'][index%6];
-   return '<article class="exam-card-v5 '+palette+' '+(unlock.unlocked?'available':'locked')+'">'+
+   return '<article class="exam-card-v5 '+palette+' '+(!subLocked&&unlock.unlocked?'available':'locked')+'">'+
      '<div class="exam-card-cover-v5 '+(safeImage?'has-image':'')+'" '+(safeImage?'style="background-image:url(&quot;'+C.esc(safeImage)+'&quot;)"':'')+'>'+
        (!safeImage?'<span>'+C.esc(sub.emoji||'🧠')+'</span>':'')+
-       '<em>'+C.esc(sub.name||'المادة')+'</em><b class="exam-status '+(unlock.unlocked?(best?'attempted':'ready'):'locked')+'">'+status+'</b>'+
+       '<em>'+C.esc(sub.name||'المادة')+'</em><b class="exam-status '+(!subLocked&&unlock.unlocked?(best?'attempted':'ready'):'locked')+'">'+status+'</b>'+
      '</div>'+
      '<div class="exam-card-body-v5">'+
-       '<div class="exam-card-title-row-v5"><div><small>'+kind+'</small><h3>'+C.esc(q.name||'اختبار')+'</h3></div><span class="exam-card-arrow-v5"><i class="fa-solid '+(unlock.unlocked?'fa-arrow-left':'fa-lock')+'"></i></span></div>'+
+       '<div class="exam-card-title-row-v5"><div><small>'+kind+'</small><h3>'+C.esc(q.name||'اختبار')+(q.isFree?' <span class="subscription-access-pill">مجاني</span>':subLocked?' <span class="subscription-access-pill paid">اشتراك</span>':'')+'</h3></div><span class="exam-card-arrow-v5"><i class="fa-solid '+(!subLocked&&unlock.unlocked?'fa-arrow-left':'fa-lock')+'"></i></span></div>'+
        '<div class="exam-card-metrics-v5"><span><i class="fa-regular fa-circle-question"></i><b>'+questions+'</b><small>سؤال</small></span><span><i class="fa-regular fa-clock"></i><b>'+(duration||'∞')+'</b><small>'+(duration?'دقيقة':'بدون حد')+'</small></span><span><i class="fa-solid fa-trophy"></i><b>'+(best?Number(best.score||0)+'%':'—')+'</b><small>أفضل نتيجة</small></span></div>'+
        (unlock.total?'<div class="exam-unlock-progress-v5"><div><span style="width:'+progress+'%"></span></div><small>'+unlock.complete+' من '+unlock.total+' دروس مكتملة</small></div>':'')+
        '<div class="exam-card-foot-v5">'+
-       (unlock.unlocked
-         ?'<a class="btn btn-primary" href="'+quizHref(q)+'">'+(best?'إعادة الاختبار':'ابدأ الاختبار')+' <i class="fa-solid fa-arrow-left"></i></a>'
-         :'<button class="btn btn-soft locked-exam-btn" data-locked-exam="'+q.id+'" data-lock-reason="'+C.esc(unlock.reason)+'"><i class="fa-solid fa-lock"></i> أكمل المتطلبات أولًا</button>')+
+       (subLocked?'<button class="btn btn-soft subscription-exam-lock" data-subscription-exam="'+q.id+'"><i class="fa-solid fa-crown"></i> يتطلب اشتراك</button>':unlock.unlocked?'<a class="btn btn-primary" href="'+quizHref(q)+'">'+(best?'إعادة الاختبار':'ابدأ الاختبار')+' <i class="fa-solid fa-arrow-left"></i></a>':'<button class="btn btn-soft locked-exam-btn" data-locked-exam="'+q.id+'" data-lock-reason="'+C.esc(unlock.reason)+'"><i class="fa-solid fa-lock"></i> أكمل المتطلبات أولًا</button>')+
        '<a class="btn btn-soft support-report-link" href="'+supportHrefForQuiz(q)+'"><i class="fa-regular fa-flag"></i> إبلاغ</a>'+
        '</div>'+
      '</div></article>';
  }).join(''):'<div class="feature-empty"><span>📭</span><h3>لا توجد اختبارات مطابقة</h3><p>جرّب مادة أخرى أو غيّر عبارة البحث.</p></div>';
 
- $$('[data-locked-exam]').forEach(btn=>btn.onclick=()=>C.toast(btn.dataset.lockReason||'أكمل الدروس المطلوبة أولًا.','error'));
+ $('[data-subscription-exam]').forEach(btn=>btn.onclick=()=>S?.lockOverlay({title:'هذا الاختبار ضمن الاشتراك',text:'فعّل باقة تشمل هذه المادة لتبدأ الاختبار.'}));
+ $('[data-locked-exam]').forEach(btn=>btn.onclick=()=>C.toast(btn.dataset.lockReason||'أكمل الدروس المطلوبة أولًا.','error'));
 }
 $$('[data-exam-filter]').forEach(b=>b.onclick=()=>{
  filter=b.dataset.examFilter;
@@ -195,6 +194,7 @@ $('examSearchInput')?.addEventListener('input',render);
  window.AcademyUI?.showPageLoading('جاري تجهيز اختباراتك...');
  try{
    ({user,profile}=await C.requireStudent());
+   access=S?await S.load(user.uid,profile,true):null;
    $('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
    $('examHeroText').textContent=C.gradeLabel(profile.stage,profile.grade)+' • '+C.typeLabel(profile.educationType)+' — اختبارات مناسبة لمرحلتك.';
    const [s,q,l]=await Promise.all([
