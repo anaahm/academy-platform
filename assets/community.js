@@ -3,7 +3,7 @@
 const C=window.AcademyCore,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 let user,profile,community={forums:{},studyGroups:{}},tab='forums';
 
-function visiblePost(p){return p&&p.isHidden!==true&&p.status!=='removed'}
+function visiblePost(p){return p&&p.isHidden!==true&&!['removed','pending','rejected','changes_requested'].includes(p.status)}
 function visibleGroup(g){
  return g&&g.isActive!==false&&
    (!g.type||g.type===profile.educationType)&&
@@ -86,11 +86,11 @@ $('newPostForm').onsubmit=async e=>{
  const title=$('postTitle').value.trim(),content=$('postContent').value.trim(),btn=$('communityPostSubmitBtn')||e.submitter;
  if(title.length<3)return C.toast('اكتب عنوانًا أوضح للمنشور.','error');
  if(content.length<5)return C.toast('اكتب محتوى مفيدًا قبل النشر.','error');
- window.AcademyUI?.setButtonLoading(btn,true,'نشر');
+ window.AcademyUI?.setButtonLoading(btn,true,'إرسال');
  try{
    await C.db.ref('community/forums').push({title,content,author:profile.name||user.displayName||'طالب',authorId:user.uid,createdAt:Date.now(),likesBy:{}});
    e.target.reset();$('postCharCount').textContent='0';setPostForm(false);C.toast('تم نشر منشورك ✨');
- }catch(err){console.error(err);C.toast('تعذر نشر المنشور الآن.','error')}
+ }catch(err){console.error(err);C.toast('تعذر إرسال المنشور للمراجعة الآن.','error')}
  finally{window.AcademyUI?.setButtonLoading(btn,false)}
 };
 
