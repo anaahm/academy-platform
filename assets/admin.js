@@ -118,6 +118,12 @@ function toLocalDateTimeInput(value){
 }
 function lessonAdminPreviewUrl(lesson){return './lesson.html?'+adminPreviewQuery(lesson,{id:lesson.id,adminPreview:'1'})}
 function quizAdminPreviewUrl(quiz){return './lesson.html?'+adminPreviewQuery(quiz,{quiz:quiz.id,adminPreview:'1'})}
+function quizQuestionBankStatus(quiz,ts=Date.now()){
+ if(quiz?.workflowStatus==='draft')return'draft';
+ if(quiz?.isHidden)return'hidden';
+ if(Number(quiz?.publishAt||0)>ts)return'scheduled';
+ return'approved';
+}
 function reviewRecord(kind,id){
  const collection=kind==='quiz'?'quizzes':'lessons',item=root[collection]?.[id];return item?{kind,id,collection,item}:null;
 }
@@ -160,6 +166,11 @@ async function updateContentReview(changes,action,label){
  const now=Date.now(),payload={...changes,updatedAt:now};
  await db.ref(rec.collection+'/'+rec.id).update(payload);
  Object.assign(rec.item,payload);
+ if(contentReviewTarget.kind==='quiz'){
+   const bankStatus=quizQuestionBankStatus(rec.item,now),bankUpdates={};
+   (Array.isArray(rec.item.questions)?rec.item.questions:[]).forEach((_,i)=>bankUpdates['questionBankV4/quiz-'+rec.id+'-'+i+'/status']=bankStatus);
+   if(Object.keys(bankUpdates).length)await db.ref().update(bankUpdates);
+ }
  await writeAudit(action,contentReviewTarget.kind,rec.id,{...changes});
  renderContentReviewState();refreshContentReviewFrame();toast(label);
 }
@@ -1046,11 +1057,11 @@ async function bulkArchiveLessons(){
 function quizBankUpdates(quizId,quiz,updates,now){
  (Array.isArray(quiz.questions)?quiz.questions:[]).forEach((q,qi)=>{
    const bankId='quiz-'+quizId+'-'+qi;
-   updates['questionBankV4/'+bankId]={id:bankId,question:q.text,options:q.opts,correctAnswer:Number(q.correctAnswer),explanation:q.explanation||'',difficulty:Number(q.difficulty||2),type:quiz.type,stage:quiz.stage,grade:String(quiz.grade),subject:quiz.subject,unit:Number(quiz.unit||0),lessonId:quiz.lessonId||'',sourceQuizId:quizId,authorUid:currentUser?.uid||'',authorRole:'admin',status:'approved',createdAt:now,updatedAt:now};
+   updates['questionBankV4/'+bankId]={id:bankId,question:q.text,options:q.opts,correctAnswer:Number(q.correctAnswer),explanation:q.explanation||'',difficulty:Number(q.difficulty||2),type:quiz.type,stage:quiz.stage,grade:String(quiz.grade),subject:quiz.subject,unit:Number(quiz.unit||0),lessonId:quiz.lessonId||'',sourceQuizId:quizId,authorUid:currentUser?.uid||'',authorRole:'admin',status:quizQuestionBankStatus(quiz,now),createdAt:now,updatedAt:now};
  });
 }
 async function bulkQuizVisibility(hidden){
- const ids=[...selectedQuizIds];if(!ids.length)return;const updates={},now=Date.now();ids.forEach(id=>{updates['quizzes/'+id+'/isHidden']=!!hidden;updates['quizzes/'+id+'/workflowStatus']=hidden?'hidden':'published';updates['quizzes/'+id+'/publishAt']=null;if(!hidden){updates['quizzes/'+id+'/reviewStatus']='approved';updates['quizzes/'+id+'/reviewedAt']=now;updates['quizzes/'+id+'/reviewedBy']=currentUser?.uid||'';updates['quizzes/'+id+'/publishedAt']=now}});await db.ref().update(updates);
+ const ids=[...selectedQuizIds];if(!ids.length)return;const updates={},now=Date.now();ids.forEach(id=>{const q=root.quizzes?.[id];updates['quizzes/'+id+'/isHidden']=!!hidden;updates['quizzes/'+id+'/workflowStatus']=hidden?'hidden':'published';updates['quizzes/'+id+'/publishAt']=null;(Array.isArray(q?.questions)?q.questions:[]).forEach((_,i)=>updates['questionBankV4/quiz-'+id+'-'+i+'/status']=hidden?'hidden':'approved');if(!hidden){updates['quizzes/'+id+'/reviewStatus']='approved';updates['quizzes/'+id+'/reviewedAt']=now;updates['quizzes/'+id+'/reviewedBy']=currentUser?.uid||'';updates['quizzes/'+id+'/publishedAt']=now}});await db.ref().update(updates);
  await writeAudit(hidden?'quiz.bulk_hide':'quiz.bulk_publish','quiz','bulk',{count:ids.length,ids});clearBulkSelection('quiz');toast((hidden?'تم إخفاء ':'تم نشر ')+ids.length+' اختبار');
 }
 async function bulkDuplicateQuizzes(){
@@ -1200,7 +1211,7 @@ async function saveQuiz(e){
  payload[editState.quiz?'updatedAt':'createdAt']=now;updates['quizzes/'+quizId]=editState.quiz?{...existing,...payload}:payload;
  questions.forEach((q,qi)=>{
    const bankId='quiz-'+quizId+'-'+qi;
-   updates['questionBankV4/'+bankId]={id:bankId,question:q.text,options:q.opts,correctAnswer:Number(q.correctAnswer),explanation:q.explanation||'',difficulty:Number(q.difficulty||2),type:payload.type,stage:payload.stage,grade:String(payload.grade),subject:payload.subject,unit:Number(payload.unit||0),lessonId:payload.lessonId||'',sourceQuizId:quizId,authorUid:currentUser?.uid||'',authorRole:'admin',status:'approved',createdAt:now,updatedAt:now};
+   updates['questionBankV4/'+bankId]={id:bankId,question:q.text,options:q.opts,correctAnswer:Number(q.correctAnswer),explanation:q.explanation||'',difficulty:Number(q.difficulty||2),type:payload.type,stage:payload.stage,grade:String(payload.grade),subject:payload.subject,unit:Number(payload.unit||0),lessonId:payload.lessonId||'',sourceQuizId:quizId,authorUid:currentUser?.uid||'',authorRole:'admin',status:quizQuestionBankStatus(payload,now),createdAt:now,updatedAt:now};
  });
  const oldCount=Array.isArray(existing?.questions)?existing.questions.length:0;
  for(let qi=questions.length;qi<oldCount;qi++)updates['questionBankV4/quiz-'+quizId+'-'+qi]=null;
