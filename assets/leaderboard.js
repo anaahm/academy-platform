@@ -1,13 +1,20 @@
 (() => {
 'use strict';
 const C=window.AcademyCore,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-let user,profile,period='daily',rows=[],mine=null,loading=false,loadVersion=0;
+let user,profile,period='daily',rows=[],mine=null,loading=false,loadVersion=0,weeklyXp=0;
 
 function keyForPeriod(){
  const keys=C.leaderboardKeys();
  return period==='daily'?keys.daily:period==='weekly'?keys.weekly:period==='monthly'?keys.monthly:keys.allTime;
 }
 function periodLabel(){return period==='daily'?'اليوم':period==='weekly'?'هذا الأسبوع':period==='monthly'?'هذا الشهر':'كل الوقت'}
+function renderLeague(){
+ const G=window.AcademyGame;if(!G||!$('leaderLeagueCard'))return;
+ const league=G.leagueForXP(weeklyXp);
+ $('leaderLeagueEmoji').textContent=league.emoji;$('leaderLeagueName').textContent=league.name;$('leaderLeagueProgress').style.width=league.progress+'%';$('leaderWeeklyXp').textContent=weeklyXp+' XP';
+ $('leaderLeagueNext').textContent=league.next?'التالي: '+league.next.name:'أعلى دوري';
+ $('leaderLeagueText').textContent=league.next?'باقي '+league.remaining+' XP للوصول إلى '+league.next.name+'.':'أنت في أعلى دوري هذا الأسبوع 👑';
+}
 function render(){
  const limit=Number($('leaderLimit').value||20);
  const list=[...rows].sort((a,b)=>Number(b.xp||0)-Number(a.xp||0)||Number(b.quizzes||0)-Number(a.quizzes||0)).slice(0,limit);
@@ -15,7 +22,7 @@ function render(){
  $('myRank').textContent=meIndex>=0?'#'+(meIndex+1):('خارج '+limit);
  $('myXp').textContent=Number(me.xp||0);
  $('myQuizCount').textContent=Number(me.quizzes||0);
- $('myLevel').textContent=Number(me.level||profile.stats?.level||1);
+ $('myLevel').textContent=Number(me.level||profile.stats?.level||1);renderLeague();
 
  const top=list.slice(0,3),medals=['🥇','🥈','🥉'];
  $('podium').innerHTML=top.length?top.map((r,i)=>
@@ -64,6 +71,7 @@ $('leaderLimit').onchange=load;
  try{
    ({user,profile}=await C.requireStudent());$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
    await C.syncAllTimeLeaderboard(user.uid,profile);
+   weeklyXp=window.AcademyGame?await window.AcademyGame.getWeeklyXP(user.uid):0;
    await load();
  }catch(err){
    console.error(err);C.toast('تعذر تجهيز لوحة الترتيب الآن.','error');

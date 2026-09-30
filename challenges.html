@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-page="challenges">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="theme-color" content="#312e81">
+  <title>التحديات والمكافآت | الأكاديمية</title>
+  <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./assets/app-icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/learning.css"><link rel="stylesheet" href="./assets/hub.css">
+  <link rel="stylesheet" href="./assets/ui-kit.css?v=35"><link rel="stylesheet" href="./assets/experience.css?v=39"><link rel="stylesheet" href="./assets/future-theme.css?v=1"><link rel="stylesheet" href="./assets/academy-mix-theme.css?v=26">
+  <link rel="stylesheet" href="./assets/gamification.css?v=1">
+  <script src="./assets/academy-utils.js"></script>
+</head>
+<body class="feature-page">
+<div id="toast" class="toast" role="status"></div>
+<header class="learning-header"><div class="container learning-nav">
+  <a class="brand" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-trophy"></i></span><span><strong>الأكاديمية</strong><small>التحديات والمكافآت</small></span></a>
+  <div class="learning-breadcrumb"><a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><span>التحديات</span></div>
+  <div class="learning-user"><a class="icon-btn" href="./leaderboard.html" title="المتصدرون"><i class="fa-solid fa-ranking-star"></i></a><span class="avatar" id="gameAvatar">ط</span></div>
+</div></header>
+
+<main class="game-shell">
+  <section class="game-hero">
+    <div><span class="section-kicker light">استمر • اكسب • ارتقِ</span><h1>رحلتك فيها مكافآت حقيقية داخل الأكاديمية</h1><p>المهام تُنجز تلقائيًا من نشاطك الحقيقي. أكمل أهداف اليوم والأسبوع، حافظ على سلسلتك، وافتح شارات ودوريات أعلى.</p></div>
+    <div class="game-hero-stats">
+      <article><strong id="gameTotalXp">0</strong><small>XP إجمالي</small></article>
+      <article><strong id="gameStreak">0</strong><small>يوم متتالٍ</small></article>
+      <article><strong id="gameBadgeCount">0</strong><small>شارة مفتوحة</small></article>
+      <article><strong id="gameWeeklyXp">0</strong><small>XP هذا الأسبوع</small></article>
+    </div>
+  </section>
+
+  <section class="game-level-card">
+    <span class="game-level-medal" id="gameLeagueEmoji">🥉</span>
+    <div class="game-level-copy"><small>دوري هذا الأسبوع</small><strong id="gameLeagueName">الدوري البرونزي</strong><div class="game-level-progress"><span id="gameLeagueProgress"></span></div><div class="game-level-next"><small id="gameLeagueHint">ابدأ بالتعلم وارفع ترتيبك.</small></div></div>
+    <div class="game-level-next"><small>المستوى</small><strong id="gameLevel">1</strong><small id="gameNextLevel">1000 XP للمستوى التالي</small></div>
+  </section>
+
+  <section class="game-section">
+    <div class="game-section-head"><div><span class="section-kicker">تحدي اليوم</span><h2>4 خطوات فقط</h2><p>لا يمكنك تعليمها يدويًا؛ الإنجاز يُحتسب من نشاطك الفعلي.</p></div><a href="./index.html">العودة للوحة الطالب</a></div>
+    <div class="game-grid" id="dailyMissionGrid"></div>
+    <div class="game-reward-card" id="dailyRewardCard"><div class="game-reward-copy"><span>🎁</span><div><strong>صندوق اليوم</strong><small id="dailyRewardText">أكمل المهام الأربع لتحصل على 100 XP إضافية.</small></div></div><button type="button" id="claimDailyReward" disabled>استلم +100 XP</button></div>
+  </section>
+
+  <section class="game-section">
+    <div class="game-section-head"><div><span class="section-kicker">تحدي الأسبوع</span><h2>تقدم متوازن طوال الأسبوع</h2><p>الدروس والاختبارات ووقت المذاكرة ومراجعة الأخطاء.</p></div><span id="gameWeekLabel"></span></div>
+    <div class="game-grid" id="weeklyMissionGrid"></div>
+    <div class="game-reward-card" id="weeklyRewardCard"><div class="game-reward-copy"><span>🏆</span><div><strong>صندوق الأسبوع</strong><small id="weeklyRewardText">أكمل تحديات الأسبوع لتحصل على 250 XP.</small></div></div><button type="button" id="claimWeeklyReward" disabled>استلم +250 XP</button></div>
+  </section>
+
+  <section class="game-section game-two">
+    <article class="game-card">
+      <div class="game-section-head"><div><span class="section-kicker">سلسلة التعلم</span><h2>كل يوم له قيمة</h2><p>استمر في الدخول والتعلم وافتح مكافآت السلسلة.</p></div><span style="font-size:30px">🔥</span></div>
+      <div class="game-streak-list" id="streakRewardList"></div>
+    </article>
+    <article class="game-card">
+      <div class="game-section-head"><div><span class="section-kicker">الدوري الأسبوعي</span><h2>تقدمك ضد نفسك أولًا</h2><p>الدوري يتغير حسب XP التي تجمعها خلال الأسبوع.</p></div><a href="./leaderboard.html">لوحة الترتيب</a></div>
+      <div class="game-league"><span class="game-league-emblem" id="leagueCardEmoji">🥉</span><div><h3 id="leagueCardName">الدوري البرونزي</h3><p id="leagueCardText">ابدأ أول خطوة هذا الأسبوع.</p><div class="game-league-progress"><span id="leagueCardProgress"></span></div><div class="game-league-meta"><span id="leagueCardXp">0 XP</span><span id="leagueCardNext">—</span></div></div></div>
+    </article>
+  </section>
+
+  <section class="game-section">
+    <div class="game-section-head"><div><span class="section-kicker">خزانة الإنجازات</span><h2>الشارات التي فتحتها</h2><p>بعضها يعتمد على الاستمرار، وبعضها على النتائج والمراجعة.</p></div><a href="./profile.html">ملفك الشخصي</a></div>
+    <div class="game-badges" id="gameBadgeGrid"></div>
+  </section>
+
+  <section class="game-section game-two">
+    <article class="game-card"><div class="game-section-head"><div><span class="section-kicker">آخر المكافآت</span><h2>سجل الجوائز</h2></div><span>🎁</span></div><div class="game-history" id="gameRewardHistory"></div></article>
+    <article class="game-card"><div class="game-section-head"><div><span class="section-kicker">مهم</span><h2>كيف تُحسب النقاط؟</h2></div><span>ℹ️</span></div><div class="game-history"><div class="game-history-row"><div><strong>إنهاء الدرس</strong><small>يُحتسب من نظام التعلم نفسه</small></div><b>XP</b></div><div class="game-history-row"><div><strong>تحسين نتيجة الاختبار</strong><small>النقاط تتبع تحسن النتيجة وليس تكرار المحاولة فقط</small></div><b>XP</b></div><div class="game-history-row"><div><strong>صندوق اليوم</strong><small>بعد إكمال 4 مهام حقيقية</small></div><b>+100</b></div><div class="game-history-row"><div><strong>صندوق الأسبوع</strong><small>بعد إكمال 4 تحديات أسبوعية</small></div><b>+250</b></div></div></article>
+  </section>
+</main>
+
+<script src="./assets/ui-kit.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="./assets/firebase-config.js"></script><script src="./assets/student-core.js"></script><script src="./assets/gamification.js?v=1"></script><script src="./assets/challenges.js?v=1"></script><script src="./assets/activity-tracker.js"></script><script src="./assets/pwa.js"></script><script src="./assets/student-shell.js"></script>
+</body></html>

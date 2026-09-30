@@ -9,11 +9,14 @@ async function flush(){
  if(!uid||pending<=0||flushing)return;
  const amount=pending;pending=0;flushing=true;
  try{
-   await Promise.all([
+   const key=today();
+   const [,dayResult]=await Promise.all([
      db.ref('studentProfilesV3/'+uid+'/stats/studyMinutes').transaction(v=>Number(v||0)+amount),
-     db.ref('studentProfilesV3/'+uid+'/activityDaily/'+today()+'/minutes').transaction(v=>Number(v||0)+amount),
-     db.ref('studentProfilesV3/'+uid+'/activityDaily/'+today()+'/lastActiveAt').set(Date.now())
+     db.ref('studentProfilesV3/'+uid+'/activityDaily/'+key+'/minutes').transaction(v=>Number(v||0)+amount),
+     db.ref('studentProfilesV3/'+uid+'/activityDaily/'+key+'/lastActiveAt').set(Date.now())
    ]);
+   const total=Number(dayResult?.snapshot?.val?.()||0);
+   if(total>=30)await db.ref('studentProfilesV3/'+uid+'/dailyGoals/'+key+'/review').set(true);
  }catch(e){pending+=amount}
  finally{flushing=false}
 }
