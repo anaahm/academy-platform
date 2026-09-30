@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="./assets/future-theme.css?v=1">
   <link rel="stylesheet" href="./assets/academy-mix-theme.css?v=3">
   <link rel="stylesheet" href="./assets/ui-polish.css?v=1">
+  <link rel="stylesheet" href="./assets/communications.css?v=1">
 </head>
 <body class="feature-page">
   <div id="toast" class="toast"></div>
@@ -42,8 +43,8 @@
           <form id="newPostForm" class="community-post new-post-form hidden">
             <span class="section-kicker">شارك بشكل محترم ومفيد</span>
             <label><span>عنوان المنشور</span><input id="postTitle" required minlength="3" maxlength="120" placeholder="عنوان واضح ومختصر"></label>
-            <label><span>المحتوى</span><textarea id="postContent" required minlength="5" maxlength="1200" placeholder="اكتب سؤالك أو فكرتك التعليمية..."></textarea><small class="community-char-count"><span id="postCharCount">0</span> / 1200</small></label>
-            <div class="community-form-actions"><button class="btn btn-primary" id="communityPostSubmitBtn" type="submit"><i class="fa-solid fa-paper-plane"></i> نشر</button><button class="btn btn-soft" type="button" id="cancelPost">إلغاء</button></div>
+            <label><span>المحتوى</span><textarea id="postContent" required minlength="5" maxlength="1200" placeholder="اكتب سؤالك أو فكرتك التعليمية..."></textarea><small class="community-char-count"><span id="postCharCount">0</span> / 1200</small></label><div class="comm-note"><i class="fa-solid fa-shield-halved"></i><span>لن يظهر المنشور لباقي الطلاب قبل موافقة الإدارة.</span></div>
+            <div class="community-form-actions"><button class="btn btn-primary" id="communityPostSubmitBtn" type="submit"><i class="fa-solid fa-shield-halved"></i> إرسال للإدارة</button><button class="btn btn-soft" type="button" id="cancelPost">إلغاء</button></div>
           </form>
 
           <div class="community-feed" id="forumFeed"></div>
