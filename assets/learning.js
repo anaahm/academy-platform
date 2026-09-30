@@ -367,14 +367,14 @@ function renderCurriculum(c,filter){
    const unlocked=subjectIsComplete();
    const body=comprehensive.map(q=>{
      const subLocked=!subscriptionCan(q,c.subject),canOpen=unlocked&&!subLocked;
-     const content='<span class="item-icon quiz"><i class="fa-solid '+(canOpen?'fa-file-circle-question':'fa-lock')+'"></i></span><div><h4>'+esc(q.name||'اختبار شامل')+'</h4><p>'+(q.questions?.length||0)+' سؤال</p></div><div class="item-action"><span class="item-state '+(unlocked?'quiz-ready':'locked')+'">'+(unlocked?'جاهز':'مغلق')+'</span><span class="item-open '+(unlocked?'':'locked-action')+'"><i class="fa-solid '+(unlocked?'fa-arrow-left':'fa-lock')+'"></i></span></div>';
+     const content='<span class="item-icon quiz"><i class="fa-solid '+(canOpen?'fa-file-circle-question':'fa-lock')+'"></i></span><div><h4>'+esc(q.name||'اختبار شامل')+(q.isFree?' <span class="subscription-access-pill">مجاني</span>':subLocked?' <span class="subscription-access-pill paid">اشتراك</span>':'')+'</h4><p>'+(q.questions?.length||0)+' سؤال</p></div><div class="item-action"><span class="item-state '+(canOpen?'quiz-ready':'locked')+'">'+(subLocked?'يتطلب اشتراك':unlocked?'جاهز':'مغلق')+'</span><span class="item-open '+(canOpen?'':'locked-action')+'"><i class="fa-solid '+(canOpen?'fa-arrow-left':'fa-lock')+'"></i></span></div>';
      return subLocked?'<button type="button" class="curriculum-item quiz-item locked subscription-locked" data-subscription-lock="quiz|'+q.id+'">'+content+'</button>':unlocked?'<a class="curriculum-item quiz-item unlocked" href="'+url('lesson.html',c,{quiz:q.id})+'">'+content+'</a>':'<button type="button" class="curriculum-item quiz-item locked locked-curriculum-action" data-locked-quiz="all">'+content+'</button>';
    }).join('');
    cards.push('<section class="unit-card comprehensive-card '+(unlocked?'unit-complete':'')+'"><header class="unit-head"><div class="unit-head-main"><span class="unit-number"><i class="fa-solid fa-trophy"></i></span><div><h3>اختبارات شاملة</h3><p>'+(unlocked?'أنت جاهز لتقييم المنهج كاملًا':'تفتح بعد إكمال جميع دروس المادة')+'</p></div></div><div class="unit-head-actions"><button type="button" class="unit-toggle" data-toggle-unit="comprehensive" aria-expanded="true" aria-controls="unitItems-comprehensive" title="طي أو فتح الاختبارات"><i class="fa-solid fa-chevron-up"></i></button></div></header><div class="unit-items" id="unitItems-comprehensive">'+body+'</div></section>');
  }
  $('curriculumList').innerHTML=cards.join('')||'<div class="empty-state"><span>🔎</span><h3>لا يوجد محتوى بهذا الفلتر</h3></div>';
- $('[data-subscription-lock]').forEach(b=>b.onclick=()=>subscriptionLock());
- $('[data-locked-quiz]').forEach(b=>b.onclick=()=>{
+ $$('[data-subscription-lock]').forEach(b=>b.onclick=()=>subscriptionLock());
+ $$('[data-locked-quiz]').forEach(b=>b.onclick=()=>{
    toast(b.dataset.lockedQuiz==='lesson'?'أكمل الدرس المرتبط لفتح الاختبار.':b.dataset.lockedQuiz==='all'?'أكمل دروس المادة أولًا لفتح الاختبار الشامل.':'أكمل دروس هذه الوحدة أولًا لفتح الاختبار.','error');
  });
  $$('[data-toggle-unit]').forEach(btn=>btn.onclick=()=>{
@@ -388,7 +388,7 @@ function renderCurriculum(c,filter){
 
 function renderSubjectSide(c){
  const next=state.lessons.find(l=>!done(l.id))||state.lessons[0];
- if(next){$('resumeTitle').textContent=done(next.id)?'راجع أول درس':next.title||'ابدأ أول درس';$('resumeDescription').textContent=unitName(c,next.unit||1)+' • '+(next.videos?.length||0)+' فيديو';$('resumeBtn').onclick=()=>location.href=url('lesson.html',c,{id:next.id})} else $('resumeBtn').disabled=true;
+ if(next){const allowed=subscriptionCan(next,c.subject);$('resumeTitle').textContent=done(next.id)?'راجع أول درس':next.title||'ابدأ أول درس';$('resumeDescription').textContent=unitName(c,next.unit||1)+' • '+(next.videos?.length||0)+' فيديو'+(allowed?'':' • يتطلب اشتراك');$('resumeBtn').onclick=()=>allowed?location.href=url('lesson.html',c,{id:next.id}):subscriptionLock(next,c.subject)} else $('resumeBtn').disabled=true;
  const week=Math.min(3,state.lessons.filter(l=>pLesson(l.id).completedAt&&Date.now()-pLesson(l.id).completedAt<604800000).length);
  $('weeklyProgressText').textContent=week+' من 3';$('weeklyProgressBar').style.width=(week/3*100)+'%';
  $('exploreStagesBtn').onclick=()=>openLearningExplorer();$('exploreOtherSubjectsBtn').onclick=()=>openLearningExplorer();
