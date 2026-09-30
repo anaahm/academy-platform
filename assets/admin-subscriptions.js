@@ -65,6 +65,12 @@ function renderSubjectChecks(selected={}){
  box.closest('.full')?.classList.toggle('hidden',$('planAccessMode')?.value!=='subjects');
 }
 function selectedSubjects(){return Object.fromEntries([...document.querySelectorAll('#planSubjects input:checked')].map(x=>[x.value,true]))}
+function refreshPlanTargetGrades(keep=''){
+ const stage=$('planTargetStage')?.value||'',sel=$('planTargetGrade');if(!sel)return;
+ const max=stage==='primary'?6:stage?3:6,current=String(keep||sel.value||'');
+ sel.innerHTML='<option value="">كل الصفوف</option>'+Array.from({length:max},(_,i)=>'<option value="'+(i+1)+'">الصف '+(i+1)+'</option>').join('');
+ if(current&&Number(current)<=max)sel.value=current;
+}
 
 function resetPlan(){
  editPlanId='';
@@ -74,13 +80,14 @@ function resetPlan(){
  if($('planActive'))$('planActive').checked=true;
  if($('planSortOrder'))$('planSortOrder').value=100;
  if($('planIcon'))$('planIcon').value='👑';
+ refreshPlanTargetGrades('');
  if($('planSaveBtn'))$('planSaveBtn').innerHTML='<i class="fa-solid fa-plus"></i> إنشاء الباقة';
  $('planCancelEdit')?.classList.add('hidden');
  renderSubjectChecks({});
 }
 function editPlan(id){
  const p=plans[id];if(!p)return;editPlanId=id;
- $('planName').value=p.name||'';$('planPrice').value=Number(p.price||0);$('planDurationDays').value=Number(p.durationDays||30);$('planBadge').value=p.badge||'';$('planIcon').value=p.icon||'👑';$('planDescription').value=p.description||'';$('planAccessMode').value=p.accessMode||'all';$('planTargetType').value=p.targetType||'';$('planTargetStage').value=p.targetStage||'';$('planTargetGrade').value=p.targetGrade||'';$('planActive').checked=p.isActive!==false;$('planSortOrder').value=Number(p.sortOrder||100);
+ $('planName').value=p.name||'';$('planPrice').value=Number(p.price||0);$('planDurationDays').value=Number(p.durationDays||30);$('planBadge').value=p.badge||'';$('planIcon').value=p.icon||'👑';$('planDescription').value=p.description||'';$('planAccessMode').value=p.accessMode||'all';$('planTargetType').value=p.targetType||'';$('planTargetStage').value=p.targetStage||'';refreshPlanTargetGrades(p.targetGrade||'');$('planActive').checked=p.isActive!==false;$('planSortOrder').value=Number(p.sortOrder||100);
  renderSubjectChecks(p.subjects||{});
  $('planSaveBtn').innerHTML='<i class="fa-solid fa-floppy-disk"></i> حفظ التعديل';$('planCancelEdit').classList.remove('hidden');
 }
@@ -178,6 +185,7 @@ function bind(){
  if(bound)return;bound=true;
  $('subscriptionPlanForm')?.addEventListener('submit',savePlan);
  $('planAccessMode')?.addEventListener('change',()=>renderSubjectChecks(selectedSubjects()));
+ $('planTargetStage')?.addEventListener('change',()=>refreshPlanTargetGrades(''));
  $('planCancelEdit')?.addEventListener('click',resetPlan);
  $('subscriptionStudentSearch')?.addEventListener('input',renderStudents);
  $('studentSubscriptionForm')?.addEventListener('submit',saveStudentSubscription);
