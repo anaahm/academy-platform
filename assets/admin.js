@@ -207,6 +207,7 @@ function adminName(){
 const ADMIN_CORE_PATHS=['adminProfiles','lessons','quizzes','studentProfilesV3','parentProfilesV4','teacherProfiles','teacherSubmissions','community'];
 const ADMIN_TAB_PATHS={
  overview:ADMIN_CORE_PATHS,
+ analytics:['studentProfilesV3','lessons','quizzes','files','assignments','assignmentSubmissions','teacherProfiles','teacherSubmissions','contentAnalytics','customSubjects'],
  curriculum:['customSubjects','lessons','quizzes'],
  lessons:['lessons','customSubjects','teacherProfiles','settings'],
  quizzes:['quizzes','customSubjects','lessons','teacherProfiles'],
@@ -224,6 +225,7 @@ const ADMIN_TAB_PATHS={
 };
 const adminMeta={
  overview:['لوحة المعلومات','صباح الخير 👋'],
+ analytics:['ذكاء الإدارة','التحليلات ومركز المشكلات'],
  curriculum:['هيكل المنهج','المواد والوحدات'],
  lessons:['المحتوى','إدارة الدروس'],
  quizzes:['التقييم','إدارة الاختبارات'],
@@ -245,7 +247,7 @@ function renderAdminIdentity(){
  $('adminAvatar').textContent=(adminName()[0]||'م').toUpperCase();
 }
 function renderTab(tab){
- ({overview:renderOverview,curriculum:renderCurriculum,lessons:renderLessons,quizzes:renderQuizzes,simulations:renderSimulations,files:renderFiles,live:renderLiveSessions,schedule:renderScheduleEvents,teachers:renderTeachers,students:renderStudents,news:renderNews,community:renderCommunityAdmin,announcements:loadAnnouncement,settings:loadSettings}[tab]||(()=>{}))();
+ ({overview:renderOverview,analytics:renderAdminIntelligence,curriculum:renderCurriculum,lessons:renderLessons,quizzes:renderQuizzes,simulations:renderSimulations,files:renderFiles,live:renderLiveSessions,schedule:renderScheduleEvents,teachers:renderTeachers,students:renderStudents,news:renderNews,community:renderCommunityAdmin,announcements:loadAnnouncement,settings:loadSettings}[tab]||(()=>{}))();
 }
 function pathsForTab(tab){
  return [...new Set([...(ADMIN_TAB_PATHS[tab]||[]),...(tab==='overview'?ADMIN_CORE_PATHS:[])])];
@@ -306,6 +308,25 @@ async function setTab(tab,updateUrl=true){
  renderAdminIdentity();updatePendingBadge();updateCommunityBadge();renderTab(tab);
  if(missing.length)window.AcademyUI?.hidePageLoading();
  if(!ok)toast('تم تحميل القسم مع تعذر قراءة جزء من البيانات.','error');
+}
+
+/* Admin intelligence */
+function renderAdminIntelligence(){
+ if(!window.AdminIntelligence?.render){
+   console.warn('Admin intelligence module is unavailable');
+   return;
+ }
+ window.AdminIntelligence.render({
+   root,
+   setTab,
+   toast,
+   values,
+   subjectsFor,
+   adminSubjectMeta,
+   typeLabel,
+   gradeLabel,
+   stageNames
+ });
 }
 
 /* Overview */
