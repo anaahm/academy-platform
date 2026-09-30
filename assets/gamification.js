@@ -106,8 +106,21 @@ async function claimReward(reward,userId=auth.currentUser?.uid){
  if(gained&&window.AcademyCore?.addLeaderboardXP)await window.AcademyCore.addLeaderboardXP(userId,profileName,gained,0).catch(()=>{});
  return{xp:gained,profile:result.snapshot.val()||{}};
 }
+async function syncDailyMissionRewards(userId=auth.currentUser?.uid,knownProfile=null){
+ if(!userId)return{profile:knownProfile||{},gained:0};
+ let profile=knownProfile||await getProfile(userId),gained=0;
+ const key=dateKey(),missions=dailyMissions(profile,key);
+ for(const m of missions.filter(x=>x.done)){
+   const id='mission-'+key+'-'+m.id;if(profile?.gamificationV5?.claims?.[id])continue;
+   try{
+     const out=await claimReward({id,label:'مهمة اليوم — '+m.title,xp:Number(m.xp||25),ready:true},userId);
+     gained+=Number(out.xp||0);profile=out.profile||profile;
+   }catch{}
+ }
+ return{profile,gained};
+}
 function actionForMission(id){
  return id==='assignment'?'./assignments.html':id==='quiz'?'./exam-center.html':id==='review'?'./planner.html':'./index.html';
 }
-window.AcademyGame={dateKey,weekStartKey,dailyMissions,weeklyMissions,dailyReward,weeklyReward,streakRewards,badges,leagueForXP,getProfile,getWeeklyXP,claimReward,rewardHistory,actionForMission,streakMilestones,leagues};
+window.AcademyGame={dateKey,weekStartKey,dailyMissions,weeklyMissions,dailyReward,weeklyReward,streakRewards,badges,leagueForXP,getProfile,getWeeklyXP,claimReward,syncDailyMissionRewards,rewardHistory,actionForMission,streakMilestones,leagues};
 })();
