@@ -11,6 +11,16 @@ function subjectsText(plan){
 }
 function renderCurrent(){
  const sub=access.subscription,plan=access.plan,status=access.status;
+ if(access.enforced!==true){
+   $('subscriptionHeroStatus').textContent='الوصول مفتوح';
+   $('subscriptionHeroDays').textContent='—';
+   $('subscriptionCurrentPlan').textContent=plan?.name||'نظام الاشتراكات غير مفعل بعد';
+   $('subscriptionStatusText').textContent='غير مفروض حاليًا';
+   $('subscriptionStart').textContent=fmt(sub?.startsAt);$('subscriptionEnd').textContent=fmt(sub?.endsAt);$('subscriptionAccess').textContent='كل المحتوى متاح حاليًا';
+   $('subscriptionCurrentText').textContent='الإدارة تجهز الباقات حاليًا. لن يُقفل أي محتوى قبل تفعيل نظام الاشتراكات من لوحة الإدارة.';
+   $('subscriptionProgressBar').style.width='100%';
+   return;
+ }
  $('subscriptionHeroStatus').textContent=S.statusLabel(status);$('subscriptionHeroDays').textContent=access.active?access.daysLeft+' يوم':'—';
  $('subscriptionCurrentPlan').textContent=plan?.name||'لا توجد باقة نشطة';$('subscriptionStatusText').textContent=S.statusLabel(status);$('subscriptionStart').textContent=fmt(sub?.startsAt);$('subscriptionEnd').textContent=fmt(sub?.endsAt);$('subscriptionAccess').textContent=access.active?subjectsText(plan):'المجاني فقط';
  $('subscriptionCurrentText').textContent=access.active?'اشتراكك فعال ويمكنك الوصول للمحتوى الذي تشمله الباقة.':status==='pending'?'اشتراكك موجود لكنه لم يبدأ بعد.':status==='suspended'?'الاشتراك موقوف حاليًا. تواصل مع الإدارة إذا احتجت مساعدة.':status==='expired'?'انتهت مدة اشتراكك ويمكنك طلب تجديد أو باقة جديدة.':'يمكنك استخدام المحتوى المجاني وطلب الاشتراك في أي باقة متاحة.';
