@@ -836,6 +836,7 @@
             <button class="btn btn-soft" type="button" id="importLessonQuestionsJson"><i class="fa-solid fa-file-import"></i> تحميل JSON إلى المحرر</button>
           </details>
         </div>
+        <label class="switch-field"><span>الوصول</span><div><input id="newLessonFree" type="checkbox"><strong>محتوى مجاني</strong></div></label>
         <label class="switch-field"><span>مسودة</span><div><input id="newLessonDraft" type="checkbox"><strong>حفظ كمسودة</strong></div></label>
               <label class="switch-field"><span>مخفي عن الطلاب</span><div><input id="newLessonHidden" type="checkbox"><strong>مخفي</strong></div></label>
         <button class="btn btn-primary full" type="submit">نشر الدرس</button>
@@ -858,6 +859,7 @@
         <label><span>الوحدة — 0 للشامل</span><input id="newQuizUnit" type="number" min="0" value="1"></label>
         <label><span>اسم الاختبار</span><input id="newQuizName" required></label>
         <label><span>مدة الاختبار بالدقائق — 0 بدون حد</span><input id="newQuizDuration" type="number" min="0" value="0"></label>
+        <label class="switch-field"><span>الوصول</span><div><input id="newQuizFree" type="checkbox"><strong>اختبار مجاني</strong></div></label>
         <label class="switch-field"><span>مسودة</span><div><input id="newQuizDraft" type="checkbox"><strong>حفظ كمسودة</strong></div></label>
               <label class="switch-field"><span>مخفي عن الطلاب</span><div><input id="newQuizHidden" type="checkbox"><strong>مخفي</strong></div></label>
         <div class="full admin-editor-live-preview quiz-preview" id="quizEditorPreview">
@@ -950,7 +952,8 @@
         <label><span>المادة</span><select id="newFileSubject"></select></label>
         <label class="full"><span>ربط بدرس — اختياري</span><select id="newFileLesson"><option value="">بدون ربط بدرس</option></select></label>
         <label class="full"><span>وصف مختصر</span><textarea id="newFileDescription" rows="3" maxlength="400" placeholder="مثال: مراجعة شاملة على الوحدة الأولى مع أهم الأسئلة."></textarea></label>
-        <label class="switch-field full"><span>تمييز الملف</span><div><input id="newFileFeatured" type="checkbox"><strong>ملف مهم / موصى به</strong></div></label>
+        <label class="switch-field"><span>تمييز الملف</span><div><input id="newFileFeatured" type="checkbox"><strong>ملف مهم / موصى به</strong></div></label>
+        <label class="switch-field"><span>الوصول</span><div><input id="newFileFree" type="checkbox"><strong>ملف مجاني</strong></div></label>
         <button class="btn btn-primary full" type="submit">حفظ الملف</button>
       </form>
     </div>
