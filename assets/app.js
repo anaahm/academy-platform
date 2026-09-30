@@ -781,7 +781,8 @@
             at,
             title:isToday?'كمّل مهمة المذاكرة دي النهارده':'مهمة مذاكرة قادمة',
             text:t.title||'مهمة مذاكرة',
-            href:'./planner.html'
+            href:'./planner.html',
+            reason:isToday?'لأنها مهمة موجودة في خطة مذاكرتك اليوم.':'لأنها أقرب مهمة قادمة في مخططك.'
           });
         }
       });
@@ -810,7 +811,8 @@
           at:due||now,
           title:overdue?'عندك واجب متأخر محتاج تسليم':diff<=86400000?'واجب محتاج تسليمه قريب':'عندك واجب قادم',
           text:(a.title||'واجب دراسي')+(a.teacherName?' • '+a.teacherName:''),
-          href:'./assignments.html?id='+encodeURIComponent(a.id)
+          href:'./assignments.html?id='+encodeURIComponent(a.id),
+          reason:overdue?'لأن موعد الواجب فات ولسه محتاج تسليم.':diff<=86400000?'لأن موعد تسليم الواجب خلال أقل من يوم.':'لأنه أقرب واجب مطلوب منك.'
         });
       });
 
@@ -836,7 +838,8 @@
           at:at||now,
           title:st==='live'?'🔴 جلسة مباشرة الآن':diff<=2*3600000?'جلسة مباشرة هتبدأ قريب':'جلسة مباشرة قادمة',
           text:(s.title||'جلسة مباشرة')+(s.teacher?' • '+s.teacher:''),
-          href:'./live.html?id='+encodeURIComponent(id)
+          href:'./live.html?id='+encodeURIComponent(id),
+          reason:st==='live'?'لأن الجلسة شغالة الآن.':diff<=2*3600000?'لأن الجلسة هتبدأ خلال ساعتين.':'لأنها أقرب جلسة مباشرة ليك.'
         });
       });
 
@@ -854,7 +857,8 @@
             at,
             title:diff<=6*3600000?'عندك حصة قريبة':'الحصة القادمة',
             text:(e.title||'حصة دراسية')+(e.teacher?' • '+e.teacher:''),
-            href:'./schedule.html'
+            href:'./schedule.html',
+            reason:diff<=6*3600000?'لأن عندك حصة خلال الساعات القليلة القادمة.':'لأنها أقرب حصة في جدولك.'
           });
         }
       });
@@ -867,7 +871,7 @@
         const weak=[...subjects].sort((a,b)=>subjectProgressOf(p,a.id)-subjectProgressOf(p,b.id))[0];
         if(weak){
           const q=new URLSearchParams({type:p.educationType,stage:p.stage,grade:String(p.grade),subject:weak.id});
-          pick={title:'ابدأ خطوة خفيفة في '+weak.name,text:'مفيش التزامات عاجلة دلوقتي. درس واحد كفاية كبداية.',href:'./subject.html?'+q.toString(),at:0};
+          pick={kind:'subject',title:'ابدأ خطوة خفيفة في '+weak.name,text:'مفيش التزامات عاجلة دلوقتي. درس واحد كفاية كبداية.',href:'./subject.html?'+q.toString(),at:0,rank:8,reason:'لأنها أقل مادة في تقدمك الحالي.'};
         }
       }
 
@@ -882,6 +886,15 @@
       }
 
       const next=candidates.filter(x=>x.at>=now).sort((a,b)=>a.at-b.at)[0];
+      state.dashboardAttention={
+        candidates,
+        pick,
+        next,
+        urgentCount:candidates.filter(x=>Number(x.rank)<=1).length,
+        loaded:true,
+        updatedAt:now
+      };
+      renderSmartHomeRecommendations();
       if($('pulseNextTime')){
         $('pulseNextTime').textContent=next
           ? new Date(next.at).toLocaleString('ar-EG',{weekday:'short',hour:'numeric',minute:'2-digit'})
@@ -891,7 +904,9 @@
       console.warn('Dashboard pulse failed',e);
       if($('pulseActionTitle'))$('pulseActionTitle').textContent='ابدأ من موادك الدراسية';
       if($('pulseActionText'))$('pulseActionText').textContent='اختر مادة وابدأ درسًا قصيرًا.';
-      if($('pulseActionBtn'))$('pulseActionBtn').onclick=()=>document.querySelector('.dashboard-section')?.scrollIntoView({behavior:'smooth'});
+      if($('pulseActionBtn'))$('pulseActionBtn').onclick=()=>document.getElementById('studentSubjects')?.scrollIntoView({behavior:'smooth'});
+      state.dashboardAttention={candidates:[],pick:null,next:null,urgentCount:0,loaded:false};
+      renderSmartHomeRecommendations();
     }
   }
 
