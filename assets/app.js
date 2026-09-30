@@ -879,6 +879,15 @@
         $('pulseActionTitle').textContent=pick.title;
         $('pulseActionText').textContent=pick.text;
         $('pulseActionBtn').onclick=()=>location.href=pick.href;
+        const heroBtn=$('heroContinueBtn');
+        if(heroBtn&&Number(pick.rank)<=2.5){
+          const heroLabel=pick.kind==='live'?'ادخل الجلسة':pick.kind==='assignment'?'افتح الواجب':pick.kind==='planner'?'ابدأ مهمة اليوم':pick.kind==='schedule'?'شوف موعدك':'ابدأ الآن';
+          const heroSmall=heroBtn.querySelector('small'),heroStrong=heroBtn.querySelector('strong'),heroIcon=heroBtn.querySelector('i');
+          if(heroSmall)heroSmall.textContent='أفضل خطوة الآن';
+          if(heroStrong)heroStrong.textContent=heroLabel;
+          if(heroIcon)heroIcon.className='fa-solid '+dashboardSmartIcon(pick.kind);
+          heroBtn.onclick=()=>location.href=pick.href;
+        }
       }else{
         $('pulseActionTitle').textContent='أنت محدث كل شيء 🎉';
         $('pulseActionText').textContent='استكشف مادة جديدة أو راجع درسًا قديمًا.';
