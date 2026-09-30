@@ -210,7 +210,7 @@ const ADMIN_TAB_PATHS={
  overview:ADMIN_CORE_PATHS,
  analytics:['studentProfilesV3','lessons','quizzes','files','assignments','assignmentSubmissions','teacherProfiles','teacherSubmissions','contentAnalytics','customSubjects'],
  curriculum:['customSubjects','lessons','quizzes'],
- lessons:['lessons','customSubjects','teacherProfiles','settings'],
+ lessons:['lessons','quizzes','customSubjects','teacherProfiles','settings'],
  quizzes:['quizzes','customSubjects','lessons','teacherProfiles'],
  simulations:['simulations'],
  files:['files','customSubjects','lessons'],
@@ -736,8 +736,10 @@ function editSubject(id){
  if($('subjectModalTitle'))$('subjectModalTitle').textContent='تعديل المادة والوحدات';openModal('subjectModal');
 }
 async function deleteSubject(id){
- if(!(await askConfirm({title:'حذف المادة؟',message:'سيتم حذف المادة المخصصة من هذا الصف. تأكد أنه لا يوجد محتوى تحتاجه مرتبط بها.',tone:'danger',acceptText:'حذف المادة'})))return;
  const type=$('curriculumType').value,stage=$('curriculumStage').value,grade=$('curriculumGrade').value;
+ const linkedLessons=values(root.lessons).filter(x=>x.type===type&&x.stage===stage&&String(x.grade)===String(grade)&&x.subject===id),linkedQuizzes=values(root.quizzes).filter(x=>x.type===type&&x.stage===stage&&String(x.grade)===String(grade)&&x.subject===id);
+ if(linkedLessons.length||linkedQuizzes.length)return toast('لا يمكن حذف مادة مرتبطة بمحتوى. انقل أو أرشف '+linkedLessons.length+' درس و'+linkedQuizzes.length+' اختبار أولًا من عمليات المحتوى.','error');
+ if(!(await askConfirm({title:'حذف المادة؟',message:'لا يوجد محتوى مرتبط بهذه المادة. سيتم حذف تعريف المادة والوحدات فقط.',tone:'danger',acceptText:'حذف المادة'})))return;
  const current=root.customSubjects?.[stage]?.[grade],arr=Array.isArray(current)?[...current]:Object.values(current||{});
  const next=arr.filter(x=>!(x?.id===id&&(!x.type||x.type===type)));
  await db.ref('customSubjects/'+stage+'/'+grade).set(next);await writeAudit('subject.delete','subject',id,{type,stage,grade});toast('تم حذف المادة');
