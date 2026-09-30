@@ -35,53 +35,95 @@
   </header>
 
   <main>
-    <section class="search-hero">
-      <div class="container search-hero-inner">
-        <span class="section-kicker">ابحث في المنصة كلها</span>
-        <h1>إيه اللي عايز تتعلمه؟</h1>
-        <p>ابحث باسم الدرس أو المادة أو الاختبار أو الملف، وشوف النتائج من كل المراحل.</p>
-        <form id="searchForm" class="search-box">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <input id="searchInput" type="search" autocomplete="off" aria-label="البحث في محتوى المنصة" placeholder="مثال: المفعول المطلق، المعادلات، الوحدة الأولى...">
-          <button class="btn btn-primary" type="submit">بحث</button>
-        </form>
-        <div class="search-suggestions" id="searchSuggestions">
-          <button type="button" data-suggest="لغة عربية">لغة عربية</button>
-          <button type="button" data-suggest="رياضيات">رياضيات</button>
-          <button type="button" data-suggest="علوم">علوم</button>
-          <button type="button" data-suggest="اختبار">اختبارات</button>
+    <section class="search-hero search-hero-v12">
+      <div class="container">
+        <div class="search-hero-card-v12">
+          <div class="search-hero-copy-v12">
+            <span class="section-kicker light">ابحث مرة واحدة في الأكاديمية كلها</span>
+            <h1>إيه اللي عايز توصله؟</h1>
+            <p id="searchHeroText">درس، مادة، مدرس، اختبار، ملف، واجب أو جلسة مباشرة — كل شيء من مكان واحد.</p>
+            <div class="search-main-wrap-v12">
+              <form id="searchForm" class="search-box search-box-v12">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input id="searchInput" type="search" autocomplete="off" aria-label="البحث في محتوى المنصة" placeholder="مثال: النحو، المعادلات، أستاذ أحمد، مراجعة الوحدة الأولى...">
+                <button class="btn btn-primary" type="submit">بحث</button>
+              </form>
+              <div class="search-autocomplete-v12 hidden" id="searchAutocomplete" role="listbox" aria-label="اقتراحات البحث"></div>
+            </div>
+            <div class="search-suggestions search-suggestions-v12" id="searchSuggestions">
+              <span>جرّب:</span>
+              <button type="button" data-suggest="لغة عربية">لغة عربية</button>
+              <button type="button" data-suggest="رياضيات">رياضيات</button>
+              <button type="button" data-suggest="مراجعة">مراجعة</button>
+              <button type="button" data-suggest="اختبار">اختبار</button>
+            </div>
+          </div>
+          <aside class="search-hero-side-v12">
+            <div class="search-hero-orb-v12"><i class="fa-solid fa-magnifying-glass"></i></div>
+            <strong>بحث ذكي حسب مرحلتك</strong>
+            <p>نرتّب نتائج صفك أولًا، ويمكنك توسيع البحث لكل المراحل في أي وقت.</p>
+            <div class="search-hero-stats-v12">
+              <span><b id="searchIndexCount">0</b><small>عنصر قابل للبحث</small></span>
+              <span><b id="searchStudentScope">—</b><small>نطاقك الحالي</small></span>
+            </div>
+          </aside>
         </div>
       </div>
     </section>
 
-    <section class="container search-workspace">
-      <aside class="search-filters" aria-label="فلاتر نتائج البحث">
-        <div><span class="section-kicker">تصفية النتائج</span><h3>نوع المحتوى</h3></div>
-        <button class="active" data-search-type="all" aria-pressed="true"><i class="fa-solid fa-border-all"></i> الكل <span id="countAll">0</span></button>
-        <button data-search-type="lesson" aria-pressed="false"><i class="fa-solid fa-circle-play"></i> الدروس <span id="countLessons">0</span></button>
-        <button data-search-type="quiz" aria-pressed="false"><i class="fa-solid fa-file-circle-question"></i> الاختبارات <span id="countQuizzes">0</span></button>
-        <button data-search-type="file" aria-pressed="false"><i class="fa-solid fa-file-pdf"></i> الملفات <span id="countFiles">0</span></button>
+    <section class="container search-discovery-v12" id="searchDiscovery">
+      <div class="search-discovery-head-v12">
+        <div><span class="section-kicker">ابدأ بسرعة</span><h2>استكشف ما يناسبك</h2><p>اقتراحات مبنية على صفك والمحتوى المتاح الآن.</p></div>
+        <button type="button" class="btn btn-soft hidden" id="clearSearchHistory"><i class="fa-solid fa-trash-can"></i> مسح آخر البحث</button>
+      </div>
+      <div class="search-recent-wrap-v12 hidden" id="recentSearchWrap">
+        <strong><i class="fa-solid fa-clock-rotate-left"></i> آخر ما بحثت عنه</strong>
+        <div id="recentSearches" class="search-recent-v12"></div>
+      </div>
+      <div class="search-discovery-grid-v12" id="searchDiscoveryGrid"></div>
+    </section>
+
+    <section class="container search-workspace search-workspace-v12">
+      <aside class="search-filters search-filters-v12" aria-label="فلاتر نتائج البحث">
+        <div class="search-filter-title-v12"><span class="section-kicker">فلترة ذكية</span><h3>نوع المحتوى</h3></div>
+        <div class="search-type-filter-v12">
+          <button class="active" data-search-type="all" aria-pressed="true"><i class="fa-solid fa-border-all"></i> الكل <span id="countAll">0</span></button>
+          <button data-search-type="subject" aria-pressed="false"><i class="fa-solid fa-book-open"></i> المواد <span id="countSubjects">0</span></button>
+          <button data-search-type="lesson" aria-pressed="false"><i class="fa-solid fa-circle-play"></i> الدروس <span id="countLessons">0</span></button>
+          <button data-search-type="teacher" aria-pressed="false"><i class="fa-solid fa-chalkboard-user"></i> المدرسون <span id="countTeachers">0</span></button>
+          <button data-search-type="quiz" aria-pressed="false"><i class="fa-solid fa-file-circle-question"></i> الاختبارات <span id="countQuizzes">0</span></button>
+          <button data-search-type="file" aria-pressed="false"><i class="fa-solid fa-file-pdf"></i> الملفات <span id="countFiles">0</span></button>
+          <button data-search-type="assignment" aria-pressed="false"><i class="fa-solid fa-clipboard-check"></i> الواجبات <span id="countAssignments">0</span></button>
+          <button data-search-type="live" aria-pressed="false"><i class="fa-solid fa-tower-broadcast"></i> البث <span id="countLive">0</span></button>
+        </div>
 
         <div class="search-filter-divider"></div>
-        <label><span>المسار</span><select id="filterEducation"><option value="">الكل</option><option value="public">تعليم عام</option><option value="azhar">أزهر</option></select></label>
+        <label><span>نوع التعليم</span><select id="filterEducation"><option value="">الكل</option><option value="public">تعليم عام</option><option value="azhar">أزهر</option></select></label>
         <label><span>المرحلة</span><select id="filterStage"><option value="">كل المراحل</option><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+        <label><span>الصف</span><select id="filterGrade"><option value="">كل الصفوف</option></select></label>
+        <label><span>المادة</span><select id="filterSubject"><option value="">كل المواد</option></select></label>
+        <label><span>المدرس</span><select id="filterTeacher"><option value="">كل المدرسين</option></select></label>
+        <button type="button" class="search-reset-v12" id="resetSearchFilters"><i class="fa-solid fa-rotate-left"></i> إعادة ضبط الفلاتر</button>
       </aside>
 
       <div class="search-results-area">
-        <div class="search-results-head">
-          <div><span class="section-kicker">النتائج</span><h2 id="resultsTitle">ابدأ بالبحث</h2></div>
-          <span id="resultsMeta" aria-live="polite">0 نتيجة</span>
+        <div class="search-results-head search-results-head-v12">
+          <div><span class="section-kicker">النتائج</span><h2 id="resultsTitle">ابدأ بالبحث</h2><p id="resultsHint">اكتب ما تبحث عنه وسنرتب الأنسب لك أولًا.</p></div>
+          <div class="search-results-actions-v12">
+            <span id="resultsMeta" aria-live="polite">0 نتيجة</span>
+            <button type="button" class="btn btn-soft" id="toggleAllStages"><i class="fa-solid fa-globe"></i> البحث في كل المراحل</button>
+          </div>
         </div>
 
         <div id="searchLoading" class="search-loading hidden" role="status" aria-label="جاري تحميل نتائج البحث">
           <span></span><span></span><span></span>
         </div>
 
-        <div id="searchEmpty" class="empty-state">
-          <span>🔎</span><h3>اكتب كلمة في مربع البحث</h3><p>هندور لك في الدروس والاختبارات والملفات.</p>
+        <div id="searchEmpty" class="empty-state search-empty-v12">
+          <span>🔎</span><h3>ابدأ بكلمة واحدة</h3><p>ابحث عن مادة أو درس أو مدرس أو اختبار أو ملف.</p>
         </div>
 
-        <div id="searchResults" class="search-results hidden"></div>
+        <div id="searchResults" class="search-results search-results-v12 hidden"></div>
       </div>
     </section>
   </main>
