@@ -11,6 +11,7 @@ function normalizeSubjects(v){
 }
 function planAccess(plan,subject){
  if(!plan)return false;if(plan.accessMode!=='subjects')return true;
+ if(!String(subject||'').trim())return true;
  const map=normalizeSubjects(plan.subjects);return !!map[String(subject||'')];
 }
 function matchesPlanScope(plan,profile){
