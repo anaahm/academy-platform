@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="./assets/ui-polish.css?v=1">
   <link rel="stylesheet" href="./assets/communications.css?v=1">
   <link rel="stylesheet" href="./assets/support.css?v=1">
+  <link rel="stylesheet" href="./assets/admin-content-ops.css?v=1">
 </head>
 <body class="admin-v3-body">
   <div id="toast" class="toast"></div>
@@ -77,6 +78,7 @@
         <button data-admin-tab="files"><i class="fa-solid fa-folder-open"></i> الملفات والمكتبة</button>
         <button data-admin-tab="live"><i class="fa-solid fa-tower-broadcast"></i> البث المباشر</button>
         <button data-admin-tab="schedule"><i class="fa-regular fa-calendar-days"></i> جدول الحصص</button>
+        <button data-admin-tab="content-ops"><i class="fa-solid fa-boxes-stacked"></i> عمليات المحتوى <span id="contentOpsBadge" class="nav-badge hidden">0</span></button>
 
         <span class="admin-nav-label">المستخدمون</span>
         <button data-admin-tab="teachers"><i class="fa-solid fa-chalkboard-user"></i> المدرسون والمراجعات <span id="pendingBadge" class="nav-badge hidden">0</span></button>
@@ -269,7 +271,7 @@
             <div class="mix-search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="lessonSearch" placeholder="ابحث باسم الدرس أو المادة أو المدرس..."></div>
             <select id="lessonFilterStage"><option value="">كل المراحل</option><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select>
             <select id="lessonFilterType"><option value="">كل المسارات</option><option value="public">عام</option><option value="azhar">أزهر</option></select>
-            <select id="lessonFilterStatus"><option value="">كل الحالات</option><option value="published">منشور</option><option value="scheduled">مجدول</option><option value="hidden">مخفي</option></select>
+            <select id="lessonFilterStatus"><option value="">كل الحالات</option><option value="published">منشور</option><option value="scheduled">مجدول</option><option value="draft">مسودة</option><option value="hidden">مخفي</option></select>
             <span class="mix-filter-result" id="lessonResultCount">0 نتيجة</span>
           </div>
           <div class="admin-bulk-action-bar" id="lessonBulkBar">
@@ -299,7 +301,7 @@
             <select id="quizFilterStage"><option value="">كل المراحل</option><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select>
             <select id="quizFilterType"><option value="">كل المسارات</option><option value="public">عام</option><option value="azhar">أزهر</option></select>
             <select id="quizFilterMode"><option value="">كل الأنواع</option><option value="lesson">مرتبط بدرس</option><option value="unit">اختبار وحدة</option><option value="comprehensive">اختبار شامل</option></select>
-            <select id="quizFilterStatus"><option value="">كل الحالات</option><option value="published">منشور</option><option value="scheduled">مجدول</option><option value="hidden">مخفي</option></select>
+            <select id="quizFilterStatus"><option value="">كل الحالات</option><option value="published">منشور</option><option value="scheduled">مجدول</option><option value="draft">مسودة</option><option value="hidden">مخفي</option></select>
             <span class="mix-filter-result" id="quizResultCount">0 نتيجة</span>
           </div>
           <div class="admin-bulk-action-bar" id="quizBulkBar">
@@ -516,6 +518,74 @@
           </div>
         </section>
 
+        <section class="admin-tab hidden" id="admin-tab-content-ops">
+          <section class="content-ops-hero">
+            <div><span class="section-kicker light">استوديو إدارة المحتوى</span><h2>نقل، نسخ، أرشفة واستيراد المحتوى بأمان</h2><p>نفّذ العمليات الكبيرة من مكان واحد مع الاحتفاظ بسجل التغييرات وإمكانية استرجاع المحتوى المؤرشف.</p></div>
+            <div class="content-ops-hero-side"><article><strong id="contentOpsHeroDrafts">0</strong><small>مسودة</small></article><article><strong id="contentOpsHeroArchive">0</strong><small>في الأرشيف</small></article></div>
+          </section>
+          <section class="content-ops-stats">
+            <article><strong id="contentOpsDraftCount">0</strong><small>مسودات</small></article>
+            <article><strong id="contentOpsScheduledCount">0</strong><small>مجدول للنشر</small></article>
+            <article><strong id="contentOpsArchiveCount">0</strong><small>مؤرشف</small></article>
+            <article><strong id="contentOpsAuditCount">0</strong><small>عملية مسجلة</small></article>
+          </section>
+          <section class="content-ops-grid">
+            <article class="content-ops-card">
+              <div class="content-ops-head"><div><span class="section-kicker">وحدة كاملة</span><h3>نسخ أو نقل وحدة بين المواد والصفوف</h3><p>يشمل الدروس والاختبارات، ويحافظ على ربط اختبارات الدرس عند النسخ.</p></div><span>🧩</span></div>
+              <form id="unitOperationForm" class="content-ops-form">
+                <label><span>المسار المصدر</span><select id="unitSourceType"><option value="public">عام</option><option value="azhar">أزهر</option></select></label>
+                <label><span>المرحلة المصدر</span><select id="unitSourceStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+                <label><span>الصف المصدر</span><select id="unitSourceGrade"></select></label>
+                <label><span>المادة المصدر</span><select id="unitSourceSubject"></select></label>
+                <label><span>الوحدة المصدر</span><input id="unitSourceNumber" type="number" min="1" value="1"></label>
+                <label><span>العملية</span><select id="unitOperationMode"><option value="copy">نسخ</option><option value="move">نقل</option></select></label>
+                <label><span>المسار الهدف</span><select id="unitTargetType"><option value="public">عام</option><option value="azhar">أزهر</option></select></label>
+                <label><span>المرحلة الهدف</span><select id="unitTargetStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+                <label><span>الصف الهدف</span><select id="unitTargetGrade"></select></label>
+                <label><span>المادة الهدف</span><select id="unitTargetSubject"></select></label>
+                <label><span>رقم الوحدة الهدف</span><input id="unitTargetNumber" type="number" min="1" value="1"></label>
+                <label class="switch-field"><span>الاختبارات</span><div><input id="unitIncludeQuizzes" type="checkbox" checked><strong>تضمين الاختبارات</strong></div></label>
+                <div class="full content-ops-note"><i class="fa-solid fa-shield-halved"></i><span>النسخ ينشئ المحتوى الجديد كمسودات مخفية للمراجعة قبل النشر. النقل يحتفظ بحالة النشر الحالية.</span></div>
+                <button class="btn btn-primary full" id="unitOperationSubmit" type="submit"><i class="fa-solid fa-arrow-right-arrow-left"></i> تنفيذ العملية</button>
+              </form>
+            </article>
+            <article class="content-ops-card">
+              <div class="content-ops-head"><div><span class="section-kicker">نسخة احتياطية ومشاركة</span><h3>تصدير محتوى JSON</h3><p>صدّر مادة كاملة أو وحدة محددة ثم احتفظ بها أو استوردها في صف آخر.</p></div><span>📤</span></div>
+              <form id="contentExportForm" class="content-ops-form">
+                <label><span>المسار</span><select id="exportType"><option value="public">عام</option><option value="azhar">أزهر</option></select></label>
+                <label><span>المرحلة</span><select id="exportStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+                <label><span>الصف</span><select id="exportGrade"></select></label>
+                <label><span>المادة</span><select id="exportSubject"></select></label>
+                <label class="full"><span>الوحدة — اتركها فارغة لكل المادة</span><input id="exportUnit" type="number" min="1" placeholder="كل الوحدات"></label>
+                <div class="full content-ops-actions"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-download"></i> تنزيل JSON</button><button class="btn btn-soft" id="copyExportJson" type="button"><i class="fa-regular fa-copy"></i> نسخ JSON</button></div>
+              </form>
+              <pre class="content-ops-preview" id="contentExportPreview">اختر النطاق وسيظهر ملخص التصدير هنا.</pre>
+            </article>
+            <article class="content-ops-card">
+              <div class="content-ops-head"><div><span class="section-kicker">استيراد جماعي</span><h3>استيراد حزمة محتوى</h3><p>استورد ملف JSON صادر من الأكاديمية. المحتوى المستورد يدخل كمسودة تلقائيًا.</p></div><span>📥</span></div>
+              <form id="contentImportForm" class="content-ops-form">
+                <label class="full"><span>ملف JSON</span><input id="contentImportFile" type="file" accept="application/json,.json"></label>
+                <label class="full"><span>أو الصق JSON</span><textarea id="contentImportJson" dir="ltr" placeholder='{"version":1,"lessons":[],"quizzes":[]}'></textarea></label>
+                <label><span>المسار الهدف</span><select id="importType"><option value="public">عام</option><option value="azhar">أزهر</option></select></label>
+                <label><span>المرحلة الهدف</span><select id="importStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+                <label><span>الصف الهدف</span><select id="importGrade"></select></label>
+                <label><span>المادة الهدف</span><select id="importSubject"></select></label>
+                <div class="full content-ops-note"><i class="fa-solid fa-file-shield"></i><span>لن يُنشر أي محتوى مستورد مباشرة. كل الدروس والاختبارات تدخل كمسودات مخفية.</span></div>
+                <button class="btn btn-primary full" id="contentImportSubmit" type="submit"><i class="fa-solid fa-file-import"></i> استيراد كمسودات</button>
+              </form>
+            </article>
+            <article class="content-ops-card">
+              <div class="content-ops-head"><div><span class="section-kicker">الأرشيف</span><h3>محتوى يمكن استرجاعه</h3><p>العناصر المحذوفة من الإدارة تنتقل هنا بدل الحذف النهائي.</p></div><span>🗄️</span></div>
+              <div class="content-ops-tabs"><button class="active" type="button" data-archive-filter="all">الكل</button><button type="button" data-archive-filter="lesson">الدروس</button><button type="button" data-archive-filter="quiz">الاختبارات</button></div>
+              <div id="contentArchiveList" class="content-ops-list"></div>
+            </article>
+            <article class="content-ops-card full">
+              <div class="content-ops-head"><div><span class="section-kicker">سجل التعديلات</span><h3>آخر عمليات إدارة المحتوى</h3><p>يعرض الإنشاء والتعديل والنقل والنسخ والأرشفة والاسترجاع والاستيراد.</p></div><span>🧾</span></div>
+              <div id="contentAuditList" class="content-ops-list"></div>
+            </article>
+          </section>
+        </section>
+
         <section class="admin-tab" id="admin-tab-news">
           <div class="admin-section-head"><div><span class="section-kicker">تحديثات المنصة</span><h2>الأخبار والإعلانات المطولة</h2><p>انشر تحديثات تظهر في الصفحة العامة وصفحة الأخبار.</p></div></div>
           <div class="admin-teacher-grid">
@@ -703,7 +773,8 @@
             <button class="btn btn-soft" type="button" id="importLessonQuestionsJson"><i class="fa-solid fa-file-import"></i> تحميل JSON إلى المحرر</button>
           </details>
         </div>
-        <label class="switch-field"><span>مخفي عن الطلاب</span><div><input id="newLessonHidden" type="checkbox"><strong>مخفي</strong></div></label>
+        <label class="switch-field"><span>مسودة</span><div><input id="newLessonDraft" type="checkbox"><strong>حفظ كمسودة</strong></div></label>
+              <label class="switch-field"><span>مخفي عن الطلاب</span><div><input id="newLessonHidden" type="checkbox"><strong>مخفي</strong></div></label>
         <button class="btn btn-primary full" type="submit">نشر الدرس</button>
       </form>
     </div>
@@ -724,7 +795,8 @@
         <label><span>الوحدة — 0 للشامل</span><input id="newQuizUnit" type="number" min="0" value="1"></label>
         <label><span>اسم الاختبار</span><input id="newQuizName" required></label>
         <label><span>مدة الاختبار بالدقائق — 0 بدون حد</span><input id="newQuizDuration" type="number" min="0" value="0"></label>
-        <label class="switch-field"><span>مخفي عن الطلاب</span><div><input id="newQuizHidden" type="checkbox"><strong>مخفي</strong></div></label>
+        <label class="switch-field"><span>مسودة</span><div><input id="newQuizDraft" type="checkbox"><strong>حفظ كمسودة</strong></div></label>
+              <label class="switch-field"><span>مخفي عن الطلاب</span><div><input id="newQuizHidden" type="checkbox"><strong>مخفي</strong></div></label>
         <div class="full admin-editor-live-preview quiz-preview" id="quizEditorPreview">
           <div class="admin-editor-preview-art"><span>🧠</span></div>
           <div><small id="quizEditorPreviewMeta">معاينة الاختبار</small><strong id="quizEditorPreviewTitle">اسم الاختبار سيظهر هنا</strong><p id="quizEditorPreviewText">0 سؤال • اختبار وحدة</p></div>
@@ -863,6 +935,25 @@
     </div>
   </div>
 
+  <div class="modal-backdrop hidden" id="contentTransferModal" aria-hidden="true">
+    <div class="modal-panel admin-modal content-transfer-modal" role="dialog" aria-modal="true" aria-labelledby="contentTransferTitle" tabindex="-1">
+      <button class="modal-close" type="button" id="closeContentTransferModal" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>
+      <span class="section-kicker">نقل ونسخ متقدم</span><h2 id="contentTransferTitle">نقل المحتوى المحدد</h2>
+      <div id="contentTransferSummary" class="content-transfer-summary"></div>
+      <form id="contentTransferForm" class="content-ops-form">
+        <label><span>العملية</span><select id="contentTransferMode"><option value="copy">نسخ كمسودة</option><option value="move">نقل</option></select></label>
+        <label><span>نوع المحتوى</span><input id="contentTransferKind" disabled></label>
+        <label><span>المسار الهدف</span><select id="contentTransferType"><option value="public">عام</option><option value="azhar">أزهر</option></select></label>
+        <label><span>المرحلة الهدف</span><select id="contentTransferStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+        <label><span>الصف الهدف</span><select id="contentTransferGrade"></select></label>
+        <label><span>المادة الهدف</span><select id="contentTransferSubject"></select></label>
+        <label><span>الوحدة الهدف</span><input id="contentTransferUnit" type="number" min="0" value="1"></label>
+        <label class="switch-field" id="contentTransferLinkedWrap"><span>اختبارات الدرس</span><div><input id="contentTransferLinked" type="checkbox" checked><strong>تضمين المرتبط</strong></div></label>
+        <button class="btn btn-primary full" id="contentTransferSubmit" type="submit"><i class="fa-solid fa-arrow-right-arrow-left"></i> تنفيذ</button>
+      </form>
+    </div>
+  </div>
+
   <script src="./assets/ui-kit.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -872,7 +963,8 @@
   <script src="./assets/admin-intelligence.js?v=1"></script>
   <script src="./assets/admin-communications.js?v=1"></script>
   <script src="./assets/admin-support.js?v=1"></script>
-  <script src="./assets/admin.js?v=56"></script>
+  <script src="./assets/admin-content-ops.js?v=1"></script>
+  <script src="./assets/admin.js?v=57"></script>
   <script src="./assets/admin-notifications.js"></script>
   <script src="./assets/ui-polish.js?v=1"></script>
 </body>

@@ -283,6 +283,10 @@
         ".write": "auth != null && !data.exists() && newData.child('uid').val() === auth.uid"
       }
     },
+    "contentArchiveV1": {
+      ".read": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true",
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+    },
     "parentProfilesV4": {
       "$uid": {
         ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",

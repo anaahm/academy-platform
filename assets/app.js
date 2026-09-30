@@ -337,7 +337,7 @@
       const score=dashSearchScore(s.name,query);if(score)rows.push({kind:'subject',title:s.name,meta:'مادة صفك',icon:s.emoji||'📚',score:score+18,href:'./subject.html?'+new URLSearchParams({type:p.educationType,stage:p.stage,grade:String(p.grade),subject:s.id})});
     });
     Object.entries(state.dbData.lessons||{}).forEach(([id,l])=>{
-      if(!l||l.isHidden||Number(l.publishAt||0)>Date.now()||l.type!==p.educationType||l.stage!==p.stage||String(l.grade)!==String(p.grade))return;
+      if(!l||l.workflowStatus==='draft'||l.isHidden||Number(l.publishAt||0)>Date.now()||l.type!==p.educationType||l.stage!==p.stage||String(l.grade)!==String(p.grade))return;
       const s=subjects.find(x=>x.id===l.subject),teacherText=(Array.isArray(l.videos)?l.videos:[]).map(v=>v?.name).filter(Boolean).slice(0,2).join(' • ')||l.teacherName||'';
       const score=dashSearchScore([l.title,s?.name,teacherText].join(' '),query);if(!score)return;
       rows.push({kind:'lesson',title:l.title||'درس',meta:[s?.name,teacherText].filter(Boolean).join(' • '),icon:'▶️',score:score+12,href:'./lesson.html?'+new URLSearchParams({type:p.educationType,stage:p.stage,grade:String(p.grade),subject:l.subject||'',id})});
@@ -627,7 +627,7 @@
     return true;
   }
   function dashboardContentMatches(item,profile=state.profile){
-    if(!item||!profile||item.isHidden||item.isActive===false)return false;
+    if(!item||!profile||item.workflowStatus==='draft'||item.isHidden||item.isActive===false)return false;
     if(Number(item.publishAt||0)>Date.now())return false;
     return (!item.type||item.type===profile.educationType)&&(!item.stage||item.stage===profile.stage)&&(!item.grade||String(item.grade)===String(profile.grade));
   }
@@ -937,7 +937,7 @@
     const subjectMap=new Map(subjects.map(s=>[s.id,s]));
     const progress=profile?.learningProgress||{},teachers=state.publicTeachers||state.dbData.settings?.publicTeachers||{};
     const rows=Object.entries(state.dbData.lessons||{}).map(([id,v])=>({id,...(v||{})}))
-      .filter(l=>l&&!l.isHidden&&(!Number(l.publishAt||0)||Number(l.publishAt)<=Date.now())&&l.type===profile.educationType&&l.stage===profile.stage&&String(l.grade)===String(profile.grade)&&subjectMap.has(l.subject));
+      .filter(l=>l&&l.workflowStatus!=='draft'&&!l.isHidden&&(!Number(l.publishAt||0)||Number(l.publishAt)<=Date.now())&&l.type===profile.educationType&&l.stage===profile.stage&&String(l.grade)===String(profile.grade)&&subjectMap.has(l.subject));
     if(!rows.length){
       box.innerHTML='<div class="mix-recommended-empty"><span>🎓</span><div><strong>نجهز لك الدروس المناسبة</strong><p>ستظهر هنا أحدث دروس صفك فور نشرها.</p></div></div>';
       return;
@@ -1050,7 +1050,7 @@
     if($('streakSideValue')) $('streakSideValue').textContent=stats.streak;
     renderDashboardStreak(p,stats);
 
-    const now=Date.now(),isVisibleContent=item=>item&&!item.isHidden&&(!Number(item.publishAt||0)||Number(item.publishAt)<=now);
+    const now=Date.now(),isVisibleContent=item=>item&&item.workflowStatus!=='draft'&&!item.isHidden&&(!Number(item.publishAt||0)||Number(item.publishAt)<=now);
     const palettes=['subject-pink','subject-blue','subject-green','subject-gold','subject-purple','subject-teal'];
     if($('dashboardSubjectCount'))$('dashboardSubjectCount').textContent=subjects.length;
     if($('dashboardSubjectsStageLabel'))$('dashboardSubjectsStageLabel').textContent=(gradeLabels[p.stage]?.[p.grade]||stageLabels[p.stage]||'مرحلتك')+' • '+educationLabel(p.educationType);
@@ -1100,7 +1100,7 @@
     const lastSubject = subjects.find(s => s.id === p.lastSubjectId) || first;
     if (lastSubject) {
       const continueProgress=Math.max(0,Math.min(100,subjectProgressOf(p,lastSubject.id)));
-      const visibleSubjectLessons=Object.values(state.dbData.lessons||{}).filter(l=>l&&!l.isHidden&&(!Number(l.publishAt||0)||Number(l.publishAt)<=Date.now())&&l.type===p.educationType&&l.stage===p.stage&&String(l.grade)===String(p.grade)&&l.subject===lastSubject.id);
+      const visibleSubjectLessons=Object.values(state.dbData.lessons||{}).filter(l=>l&&l.workflowStatus!=='draft'&&!l.isHidden&&(!Number(l.publishAt||0)||Number(l.publishAt)<=Date.now())&&l.type===p.educationType&&l.stage===p.stage&&String(l.grade)===String(p.grade)&&l.subject===lastSubject.id);
       if($('continueSubjectName')) $('continueSubjectName').textContent=lastSubject.name;
       if($('continueVisualSubject'))$('continueVisualSubject').textContent=lastSubject.name;
       if($('continueProgressLabel')) $('continueProgressLabel').textContent=continueProgress+'%';
