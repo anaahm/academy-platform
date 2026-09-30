@@ -973,6 +973,32 @@ function updateBulkSelectionUI(kind){
 function clearBulkSelection(kind){
  const lessonMode=kind!=='quiz';(lessonMode?selectedLessonIds:selectedQuizIds).clear();updateBulkSelectionUI(lessonMode?'lesson':'quiz');
 }
+async function archiveLessons(ids=[]){
+ const unique=[...new Set(ids)].filter(id=>root.lessons?.[id]);if(!unique.length)return 0;
+ const idSet=new Set(unique),linked=values(root.quizzes).filter(q=>q.lessonId&&idSet.has(String(q.lessonId))),now=Date.now(),updates={};
+ unique.forEach(id=>{
+   const lesson=root.lessons[id],related={};
+   linked.filter(q=>String(q.lessonId)===String(id)).forEach(q=>{related[q.id]=q});
+   updates['contentArchiveV1/lesson/'+id]={kind:'lesson',sourceId:id,title:lesson.title||'درس',data:lesson,relatedQuizzes:related,archivedAt:now,archivedBy:currentUser?.uid||''};
+   updates['lessons/'+id]=null;
+ });
+ linked.forEach(q=>{
+   updates['quizzes/'+q.id]=null;
+   (Array.isArray(q.questions)?q.questions:[]).forEach((_,i)=>updates['questionBankV4/quiz-'+q.id+'-'+i]=null);
+ });
+ await db.ref().update(updates);await writeAudit('lesson.archive','lesson','bulk',{count:unique.length,linkedQuizCount:linked.length,ids:unique});return unique.length;
+}
+async function archiveQuizzes(ids=[]){
+ const unique=[...new Set(ids)].filter(id=>root.quizzes?.[id]);if(!unique.length)return 0;
+ const now=Date.now(),updates={};
+ unique.forEach(id=>{
+   const quiz=root.quizzes[id];
+   updates['contentArchiveV1/quiz/'+id]={kind:'quiz',sourceId:id,title:quiz.name||'اختبار',data:quiz,archivedAt:now,archivedBy:currentUser?.uid||''};
+   updates['quizzes/'+id]=null;
+   (Array.isArray(quiz.questions)?quiz.questions:[]).forEach((_,i)=>updates['questionBankV4/quiz-'+id+'-'+i]=null);
+ });
+ await db.ref().update(updates);await writeAudit('quiz.archive','quiz','bulk',{count:unique.length,ids:unique});return unique.length;
+}
 async function bulkLessonVisibility(hidden){
  const ids=[...selectedLessonIds];if(!ids.length)return;
  const updates={},now=Date.now();ids.forEach(id=>{updates['lessons/'+id+'/isHidden']=!!hidden;updates['lessons/'+id+'/publishAt']=null;if(!hidden){updates['lessons/'+id+'/reviewStatus']='approved';updates['lessons/'+id+'/reviewedAt']=now;updates['lessons/'+id+'/reviewedBy']=currentUser?.uid||'';updates['lessons/'+id+'/publishedAt']=now}});await db.ref().update(updates);
@@ -1007,13 +1033,11 @@ async function bulkDuplicateLessons(){
  });
  await db.ref().update(updates);await writeAudit('lesson.bulk_duplicate','lesson','bulk',{count:ids.length,ids});clearBulkSelection('lesson');toast('تم إنشاء '+ids.length+' نسخة مخفية');
 }
-async function bulkDeleteLessons(){
+async function bulkArchiveLessons(){
  const ids=[...selectedLessonIds];if(!ids.length)return;
- const idSet=new Set(ids),linked=values(root.quizzes).filter(q=>q.lessonId&&idSet.has(String(q.lessonId)));
- const ok=await askConfirm({title:'حذف '+ids.length+' درس نهائيًا؟',message:'سيتم حذف الدروس المحددة'+(linked.length?' ومعها '+linked.length+' اختبار مرتبط بها وأسئلته من بنك الأسئلة.':'.'),tone:'danger',acceptText:'حذف المحتوى'});if(!ok)return;
- const updates={};ids.forEach(id=>updates['lessons/'+id]=null);
- linked.forEach(q=>{updates['quizzes/'+q.id]=null;(Array.isArray(q.questions)?q.questions:[]).forEach((_,i)=>updates['questionBankV4/quiz-'+q.id+'-'+i]=null)});
- await db.ref().update(updates);await writeAudit('lesson.bulk_delete','lesson','bulk',{count:ids.length,linkedQuizCount:linked.length,ids});clearBulkSelection('lesson');toast('تم حذف '+ids.length+' درس'+(linked.length?' و'+linked.length+' اختبار مرتبط':''));
+ const linked=values(root.quizzes).filter(q=>q.lessonId&&ids.includes(String(q.lessonId)));
+ const ok=await askConfirm({title:'أرشفة '+ids.length+' درس؟',message:'سيتم نقل الدروس المحددة إلى الأرشيف'+(linked.length?' ومعها '+linked.length+' اختبار مرتبط، ويمكن استرجاعها لاحقًا.':'.'),acceptText:'نقل إلى الأرشيف'});if(!ok)return;
+ const count=await archiveLessons(ids);clearBulkSelection('lesson');toast('تمت أرشفة '+count+' درس'+(linked.length?' مع الاختبارات المرتبطة':''));
 }
 function quizBankUpdates(quizId,quiz,updates,now){
  (Array.isArray(quiz.questions)?quiz.questions:[]).forEach((q,qi)=>{
@@ -1032,17 +1056,16 @@ async function bulkDuplicateQuizzes(){
  ids.forEach(id=>{const q=root.quizzes?.[id];if(!q)return;const newId=db.ref('quizzes').push().key,copy={...q,name:(q.name||'اختبار')+' — نسخة',isHidden:true,createdAt:now,updatedAt:now};delete copy.id;delete copy.teacherSubmissionId;updates['quizzes/'+newId]=copy;quizBankUpdates(newId,copy,updates,now)});
  await db.ref().update(updates);await writeAudit('quiz.bulk_duplicate','quiz','bulk',{count:ids.length,ids});clearBulkSelection('quiz');toast('تم إنشاء '+ids.length+' نسخة اختبار مخفية');
 }
-async function bulkDeleteQuizzes(){
+async function bulkArchiveQuizzes(){
  const ids=[...selectedQuizIds];if(!ids.length)return;
- const ok=await askConfirm({title:'حذف '+ids.length+' اختبار؟',message:'سيتم حذف الاختبارات المحددة وأسئلتها المرتبطة من بنك الأسئلة.',tone:'danger',acceptText:'حذف الاختبارات'});if(!ok)return;
- const updates={};ids.forEach(id=>{const q=root.quizzes?.[id];updates['quizzes/'+id]=null;(Array.isArray(q?.questions)?q.questions:[]).forEach((_,i)=>updates['questionBankV4/quiz-'+id+'-'+i]=null)});
- await db.ref().update(updates);await writeAudit('quiz.bulk_delete','quiz','bulk',{count:ids.length,ids});clearBulkSelection('quiz');toast('تم حذف '+ids.length+' اختبار');
+ const ok=await askConfirm({title:'أرشفة '+ids.length+' اختبار؟',message:'سيتم نقل الاختبارات وأسئلتها إلى الأرشيف ويمكن استرجاعها لاحقًا.',acceptText:'نقل إلى الأرشيف'});if(!ok)return;
+ const count=await archiveQuizzes(ids);clearBulkSelection('quiz');toast('تمت أرشفة '+count+' اختبار');
 }
 async function handleBulkLessonAction(action){
- if(action==='publish')return bulkLessonVisibility(false);if(action==='hide')return bulkLessonVisibility(true);if(action==='move')return bulkMoveLessons();if(action==='duplicate')return bulkDuplicateLessons();if(action==='delete')return bulkDeleteLessons();
+ if(action==='publish')return bulkLessonVisibility(false);if(action==='hide')return bulkLessonVisibility(true);if(action==='move')return bulkMoveLessons();if(action==='duplicate')return bulkDuplicateLessons();if(action==='archive')return bulkArchiveLessons();
 }
 async function handleBulkQuizAction(action){
- if(action==='publish')return bulkQuizVisibility(false);if(action==='hide')return bulkQuizVisibility(true);if(action==='duplicate')return bulkDuplicateQuizzes();if(action==='delete')return bulkDeleteQuizzes();
+ if(action==='publish')return bulkQuizVisibility(false);if(action==='hide')return bulkQuizVisibility(true);if(action==='duplicate')return bulkDuplicateQuizzes();if(action==='archive')return bulkArchiveQuizzes();
 }
 
 function filteredLessons(){
@@ -1073,13 +1096,13 @@ function renderLessons(){
        '<div class="mix-admin-content-meta"><span><i class="fa-solid fa-video"></i> '+videos+' فيديو</span><span><i class="fa-solid fa-list-check"></i> '+questions+' سؤال</span><span><i class="fa-solid fa-chalkboard-user"></i> '+(teachers.length||'—')+' مدرس</span></div>'+
        '<div class="admin-content-teachers">'+(teachers.length?teachers.slice(0,3).map(n=>'<span><i class="fa-solid fa-user"></i> '+esc(n)+'</span>').join(''):'<span class="muted"><i class="fa-solid fa-user"></i> بدون مدرس محدد</span>')+'</div>'+
        (publicationState(l)==='scheduled'?'<p class="admin-content-schedule"><i class="fa-regular fa-clock"></i> النشر '+esc(formatAdminDateTime(l.publishAt))+'</p>':'')+(date?'<p class="admin-content-date"><i class="fa-regular fa-clock"></i> آخر تحديث '+new Date(date).toLocaleDateString('ar-EG')+'</p>':'')+
-       '<div class="mix-admin-card-actions"><button class="admin-action-btn success" type="button" data-review-content="lesson|'+l.id+'" title="معاينة ومراجعة الدرس"><i class="fa-solid fa-eye"></i></button><a class="admin-action-btn" href="'+preview+'" target="_blank" rel="noopener" title="فتح المعاينة في تبويب جديد"><i class="fa-solid fa-arrow-up-right-from-square"></i></a><button class="admin-action-btn" data-edit-lesson="'+l.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><button class="admin-action-btn '+(l.isHidden?'success':'warning')+'" data-toggle-lesson="'+l.id+'" title="'+(l.isHidden?'نشر الدرس':'إخفاء الدرس')+'"><i class="fa-solid '+(l.isHidden?'fa-eye':'fa-eye-slash')+'"></i></button><button class="admin-action-btn danger" data-delete-lesson="'+l.id+'" title="حذف"><i class="fa-solid fa-trash"></i></button></div>'+
+       '<div class="mix-admin-card-actions"><button class="admin-action-btn success" type="button" data-review-content="lesson|'+l.id+'" title="معاينة ومراجعة الدرس"><i class="fa-solid fa-eye"></i></button><a class="admin-action-btn" href="'+preview+'" target="_blank" rel="noopener" title="فتح المعاينة في تبويب جديد"><i class="fa-solid fa-arrow-up-right-from-square"></i></a><button class="admin-action-btn" data-edit-lesson="'+l.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><button class="admin-action-btn '+(l.isHidden?'success':'warning')+'" data-toggle-lesson="'+l.id+'" title="'+(l.isHidden?'نشر الدرس':'إخفاء الدرس')+'"><i class="fa-solid '+(l.isHidden?'fa-eye':'fa-eye-slash')+'"></i></button><button class="admin-action-btn danger" data-delete-lesson="'+l.id+'" title="أرشفة"><i class="fa-solid fa-box-archive"></i></button></div>'+
      '</div></article>';
  }).join(''):empty('لا توجد دروس','غيّر الفلاتر أو أضف أول درس جديد.');
  $$('[data-review-content]').forEach(b=>b.onclick=()=>{const [kind,id]=b.dataset.reviewContent.split('|');openContentReview(kind,id)});
  $$('[data-edit-lesson]').forEach(b=>b.onclick=()=>editLesson(b.dataset.editLesson));
  $$('[data-toggle-lesson]').forEach(b=>b.onclick=()=>{const l=root.lessons?.[b.dataset.toggleLesson];db.ref('lessons/'+b.dataset.toggleLesson+'/isHidden').set(!l?.isHidden)});
- $$('[data-delete-lesson]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الدرس نهائيًا؟',message:'لن يمكن استرجاع الدرس بعد الحذف من المنصة.',tone:'danger',acceptText:'حذف الدرس'}))await db.ref('lessons/'+b.dataset.deleteLesson).remove()});
+ $('[data-delete-lesson]').forEach(b=>b.onclick=async()=>{const id=b.dataset.deleteLesson;if(await askConfirm({title:'أرشفة الدرس؟',message:'سيختفي من المنصة وينتقل إلى الأرشيف مع اختباراته المرتبطة، ويمكن استرجاعه لاحقًا.',acceptText:'أرشفة الدرس'})){await archiveLessons([id]);toast('تم نقل الدرس إلى الأرشيف')}});
  $$('[data-select-lesson]').forEach(input=>input.onchange=()=>{const id=input.dataset.selectLesson;if(input.checked)selectedLessonIds.add(id);else selectedLessonIds.delete(id);updateBulkSelectionUI('lesson')});
  updateBulkSelectionUI('lesson');
 }
@@ -1149,7 +1172,7 @@ function renderQuizzes(){
  $$('[data-review-content]').forEach(b=>b.onclick=()=>{const [kind,id]=b.dataset.reviewContent.split('|');openContentReview(kind,id)});
  $$('[data-edit-quiz]').forEach(b=>b.onclick=()=>editQuiz(b.dataset.editQuiz));
  $$('[data-toggle-quiz]').forEach(b=>b.onclick=()=>{const q=root.quizzes?.[b.dataset.toggleQuiz];db.ref('quizzes/'+b.dataset.toggleQuiz+'/isHidden').set(!q?.isHidden)});
- $$('[data-delete-quiz]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الاختبار؟',message:'سيتم حذف الاختبار والأسئلة الموجودة بداخله من المنصة.',tone:'danger',acceptText:'حذف الاختبار'}))await db.ref('quizzes/'+b.dataset.deleteQuiz).remove()});
+ $('[data-delete-quiz]').forEach(b=>b.onclick=async()=>{const id=b.dataset.deleteQuiz;if(await askConfirm({title:'أرشفة الاختبار؟',message:'سيختفي الاختبار من المنصة وينتقل إلى الأرشيف ويمكن استرجاعه لاحقًا.',acceptText:'أرشفة الاختبار'})){await archiveQuizzes([id]);toast('تم نقل الاختبار إلى الأرشيف')}});
  $$('[data-select-quiz]').forEach(input=>input.onchange=()=>{const id=input.dataset.selectQuiz;if(input.checked)selectedQuizIds.add(id);else selectedQuizIds.delete(id);updateBulkSelectionUI('quiz')});
  updateBulkSelectionUI('quiz');
 }
