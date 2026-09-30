@@ -16,6 +16,9 @@ function subjectMeta(id){
  return rows.find(s=>String(s.id)===String(id))||{id,name:C.subjectName(data,id,profile.stage,String(profile.grade),profile.educationType),emoji:'📚'};
 }
 function quizHref(q){return C.quizUrl({type:q.type,stage:q.stage,grade:q.grade,subject:q.subject},q.id)}
+function supportHrefForQuiz(q){
+ return './support.html?'+new URLSearchParams({source:'exam_center',category:'quiz_question',sourceId:q.id||'',quizId:q.id||'',quizTitle:q.name||'اختبار',type:q.type||profile?.educationType||'public',stage:q.stage||profile?.stage||'',grade:String(q.grade||profile?.grade||''),subject:q.subject||'',href:quizHref(q),title:'مشكلة في اختبار '+(q.name||'')}).toString();
+}
 
 
 function historyItems(){
