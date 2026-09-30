@@ -1228,22 +1228,22 @@ function renderSimulations(){
  const arr=values(root.simulations).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
  $('simulationsAdminGrid').innerHTML=arr.length?arr.map(s=>{
    const total=Object.values(s.counts||{}).reduce((a,n)=>a+Number(n||0),0);
-   return '<article class="admin-subject-card"><span class="section-kicker">'+esc(typeLabel(s.type))+' • '+esc(gradeLabel(s.stage,s.grade))+'</span><h3>⏱️ '+esc(s.name||'محاكي')+'</h3><p>'+Number(s.time||60)+' دقيقة • '+total+' سؤال</p><div class="admin-unit-tags"><span>عربي '+Number(s.counts?.ar||0)+'</span><span>رياضيات '+Number(s.counts?.ma||0)+'</span><span>علوم '+Number(s.counts?.sc||0)+'</span><span>إنجليزي '+Number(s.counts?.en||0)+'</span></div><div class="admin-action-row" style="margin-top:12px"><button class="admin-action-btn" data-edit-sim="'+s.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><button class="admin-action-btn '+(s.isHidden?'success':'')+'" data-toggle-sim="'+s.id+'" title="إظهار/إخفاء"><i class="fa-solid fa-eye"></i></button><button class="admin-action-btn danger" data-delete-sim="'+s.id+'" title="حذف"><i class="fa-solid fa-trash"></i></button></div></article>';
+   return '<article class="admin-subject-card"><span class="section-kicker">'+esc(typeLabel(s.type))+' • '+esc(gradeLabel(s.stage,s.grade))+'</span><div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0"><span class="status-pill '+(s.isFree?'approved':'info')+'">'+(s.isFree?'مجاني':'اشتراك')+'</span></div><h3>⏱️ '+esc(s.name||'محاكي')+'</h3><p>'+Number(s.time||60)+' دقيقة • '+total+' سؤال</p><div class="admin-unit-tags"><span>عربي '+Number(s.counts?.ar||0)+'</span><span>رياضيات '+Number(s.counts?.ma||0)+'</span><span>علوم '+Number(s.counts?.sc||0)+'</span><span>إنجليزي '+Number(s.counts?.en||0)+'</span></div><div class="admin-action-row" style="margin-top:12px"><button class="admin-action-btn" data-edit-sim="'+s.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><button class="admin-action-btn '+(s.isHidden?'success':'')+'" data-toggle-sim="'+s.id+'" title="إظهار/إخفاء"><i class="fa-solid fa-eye"></i></button><button class="admin-action-btn danger" data-delete-sim="'+s.id+'" title="حذف"><i class="fa-solid fa-trash"></i></button></div></article>';
  }).join(''):empty('لا توجد محاكيات','أنشئ أول محاكي لطلابك.');
  $$('[data-edit-sim]').forEach(b=>b.onclick=()=>editSimulation(b.dataset.editSim));
  $$('[data-toggle-sim]').forEach(b=>b.onclick=()=>db.ref('simulations/'+b.dataset.toggleSim+'/isHidden').set(!root.simulations?.[b.dataset.toggleSim]?.isHidden));
  $$('[data-delete-sim]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف المحاكي؟',message:'سيتم حذف إعدادات هذا المحاكي من المنصة.',tone:'danger',acceptText:'حذف المحاكي'}))await db.ref('simulations/'+b.dataset.deleteSim).remove()});
 }
-function resetSimulationEditor(){editState.simulation=null;$('simulationForm').reset();$('simTime').value=60;['simAr','simMa','simSc','simEn'].forEach(id=>$(id).value=5);fillGrades($('simGrade'),$('simStage').value);if($('simulationModalTitle'))$('simulationModalTitle').textContent='إنشاء محاكي جديد'}
+function resetSimulationEditor(){editState.simulation=null;$('simulationForm').reset();if($('simFree'))$('simFree').checked=false;$('simTime').value=60;['simAr','simMa','simSc','simEn'].forEach(id=>$(id).value=5);fillGrades($('simGrade'),$('simStage').value);if($('simulationModalTitle'))$('simulationModalTitle').textContent='إنشاء محاكي جديد'}
 function editSimulation(id){
  const s=root.simulations?.[id];if(!s)return;editState.simulation=id;
- $('simName').value=s.name||'';$('simType').value=s.type||'public';$('simStage').value=s.stage||'primary';fillGrades($('simGrade'),s.stage||'primary',s.grade||'1');$('simGrade').value=String(s.grade||'1');$('simTime').value=Number(s.time||60);$('simAr').value=Number(s.counts?.ar||0);$('simMa').value=Number(s.counts?.ma||0);$('simSc').value=Number(s.counts?.sc||0);$('simEn').value=Number(s.counts?.en||0);$('simHidden').checked=!!s.isHidden;if($('simulationModalTitle'))$('simulationModalTitle').textContent='تعديل المحاكي';openModal('simulationModal');
+ $('simName').value=s.name||'';$('simType').value=s.type||'public';$('simStage').value=s.stage||'primary';fillGrades($('simGrade'),s.stage||'primary',s.grade||'1');$('simGrade').value=String(s.grade||'1');$('simTime').value=Number(s.time||60);$('simAr').value=Number(s.counts?.ar||0);$('simMa').value=Number(s.counts?.ma||0);$('simSc').value=Number(s.counts?.sc||0);$('simEn').value=Number(s.counts?.en||0);if($('simFree'))$('simFree').checked=!!s.isFree;$('simHidden').checked=!!s.isHidden;if($('simulationModalTitle'))$('simulationModalTitle').textContent='تعديل المحاكي';openModal('simulationModal');
 }
 async function saveSimulation(e){
  e.preventDefault();
  const counts={ar:Number($('simAr').value||0),ma:Number($('simMa').value||0),sc:Number($('simSc').value||0),en:Number($('simEn').value||0)};
  if(Object.values(counts).reduce((a,n)=>a+n,0)<=0)return toast('حدد سؤالًا واحدًا على الأقل.','error');
- const payload={name:$('simName').value.trim(),type:$('simType').value,stage:$('simStage').value,grade:$('simGrade').value,time:Number($('simTime').value||60),counts,isLocked:false,isHidden:$('simHidden').checked};
+ const payload={name:$('simName').value.trim(),type:$('simType').value,stage:$('simStage').value,grade:$('simGrade').value,time:Number($('simTime').value||60),counts,isLocked:false,isFree:!!$('simFree')?.checked,isHidden:$('simHidden').checked};
  if(editState.simulation){payload.updatedAt=Date.now();await db.ref('simulations/'+editState.simulation).update(payload);toast('تم تحديث المحاكي')}else{payload.createdAt=Date.now();await db.ref('simulations').push(payload);toast('تم حفظ المحاكي')}
  closeModal('simulationModal');resetSimulationEditor();
 }
@@ -1296,7 +1296,7 @@ function renderLiveSessions(){
    const cls=s.status==='live'?'rejected':s.status==='upcoming'?'info':'approved';
    const label=s.status==='live'?'مباشر':s.status==='upcoming'?'قادم':'منتهي';
    const target=[s.type?typeLabel(s.type):'كل الأنواع',s.stage?(stageNames[s.stage]||s.stage):'كل المراحل',s.grade?'صف '+esc(s.grade):'كل الصفوف',s.subjectName||s.subject||'كل المواد'].join(' • ');
-   return '<article class="admin-subject-card"><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="status-pill '+cls+'">'+label+'</span>'+(s.recordingUrl?'<span class="status-pill approved">إعادة متاحة</span>':'')+'</div><h3 style="margin-top:10px">📡 '+esc(s.title||'جلسة')+'</h3><p>👨‍🏫 '+esc(s.teacher||'غير محدد')+' • ⏱️ '+Number(s.duration||60)+' دقيقة</p><p>'+esc(target)+'</p><p>'+(s.scheduledTime?new Date(s.scheduledTime).toLocaleString('ar-EG'):'موعد غير محدد')+'</p><div class="admin-action-row" style="margin-top:12px"><button class="admin-action-btn" data-edit-live="'+s.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><a class="admin-action-btn success" href="'+cleanUrl(s.recordingUrl||s.youtubeLiveUrl||s.zoomLink||'#')+'" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i></a><button class="admin-action-btn danger" data-delete-live="'+s.id+'"><i class="fa-solid fa-trash"></i></button></div></article>';
+   return '<article class="admin-subject-card"><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="status-pill '+cls+'">'+label+'</span>'+(s.recordingUrl?'<span class="status-pill approved">إعادة متاحة</span>':'')+'<span class="status-pill '+(s.isFree?'approved':'info')+'">'+(s.isFree?'مجاني':'اشتراك')+'</span></div><h3 style="margin-top:10px">📡 '+esc(s.title||'جلسة')+'</h3><p>👨‍🏫 '+esc(s.teacher||'غير محدد')+' • ⏱️ '+Number(s.duration||60)+' دقيقة</p><p>'+esc(target)+'</p><p>'+(s.scheduledTime?new Date(s.scheduledTime).toLocaleString('ar-EG'):'موعد غير محدد')+'</p><div class="admin-action-row" style="margin-top:12px"><button class="admin-action-btn" data-edit-live="'+s.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><a class="admin-action-btn success" href="'+cleanUrl(s.recordingUrl||s.youtubeLiveUrl||s.zoomLink||'#')+'" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i></a><button class="admin-action-btn danger" data-delete-live="'+s.id+'"><i class="fa-solid fa-trash"></i></button></div></article>';
  }).join(''):empty('لا توجد جلسات','أضف أول بث مباشر أو جلسة قادمة.');
  $$('[data-edit-live]').forEach(b=>b.onclick=()=>editLiveSession(b.dataset.editLive));
  $$('[data-delete-live]').forEach(b=>b.onclick=async()=>{if(await askConfirm({title:'حذف الجلسة؟',message:'سيتم حذف موعد البث أو الجلسة من جداول الطلاب.',tone:'danger',acceptText:'حذف الجلسة'}))await db.ref('liveSessions/'+b.dataset.deleteLive).remove()});
@@ -1322,13 +1322,13 @@ function bindLiveTargets(){
  if($('liveGrade'))$('liveGrade').onchange=()=>refreshLiveTargets();
 }
 function resetLiveEditor(){
- editState.live=null;$('liveForm').reset();$('liveDuration').value=60;$('liveStatus').value='upcoming';
+ editState.live=null;$('liveForm').reset();if($('liveFree'))$('liveFree').checked=false;$('liveDuration').value=60;$('liveStatus').value='upcoming';
  if($('liveType'))$('liveType').value='';if($('liveStage'))$('liveStage').value='';refreshLiveTargets();bindLiveTargets();
  if($('liveModalTitle'))$('liveModalTitle').textContent='إضافة جلسة بث'
 }
 function editLiveSession(id){
  const s=root.liveSessions?.[id];if(!s)return;editState.live=id;
- $('liveTitle').value=s.title||'';$('liveTeacher').value=s.teacher||'';$('liveStatus').value=s.status||'upcoming';$('liveTime').value=toLocalDateTimeInput(s.scheduledTime);$('liveDuration').value=Number(s.duration||60);$('liveYoutube').value=s.youtubeLiveUrl||'';$('liveZoom').value=s.zoomLink||'';if($('liveRecording'))$('liveRecording').value=s.recordingUrl||'';
+ $('liveTitle').value=s.title||'';$('liveTeacher').value=s.teacher||'';$('liveStatus').value=s.status||'upcoming';$('liveTime').value=toLocalDateTimeInput(s.scheduledTime);$('liveDuration').value=Number(s.duration||60);$('liveYoutube').value=s.youtubeLiveUrl||'';$('liveZoom').value=s.zoomLink||'';if($('liveRecording'))$('liveRecording').value=s.recordingUrl||'';if($('liveFree'))$('liveFree').checked=!!s.isFree;
  if($('liveType'))$('liveType').value=s.type||'';if($('liveStage'))$('liveStage').value=s.stage||'';refreshLiveTargets({type:s.type||'',stage:s.stage||'',grade:s.grade||'',subject:s.subject||''});bindLiveTargets();
  if($('liveModalTitle'))$('liveModalTitle').textContent='تعديل جلسة البث';openModal('liveModal');
 }
@@ -1339,7 +1339,7 @@ async function saveLiveSession(e){
    title:$('liveTitle').value.trim(),teacher:$('liveTeacher').value.trim()||'غير محدد',
    type:$('liveType')?.value||'',stage:$('liveStage')?.value||'',grade:$('liveGrade')?.value||'',subject,subjectName:subject?subjectName:'',
    status:$('liveStatus').value,scheduledTime:$('liveTime').value?new Date($('liveTime').value).getTime():Date.now(),duration:Number($('liveDuration').value||60),
-   youtubeLiveUrl:$('liveYoutube').value.trim(),zoomLink:$('liveZoom').value.trim(),recordingUrl:$('liveRecording')?.value.trim()||''
+   youtubeLiveUrl:$('liveYoutube').value.trim(),zoomLink:$('liveZoom').value.trim(),recordingUrl:$('liveRecording')?.value.trim()||'',isFree:!!$('liveFree')?.checked
  };
  if(!payload.title)return toast('أدخل عنوان الجلسة.','error');
  for(const [label,url] of [['YouTube',payload.youtubeLiveUrl],['Zoom',payload.zoomLink],['الإعادة',payload.recordingUrl]])if(url&&cleanUrl(url)==='#')return toast('رابط '+label+' غير صالح.','error');
