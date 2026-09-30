@@ -82,10 +82,12 @@ async function loadNotifications(user,profileInput){
   const {db}=ensureFirebase(),now=Date.now();
   const profile=profileInput||((await db.ref('studentProfilesV3/'+user.uid).once('value')).val()||{});
   const reads=profile.notificationReads||{};
+  const subscriptionAccess=window.AcademySubscription?await window.AcademySubscription.load(user.uid,profile,true).catch(()=>null):null;
+  const subscriptionCan=item=>!window.AcademySubscription||window.AcademySubscription.canAccess(item,subscriptionAccess,item?.subject||'');
 
   const stage=profile.stage||'';
   const stageQuery=path=>stage?db.ref(path).orderByChild('stage').equalTo(stage):db.ref(path);
-  const [assignSnap,liveSnap,scheduleSnap,annSnap,broadcastSnap,reviewSnap,fileSnap,lessonSnap,quizSnap]=await Promise.all([
+  const [assignSnap,liveSnap,scheduleSnap,annSnap,broadcastSnap,reviewSnap,fileSnap,lessonSnap,quizSnap,subscriptionRequestSnap]=await Promise.all([
     stageQuery('assignments').once('value'),
     db.ref('liveSessions').once('value'),
     db.ref('scheduleEvents').once('value'),
@@ -94,7 +96,8 @@ async function loadNotifications(user,profileInput){
     db.ref('learningV4/reviews/'+user.uid).once('value'),
     stageQuery('files').once('value'),
     stageQuery('lessons').once('value'),
-    stageQuery('quizzes').once('value')
+    stageQuery('quizzes').once('value'),
+    db.ref('subscriptionRequestsV1/'+user.uid).once('value')
   ]);
 
   const items=[];
@@ -123,7 +126,7 @@ async function loadNotifications(user,profileInput){
   });
 
   /* Live sessions */
-  Object.entries(liveSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(s=>matchesStudent(s,profile,now)).forEach(s=>{
+  Object.entries(liveSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(s=>matchesStudent(s,profile,now)&&subscriptionCan(s)).forEach(s=>{
     const status=liveStatus(s,now),at=Number(s.scheduledTime||0),diff=at-now;
     if(status==='live'){
       push(items,reads,{key:'live-now-'+s.id+'-'+(at||s.createdAt||0),kind:'live',group:'live',category:'schedule',icon:'fa-tower-broadcast',tone:'red',title:'🔴 الجلسة مباشرة الآن',text:(s.title||'جلسة مباشرة')+(s.teacher?' • '+s.teacher:''),createdAt:now,href:liveHref(s.id),priority:'urgent',sourceName:s.teacher||'المدرس'});
@@ -157,7 +160,7 @@ async function loadNotifications(user,profileInput){
   }
 
   /* Important/new library files */
-  Object.entries(fileSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(f=>matchesStudent(f,profile,now)).forEach(f=>{
+  Object.entries(fileSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(f=>matchesStudent(f,profile,now)&&subscriptionCan(f)).forEach(f=>{
     const created=Number(f.createdAt||f.updatedAt||0),age=now-created,opened=Number(profile.libraryHistory?.[f.id]?.openedAt||0)>0;
     if(opened||!created)return;
     if(f.isFeatured&&age<=7*DAY){
@@ -168,18 +171,44 @@ async function loadNotifications(user,profileInput){
   });
 
   /* New lessons */
-  Object.entries(lessonSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(l=>matchesStudent(l,profile,now)).forEach(l=>{
+  Object.entries(lessonSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(l=>matchesStudent(l,profile,now)&&subscriptionCan(l)).forEach(l=>{
     const created=Number(l.createdAt||0);
     if(!created||now-created>72*HOUR||profile.learningProgress?.[l.id]?.completed)return;
     push(items,reads,{key:'lesson-new-'+l.id+'-'+created,kind:'lesson',group:'content',category:'academic',icon:'fa-circle-play',tone:'blue',title:'درس جديد متاح',text:l.title||'درس جديد',createdAt:created,href:lessonHref(l,l.id,profile),priority:'normal',sourceName:l.teacherName||''});
   });
 
   /* New quizzes */
-  Object.entries(quizSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(q=>matchesStudent(q,profile,now)&&targeted(q,profile,user.uid)).forEach(q=>{
+  Object.entries(quizSnap.val()||{}).map(([id,v])=>({id,...(v||{})})).filter(q=>matchesStudent(q,profile,now)&&targeted(q,profile,user.uid)&&subscriptionCan(q)).forEach(q=>{
     const created=Number(q.createdAt||0);
     if(!created||now-created>72*HOUR||studentQuizAttempted(profile,q.id))return;
     push(items,reads,{key:'quiz-new-'+q.id+'-'+created,kind:'quiz',group:'content',category:'academic',icon:'fa-file-circle-question',tone:'violet',title:'اختبار جديد متاح',text:q.name||'اختبار جديد',createdAt:created,href:quizHref(q,q.id,profile),priority:'normal'});
   });
+
+  /* Subscription request decisions */
+  Object.entries(subscriptionRequestSnap.val()||{}).forEach(([id,r])=>{
+    if(!r||!['approved','rejected'].includes(r.status))return;
+    const stamp=Number(r.reviewedAt||r.updatedAt||r.createdAt||0);if(!stamp||now-stamp>14*DAY)return;
+    push(items,reads,{
+      key:'subscription-request-'+id+'-'+r.status+'-'+stamp,
+      kind:'subscription',group:'system',category:'system',icon:r.status==='approved'?'fa-circle-check':'fa-circle-xmark',
+      tone:r.status==='approved'?'green':'red',
+      title:r.status==='approved'?'تم اعتماد طلب الاشتراك':'تمت مراجعة طلب الاشتراك',
+      text:r.status==='approved'?('تم تفعيل '+(r.planName||'الباقة')+' على حسابك.'):('طلب '+(r.planName||'الباقة')+' لم يتم اعتماده. يمكنك مراجعة التفاصيل أو التواصل مع الدعم.'),
+      createdAt:stamp,href:'./subscription.html',priority:r.status==='approved'?'high':'normal',sourceName:'إدارة الأكاديمية'
+    });
+  });
+
+  /* Subscription access */
+  if(subscriptionAccess?.enforced===true){
+    const sub=subscriptionAccess.subscription,plan=subscriptionAccess.plan,status=subscriptionAccess.status,days=Number(subscriptionAccess.daysLeft||0);
+    if(status==='active'&&days<=7){
+      push(items,reads,{key:'subscription-expiring-'+dateKey(Number(sub?.endsAt||now)),kind:'subscription',group:'system',category:'system',icon:'fa-crown',tone:days<=2?'red':'amber',title:days<=2?'اشتراكك ينتهي قريبًا جدًا':'اشتراكك يقترب من الانتهاء',text:(plan?.name||'باقتك')+' • متبقي '+days+' يوم'+(days===1?' فقط':''),createdAt:Math.max(now-DAY,Number(sub?.endsAt||now)-7*DAY),href:'./subscription.html',priority:days<=2?'urgent':'high',sourceName:'إدارة الأكاديمية'});
+    }else if(status==='expired'){
+      push(items,reads,{key:'subscription-expired-'+dateKey(Number(sub?.endsAt||now)),kind:'subscription',group:'system',category:'system',icon:'fa-crown',tone:'red',title:'انتهى اشتراكك',text:'يمكنك متابعة المحتوى المجاني أو طلب تجديد/باقة جديدة من صفحة الاشتراك.',createdAt:Number(sub?.endsAt||now),href:'./subscription.html',priority:'high',sourceName:'إدارة الأكاديمية'});
+    }else if(status==='suspended'){
+      push(items,reads,{key:'subscription-suspended-'+String(sub?.updatedAt||sub?.startsAt||0),kind:'subscription',group:'system',category:'system',icon:'fa-lock',tone:'amber',title:'اشتراكك موقوف حاليًا',text:'راجع صفحة الاشتراك أو تواصل مع الدعم لمعرفة التفاصيل.',createdAt:Number(sub?.updatedAt||now),href:'./subscription.html',priority:'high',sourceName:'إدارة الأكاديمية'});
+    }
+  }
 
   /* Academy announcement */
   const ann=annSnap.val()||{};

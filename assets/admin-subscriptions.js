@@ -15,6 +15,11 @@ const vals=o=>Object.entries(o||{}).map(([id,v])=>({id,...(v||{})}));
 const fmt=n=>{const x=Number(n||0);return x?new Date(x).toLocaleDateString('ar-EG',{day:'numeric',month:'short',year:'numeric'}):'—'};
 const localInput=n=>{const d=new Date(Number(n||Date.now())),p=x=>String(x).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes())};
 const statusLabel=s=>({active:'نشط',pending:'قيد الانتظار',suspended:'موقوف',expired:'منتهي',cancelled:'ملغي'}[s]||s||'بدون اشتراك');
+async function auditSubscription(action,entityId,meta={}){
+ if(!user?.uid)return;
+ const ts=Date.now(),key=ts+'-'+Math.random().toString(36).slice(2,9);
+ await db.ref('auditLogV4/'+key).set({uid:user.uid,action,entity:'subscription',entityId:entityId||'',meta,at:ts,createdAt:ts}).catch(()=>{});
+}
 const subState=(s)=>{
  if(!s)return'none';if(s.status==='suspended'||s.status==='cancelled'||s.status==='pending')return s.status;
  return Number(s.endsAt||0)&&Number(s.endsAt)<=Date.now()?'expired':s.status||'expired';
@@ -27,6 +32,11 @@ function subjectRows(){
 function planRows(){return vals(plans).sort((a,b)=>Number(a.sortOrder||999)-Number(b.sortOrder||999)||Number(a.price||0)-Number(b.price||0))}
 function subscriptionRows(){return vals(subscriptions)}
 function requestRows(){const out=[];Object.entries(requests||{}).forEach(([uid,items])=>Object.entries(items||{}).forEach(([id,v])=>out.push({uid,id,...(v||{})})));return out.sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0))}
+function renderSystemState(){
+ const enabled=settings.enabled===true,box=$('subscriptionSystemEnabled'),text=$('subscriptionSystemEnabledText');
+ if(box)box.checked=enabled;
+ if(text)text.textContent=enabled?'مفعل — القفل يعمل حسب الباقات الآن':'غير مفعل — كل المحتوى متاح حاليًا';
+}
 function stats(){
  const rows=subscriptionRows(),active=rows.filter(x=>subState(x)==='active'),soon=active.filter(x=>Number(x.endsAt||0)-Date.now()<=7*86400000),expired=rows.filter(x=>subState(x)==='expired'),pending=requestRows().filter(x=>x.status==='pending');
  $('subscriptionAdminActive').textContent=active.length;$('subscriptionAdminSoon').textContent=soon.length;$('subscriptionAdminExpired').textContent=expired.length;$('subscriptionAdminRequests').textContent=pending.length;$('subscriptionAdminHeroActive').textContent=active.length;$('subscriptionAdminHeroRequests').textContent=pending.length;
@@ -48,14 +58,14 @@ async function savePlan(e){
  const payload={name,price,durationDays,badge:$('planBadge').value.trim(),icon:$('planIcon').value.trim()||'👑',description:$('planDescription').value.trim(),accessMode,targetType:$('planTargetType').value,targetStage:$('planTargetStage').value,targetGrade:$('planTargetGrade').value,subjects:accessMode==='subjects'?selectedSubjects():{},isActive:$('planActive').checked,sortOrder:Number($('planSortOrder').value||100),updatedAt:Date.now()};
  if(accessMode==='subjects'&&!Object.keys(payload.subjects).length)return window.AcademyUI?.toast?.('حدد مادة واحدة على الأقل للباقة.','error');
  const id=editPlanId||db.ref('subscriptionPlansV1').push().key;if(!editPlanId)payload.createdAt=Date.now();
- await db.ref('subscriptionPlansV1/'+id).update(payload);window.AcademyUI?.toast?.(editPlanId?'تم تحديث الباقة ✅':'تم إنشاء الباقة ✅');resetPlan();
+ await db.ref('subscriptionPlansV1/'+id).update(payload);await auditSubscription(editPlanId?'subscription.plan_update':'subscription.plan_create',id,{name:payload.name,price:payload.price,durationDays:payload.durationDays,accessMode:payload.accessMode});window.AcademyUI?.toast?.(editPlanId?'تم تحديث الباقة ✅':'تم إنشاء الباقة ✅');resetPlan();
 }
 function renderPlans(){
  const box=$('subscriptionAdminPlans'),rows=planRows();if(!box)return;
  box.innerHTML=rows.length?rows.map(p=>'<article class="subscription-admin-item"><div class="subscription-admin-item-top"><div><strong>'+esc(p.icon||'👑')+' '+esc(p.name||'باقة')+'</strong><small>'+Number(p.price||0).toLocaleString('ar-EG')+' ج.م • '+Number(p.durationDays||30)+' يوم</small></div><span class="subscription-status '+(p.isActive===false?'cancelled':'active')+'">'+(p.isActive===false?'متوقفة':'متاحة')+'</span></div><div class="subscription-admin-meta"><span>'+(p.accessMode==='subjects'?Object.values(p.subjects||{}).filter(Boolean).length+' مواد':'كل المواد')+'</span>'+(p.targetStage?'<span>'+esc(p.targetStage)+' / '+esc(p.targetGrade||'كل الصفوف')+'</span>':'<span>كل المراحل</span>')+'</div><div class="subscription-admin-actions"><button class="sub-action-main" data-edit-plan="'+p.id+'"><i class="fa-solid fa-pen"></i> تعديل</button><button class="'+(p.isActive===false?'sub-action-good':'sub-action-warn')+'" data-toggle-plan="'+p.id+'">'+(p.isActive===false?'تفعيل':'إيقاف')+'</button><button class="sub-action-danger" data-delete-plan="'+p.id+'"><i class="fa-solid fa-trash"></i> حذف</button></div></article>').join(''):'<div class="content-ops-empty"><span>👑</span>لا توجد باقات بعد.</div>';
  box.querySelectorAll('[data-edit-plan]').forEach(b=>b.onclick=()=>editPlan(b.dataset.editPlan));
- box.querySelectorAll('[data-toggle-plan]').forEach(b=>b.onclick=()=>db.ref('subscriptionPlansV1/'+b.dataset.togglePlan).update({isActive:plans[b.dataset.togglePlan]?.isActive===false,updatedAt:Date.now()}));
- box.querySelectorAll('[data-delete-plan]').forEach(b=>b.onclick=async()=>{const id=b.dataset.deletePlan,inUse=subscriptionRows().some(s=>s.planId===id)||requestRows().some(r=>r.planId===id&&r.status==='pending');if(inUse)return window.AcademyUI?.toast?.('لا يمكن حذف باقة مرتبطة باشتراك أو طلب معلق. أوقفها بدلًا من الحذف.','error');if(await ask({title:'حذف الباقة؟',message:'سيتم حذف تعريف الباقة نهائيًا.',tone:'danger',acceptText:'حذف'}))await db.ref('subscriptionPlansV1/'+id).remove()});
+ box.querySelectorAll('[data-toggle-plan]').forEach(b=>b.onclick=async()=>{const id=b.dataset.togglePlan,next=plans[id]?.isActive===false;await db.ref('subscriptionPlansV1/'+id).update({isActive:next,updatedAt:Date.now()});await auditSubscription('subscription.plan_toggle',id,{isActive:next})});
+ box.querySelectorAll('[data-delete-plan]').forEach(b=>b.onclick=async()=>{const id=b.dataset.deletePlan,inUse=subscriptionRows().some(s=>s.planId===id)||requestRows().some(r=>r.planId===id&&r.status==='pending');if(inUse)return window.AcademyUI?.toast?.('لا يمكن حذف باقة مرتبطة باشتراك أو طلب معلق. أوقفها بدلًا من الحذف.','error');if(await ask({title:'حذف الباقة؟',message:'سيتم حذف تعريف الباقة نهائيًا.',tone:'danger',acceptText:'حذف'})){await db.ref('subscriptionPlansV1/'+id).remove();await auditSubscription('subscription.plan_delete',id,{name:plans[id]?.name||''})}});
  fillPlanSelect();
 }
 function studentRows(){
@@ -80,14 +90,14 @@ async function saveStudentSubscription(e){
  e.preventDefault();if(!selectedStudentId)return;const planId=$('studentPlanId').value,plan=plans[planId];if(!plan)return window.AcademyUI?.toast?.('اختر باقة صحيحة.','error');
  const startsAt=new Date($('studentSubStart').value).getTime(),endsAt=new Date($('studentSubEnd').value).getTime();if(!Number.isFinite(startsAt)||!Number.isFinite(endsAt)||endsAt<=startsAt)return window.AcademyUI?.toast?.('راجع بداية ونهاية الاشتراك.','error');
  const old=subscriptions[selectedStudentId]||{},payload={planId,status:$('studentSubStatus').value,startsAt,endsAt,notes:$('studentSubNotes').value.trim(),updatedAt:Date.now(),updatedBy:user.uid};if(!old.createdAt)payload.createdAt=Date.now();if(payload.status==='active')payload.activatedAt=Date.now();
- await db.ref('studentSubscriptionsV1/'+selectedStudentId).update(payload);window.AcademyUI?.toast?.('تم حفظ اشتراك الطالب ✅');
+ await db.ref('studentSubscriptionsV1/'+selectedStudentId).update(payload);await auditSubscription('subscription.student_save',selectedStudentId,{planId,status:payload.status,startsAt,endsAt});window.AcademyUI?.toast?.('تم حفظ اشتراك الطالب ✅');
 }
 async function quickAction(action){
  if(!selectedStudentId)return;const ref=db.ref('studentSubscriptionsV1/'+selectedStudentId),sub=subscriptions[selectedStudentId];if(!sub)return;
- if(action==='extend30'){const base=Math.max(Date.now(),Number(sub.endsAt||0));await ref.update({endsAt:base+30*86400000,status:'active',updatedAt:Date.now(),updatedBy:user.uid});window.AcademyUI?.toast?.('تم تمديد الاشتراك 30 يومًا ✅')}
- if(action==='suspend')await ref.update({status:'suspended',updatedAt:Date.now(),updatedBy:user.uid});
- if(action==='activate')await ref.update({status:'active',updatedAt:Date.now(),updatedBy:user.uid});
- if(action==='cancel'&&await ask({title:'إلغاء الاشتراك؟',message:'سيتم منع الوصول للمحتوى المدفوع فورًا.',tone:'warning',acceptText:'إلغاء الاشتراك'}))await ref.update({status:'cancelled',updatedAt:Date.now(),updatedBy:user.uid});
+ if(action==='extend30'){const base=Math.max(Date.now(),Number(sub.endsAt||0)),endsAt=base+30*86400000;await ref.update({endsAt,status:'active',updatedAt:Date.now(),updatedBy:user.uid});await auditSubscription('subscription.extend',selectedStudentId,{days:30,endsAt});window.AcademyUI?.toast?.('تم تمديد الاشتراك 30 يومًا ✅')}
+ if(action==='suspend'){await ref.update({status:'suspended',updatedAt:Date.now(),updatedBy:user.uid});await auditSubscription('subscription.suspend',selectedStudentId,{})}
+ if(action==='activate'){await ref.update({status:'active',updatedAt:Date.now(),updatedBy:user.uid});await auditSubscription('subscription.activate',selectedStudentId,{})}
+ if(action==='cancel'&&await ask({title:'إلغاء الاشتراك؟',message:'سيتم منع الوصول للمحتوى المدفوع فورًا.',tone:'warning',acceptText:'إلغاء الاشتراك'})){await ref.update({status:'cancelled',updatedAt:Date.now(),updatedBy:user.uid});await auditSubscription('subscription.cancel',selectedStudentId,{})}
 }
 function renderRequests(){
  const box=$('subscriptionRequestList');if(!box)return;const rows=requestRows().filter(x=>x.status==='pending');
@@ -113,10 +123,21 @@ function bind(){
  $('subscriptionEnforceAccess')?.addEventListener('change',async e=>{const enabled=e.target.checked;await db.ref('subscriptionSettingsV1').update({enforceAccess:enabled,updatedAt:Date.now(),updatedBy:user?.uid||''});window.AcademyUI?.toast?.(enabled?'تم تفعيل حماية المحتوى بالاشتراكات ✅':'تم إيقاف حماية الاشتراكات مؤقتًا')});
  $('subscriptionStudentSearch')?.addEventListener('input',renderStudents);$('studentSubscriptionForm')?.addEventListener('submit',saveStudentSubscription);$('studentPlanId')?.addEventListener('change',updateEndFromPlan);$('studentSubStart')?.addEventListener('change',updateEndFromPlan);
  document.querySelectorAll('[data-sub-quick]').forEach(b=>b.onclick=()=>quickAction(b.dataset.subQuick));
+ $('subscriptionSystemEnabled')?.addEventListener('change',async e=>{
+   const enabled=!!e.target.checked;
+   if(enabled){
+     const activePlans=planRows().filter(p=>p.isActive!==false);
+     if(!activePlans.length){e.target.checked=false;return window.AcademyUI?.toast?.('أنشئ باقة نشطة واحدة على الأقل قبل تشغيل النظام.','error')}
+     const ok=await ask({title:'تفعيل نظام الاشتراكات؟',message:'بعد التفعيل، أي محتوى غير مجاني سيحتاج اشتراكًا نشطًا يشمله. المحتوى المجاني سيظل مفتوحًا.',acceptText:'تفعيل النظام'});
+     if(!ok){e.target.checked=false;return}
+   }
+   await db.ref('subscriptionSettingsV1').update({enabled,updatedAt:Date.now(),updatedBy:user.uid});await auditSubscription(enabled?'subscription.enforcement_enable':'subscription.enforcement_disable','settings',{enabled});
+   window.AcademyUI?.toast?.(enabled?'تم تفعيل نظام الاشتراكات ✅':'تم إيقاف القفل مؤقتًا وأصبح المحتوى متاحًا للجميع.');
+ });
  resetPlan();fillPlanSelect();
 }
 function listen(path,key){const ref=db.ref(path),handler=s=>{window.__academySubscriptionAdminBusy=true;dataUpdate(key,s.val()||{});window.__academySubscriptionAdminBusy=false;render()};ref.on('value',handler);stops.push(()=>ref.off('value',handler))}
 function dataUpdate(key,value){if(key==='plans')plans=value;if(key==='students')students=value;if(key==='subscriptions')subscriptions=value;if(key==='requests')requests=value;if(key==='customSubjects')customSubjects=value;if(key==='settings')settings=value}
-auth.onAuthStateChanged(async u=>{stops.splice(0).forEach(fn=>fn());user=u;if(!u)return;try{const isAdmin=(await db.ref('adminProfiles/'+u.uid+'/isAdmin').once('value')).val();if(isAdmin!==true)return;bind();listen('subscriptionPlansV1','plans');listen('studentProfilesV3','students');listen('studentSubscriptionsV1','subscriptions');listen('subscriptionRequestsV1','requests');listen('customSubjects','customSubjects');listen('subscriptionSettingsV1','settings')}catch(err){console.warn('Subscription admin unavailable',err)}});
+auth.onAuthStateChanged(async u=>{stops.splice(0).forEach(fn=>fn());user=u;if(!u)return;try{const isAdmin=(await db.ref('adminProfiles/'+u.uid+'/isAdmin').once('value')).val();if(isAdmin!==true)return;bind();listen('subscriptionPlansV1','plans');listen('studentProfilesV3','students');listen('studentSubscriptionsV1','subscriptions');listen('subscriptionRequestsV1','requests');listen('customSubjects','customSubjects');listen('subscriptionSettingsV1','settings');listen('subscriptionSettingsV1','settings')}catch(err){console.warn('Subscription admin unavailable',err)}});
 window.addEventListener('pagehide',()=>stops.splice(0).forEach(fn=>fn()));
 })();
