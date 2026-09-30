@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="./assets/future-theme.css?v=1">
   <script src="./assets/academy-utils.js"></script>
   <link rel="stylesheet" href="./assets/academy-mix-theme.css?v=24">
+  <link rel="stylesheet" href="./assets/admin-intelligence.css?v=1">
 </head>
 <body class="admin-v3-body">
   <div id="toast" class="toast"></div>
@@ -63,6 +64,7 @@
       <nav class="admin-nav" aria-label="أقسام لوحة الإدارة">
         <span class="admin-nav-label">نظرة عامة</span>
         <button class="active" data-admin-tab="overview"><i class="fa-solid fa-grid-2"></i> لوحة المعلومات</button>
+        <button data-admin-tab="analytics"><i class="fa-solid fa-chart-line"></i> التحليلات ومركز المشكلات <span id="analyticsAlertBadge" class="nav-badge hidden">0</span></button>
 
         <span class="admin-nav-label">المحتوى التعليمي</span>
         <button data-admin-tab="curriculum"><i class="fa-solid fa-layer-group"></i> المواد والوحدات</button>
@@ -159,6 +161,72 @@
               <button class="btn btn-soft btn-block" data-jump-tab="teachers">فتح كل المراجعات</button>
             </article>
           </div>
+        </section>
+
+        <section class="admin-tab" id="admin-tab-analytics">
+          <section class="admin-intel-hero">
+            <div>
+              <span class="section-kicker light">ذكاء تشغيلي للأكاديمية</span>
+              <h2>اعرف ما يحدث قبل أن تتحول المشكلة إلى أزمة</h2>
+              <p>نحلل نشاط الطلاب، نتائج الاختبارات، إكمال الدروس، أداء المحتوى، مراجعات المدرسين والتسليمات المتأخرة ثم نحولها إلى إجراءات واضحة.</p>
+            </div>
+            <div class="admin-intel-hero-side">
+              <article><strong id="adminIntelHeroIssues">0</strong><small>عناصر تحتاج متابعة</small></article>
+              <article><strong id="adminIntelHeroActive">0</strong><small>طالب نشط خلال 7 أيام</small></article>
+            </div>
+          </section>
+
+          <div class="admin-intel-toolbar">
+            <div class="admin-intel-periods" aria-label="فترة التحليل">
+              <button type="button" class="active" data-intel-period="7">7 أيام</button>
+              <button type="button" data-intel-period="14">14 يومًا</button>
+              <button type="button" data-intel-period="30">30 يومًا</button>
+            </div>
+            <span class="admin-intel-toolbar-meta" id="adminIntelPeriodText">آخر 7 أيام</span>
+            <button type="button" id="adminIntelRefresh"><i class="fa-solid fa-rotate"></i> تحديث التحليل</button>
+            <button type="button" id="adminIntelExport"><i class="fa-solid fa-file-export"></i> تصدير التقرير CSV</button>
+          </div>
+
+          <section class="admin-intel-kpis" id="adminIntelKpis"></section>
+
+          <div class="admin-intel-grid">
+            <article class="admin-intel-card">
+              <div class="admin-intel-head"><div><span class="section-kicker">النشاط اليومي</span><h3>دقائق المذاكرة داخل المنصة</h3><p>إجمالي وقت الدراسة المسجل يوميًا لكل الطلاب.</p></div><span>📈</span></div>
+              <div class="admin-trend-bars" id="adminIntelTrend"></div>
+            </article>
+            <article class="admin-intel-card">
+              <div class="admin-intel-head"><div><span class="section-kicker">الطلاب المعرضون للتوقف</span><h3>من يحتاج تدخلك أولًا؟</h3><p>عدم النشاط والنتائج المنخفضة والمهام المتأخرة.</p></div><span>🧭</span></div>
+              <div class="admin-risk-summary">
+                <div><strong id="adminIntelRiskHigh">0</strong><small>خطر مرتفع</small></div>
+                <div><strong id="adminIntelRiskMedium">0</strong><small>يحتاج متابعة</small></div>
+                <div><strong id="adminIntelRiskTotal">0</strong><small>إجمالي التنبيهات</small></div>
+              </div>
+              <div class="admin-intel-list" id="adminIntelRisks"></div>
+            </article>
+          </div>
+
+          <div class="admin-intel-grid equal">
+            <article class="admin-intel-card">
+              <div class="admin-intel-head"><div><span class="section-kicker">أداء المحتوى</span><h3>الدروس الأكثر استخدامًا</h3><p>المشاهدة والإكمال ومتوسط التدريب لكل درس.</p></div><span>🎬</span></div>
+              <div class="admin-intel-list" id="adminIntelContent"></div>
+            </article>
+            <article class="admin-intel-card">
+              <div class="admin-intel-head"><div><span class="section-kicker">مركز اكتشاف المشكلات</span><h3>ما الذي يحتاج إصلاحًا؟</h3><p>يفحص المحتوى والتفاعل والطلاب وعمليات المعلمين تلقائيًا.</p></div><span>🛠️</span></div>
+              <div class="admin-issue-filter">
+                <button type="button" class="active" data-issue-filter="all">الكل</button>
+                <button type="button" data-issue-filter="high">عاجل</button>
+                <button type="button" data-issue-filter="medium">مهم</button>
+                <button type="button" data-issue-filter="low">متابعة</button>
+              </div>
+              <div class="admin-intel-list" id="adminIntelIssues"></div>
+              <div class="admin-intel-note"><i class="fa-solid fa-circle-info"></i><span>هذه المؤشرات أدوات مساعدة للإدارة؛ استخدمها لتحديد الأولويات ثم راجع العنصر نفسه قبل اتخاذ قرار.</span></div>
+            </article>
+          </div>
+
+          <article class="admin-intel-card">
+            <div class="admin-intel-head"><div><span class="section-kicker">خريطة أداء المواد</span><h3>المواد من حيث المحتوى والنتائج والتفاعل</h3><p>تساعدك على معرفة المادة التي تحتاج محتوى أكثر أو دعمًا للطلاب.</p></div><span>📚</span></div>
+            <div class="admin-subject-performance" id="adminIntelSubjects"></div>
+          </article>
         </section>
 
         <section class="admin-tab" id="admin-tab-curriculum">
@@ -734,6 +802,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="./assets/firebase-config.js"></script>
   <script src="./assets/admin-auth-flow.js?v=33"></script>
+  <script src="./assets/admin-intelligence.js?v=1"></script>
   <script src="./assets/admin.js?v=53"></script>
   <script src="./assets/admin-notifications.js"></script>
 </body>
