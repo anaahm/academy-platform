@@ -334,6 +334,7 @@ function renderOverview(){
  const lessons=values(root.lessons),quizzes=values(root.quizzes),students=values(root.studentProfilesV3),parents=values(root.parentProfilesV4),teachers=values(root.teacherProfiles);
  const submissions=flattenSubmissions(),pending=submissions.filter(x=>(x.status||'pending')==='pending'),approved=submissions.filter(x=>x.status==='approved'),rejected=submissions.filter(x=>x.status==='rejected');
  const activeTeachers=teachers.filter(t=>t.isActive!==false),inactiveTeachers=teachers.filter(t=>t.isActive===false),reports=communityReportCount();
+ const contentGaps=lessons.filter(l=>publicationState(l)==='published'&&!(Array.isArray(l.questions)&&l.questions.length)&&!quizzes.some(q=>publicationState(q)==='published'&&q.lessonId===l.id)).length;
  const readyLessons=lessons.filter(l=>{
    const hasVideo=Array.isArray(l.videos)&&l.videos.some(v=>v?.url);
    const hasText=String(l.content||l.explanation||'').trim().length>15;
@@ -357,7 +358,7 @@ function renderOverview(){
  if($('adminOverviewGreeting'))$('adminOverviewGreeting').textContent='أهلًا '+adminName()+'، هذه أهم حالة للأكاديمية الآن.';
  if($('adminOverviewHealth')){$('adminOverviewHealth').textContent=readiness+'%';$('adminOverviewHealth').closest('.mix-admin-command-ring')?.style.setProperty('--health-angle',(readiness*3.6)+'deg')}
  if($('adminOverviewAttention')){
-   const totalAttention=pending.length+reports+inactiveTeachers.length;
+   const totalAttention=pending.length+reports+inactiveTeachers.length+contentGaps;
    $('adminOverviewAttention').innerHTML='<i class="fa-solid fa-bell"></i> '+(totalAttention?totalAttention+' عناصر تحتاج متابعة':'لا توجد مهام عاجلة');
    $('adminOverviewAttention').classList.toggle('has-attention',totalAttention>0);
  }
@@ -366,6 +367,7 @@ function renderOverview(){
  if(pending.length)attention.push({icon:'fa-clock',tone:'orange',title:pending.length+' مراجعة محتوى معلقة',text:'طلبات مدرسين تنتظر قرار الإدارة.',tab:'teachers'});
  if(reports)attention.push({icon:'fa-flag',tone:'red',title:reports+' بلاغ في المجتمع',text:'راجع المنشورات المبلّغ عنها.',tab:'community'});
  if(inactiveTeachers.length)attention.push({icon:'fa-user-slash',tone:'gray',title:inactiveTeachers.length+' مدرس غير نشط',text:'راجع حالة حسابات فريق التدريس.',tab:'teachers'});
+ if(contentGaps)attention.push({icon:'fa-stethoscope',tone:'orange',title:contentGaps+' درس بلا تدريب مرتبط',text:'مركز التحليلات حدد محتوى يحتاج استكمالًا.',tab:'analytics'});
  if(!lessons.length)attention.push({icon:'fa-circle-plus',tone:'blue',title:'لا توجد دروس منشورة بعد',text:'ابدأ بإضافة أول محتوى تعليمي.',tab:'lessons'});
  if($('adminAttentionList'))$('adminAttentionList').innerHTML=attention.length?attention.map(a=>
    '<button type="button" class="mix-admin-attention-item" data-jump-tab="'+a.tab+'"><span class="'+a.tone+'"><i class="fa-solid '+a.icon+'"></i></span><div><strong>'+esc(a.title)+'</strong><small>'+esc(a.text)+'</small></div><i class="fa-solid fa-chevron-left"></i></button>'
