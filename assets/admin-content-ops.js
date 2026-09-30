@@ -43,10 +43,11 @@ async function audit(action,entity,entityId,meta={}){
  if(!user?.uid)return;const ts=now(),key=ts+'-'+Math.random().toString(36).slice(2,9);
  await db.ref('auditLogV4/'+key).set({uid:user.uid,action,entity,entityId:entityId||'',meta,at:ts,createdAt:ts}).catch(()=>{});
 }
+function quizBankStatus(q,ts=Date.now()){if(q?.workflowStatus==='draft')return'draft';if(q?.isHidden)return'hidden';if(Number(q?.publishAt||0)>ts)return'scheduled';return'approved'}
 function quizBank(quizId,q,updates,ts){
  (Array.isArray(q.questions)?q.questions:[]).forEach((item,i)=>{
   const bankId='quiz-'+quizId+'-'+i;
-  updates['questionBankV4/'+bankId]={id:bankId,question:item.text||item.question||'',options:item.opts||item.options||[],correctAnswer:Number(item.correctAnswer||0),explanation:item.explanation||'',difficulty:Number(item.difficulty||2),type:q.type,stage:q.stage,grade:String(q.grade),subject:q.subject,unit:Number(q.unit||0),lessonId:q.lessonId||'',sourceQuizId:quizId,authorUid:user?.uid||'',authorRole:'admin',status:'approved',createdAt:ts,updatedAt:ts};
+  updates['questionBankV4/'+bankId]={id:bankId,question:item.text||item.question||'',options:item.opts||item.options||[],correctAnswer:Number(item.correctAnswer||0),explanation:item.explanation||'',difficulty:Number(item.difficulty||2),type:q.type,stage:q.stage,grade:String(q.grade),subject:q.subject,unit:Number(q.unit||0),lessonId:q.lessonId||'',sourceQuizId:quizId,authorUid:user?.uid||'',authorRole:'admin',status:quizBankStatus(q,ts),createdAt:ts,updatedAt:ts};
  });
 }
 function scope(prefix){
