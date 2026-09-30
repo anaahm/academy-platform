@@ -130,7 +130,7 @@ function viewerAttendanceText(s){
 }
 function openSession(id,trigger){
  const raw=sessions.find(x=>x.id===id);if(!raw)return;
- const s={...raw,status:statusOf(raw)},sub=subjectMeta(s.subject);viewerTrigger=trigger||document.activeElement;
+ const s={...raw,status:statusOf(raw)},sub=subjectMeta(s.subject);if(!sessionAccessible(s)){S?.lockOverlay({title:'هذه الجلسة ضمن الاشتراك',text:'فعّل باقة تشمل '+(sub.name||'هذه المادة')+' لفتح البث أو إعادة المشاهدة.'});return}viewerTrigger=trigger||document.activeElement;
  $('liveViewerTitle').textContent=s.title||'الجلسة';
  if($('liveViewerMeta'))$('liveViewerMeta').textContent=[sub.name||'جلسة عامة',s.teacher||'المدرس',dateText(s.scheduledTime),Number(s.duration||60)+' دقيقة'].join(' • ');
  if($('liveViewerAttendance')){
