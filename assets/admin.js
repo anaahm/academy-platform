@@ -334,7 +334,8 @@ function renderAdminIntelligence(){
 /* Overview */
 function renderOverview(){
  const lessons=values(root.lessons),quizzes=values(root.quizzes),students=values(root.studentProfilesV3),parents=values(root.parentProfilesV4),teachers=values(root.teacherProfiles);
- const submissions=flattenSubmissions(),pending=submissions.filter(x=>(x.status||'pending')==='pending'),approved=submissions.filter(x=>x.status==='approved'),rejected=submissions.filter(x=>x.status==='rejected');\n const communicationRows=[];Object.values(root.communicationSubmissionsV1||{}).forEach(items=>Object.values(items||{}).forEach(x=>x&&communicationRows.push(x)));const communicationPending=communicationRows.filter(x=>(x.status||'pending')==='pending');
+ const submissions=flattenSubmissions(),pending=submissions.filter(x=>(x.status||'pending')==='pending'),approved=submissions.filter(x=>x.status==='approved'),rejected=submissions.filter(x=>x.status==='rejected');
+ const communicationRows=[];Object.values(root.communicationSubmissionsV1||{}).forEach(items=>Object.values(items||{}).forEach(x=>x&&communicationRows.push(x)));const communicationPending=communicationRows.filter(x=>(x.status||'pending')==='pending');
  const activeTeachers=teachers.filter(t=>t.isActive!==false),inactiveTeachers=teachers.filter(t=>t.isActive===false),reports=communityReportCount();
  const contentGaps=lessons.filter(l=>publicationState(l)==='published'&&!(Array.isArray(l.questions)&&l.questions.length)&&!quizzes.some(q=>publicationState(q)==='published'&&q.lessonId===l.id)).length;
  const readyLessons=lessons.filter(l=>{
@@ -366,7 +367,8 @@ function renderOverview(){
  }
 
  const attention=[];
- if(pending.length)attention.push({icon:'fa-clock',tone:'orange',title:pending.length+' مراجعة محتوى معلقة',text:'طلبات مدرسين تنتظر قرار الإدارة.',tab:'teachers'});\n if(communicationPending.length)attention.push({icon:'fa-comments',tone:'violet',title:communicationPending.length+' طلب تواصل معلق',text:'أسئلة وردود ورسائل تنتظر موافقتك.',tab:'communications'});
+ if(pending.length)attention.push({icon:'fa-clock',tone:'orange',title:pending.length+' مراجعة محتوى معلقة',text:'طلبات مدرسين تنتظر قرار الإدارة.',tab:'teachers'});
+ if(communicationPending.length)attention.push({icon:'fa-comments',tone:'violet',title:communicationPending.length+' طلب تواصل معلق',text:'أسئلة وردود ورسائل تنتظر موافقتك.',tab:'communications'});
  if(reports)attention.push({icon:'fa-flag',tone:'red',title:reports+' بلاغ في المجتمع',text:'راجع المنشورات المبلّغ عنها.',tab:'community'});
  if(inactiveTeachers.length)attention.push({icon:'fa-user-slash',tone:'gray',title:inactiveTeachers.length+' مدرس غير نشط',text:'راجع حالة حسابات فريق التدريس.',tab:'teachers'});
  if(contentGaps)attention.push({icon:'fa-stethoscope',tone:'orange',title:contentGaps+' درس بلا تدريب مرتبط',text:'مركز التحليلات حدد محتوى يحتاج استكمالًا.',tab:'analytics'});
