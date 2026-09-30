@@ -1,6 +1,6 @@
 (() => {
 'use strict';
-const C=window.AcademyCore,S=window.AcademySubscription,$=id=>document.getElementById(id),$=(s,r=document)=>[...r.querySelectorAll(s)];
+const C=window.AcademyCore,S=window.AcademySubscription,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 let user,profile,access=null,data={simulations:{},quizzes:{}},current=null,timer=null,endAt=0,index=0,answers=[];
 
 const map={ar:'arabic',ma:'math',sc:'science',en:'english'};
