@@ -1,7 +1,7 @@
 (() => {
 'use strict';
-const C=window.AcademyCore,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-let user,profile,data={simulations:{},quizzes:{}},current=null,timer=null,endAt=0,index=0,answers=[];
+const C=window.AcademyCore,S=window.AcademySubscription,$=id=>document.getElementById(id),$=(s,r=document)=>[...r.querySelectorAll(s)];
+let user,profile,access=null,data={simulations:{},quizzes:{}},current=null,timer=null,endAt=0,index=0,answers=[];
 
 const map={ar:'arabic',ma:'math',sc:'science',en:'english'};
 const labels={ar:'عربي',ma:'رياضيات',sc:'علوم',en:'إنجليزي'};
@@ -18,7 +18,7 @@ function renderStats(){
 function render(){
  const list=sims();$('simGrid').innerHTML=list.length?list.map(s=>{
    const counts=s.counts||{},total=Object.values(counts).reduce((a,n)=>a+Number(n||0),0);
-   return '<article class="sim-card"><span class="feature-card-icon amber"><i class="fa-solid fa-stopwatch"></i></span><h3>'+C.esc(s.name||'محاكي')+'</h3><p>'+Number(s.time||60)+' دقيقة • '+total+' سؤال</p><div class="sim-counts">'+Object.entries(map).map(([k])=>'<span><strong>'+Number(counts[k]||0)+'</strong>'+labels[k]+'</span>').join('')+'</div><button class="btn btn-primary btn-block" data-start-sim="'+s.id+'">ابدأ المحاكاة</button></article>';
+   const allowed=!S||S.canAccess(s,access,s.subject||'');return '<article class="sim-card '+(allowed?'':'locked')+'"><span class="feature-card-icon amber"><i class="fa-solid '+(allowed?'fa-stopwatch':'fa-lock')+'"></i></span><h3>'+C.esc(s.name||'محاكي')+' '+(s.isFree?'<span class="subscription-access-pill">مجاني</span>':!allowed?'<span class="subscription-access-pill paid">اشتراك</span>':'')+'</h3><p>'+Number(s.time||60)+' دقيقة • '+total+' سؤال</p><div class="sim-counts">'+Object.entries(map).map(([k])=>'<span><strong>'+Number(counts[k]||0)+'</strong>'+labels[k]+'</span>').join('')+'</div><button class="btn '+(allowed?'btn-primary':'btn-soft')+' btn-block" data-start-sim="'+s.id+'">'+(allowed?'ابدأ المحاكاة':'<i class="fa-solid fa-crown"></i> يتطلب اشتراك')+'</button></article>';
  }).join(''):'<div class="feature-empty"><span>⏱️</span><h3>لا توجد محاكيات متاحة لصفك الآن</h3><p>عندما تضيف الإدارة محاكيًا مناسبًا لمرحلتك سيظهر هنا.</p></div>';
  $$('[data-start-sim]').forEach(b=>b.onclick=()=>start(b.dataset.startSim));
 }
@@ -84,7 +84,7 @@ async function finish(auto){
 (async()=>{
  window.AcademyUI?.showPageLoading('جاري تجهيز المحاكيات...');
  try{
-   ({user,profile}=await C.requireStudent());$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
+   ({user,profile}=await C.requireStudent());access=S?await S.load(user.uid,profile,true):null;$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
    const [s,q]=await Promise.all([
      C.db.ref('simulations').orderByChild('stage').equalTo(profile.stage).once('value'),
      C.db.ref('quizzes').orderByChild('stage').equalTo(profile.stage).once('value')
