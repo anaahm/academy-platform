@@ -38,7 +38,7 @@ function renderSystemState(){
  if(text)text.textContent=enabled?'مفعل — القفل يعمل حسب الباقات الآن':'غير مفعل — كل المحتوى متاح حاليًا';
 }
 function renderSettings(){
- const enabled=settings?.enabled===true,input=$('subscriptionSystemEnabled'),label=$('subscriptionSystemState');
+ const enabled=settings?.enforceAccess===true,input=$('subscriptionSystemEnabled'),label=$('subscriptionSystemState');
  if(input)input.checked=enabled;if(label)label.textContent=enabled?'مفعل ويطبق القيود':'غير مفعل — المنصة مفتوحة';
 }
 function stats(){
@@ -123,7 +123,7 @@ async function reviewRequest(key,approved){
 }
 function render(){stats();renderPlans();renderStudents();renderRequests();if($('subscriptionEnforceAccess')){$('subscriptionEnforceAccess').checked=settings.enforceAccess===true;$('subscriptionEnforceLabel').textContent=settings.enforceAccess===true?'مفعلة الآن':'غير مفعلة'}if(selectedStudentId&&students[selectedStudentId])selectStudent(selectedStudentId)}
 function bind(){
- $('subscriptionSystemEnabled')?.addEventListener('change',async e=>{const enabled=!!e.target.checked;await db.ref('subscriptionSettingsV1').update({enabled,updatedAt:Date.now(),updatedBy:user?.uid||''});window.AcademyUI?.toast?.(enabled?'تم تفعيل نظام الاشتراكات ✅':'تم تعطيل قيود الاشتراك مؤقتًا')});
+ $('subscriptionSystemEnabled')?.addEventListener('change',async e=>{const enabled=!!e.target.checked;await db.ref('subscriptionSettingsV1').update({enforceAccess:enabled,updatedAt:Date.now(),updatedBy:user?.uid||''});window.AcademyUI?.toast?.(enabled?'تم تفعيل نظام الاشتراكات ✅':'تم تعطيل قيود الاشتراك مؤقتًا')});
  $('subscriptionPlanForm')?.addEventListener('submit',savePlan);$('planAccessMode')?.addEventListener('change',()=>renderSubjectChecks(selectedSubjects()));$('planCancelEdit')?.addEventListener('click',resetPlan);
  $('subscriptionEnforceAccess')?.addEventListener('change',async e=>{const enabled=e.target.checked;await db.ref('subscriptionSettingsV1').update({enforceAccess:enabled,updatedAt:Date.now(),updatedBy:user?.uid||''});window.AcademyUI?.toast?.(enabled?'تم تفعيل حماية المحتوى بالاشتراكات ✅':'تم إيقاف حماية الاشتراكات مؤقتًا')});
  $('subscriptionStudentSearch')?.addEventListener('input',renderStudents);$('studentSubscriptionForm')?.addEventListener('submit',saveStudentSubscription);$('studentPlanId')?.addEventListener('change',updateEndFromPlan);$('studentSubStart')?.addEventListener('change',updateEndFromPlan);
