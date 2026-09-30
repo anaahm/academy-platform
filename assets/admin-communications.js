@@ -11,15 +11,15 @@ function flatten(raw){
 }
 function statusLabel(s){return s==='approved'?'معتمد':s==='rejected'?'مرفوض':s==='changes_requested'?'يحتاج تعديل':s==='approving'?'جارٍ الاعتماد':'قيد المراجعة'}
 function statusClass(s){return ['approved','rejected','changes_requested'].includes(s)?s:'pending'}
-function kindLabel(k,c){return k==='student_question'?'سؤال طالب':k==='teacher_reply'?'رد معلم':k==='pin_request'?'طلب تثبيت':c==='message'?'رسالة معلم':'إعلان معلم'}
-function kindIcon(k){return k==='student_question'?'fa-circle-question':k==='teacher_reply'?'fa-reply':k==='pin_request'?'fa-thumbtack':'fa-bullhorn'}
+function kindLabel(k,c){return k==='student_question'?'سؤال طالب':k==='student_forum_post'?'منشور مجتمع':k==='teacher_reply'?'رد معلم':k==='pin_request'?'طلب تثبيت':c==='message'?'رسالة معلم':'إعلان معلم'}
+function kindIcon(k){return k==='student_question'?'fa-circle-question':k==='student_forum_post'?'fa-users':k==='teacher_reply'?'fa-reply':k==='pin_request'?'fa-thumbtack':'fa-bullhorn'}
 function isPending(r){return !r.status||r.status==='pending'}
 function filtered(){
  const q=search.trim().toLowerCase();
  return rows.filter(r=>{
    if(filter==='pending'&&!isPending(r))return false;
    if(filter==='questions'&&r.kind!=='student_question')return false;
-   if(filter==='replies'&&r.kind!=='teacher_reply')return false;
+   if(filter==='replies'&&r.kind!=='teacher_reply')return false;\n   if(filter==='community'&&r.kind!=='student_forum_post')return false;
    if(filter==='broadcasts'&&r.kind!=='teacher_broadcast')return false;
    if(filter==='pins'&&r.kind!=='pin_request')return false;
    if(filter==='reviewed'&&isPending(r))return false;
@@ -32,7 +32,7 @@ function filtered(){
 }
 function counts(){
  const pending=rows.filter(isPending),questions=pending.filter(x=>x.kind==='student_question').length,replies=pending.filter(x=>x.kind==='teacher_reply').length,broadcasts=pending.filter(x=>x.kind==='teacher_broadcast').length;
- return{pending:pending.length,questions,replies,broadcasts,pins:pending.filter(x=>x.kind==='pin_request').length};
+ return{pending:pending.length,questions,replies,broadcasts,pins:pending.filter(x=>x.kind==='pin_request').length,community:pending.filter(x=>x.kind==='student_forum_post').length};
 }
 function renderStats(){
  const c=counts();
@@ -42,7 +42,7 @@ function renderStats(){
  if($('adminCommBroadcasts'))$('adminCommBroadcasts').textContent=c.broadcasts;
  const badge=$('communicationAlertBadge');if(badge){badge.textContent=c.pending;badge.classList.toggle('hidden',!c.pending)}
  document.querySelectorAll('[data-comm-filter]').forEach(b=>{
-   const key=b.dataset.commFilter,n=key==='pending'?c.pending:key==='questions'?c.questions:key==='replies'?c.replies:key==='broadcasts'?c.broadcasts:key==='pins'?c.pins:key==='reviewed'?rows.filter(x=>!isPending(x)).length:rows.length;
+   const key=b.dataset.commFilter,n=key==='pending'?c.pending:key==='questions'?c.questions:key==='replies'?c.replies:key==='broadcasts'?c.broadcasts:key==='pins'?c.pins:key==='community'?c.community:key==='reviewed'?rows.filter(x=>!isPending(x)).length:rows.length;
    const span=b.querySelector('span');if(span)span.textContent=n;b.classList.toggle('active',key===filter);
  });
 }
@@ -88,6 +88,11 @@ async function approve(key,btn){
      if(thread.teacherId)updates['teacherCommunicationInboxV1/'+thread.teacherId+'/'+id]={...thread,hasApprovedReply:false};
      const nId=db.ref('notificationBroadcasts').push().key;
      updates['notificationBroadcasts/'+nId]={source:'admin',title:'تم اعتماد سؤالك في الدرس',text:'سؤالك في «'+thread.lessonTitle+'» أصبح معتمدًا'+(thread.teacherId?' وسيظهر للمدرس.':'.'),targetMode:'students',targetStudentIds:[thread.studentId],type:thread.type,stage:thread.stage,grade:thread.grade,subject:thread.subject,href:lessonHref(thread),priority:'normal',isActive:true,createdAt:now,expiresAt:now+7*86400000};
+   }else if(row.kind==='student_forum_post'){
+     if(!row.title||!row.text||!row.actorId)throw Error('بيانات المنشور غير مكتملة');
+     updates['community/forums/'+id]={id,title:row.title,content:row.text,author:row.actorName||'طالب',authorId:row.actorId,status:'approved',isHidden:false,likesBy:{},createdAt:Number(row.createdAt||now),approvedAt:now};
+     const nId=db.ref('notificationBroadcasts').push().key;
+     updates['notificationBroadcasts/'+nId]={source:'admin',title:'تم اعتماد منشورك',text:'منشورك «'+row.title+'» أصبح ظاهرًا في مجتمع الطلاب.',targetMode:'students',targetStudentIds:[row.actorId],href:'./community.html',priority:'normal',isActive:true,createdAt:now,expiresAt:now+7*86400000};
    }else if(row.kind==='teacher_reply'){
      if(!row.lessonId||!row.threadId||!row.studentId||!row.text)throw Error('بيانات الرد غير مكتملة');
      const thread=(await db.ref('lessonDiscussionsV1/'+row.lessonId+'/'+row.threadId).once('value')).val();if(!thread)throw Error('السؤال الأصلي غير موجود');
