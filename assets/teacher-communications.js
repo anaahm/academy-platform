@@ -3,7 +3,7 @@
 const cfg=window.ACADEMY_FIREBASE_CONFIG||JSON.parse(localStorage.getItem('academyFirebaseConfig')||'null');if(!cfg)return;
 const app=firebase.apps.find(a=>a.name==='teacher-portal')||firebase.initializeApp(cfg,'teacher-portal'),auth=app.auth(),db=app.database();
 const $=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-let user=null,teacher={},assignments=[],groups={},inbox={},subs={},students={},activeReply='',stops=[];
+let user=null,teacher={},assignments=[],groups={},inbox={},subs={},students={},activeReply='',editingReplyId='',stops=[];
 const stageName={primary:'ابتدائي',prep:'إعدادي',sec:'ثانوي'};
 const normalizePhone=x=>String(x||'').replace(/\D/g,'');
 function assignmentRows(t){
@@ -48,15 +48,22 @@ function requestRows(){return Object.entries(subs||{}).map(([id,v])=>({id,...(v|
 function renderRequests(){
  const box=$('teacherCommunicationRequests');if(!box)return;const rows=requestRows();
  const pendingCount=rows.filter(x=>(x.status||'pending')==='pending').length;if($('teacherCommPendingCount'))$('teacherCommPendingCount').textContent=pendingCount;const nav=$('teacherCommNavBadge');if(nav){const openQuestions=inboxRows().filter(x=>!x.hasApprovedReply).length,total=pendingCount+openQuestions;nav.textContent=total;nav.classList.toggle('hidden',!total)}
- box.innerHTML=rows.length?rows.map(x=>'<article class="comm-item"><div class="comm-item-top"><div><strong>'+esc(x.kind==='teacher_reply'?'رد على سؤال':x.kind==='pin_request'?'طلب تثبيت سؤال':x.communicationType==='message'?'رسالة للطلاب':'إعلان للطلاب')+'</strong><small>'+esc(x.title||x.lessonTitle||x.subjectName||x.subject||'')+' • '+new Date(Number(x.createdAt||Date.now())).toLocaleString('ar-EG',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})+'</small></div><span class="comm-status '+statusClass(x.status)+'">'+statusLabel(x.status)+'</span></div><p>'+esc(x.text||'')+'</p>'+(x.reviewNote?'<div class="comm-review-note"><b>ملاحظة الإدارة:</b> '+esc(x.reviewNote)+'</div>':'')+(x.status==='changes_requested'&&x.kind==='teacher_broadcast'?'<div class="comm-teacher-question-actions"><button class="comm-reply-btn" type="button" data-edit-broadcast="'+x.id+'"><i class="fa-solid fa-pen"></i> تعديل وإعادة إرسال</button></div>':'')+'</article>').join(''):'<div class="comm-empty"><span>📨</span>طلبات التواصل التي ترسلها ستظهر هنا.</div>';
+ box.innerHTML=rows.length?rows.map(x=>'<article class="comm-item"><div class="comm-item-top"><div><strong>'+esc(x.kind==='teacher_reply'?'رد على سؤال':x.kind==='pin_request'?'طلب تثبيت سؤال':x.communicationType==='message'?'رسالة للطلاب':'إعلان للطلاب')+'</strong><small>'+esc(x.title||x.lessonTitle||x.subjectName||x.subject||'')+' • '+new Date(Number(x.createdAt||Date.now())).toLocaleString('ar-EG',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})+'</small></div><span class="comm-status '+statusClass(x.status)+'">'+statusLabel(x.status)+'</span></div><p>'+esc(x.text||'')+'</p>'+(x.reviewNote?'<div class="comm-review-note"><b>ملاحظة الإدارة:</b> '+esc(x.reviewNote)+'</div>':'')+(x.status==='changes_requested'&&x.kind==='teacher_broadcast'?'<div class="comm-teacher-question-actions"><button class="comm-reply-btn" type="button" data-edit-broadcast="'+x.id+'"><i class="fa-solid fa-pen"></i> تعديل وإعادة إرسال</button></div>':x.status==='changes_requested'&&x.kind==='teacher_reply'?'<div class="comm-teacher-question-actions"><button class="comm-reply-btn" type="button" data-edit-reply-request="'+x.id+'"><i class="fa-solid fa-pen"></i> تعديل الرد وإعادة إرساله</button></div>':'')+'</article>').join(''):'<div class="comm-empty"><span>📨</span>طلبات التواصل التي ترسلها ستظهر هنا.</div>';
 }
 function render(){mountSelectors();renderInbox();renderRequests()}
 function handleInboxClick(e){
  const reply=e.target.closest('[data-teacher-reply]');if(reply){activeReply=reply.dataset.teacherReply;renderInbox();return}
- const cancel=e.target.closest('[data-cancel-reply]');if(cancel){activeReply='';renderInbox();return}
+ const cancel=e.target.closest('[data-cancel-reply]');if(cancel){activeReply='';editingReplyId='';renderInbox();return}
  const pin=e.target.closest('[data-teacher-pin]');if(pin)submitPin(pin.dataset.teacherPin);
 }
 function handleRequestClick(e){
+ const rb=e.target.closest('[data-edit-reply-request]');
+ if(rb){
+   const row=subs[rb.dataset.editReplyRequest];if(!row||row.kind!=='teacher_reply'||row.status!=='changes_requested')return;
+   activeReply=row.threadId;editingReplyId=row.id;renderInbox();
+   const form=document.querySelector('[data-reply-form="'+CSS.escape(row.threadId)+'"]');if(form){form.dataset.editId=row.id;const ta=form.querySelector('textarea');if(ta){ta.value=row.text||'';ta.focus()}form.scrollIntoView({behavior:'smooth',block:'center'})}
+   return;
+ }
  const b=e.target.closest('[data-edit-broadcast]');if(!b)return;const row=subs[b.dataset.editBroadcast];if(!row)return;
  $('teacherCommType').value=row.communicationType||'announcement';$('teacherCommTitle').value=row.title||'';$('teacherCommText').value=row.text||'';$('teacherCommPriority').value=row.priority||'normal';$('teacherCommDays').value=Number(row.durationDays||5);$('teacherCommTargetMode').value=row.targetMode||'all';mountSelectors();
  $('teacherBroadcastForm').dataset.editId=row.id;$('teacherBroadcastSubmit').innerHTML='<i class="fa-solid fa-rotate"></i> إعادة الإرسال للإدارة';$('teacherBroadcastForm').scrollIntoView({behavior:'smooth',block:'start'});
@@ -93,7 +100,16 @@ async function submitReply(e){
  e.preventDefault();const threadId=e.currentTarget.dataset.replyForm,q=inbox[threadId],text=e.currentTarget.querySelector('textarea').value.trim();if(!q||text.length<2)return;
  const now=Date.now(),payload={kind:'teacher_reply',actorRole:'teacher',actorId:user.uid,actorName:teacher.name||user.displayName||'المدرس',threadId,lessonId:q.lessonId,lessonTitle:q.lessonTitle||'',studentId:q.studentId,studentName:q.studentName||'',type:q.type||'public',stage:q.stage||'',grade:String(q.grade||''),subject:q.subject||'',subjectName:q.subjectName||'',visibility:q.visibility||'public',text,status:'pending',createdAt:now,updatedAt:now};
  const btn=e.submitter;window.AcademyUI?.setButtonLoading(btn,true,'إرسال');
- try{const ref=db.ref('communicationSubmissionsV1/'+user.uid).push();await ref.set(payload);activeReply='';renderInbox();window.AcademyUI?.toast?.('تم إرسال الرد للإدارة. لن يصل للطالب قبل الاعتماد ✅')}
+ try{
+   const editId=e.currentTarget.dataset.editId||editingReplyId;
+   if(editId){
+     const current=subs[editId];if(!current||current.kind!=='teacher_reply'||current.status!=='changes_requested')throw Error('هذا الرد لم يعد قابلًا للتعديل');
+     await db.ref('communicationSubmissionsV1/'+user.uid+'/'+editId).update({...payload,createdAt:Number(current.createdAt||now),reviewNote:'',resubmittedAt:now,status:'pending'});
+   }else{
+     const ref=db.ref('communicationSubmissionsV1/'+user.uid).push();await ref.set(payload);
+   }
+   activeReply='';editingReplyId='';renderInbox();window.AcademyUI?.toast?.('تم إرسال الرد للإدارة. لن يصل للطالب قبل الاعتماد ✅')
+ }
  catch(err){console.error(err);window.AcademyUI?.toast?.('تعذر إرسال الرد.','error')}finally{window.AcademyUI?.setButtonLoading(btn,false)}
 }
 async function submitPin(threadId){
