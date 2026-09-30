@@ -584,6 +584,179 @@
     return d.getTime();
   }
 
+  function dashboardQuizHistory(profile=state.profile){
+    return Object.values(profile?.quizHistory||{}).filter(Boolean);
+  }
+  function dashboardMistakes(profile=state.profile){
+    return Object.values(profile?.mistakeNotebook||{}).flatMap(group=>Object.values(group||{}).filter(Boolean));
+  }
+  function dashboardSubjectQuizAverage(subjectId,profile=state.profile){
+    const rows=dashboardQuizHistory(profile).filter(x=>String(x.subject||'')===String(subjectId));
+    return rows.length?Math.round(rows.reduce((n,x)=>n+Number(x.score||0),0)/rows.length):null;
+  }
+  function dashboardSubjectMistakeCount(subjectId,profile=state.profile){
+    return dashboardMistakes(profile).filter(x=>String(x.subject||'')===String(subjectId)).length;
+  }
+  function dashboardQuizAttempted(id,profile=state.profile){
+    return dashboardQuizHistory(profile).some(x=>String(x.sourceId||x.quizId||'')===String(id));
+  }
+  function dashboardTargetMatches(item,profile=state.profile,user=state.user){
+    if(!item||!profile||!user)return false;
+    const mode=item.targetMode||'all';
+    if(mode==='students'){
+      const ids=Array.isArray(item.targetStudentIds)?item.targetStudentIds:Object.keys(item.targetStudentIds||{});
+      return ids.includes(user.uid);
+    }
+    if(mode==='group'){
+      const groups=Array.isArray(profile.groupIds)?profile.groupIds:Object.keys(profile.groupIds||{});
+      return !!item.targetGroupId&&(profile.classGroupId===item.targetGroupId||groups.includes(item.targetGroupId));
+    }
+    return true;
+  }
+  function dashboardContentMatches(item,profile=state.profile){
+    if(!item||!profile||item.isHidden||item.isActive===false)return false;
+    if(Number(item.publishAt||0)>Date.now())return false;
+    return (!item.type||item.type===profile.educationType)&&(!item.stage||item.stage===profile.stage)&&(!item.grade||String(item.grade)===String(profile.grade));
+  }
+  function dashboardSubjectNeed(subject,profile=state.profile){
+    const progress=Math.max(0,Math.min(100,subjectProgressOf(profile,subject.id)));
+    const avg=dashboardSubjectQuizAverage(subject.id,profile);
+    const mistakes=dashboardSubjectMistakeCount(subject.id,profile);
+    const quizPenalty=avg===null?18:Math.max(0,100-avg)*.38;
+    const progressPenalty=Math.max(0,100-progress)*.48;
+    const mistakePenalty=Math.min(28,mistakes*5);
+    return{subject,progress,avg,mistakes,score:progressPenalty+quizPenalty+mistakePenalty};
+  }
+  function dashboardLessonHref(id,l,profile=state.profile){
+    return './lesson.html?'+new URLSearchParams({type:l.type||profile.educationType,stage:l.stage||profile.stage,grade:String(l.grade||profile.grade),subject:l.subject||'',id});
+  }
+  function dashboardQuizHref(id,q,profile=state.profile){
+    return './lesson.html?'+new URLSearchParams({type:q.type||profile.educationType,stage:q.stage||profile.stage,grade:String(q.grade||profile.grade),subject:q.subject||'',quiz:id});
+  }
+  function dashboardSubjectHref(subjectId,profile=state.profile){
+    return './subject.html?'+new URLSearchParams({type:profile.educationType,stage:profile.stage,grade:String(profile.grade),subject:subjectId});
+  }
+  function dashboardSmartIcon(kind){
+    return{live:'fa-tower-broadcast',assignment:'fa-clipboard-check',planner:'fa-list-check',schedule:'fa-calendar-day',lesson:'fa-circle-play',quiz:'fa-brain',file:'fa-file-pdf',review:'fa-rotate-left',subject:'fa-book-open'}[kind]||'fa-bolt';
+  }
+  function renderSmartHomeRecommendations(){
+    const box=$('dashboardSmartCards'),profile=state.profile;
+    if(!box||!profile?.stage||!profile?.grade)return;
+    const subjects=getSubjects(profile.stage,String(profile.grade),profile.educationType);
+    const subjectMap=new Map(subjects.map(s=>[String(s.id),s]));
+    const needs=subjects.map(s=>dashboardSubjectNeed(s,profile)).sort((a,b)=>b.score-a.score);
+    const weak=needs[0]||null;
+    const mistakes=dashboardMistakes(profile);
+
+    const lessons=Object.entries(state.dbData.lessons||{}).map(([id,v])=>({id,...(v||{})}))
+      .filter(x=>dashboardContentMatches(x,profile)&&subjectMap.has(String(x.subject)));
+    const quizzes=Object.entries(state.dbData.quizzes||{}).map(([id,v])=>({id,...(v||{})}))
+      .filter(x=>dashboardContentMatches(x,profile)&&dashboardTargetMatches(x,profile,state.user)&&subjectMap.has(String(x.subject)));
+    const files=Object.entries(state.dbData.files||{}).map(([id,v])=>({id,...(v||{})}))
+      .filter(x=>dashboardContentMatches(x,profile)&&subjectMap.has(String(x.subject)));
+
+    const incompleteLessons=lessons.filter(l=>!profile.learningProgress?.[l.id]?.completed);
+    const quizCandidates=quizzes.filter(q=>!dashboardQuizAttempted(q.id,profile));
+    const weakQuiz=weak?quizCandidates.filter(q=>String(q.subject)===String(weak.subject.id)).sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0))[0]:null;
+    let quizPick=weakQuiz||quizCandidates.sort((a,b)=>{
+      const an=needs.find(x=>String(x.subject.id)===String(a.subject))?.score||0,bn=needs.find(x=>String(x.subject.id)===String(b.subject))?.score||0;
+      return bn-an||Number(b.createdAt||0)-Number(a.createdAt||0);
+    })[0]||null;
+    if(!quizPick&&quizzes.length){
+      const histories=dashboardQuizHistory(profile).slice().sort((a,b)=>Number(a.score||0)-Number(b.score||0));
+      const lowest=histories.find(h=>quizzes.some(q=>String(q.id)===String(h.sourceId||h.quizId||'')));
+      if(lowest)quizPick=quizzes.find(q=>String(q.id)===String(lowest.sourceId||lowest.quizId||''))||null;
+    }
+
+    const unopenedFiles=files.filter(f=>!Number(profile.libraryHistory?.[f.id]?.openedAt||0)).sort((a,b)=>{
+      const ai=a.isFeatured?1:0,bi=b.isFeatured?1:0;if(ai!==bi)return bi-ai;
+      return Number(b.createdAt||b.updatedAt||0)-Number(a.createdAt||a.updatedAt||0);
+    });
+    const recentLesson=incompleteLessons.slice().sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0))[0]||null;
+    const freshFile=unopenedFiles[0]||null;
+    const freshPick=freshFile
+      ?{kind:'file',title:freshFile.title||'ملف جديد',meta:(subjectMap.get(String(freshFile.subject))?.name||'المكتبة')+(freshFile.isFeatured?' • مهم':' • ملف جديد'),href:'./library.html?file='+encodeURIComponent(freshFile.id),createdAt:Number(freshFile.createdAt||freshFile.updatedAt||0),reason:freshFile.isFeatured?'لأن الإدارة رشحته كملف مهم ولم تفتحه بعد.':'لأنه من أحدث الملفات المناسبة لصفك ولم تفتحه بعد.'}
+      :recentLesson
+        ?{kind:'lesson',title:recentLesson.title||'درس جديد',meta:subjectMap.get(String(recentLesson.subject))?.name||'درس جديد',href:dashboardLessonHref(recentLesson.id,recentLesson,profile),createdAt:Number(recentLesson.createdAt||0),reason:'لأنه من أحدث الدروس المناسبة لمرحلتك ولم تكمله بعد.'}
+        :null;
+
+    const attention=state.dashboardAttention||{};
+    let start=attention.pick||null;
+    if(!start&&profile.lastLessonId){
+      const l=lessons.find(x=>String(x.id)===String(profile.lastLessonId));
+      if(l)start={kind:'lesson',title:'كمّل '+(l.title||profile.lastLessonTitle||'آخر درس'),text:subjectMap.get(String(l.subject))?.name||'متابعة التعلم',href:dashboardLessonHref(l.id,l,profile),reason:'لأن دي آخر نقطة وصلت لها في رحلتك.'};
+    }
+    if(!start&&weak){
+      start={kind:'subject',title:'ابدأ بـ '+weak.subject.name,text:'خطوة قصيرة في المادة الأكثر احتياجًا للتركيز.',href:dashboardSubjectHref(weak.subject.id,profile),reason:'لأنها المادة التي تحتاج دعمًا أكبر حاليًا.'};
+    }
+
+    const review=weak?{
+      kind:'review',
+      title:'راجع '+weak.subject.name,
+      meta:(weak.avg===null?'بدون نتائج كافية':'متوسط '+weak.avg+'%')+' • '+weak.progress+'% تقدم',
+      href:weak.mistakes?'./profile.html?tab=mistakes':dashboardSubjectHref(weak.subject.id,profile),
+      reason:weak.mistakes
+        ?'عندك '+weak.mistakes+' سؤال'+(weak.mistakes>1?'':'')+' في دفتر الأخطاء لهذه المادة.'
+        :weak.avg!==null&&weak.avg<75
+          ?'متوسط اختباراتك فيها '+weak.avg+'%، فمراجعة قصيرة الآن هتفرق.'
+          :'تقدمها أقل من بقية موادك، لذلك تستحق جلسة قصيرة اليوم.',
+      badge:weak.mistakes?weak.mistakes+' أخطاء':weak.progress+'%'
+    }:null;
+
+    const quiz=quizPick?{
+      kind:'quiz',title:quizPick.name||'اختبار مقترح',
+      meta:(subjectMap.get(String(quizPick.subject))?.name||'اختبار')+' • '+Number(quizPick.questions?.length||0)+' سؤال'+(Number(quizPick.durationMinutes||0)?' • '+Number(quizPick.durationMinutes)+' د':''),
+      href:dashboardQuizHref(quizPick.id,quizPick,profile),
+      reason:dashboardQuizAttempted(quizPick.id,profile)?'ده اختبار محتاج تحسين نتيجتك فيه.':weak&&String(quizPick.subject)===String(weak.subject.id)?'اخترناه لأنه يقيس المادة التي تحتاج تركيزًا أكبر.':'لسه ما جربتش الاختبار ده وهو مناسب لصفك.',
+      badge:dashboardQuizAttempted(quizPick.id,profile)?'أعد المحاولة':'لم تجربه'
+    }:null;
+
+    const cards=[];
+    if(start)cards.push({
+      kind:start.kind||'lesson',eyebrow:'ابدأ الآن',title:start.title||'أهم خطوة اليوم',text:start.text||'دي الخطوة الأعلى أولوية في يومك.',href:start.href||'./index.html',
+      reason:start.reason||(start.kind==='live'?'لأن الجلسة مباشرة أو هتبدأ قريب.':start.kind==='assignment'?'لأن موعد التسليم هو الأقرب.':start.kind==='planner'?'لأنها ضمن خطة مذاكرتك اليوم.':'لأنها أعلى أولوية دلوقتي.'),tone:'primary',badge:'الأولوية الأولى'
+    });
+    if(review)cards.push({kind:'review',eyebrow:'راجع بذكاء',title:review.title,text:review.meta,href:review.href,reason:review.reason,tone:'review',badge:review.badge});
+    if(quiz)cards.push({kind:'quiz',eyebrow:'اختبر نفسك',title:quiz.title,text:quiz.meta,href:quiz.href,reason:quiz.reason,tone:'quiz',badge:quiz.badge});
+    if(freshPick)cards.push({kind:freshPick.kind,eyebrow:'جديد ليك',title:freshPick.title,text:freshPick.meta,href:freshPick.href,reason:freshPick.reason,tone:'fresh',badge:freshPick.kind==='file'?'من المكتبة':'درس جديد'});
+
+    if(!cards.length){
+      box.innerHTML='<article class="smart-plan-empty-v13"><span>🎉</span><div><strong>أنت محدث كل شيء حاليًا</strong><p>استكشف مادة جديدة أو راجع أحد دروسك القديمة.</p></div><a href="./explore.html">استكشف الآن <i class="fa-solid fa-arrow-left"></i></a></article>';
+    }else{
+      box.innerHTML=cards.slice(0,4).map((card,index)=>
+        '<a class="smart-plan-card-v13 '+safeHtml(card.tone||'')+'" href="'+safeHtml(card.href)+'">'+
+          '<div class="smart-plan-card-top-v13"><span class="smart-plan-card-icon-v13"><i class="fa-solid '+dashboardSmartIcon(card.kind)+'"></i></span><span class="smart-plan-card-badge-v13">'+safeHtml(card.badge||'مقترح')+'</span></div>'+
+          '<small>'+safeHtml(card.eyebrow)+'</small><h3>'+safeHtml(card.title)+'</h3><p>'+safeHtml(card.text||'')+'</p>'+
+          '<div class="smart-plan-reason-v13"><i class="fa-solid fa-wand-magic-sparkles"></i><span>'+safeHtml(card.reason||'اخترناه بناءً على نشاطك الحالي.')+'</span></div>'+
+          '<div class="smart-plan-card-foot-v13"><strong>'+(index===0?'ابدأ الآن':'فتح الاقتراح')+'</strong><i class="fa-solid fa-arrow-left"></i></div>'+
+        '</a>'
+      ).join('');
+    }
+
+    const urgent=Number(attention.urgentCount||0);
+    const reviewCount=mistakes.length+needs.filter(x=>x.avg!==null&&x.avg<70).length;
+    const sevenDays=7*86400000,now=Date.now();
+    const newCount=[...lessons,...quizzes,...files].filter(x=>Number(x.createdAt||x.updatedAt||0)&&now-Number(x.createdAt||x.updatedAt||0)<=sevenDays).length;
+    if($('smartUrgentCount'))$('smartUrgentCount').textContent=urgent;
+    if($('smartReviewCount'))$('smartReviewCount').textContent=reviewCount;
+    if($('smartNewCount'))$('smartNewCount').textContent=newCount;
+    if($('smartPlanSummary')){
+      $('smartPlanSummary').textContent=urgent
+        ?'عندك '+urgent+' خطوة ذات أولوية، ورتبنا باقي الاقتراحات بعدها.'
+        :reviewCount
+          ?'مفيش ضغط عاجل؛ أفضل استثمار لوقتك الآن هو تثبيت نقاط الضعف.'
+          :'يومك هادئ — استغلّه في درس أو اختبار جديد مناسب لمستواك.';
+    }
+    const settings=state.dbData.settings||{};
+    if(!settings.dashboardHeroSubtitle&&$('dashboardHeroSubtitle')){
+      $('dashboardHeroSubtitle').textContent=urgent
+        ?'عندك حاجة مهمة تستحق تبدأ بيها دلوقتي — رتّبناها لك تحت.'
+        :reviewCount
+          ?'يوم مناسب للمراجعة الذكية وتحسين المواد اللي محتاجة تركيز.'
+          :'يوم هادئ للتقدم خطوة جديدة — اخترنا لك أفضل بداية.';
+    }
+  }
+
   async function loadDashboardPulse() {
     if(!state.user||!state.profile)return;
     const p=state.profile,uid=state.user.uid,now=Date.now();
