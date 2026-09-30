@@ -259,10 +259,13 @@
         <header class="dashboard-topbar ref-dashboard-topbar">
           <button class="dash-mobile-menu" id="dashMobileMenu" aria-label="فتح القائمة"><i class="fa-solid fa-bars"></i></button>
 
-          <form class="ref-dashboard-search" id="dashSearchForm">
-            <button type="submit" aria-label="بحث"><i class="fa-solid fa-magnifying-glass"></i></button>
-            <input id="dashSearchInput" type="search" placeholder="ابحث عن درس، موضوع، أو أي محتوى...">
-          </form>
+          <div class="ref-dashboard-search-wrap-v12">
+            <form class="ref-dashboard-search" id="dashSearchForm">
+              <button type="submit" aria-label="بحث"><i class="fa-solid fa-magnifying-glass"></i></button>
+              <input id="dashSearchInput" type="search" autocomplete="off" placeholder="ابحث عن درس، مادة، مدرس، اختبار أو ملف...">
+            </form>
+            <div class="dash-search-suggestions-v12 hidden" id="dashSearchSuggestions" role="listbox" aria-label="اقتراحات البحث"></div>
+          </div>
 
           <div class="ref-top-user">
             <button class="ref-notification-btn" id="dashNotificationBtn" aria-label="الإشعارات">
