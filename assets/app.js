@@ -1469,7 +1469,7 @@
     $('dashMobileMenu').addEventListener('click', () => document.querySelector('.dashboard-sidebar').classList.toggle('open'));
 
     initDashboardSidebar();
-    $('[data-daily-goal]').forEach(btn=>btn.addEventListener('click',()=>{
+    document.querySelectorAll('[data-daily-goal]').forEach(btn=>btn.addEventListener('click',()=>{
       const key=btn.dataset.dailyGoal;
       if(key==='assignment')location.href='./assignments.html';
       else if(key==='quiz')location.href='./exam-center.html';
