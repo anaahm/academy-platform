@@ -1,13 +1,13 @@
-const CACHE='academy-shell-2026-09-27-v68';
+const CACHE='academy-shell-2026-09-27-v69';
 const CORE=[
  './','./index.html','./offline.html',
  './explore.html','./search.html','./news.html','./subject.html','./lesson.html','./profile.html',
  './exam-center.html','./simulations.html','./progress.html','./planner.html','./assignments.html','./weekly-report.html','./schedule.html',
  './library.html','./live.html','./community.html','./leaderboard.html','./notifications.html','./certificate.html','./admin.html','./teacher.html','./teacher-profile.html',
- './assets/experience.css?v=39','./assets/future-theme.css?v=1','./assets/academy-mix-theme.css?v=25','./assets/academy-utils.js',
+ './assets/experience.css?v=39','./assets/future-theme.css?v=1','./assets/academy-mix-theme.css?v=26','./assets/academy-utils.js',
  './assets/styles.css','./assets/learning.css?v=42','./assets/portal.css?v=42','./assets/hub.css','./assets/search.css','./assets/news.css','./assets/certificate.css','./assets/admin.css?v=42','./assets/ui-kit.css?v=35',
  './assets/ui-kit.js','./assets/student-shell.js','./assets/firebase-config.js','./assets/auth-flow.js','./assets/student-core.js',
- './assets/app.js?v=47','./assets/learning.js?v=53','./assets/explore.js?v=2','./assets/search.js?v=3','./assets/news.js','./assets/profile.js?v=42',
+ './assets/app.js?v=48','./assets/learning.js?v=53','./assets/explore.js?v=2','./assets/search.js?v=3','./assets/news.js','./assets/profile.js?v=42',
  './assets/exam-center.js?v=43','./assets/simulations.js','./assets/progress.js?v=1','./assets/planner.js?v=1','./assets/assignments.js?v=1','./assets/weekly-report.js?v=1','./assets/schedule.js?v=1',
  './assets/library.js?v=2','./assets/live.js?v=1','./assets/community.js','./assets/leaderboard.js','./assets/notification-engine.js?v=2','./assets/notifications.js?v=2','./assets/notification-widget.js?v=2',
  './assets/activity-tracker.js','./assets/admin-auth-flow.js?v=33','./assets/admin.js?v=53','./assets/admin-notifications.js?v=2','./assets/teacher.js?v=45','./assets/teacher-profile.js?v=36','./assets/certificate.js','./assets/pwa.js','./assets/dashboard-hero.jpg','./assets/reference-hero.jpg','./assets/reference-stage-primary.jpg','./assets/reference-stage-prep.jpg','./assets/reference-stage-sec.jpg','./assets/reference-stage-azhar.jpg','./assets/app-icon.svg','./manifest.webmanifest'
