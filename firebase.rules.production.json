@@ -291,6 +291,10 @@
       ".read": "auth != null",
       ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
     },
+    "subscriptionSettingsV1": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+    },
     "studentSubscriptionsV1": {
       "$uid": {
         ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
