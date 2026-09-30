@@ -49,9 +49,9 @@ function activitySeries(students){
 function studentRiskRows(students){
  return students.map(s=>{
    const history=quizHistory(s),recent=history.filter(x=>Number(x.createdAt||0)>=Date.now()-30*DAY),score=avg(recent.map(x=>x.score));
-   const inactivity=daysAgo(lastActive(s)),overdue=Object.values(s.studyPlanner||{}).filter(t=>!t?.done&&t?.date&&t.date<dateKey(new Date())).length;
+   const last=lastActive(s),inactivity=daysAgo(last),overdue=Object.values(s.studyPlanner||{}).filter(t=>!t?.done&&t?.date&&t.date<dateKey(new Date())).length;
    const reasons=[];let severity='low',weight=0;
-   if(inactivity>=30){reasons.push('لم يدخل منذ '+inactivity+' يومًا');severity='high';weight+=4}
+   if(!last){reasons.push('لا يوجد نشاط مسجل للحساب');severity='high';weight+=4}\n   else if(inactivity>=30){reasons.push('لم يدخل منذ '+inactivity+' يومًا');severity='high';weight+=4}
    else if(inactivity>=14){reasons.push('غير نشط منذ '+inactivity+' يومًا');severity='medium';weight+=3}
    if(recent.length>=3&&score<50){reasons.push('متوسط الاختبارات '+score+'%');severity='high';weight+=4}
    else if(recent.length>=2&&score<60){reasons.push('متوسط الاختبارات '+score+'%');if(severity!=='high')severity='medium';weight+=2}
@@ -90,7 +90,7 @@ function flattenAssignmentSubmissions(root){
 function buildIssues(root,students,risks,subjects,content){
  const issues=[],push=(severity,title,text,tab,search='',kind='system')=>issues.push({severity,title,text,tab,search,kind});
  const lessons=vals(root.lessons),quizzes=vals(root.quizzes),files=vals(root.files),teachers=vals(root.teacherProfiles);
- const pubLessons=lessons.filter(published),pubQuizzes=quizzes.filter(published);
+ const pubLessons=lessons.filter(published),pubQuizzes=quizzes.filter(published);\n if(!pubLessons.length)push('high','لا توجد دروس منشورة','ابدأ بإضافة محتوى تعليمي قبل دعوة الطلاب.','lessons','', 'content');
  pubLessons.forEach(l=>{
    const hasVideo=videos(l).length>0,hasText=contentText(l).length>15;
    if(!hasVideo&&!hasText)push('high','درس منشور بلا شرح',l.title||'درس بدون عنوان','lessons',l.title||'', 'content');
