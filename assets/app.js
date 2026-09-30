@@ -15,6 +15,7 @@
     user: null,
     profile: null,
     dbData: {},
+    publicTeachers: {},
     explorer: { type: 'all', stage: null, tab: 'stages', search: '' }
   };
   let baseDataPromise = null;
@@ -311,6 +312,42 @@
 
   function safeHtml(value = '') {
     return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+
+  function dashSearchNormalize(value=''){
+    return String(value).toLowerCase().normalize('NFKD').replace(/[\u064B-\u065F\u0670]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim();
+  }
+  function dashSearchScore(text,q){
+    const hay=dashSearchNormalize(text),needle=dashSearchNormalize(q);if(!needle)return 0;
+    let score=0;if(hay===needle)score+=100;if(hay.startsWith(needle))score+=60;if(hay.includes(needle))score+=40;
+    needle.split(' ').filter(Boolean).forEach(w=>{if(hay.includes(w))score+=10});return score;
+  }
+  function dashboardQuickSearchRows(query){
+    const p=state.profile;if(!p||!query)return[];
+    const rows=[],subjects=getSubjects(p.stage,String(p.grade),p.educationType);
+    subjects.forEach(s=>{
+      const score=dashSearchScore(s.name,query);if(score)rows.push({kind:'subject',title:s.name,meta:'مادة صفك',icon:s.emoji||'📚',score:score+18,href:'./subject.html?'+new URLSearchParams({type:p.educationType,stage:p.stage,grade:String(p.grade),subject:s.id})});
+    });
+    Object.entries(state.dbData.lessons||{}).forEach(([id,l])=>{
+      if(!l||l.isHidden||Number(l.publishAt||0)>Date.now()||l.type!==p.educationType||l.stage!==p.stage||String(l.grade)!==String(p.grade))return;
+      const s=subjects.find(x=>x.id===l.subject),teacherText=(Array.isArray(l.videos)?l.videos:[]).map(v=>v?.name).filter(Boolean).slice(0,2).join(' • ')||l.teacherName||'';
+      const score=dashSearchScore([l.title,s?.name,teacherText].join(' '),query);if(!score)return;
+      rows.push({kind:'lesson',title:l.title||'درس',meta:[s?.name,teacherText].filter(Boolean).join(' • '),icon:'▶️',score:score+12,href:'./lesson.html?'+new URLSearchParams({type:p.educationType,stage:p.stage,grade:String(p.grade),subject:l.subject||'',id})});
+    });
+    Object.entries(state.publicTeachers||{}).forEach(([id,t])=>{
+      if(!t||t.active===false||!t.name)return;
+      const score=dashSearchScore([t.name,t.title,t.bio].join(' '),query);if(!score)return;
+      rows.push({kind:'teacher',title:t.name,meta:t.title||'مدرس في الأكاديمية',icon:'👨‍🏫',score:score+8,href:'./teacher-profile.html?id='+encodeURIComponent(id)});
+    });
+    return rows.sort((a,b)=>b.score-a.score).slice(0,6);
+  }
+  function renderDashSearchSuggestions(){
+    const input=$('dashSearchInput'),box=$('dashSearchSuggestions');if(!input||!box)return;
+    const q=input.value.trim();if(q.length<2){box.classList.add('hidden');box.innerHTML='';return}
+    const rows=dashboardQuickSearchRows(q);
+    box.innerHTML=rows.length?rows.map((r,i)=>'<button type="button" data-dash-search-index="'+i+'"><span>'+safeHtml(r.icon)+'</span><div><strong>'+safeHtml(r.title)+'</strong><small>'+safeHtml(r.meta||'')+'</small></div><i class="fa-solid fa-arrow-left"></i></button>').join('')+'<a href="./search.html?q='+encodeURIComponent(q)+'"><i class="fa-solid fa-magnifying-glass"></i> عرض كل نتائج البحث عن «'+safeHtml(q)+'»</a>':'<a href="./search.html?q='+encodeURIComponent(q)+'"><i class="fa-solid fa-magnifying-glass"></i> ابحث في الأكاديمية كلها عن «'+safeHtml(q)+'»</a>';
+    box.classList.remove('hidden');
+    box.querySelectorAll('[data-dash-search-index]').forEach(btn=>btn.onclick=()=>{const row=rows[Number(btn.dataset.dashSearchIndex)];if(row)location.href=row.href});
   }
 
   function safeDashboardImage(value='') {
@@ -994,6 +1031,9 @@
       if(q)location.href='./search.html?q='+encodeURIComponent(q);
       else dashSearchInput?.focus();
     });
+    dashSearchInput?.addEventListener('input',renderDashSearchSuggestions);
+    dashSearchInput?.addEventListener('keydown',e=>{if(e.key==='Escape')$('dashSearchSuggestions')?.classList.add('hidden')});
+    document.addEventListener('click',e=>{if(!e.target.closest('.ref-dashboard-search-wrap-v12'))$('dashSearchSuggestions')?.classList.add('hidden')});
     $('userChip').addEventListener('click', () => $('userMenu').classList.toggle('hidden'));
     if (!document.getElementById('profileMenuBtn')) {
       const profileBtn = document.createElement('button');
@@ -1265,7 +1305,7 @@
     await baseDataPromise;
     applyVisualSettings();
     renderPublicNews();
-    database.ref('settings/publicTeachers').on('value',snapshot=>renderPublicTeachers(snapshot.val()||{}),err=>{console.warn('Teacher directory unavailable',err);renderPublicTeachers()});
+    database.ref('settings/publicTeachers').on('value',snapshot=>{state.publicTeachers=snapshot.val()||{};renderPublicTeachers(state.publicTeachers);if($('dashSearchInput')?.value.trim())renderDashSearchSuggestions()},err=>{console.warn('Teacher directory unavailable',err);state.publicTeachers={};renderPublicTeachers()});
     renderExplorerStages();
     renderExplorerSubjects();
   }
