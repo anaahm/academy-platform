@@ -4,6 +4,7 @@ const C=window.AcademyCore,S=window.AcademySubscription;if(!C||!S)return;
 const $=id=>document.getElementById(id);
 function fmt(n){const x=Number(n||0);return x?new Date(x).toLocaleDateString('ar-EG',{day:'numeric',month:'short',year:'numeric'}):'—'}
 function summary(access){
+ if(access?.enforced!==true)return{title:'الوصول مفتوح حاليًا',text:'نظام الاشتراكات قيد التجهيز ولم يتم فرض القفل بعد.',tone:'active',cta:'عرض الباقات'};
  const plan=access.plan,status=access.status,sub=access.subscription;
  if(access.active)return{title:plan?.name||'اشتراك نشط',text:'متبقي '+access.daysLeft+' يوم • ينتهي '+fmt(sub?.endsAt),tone:access.daysLeft<=7?'expiring':'active',cta:'إدارة الاشتراك'};
  if(status==='pending')return{title:plan?.name||'اشتراك قيد الانتظار',text:'الاشتراك لم يبدأ بعد.',tone:'inactive',cta:'عرض التفاصيل'};
