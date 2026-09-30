@@ -287,6 +287,24 @@
       ".read": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true",
       ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
     },
+    "subscriptionPlansV1": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+    },
+    "studentSubscriptionsV1": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
+        ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
+      }
+    },
+    "subscriptionRequestsV1": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
+        "$requestId": {
+          ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (auth.uid === $uid && !data.exists() && newData.child('studentId').val() === auth.uid && newData.child('status').val() === 'pending'))"
+        }
+      }
+    },
     "parentProfilesV4": {
       "$uid": {
         ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
