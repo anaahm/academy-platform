@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="./assets/academy-mix-theme.css?v=24">
   <link rel="stylesheet" href="./assets/growth-pack.css?v=1">
   <link rel="stylesheet" href="./assets/ui-polish.css?v=1">
+  <link rel="stylesheet" href="./assets/communications.css?v=1">
 </head>
 <body class="teacher-v3-body">
   <div id="toast" class="toast"></div>
@@ -41,6 +42,7 @@
         <button data-teacher-tab="quizzes" role="tab" aria-selected="false" aria-controls="teacher-tab-quizzes"><i class="fa-solid fa-file-circle-question"></i> إنشاء اختبار</button>
         <button data-teacher-tab="assignments" role="tab" aria-selected="false" aria-controls="teacher-tab-assignments"><i class="fa-solid fa-clipboard-check"></i> الواجبات</button>
         <button data-teacher-tab="notifications" role="tab" aria-selected="false" aria-controls="teacher-tab-notifications"><i class="fa-regular fa-bell"></i> إشعارات الطلاب</button>
+        <button data-teacher-tab="communications" role="tab" aria-selected="false" aria-controls="teacher-tab-communications"><i class="fa-regular fa-comments"></i> التواصل <span id="teacherCommNavBadge" class="nav-badge hidden">0</span></button>
         <button data-teacher-tab="students" role="tab" aria-selected="false" aria-controls="teacher-tab-students"><i class="fa-solid fa-users"></i> الطلاب</button>
         <button data-teacher-tab="analytics" role="tab" aria-selected="false" aria-controls="teacher-tab-analytics"><i class="fa-solid fa-chart-line"></i> الإحصائيات</button>
         <button data-teacher-tab="profile" role="tab" aria-selected="false" aria-controls="teacher-tab-profile"><i class="fa-solid fa-id-card"></i> ملفي العام</button>
@@ -144,6 +146,35 @@
               <div id="teacherNotificationRequests" class="submission-list"></div>
             </article>
           </section>
+        </section>
+
+        <section class="teacher-tab hidden" id="teacher-tab-communications" role="tabpanel">
+          <section class="teacher-grid">
+            <article class="teacher-card">
+              <div class="teacher-card-head"><div><span class="section-kicker">أسئلة الطلاب المعتمدة</span><h3>صندوق أسئلة الدروس <span id="teacherQuestionPendingCount" class="status-pill pending">0</span></h3><p>لن يظهر لك سؤال طالب قبل اعتماده من الإدارة، وردك أيضًا يمر على الإدارة قبل وصوله للطالب.</p></div><span>💬</span></div>
+              <div id="teacherQuestionInbox" class="comm-list"></div>
+            </article>
+            <article class="teacher-card">
+              <div class="teacher-card-head"><div><span class="section-kicker">رسالة أو إعلان</span><h3>إرسال للطلاب بعد موافقة الإدارة</h3><p>حدد المادة والجمهور. يمكنك الاستهداف حسب الصف، المجموعة أو أرقام طلاب محددين.</p></div><span>📣</span></div>
+              <form id="teacherBroadcastForm" class="comm-form">
+                <label><span>المادة والصف</span><select id="teacherCommContext" required></select></label>
+                <label><span>نوع التواصل</span><select id="teacherCommType"><option value="announcement">إعلان</option><option value="message">رسالة</option></select></label>
+                <label><span>الجمهور</span><select id="teacherCommTargetMode"><option value="all">كل طلاب المادة والصف</option><option value="group">مجموعة محددة</option><option value="students">طلاب محددون بأرقام الهاتف</option></select></label>
+                <label id="teacherCommGroupWrap" class="hidden"><span>المجموعة</span><select id="teacherCommGroup"></select></label>
+                <label id="teacherCommStudentsWrap" class="full hidden"><span>أرقام الطلاب</span><input id="teacherCommStudents" placeholder="010...، 011...، 012..."></label>
+                <label><span>الأولوية</span><select id="teacherCommPriority"><option value="normal">عادي</option><option value="high">مهم</option><option value="urgent">عاجل</option></select></label>
+                <label><span>مدة الظهور</span><input id="teacherCommDays" type="number" min="1" max="14" value="5"></label>
+                <label class="full"><span>العنوان</span><input id="teacherCommTitle" maxlength="120" required placeholder="عنوان مختصر وواضح"></label>
+                <label class="full"><span>نص الرسالة</span><textarea id="teacherCommText" maxlength="1200" required placeholder="اكتب الرسالة التي تريد إرسالها..."></textarea></label>
+                <div class="full comm-note"><i class="fa-solid fa-shield-halved"></i><span>لا تصل الرسالة أو الإعلان لأي طالب قبل موافقة الإدارة. عند طلب تعديل سيظهر لك السبب ويمكنك تعديله وإعادة الإرسال.</span></div>
+                <button class="btn btn-primary full" id="teacherBroadcastSubmit" type="submit"><i class="fa-solid fa-paper-plane"></i> إرسال للإدارة</button>
+              </form>
+            </article>
+          </section>
+          <article class="teacher-card teacher-spaced-card">
+            <div class="teacher-card-head"><div><span class="section-kicker">طلبات التواصل</span><h3>كل ما أرسلته للمراجعة <span id="teacherCommPendingCount" class="status-pill pending">0</span></h3></div><span>🛡️</span></div>
+            <div id="teacherCommunicationRequests" class="comm-list"></div>
+          </article>
         </section>
 
         <section class="teacher-tab hidden" id="teacher-tab-profile" role="tabpanel">
@@ -322,6 +353,7 @@
   <script src="./assets/firebase-config.js"></script>
   <script src="./assets/teacher.js?v=45"></script>
 <script src="./assets/growth-pack.js?v=1"></script>
+  <script src="./assets/teacher-communications.js?v=1"></script>
   <script src="./assets/ui-polish.js?v=1"></script>
 </body>
 </html>
