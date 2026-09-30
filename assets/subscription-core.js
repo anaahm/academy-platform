@@ -38,12 +38,13 @@ function daysLeft(subscription,at=Date.now()){
 async function load(uid,profile={},force=false){
  if(!uid)return{subscription:null,plan:null,status:'none',active:false,daysLeft:0,plans:{}};
  if(!force&&cache.has(uid))return cache.get(uid);
- const [subSnap,plansSnap]=await Promise.all([db.ref('studentSubscriptionsV1/'+uid).once('value'),db.ref('subscriptionPlansV1').once('value')]);
- const subscription=subSnap.val()||null,plans=plansSnap.val()||{},plan=subscription?.planId?plans[subscription.planId]||null:null,status=statusOf(subscription,plan,profile),result={subscription,plan,status,active:status==='active',daysLeft:daysLeft(subscription),plans};
+ const [subSnap,plansSnap,settingsSnap]=await Promise.all([db.ref('studentSubscriptionsV1/'+uid).once('value'),db.ref('subscriptionPlansV1').once('value'),db.ref('subscriptionSettingsV1').once('value')]);
+ const subscription=subSnap.val()||null,plans=plansSnap.val()||{},settings=settingsSnap.val()||{},plan=subscription?.planId?plans[subscription.planId]||null:null,status=statusOf(subscription,plan,profile),result={subscription,plan,status,active:status==='active',daysLeft:daysLeft(subscription),plans,settings,enforced:settings.enforceAccess===true};
  cache.set(uid,result);return result;
 }
 function invalidate(uid){if(uid)cache.delete(uid);else cache.clear()}
 function canAccess(item={},access={},subject=''){
+ if(access?.enforced!==true)return true;
  if(item?.isFree===true)return true;
  if(!access?.active||!access?.plan)return false;
  return planAccess(access.plan,subject||item?.subject||'');
