@@ -51,7 +51,7 @@ function canAccess(item={},access={},subject=''){
 }
 function subjectAccess(subject,access={}){return canAccess({subject},access,subject)}
 function statusLabel(status){
- return{active:'نشط',pending:'قيد الانتظار',expired:'منتهي',suspended:'موقوف',cancelled:'ملغي',inactive:'غير نشط',none:'بدون اشتراك',unavailable:'الباقة متوقفة',out_of_scope:'الباقة غير متوافقة'}[status]||status;
+ return{disabled:'النظام غير مفعل',active:'نشط',pending:'قيد الانتظار',expired:'منتهي',suspended:'موقوف',cancelled:'ملغي',inactive:'غير نشط',none:'بدون اشتراك',unavailable:'الباقة متوقفة',out_of_scope:'الباقة غير متوافقة'}[status]||status;
 }
 function planPrice(plan){
  const price=Number(plan?.price||0);return price?price.toLocaleString('ar-EG')+' ج.م':'مجاني';

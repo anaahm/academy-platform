@@ -14,6 +14,7 @@
   const state = {
     user: null,
     profile: null,
+    subscriptionAccess: null,
     dbData: {},
     publicTeachers: {},
     explorer: { type: 'all', stage: null, tab: 'stages', search: '' }
@@ -358,6 +359,11 @@
     box.querySelectorAll('[data-dash-search-index]').forEach(btn=>btn.onclick=()=>{const row=rows[Number(btn.dataset.dashSearchIndex)];if(row)location.href=row.href});
   }
 
+  function dashboardCanAccess(item){
+    const S=window.AcademySubscription;
+    return !S||S.canAccess(item,state.subscriptionAccess,item?.subject||'');
+  }
+
   function safeDashboardImage(value='') {
     if(!value)return '';
     try {
@@ -662,11 +668,11 @@
     const mistakes=dashboardMistakes(profile);
 
     const lessons=Object.entries(state.dbData.lessons||{}).map(([id,v])=>({id,...(v||{})}))
-      .filter(x=>dashboardContentMatches(x,profile)&&subjectMap.has(String(x.subject)));
+      .filter(x=>dashboardContentMatches(x,profile)&&subjectMap.has(String(x.subject))&&dashboardCanAccess(x));
     const quizzes=Object.entries(state.dbData.quizzes||{}).map(([id,v])=>({id,...(v||{})}))
-      .filter(x=>dashboardContentMatches(x,profile)&&dashboardTargetMatches(x,profile,state.user)&&subjectMap.has(String(x.subject)));
+      .filter(x=>dashboardContentMatches(x,profile)&&dashboardTargetMatches(x,profile,state.user)&&subjectMap.has(String(x.subject))&&dashboardCanAccess(x));
     const files=Object.entries(state.dbData.files||{}).map(([id,v])=>({id,...(v||{})}))
-      .filter(x=>dashboardContentMatches(x,profile)&&subjectMap.has(String(x.subject)));
+      .filter(x=>dashboardContentMatches(x,profile)&&subjectMap.has(String(x.subject))&&dashboardCanAccess(x));
 
     const incompleteLessons=lessons.filter(l=>!profile.learningProgress?.[l.id]?.completed);
     const quizCandidates=quizzes.filter(q=>!dashboardQuizAttempted(q.id,profile));
@@ -937,7 +943,7 @@
     const subjectMap=new Map(subjects.map(s=>[s.id,s]));
     const progress=profile?.learningProgress||{},teachers=state.publicTeachers||state.dbData.settings?.publicTeachers||{};
     const rows=Object.entries(state.dbData.lessons||{}).map(([id,v])=>({id,...(v||{})}))
-      .filter(l=>l&&l.workflowStatus!=='draft'&&!l.isHidden&&(!Number(l.publishAt||0)||Number(l.publishAt)<=Date.now())&&l.type===profile.educationType&&l.stage===profile.stage&&String(l.grade)===String(profile.grade)&&subjectMap.has(l.subject));
+      .filter(l=>l&&l.workflowStatus!=='draft'&&!l.isHidden&&(!Number(l.publishAt||0)||Number(l.publishAt)<=Date.now())&&l.type===profile.educationType&&l.stage===profile.stage&&String(l.grade)===String(profile.grade)&&subjectMap.has(l.subject)&&dashboardCanAccess(l));
     if(!rows.length){
       box.innerHTML='<div class="mix-recommended-empty"><span>🎓</span><div><strong>نجهز لك الدروس المناسبة</strong><p>ستظهر هنا أحدث دروس صفك فور نشرها.</p></div></div>';
       return;
@@ -1128,6 +1134,13 @@
           subject: lastSubject.id
         });
         if (p.lastLessonId) q.set('id', p.lastLessonId);
+        if(p.lastLessonId){
+          const item=state.dbData.lessons?.[p.lastLessonId];
+          if(item&&!dashboardCanAccess(item)){
+            window.AcademySubscription?.lockOverlay({title:'آخر درس يحتاج اشتراكًا',text:'يمكنك اختيار باقة مناسبة أو فتح مادة أخرى بها محتوى متاح.'});
+            return;
+          }
+        }
         location.href = p.lastLessonId ? './lesson.html?' + q.toString() : './subject.html?' + q.toString();
       };
       $('continueLearningBtn').onclick=go;
@@ -1508,8 +1521,10 @@
       if(!baseDataPromise) baseDataPromise=loadDatabaseSnapshot();
       await baseDataPromise;
       state.profile = await loadProfile(user.uid);
+      state.subscriptionAccess=window.AcademySubscription?await window.AcademySubscription.load(user.uid,state.profile,true).catch(()=>null):null;
       await updateDailyActivity(user.uid);
       state.profile = await loadProfile(user.uid);
+      if(window.AcademySubscription)state.subscriptionAccess=await window.AcademySubscription.load(user.uid,state.profile,true).catch(()=>state.subscriptionAccess);
       if(state.profile?.stage)await loadDashboardLessonCatalog(state.profile);
     } catch (e) {
       console.warn(e);
