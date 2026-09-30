@@ -176,6 +176,7 @@ function render(){
        (unlock.unlocked
          ?'<a class="btn btn-primary" href="'+quizHref(q)+'">'+(best?'إعادة الاختبار':'ابدأ الاختبار')+' <i class="fa-solid fa-arrow-left"></i></a>'
          :'<button class="btn btn-soft locked-exam-btn" data-locked-exam="'+q.id+'" data-lock-reason="'+C.esc(unlock.reason)+'"><i class="fa-solid fa-lock"></i> أكمل المتطلبات أولًا</button>')+
+       '<a class="btn btn-soft support-report-link" href="'+supportHrefForQuiz(q)+'"><i class="fa-regular fa-flag"></i> إبلاغ</a>'+
        '</div>'+
      '</div></article>';
  }).join(''):'<div class="feature-empty"><span>📭</span><h3>لا توجد اختبارات مطابقة</h3><p>جرّب مادة أخرى أو غيّر عبارة البحث.</p></div>';
