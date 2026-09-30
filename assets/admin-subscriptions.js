@@ -55,7 +55,7 @@ function renderPlans(){
  box.innerHTML=rows.length?rows.map(p=>'<article class="subscription-admin-item"><div class="subscription-admin-item-top"><div><strong>'+esc(p.icon||'👑')+' '+esc(p.name||'باقة')+'</strong><small>'+Number(p.price||0).toLocaleString('ar-EG')+' ج.م • '+Number(p.durationDays||30)+' يوم</small></div><span class="subscription-status '+(p.isActive===false?'cancelled':'active')+'">'+(p.isActive===false?'متوقفة':'متاحة')+'</span></div><div class="subscription-admin-meta"><span>'+(p.accessMode==='subjects'?Object.values(p.subjects||{}).filter(Boolean).length+' مواد':'كل المواد')+'</span>'+(p.targetStage?'<span>'+esc(p.targetStage)+' / '+esc(p.targetGrade||'كل الصفوف')+'</span>':'<span>كل المراحل</span>')+'</div><div class="subscription-admin-actions"><button class="sub-action-main" data-edit-plan="'+p.id+'"><i class="fa-solid fa-pen"></i> تعديل</button><button class="'+(p.isActive===false?'sub-action-good':'sub-action-warn')+'" data-toggle-plan="'+p.id+'">'+(p.isActive===false?'تفعيل':'إيقاف')+'</button><button class="sub-action-danger" data-delete-plan="'+p.id+'"><i class="fa-solid fa-trash"></i> حذف</button></div></article>').join(''):'<div class="content-ops-empty"><span>👑</span>لا توجد باقات بعد.</div>';
  box.querySelectorAll('[data-edit-plan]').forEach(b=>b.onclick=()=>editPlan(b.dataset.editPlan));
  box.querySelectorAll('[data-toggle-plan]').forEach(b=>b.onclick=()=>db.ref('subscriptionPlansV1/'+b.dataset.togglePlan).update({isActive:plans[b.dataset.togglePlan]?.isActive===false,updatedAt:Date.now()}));
- box.querySelectorAll('[data-delete-plan]').forEach(b=>b.onclick=async()=>{const id=b.dataset.deletePlan,inUse=subscriptionRows().some(s=>s.planId===id);if(inUse)return window.AcademyUI?.toast?.('لا يمكن حذف باقة مرتبطة باشتراكات. أوقفها بدلًا من الحذف.','error');if(await ask({title:'حذف الباقة؟',message:'سيتم حذف تعريف الباقة نهائيًا.',tone:'danger',acceptText:'حذف'}))await db.ref('subscriptionPlansV1/'+id).remove()});
+ box.querySelectorAll('[data-delete-plan]').forEach(b=>b.onclick=async()=>{const id=b.dataset.deletePlan,inUse=subscriptionRows().some(s=>s.planId===id)||requestRows().some(r=>r.planId===id&&r.status==='pending');if(inUse)return window.AcademyUI?.toast?.('لا يمكن حذف باقة مرتبطة باشتراك أو طلب معلق. أوقفها بدلًا من الحذف.','error');if(await ask({title:'حذف الباقة؟',message:'سيتم حذف تعريف الباقة نهائيًا.',tone:'danger',acceptText:'حذف'}))await db.ref('subscriptionPlansV1/'+id).remove()});
  fillPlanSelect();
 }
 function studentRows(){
@@ -98,9 +98,14 @@ function renderRequests(){
 async function reviewRequest(key,approved){
  const [uid,id]=key.split('|'),r=requests?.[uid]?.[id],plan=plans[r?.planId];if(!r)return;
  if(approved&&!plan)return window.AcademyUI?.toast?.('الباقة لم تعد موجودة.','error');
- const ts=Date.now(),updates={};updates['subscriptionRequestsV1/'+uid+'/'+id+'/status']=approved?'approved':'rejected';updates['subscriptionRequestsV1/'+uid+'/'+id+'/reviewedAt']=ts;updates['subscriptionRequestsV1/'+uid+'/'+id+'/reviewedBy']=user.uid;
- if(approved)updates['studentSubscriptionsV1/'+uid]={planId:r.planId,status:'active',startsAt:ts,endsAt:ts+Number(plan.durationDays||30)*86400000,notes:'تم التفعيل من طلب الاشتراك',createdAt:subscriptions[uid]?.createdAt||ts,updatedAt:ts,updatedBy:user.uid,activatedAt:ts};
- await db.ref().update(updates);window.AcademyUI?.toast?.(approved?'تم اعتماد الطلب وتفعيل الاشتراك ✅':'تم رفض الطلب');
+ const ts=Date.now(),updates={},current=subscriptions[uid]||{};updates['subscriptionRequestsV1/'+uid+'/'+id+'/status']=approved?'approved':'rejected';updates['subscriptionRequestsV1/'+uid+'/'+id+'/reviewedAt']=ts;updates['subscriptionRequestsV1/'+uid+'/'+id+'/reviewedBy']=user.uid;
+ if(approved){
+   const sameActive=current.planId===r.planId&&subState(current)==='active'&&Number(current.endsAt||0)>ts,base=sameActive?Number(current.endsAt):ts;
+   updates['studentSubscriptionsV1/'+uid]={planId:r.planId,status:'active',startsAt:sameActive?Number(current.startsAt||ts):ts,endsAt:base+Number(plan.durationDays||30)*86400000,notes:sameActive?'تم التجديد من طلب اشتراك':'تم التفعيل من طلب الاشتراك',createdAt:current.createdAt||ts,updatedAt:ts,updatedBy:user.uid,activatedAt:current.activatedAt||ts,lastRenewedAt:sameActive?ts:null};
+ }
+ const nid=db.ref('notificationBroadcasts').push().key;
+ updates['notificationBroadcasts/'+nid]={source:'admin',title:approved?'تم تفعيل اشتراكك':'تحديث طلب الاشتراك',text:approved?('تم '+((current.planId===r.planId&&subState(current)==='active')?'تجديد':'تفعيل')+' باقة '+(plan.name||r.planName||'الاشتراك')+' بنجاح.'):'تمت مراجعة طلب باقة '+(r.planName||'الاشتراك')+' ولم يتم اعتماده حاليًا.',targetMode:'students',targetStudentIds:[uid],href:'./subscription.html',priority:approved?'high':'normal',isActive:true,createdAt:ts,expiresAt:ts+14*86400000};
+ await db.ref().update(updates);window.AcademyUI?.toast?.(approved?'تم اعتماد الطلب وتفعيل/تجديد الاشتراك ✅':'تم رفض الطلب');
 }
 function render(){stats();renderPlans();renderStudents();renderRequests();if(selectedStudentId&&students[selectedStudentId])selectStudent(selectedStudentId)}
 function bind(){
