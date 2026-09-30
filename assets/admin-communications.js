@@ -36,8 +36,8 @@ function counts(){
 }
 function renderStats(){
  const c=counts();
- if($('adminCommPending'))$('adminCommPending').textContent=c.pending;
- if($('adminCommQuestions'))$('adminCommQuestions').textContent=c.questions;
+ if($('adminCommPending'))$('adminCommPending').textContent=c.pending;if($('adminCommHeroPending'))$('adminCommHeroPending').textContent=c.pending;
+ if($('adminCommQuestions'))$('adminCommQuestions').textContent=c.questions;if($('adminCommHeroQuestions'))$('adminCommHeroQuestions').textContent=c.questions;
  if($('adminCommReplies'))$('adminCommReplies').textContent=c.replies;
  if($('adminCommBroadcasts'))$('adminCommBroadcasts').textContent=c.broadcasts;
  const badge=$('communicationAlertBadge');if(badge){badge.textContent=c.pending;badge.classList.toggle('hidden',!c.pending)}
