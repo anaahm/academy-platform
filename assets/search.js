@@ -281,7 +281,7 @@ function render(){
  }
  $('searchEmpty').classList.add('hidden');$('searchResults').classList.remove('hidden');
  $('searchResults').innerHTML=items.slice(0,120).map(resultHtml).join('');
- $('[data-search-result]').forEach(a=>a.onclick=e=>{const [kind,id]=a.dataset.searchResult.split(':');const item=allResults.find(x=>x.kind===kind&&String(x.id)===String(id));return openSearchItem(e,item)});
+ $$('[data-search-result]').forEach(a=>a.onclick=e=>{const [kind,id]=a.dataset.searchResult.split(':');const item=allResults.find(x=>x.kind===kind&&String(x.id)===String(id));return openSearchItem(e,item)});
 }
 
 function recentHtml(q){return '<button type="button" data-recent-search="'+esc(q)+'"><i class="fa-solid fa-clock-rotate-left"></i> '+esc(q)+'</button>'}
