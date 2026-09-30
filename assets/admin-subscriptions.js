@@ -74,7 +74,7 @@ function updateEndFromPlan(){
  const p=plans[$('studentPlanId').value],start=new Date($('studentSubStart').value||Date.now()).getTime();if(!p||!Number.isFinite(start))return;$('studentSubEnd').value=localInput(start+Number(p.durationDays||30)*86400000);
 }
 function selectStudent(id){
- selectedStudentId=id;const s=students[id]||{},sub=subscriptions[id]||{};$('selectedSubscriptionStudent').textContent=s.name||'طالب';$('selectedSubscriptionContact').textContent=s.phone||s.email||'—';fillPlanSelect();$('studentPlanId').value=sub.planId||'';$('studentSubStatus').value=subState(sub)==='none'?'active':subState(sub);$('studentSubStart').value=localInput(sub.startsAt||Date.now());$('studentSubEnd').value=localInput(sub.endsAt||((Date.now())+30*86400000));$('studentSubNotes').value=sub.notes||'';$('subscriptionStudentEditor').classList.remove('hidden');renderStudents();
+ selectedStudentId=id;const s=students[id]||{},sub=subscriptions[id]||{};$('selectedSubscriptionStudent').textContent=s.name||'طالب';$('selectedSubscriptionContact').textContent=s.phone||s.email||'—';fillPlanSelect();$('studentPlanId').value=sub.planId||'';$('studentSubStatus').value=subState(sub)==='none'?'active':subState(sub);$('studentSubStart').value=localInput(sub.startsAt||Date.now());$('studentSubEnd').value=localInput(sub.endsAt||((Date.now())+30*86400000));$('studentSubNotes').value=sub.notes||'';$('studentSubscriptionForm').classList.remove('hidden');renderStudents();
 }
 async function saveStudentSubscription(e){
  e.preventDefault();if(!selectedStudentId)return;const planId=$('studentPlanId').value,plan=plans[planId];if(!plan)return window.AcademyUI?.toast?.('اختر باقة صحيحة.','error');
