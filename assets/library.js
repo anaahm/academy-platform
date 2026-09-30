@@ -70,6 +70,9 @@ function resultsCopy(list){
  $('libraryResultsTitle').textContent=title;
  $('libraryResultsMeta').textContent=list.length+' ملف ظاهر • '+meta;
 }
+function supportHrefForFile(f){
+ return './support.html?'+new URLSearchParams({source:'library',category:'file',sourceId:f.id||'',type:f.type||profile.educationType||'public',stage:f.stage||profile.stage||'',grade:String(f.grade||profile.grade||''),subject:f.subject||'',lessonId:f.lessonId||'',lessonTitle:f.lessonTitle||'',title:'مشكلة في ملف '+(f.title||'تعليمي'),href:'./library.html'}).toString();
+}
 function linkedLessonHref(f){
  if(!f.lessonId)return'';
  const q=new URLSearchParams({type:f.type||profile.educationType,stage:f.stage||profile.stage,grade:String(f.grade||profile.grade),subject:f.subject||'',id:f.lessonId});
@@ -121,7 +124,7 @@ function cardHtml(f){
        '<span><i class="fa-solid '+kindIcon(kind)+'"></i>'+C.esc(kindLabel(kind))+'</span>'+
        (opened?'<span><i class="fa-solid fa-clock-rotate-left"></i> فُتح '+new Date(Number(historyItem.openedAt)).toLocaleDateString('ar-EG')+'</span>':'<span><i class="fa-solid fa-sparkles"></i> لم تفتحه بعد</span>')+
      '</div>'+
-     (safe&&safe!=='#'?'<a class="btn btn-primary library-open-v10" data-open-file="'+f.id+'" href="'+C.esc(safe)+'" target="_blank" rel="noopener noreferrer">فتح الملف <i class="fa-solid fa-arrow-up-right-from-square"></i></a>':'<span class="btn btn-soft library-open-v10 disabled"><i class="fa-solid fa-ban"></i> الرابط غير متاح</span>')+
+     (safe&&safe!=='#'?'<a class="btn btn-primary library-open-v10" data-open-file="'+f.id+'" href="'+C.esc(safe)+'" target="_blank" rel="noopener noreferrer">فتح الملف <i class="fa-solid fa-arrow-up-right-from-square"></i></a>':'<span class="btn btn-soft library-open-v10 disabled"><i class="fa-solid fa-ban"></i> الرابط غير متاح</span>')+'<a class="btn btn-soft support-report-link" href="'+C.esc(supportHrefForFile(f))+'"><i class="fa-regular fa-flag"></i> إبلاغ</a>'+
    '</div>'+
  '</article>';
 }

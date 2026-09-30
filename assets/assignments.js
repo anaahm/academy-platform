@@ -60,6 +60,9 @@ function dueText(ts){
 function fullDate(ts){
   return ts?new Date(ts).toLocaleString('ar-EG',{day:'numeric',month:'long',year:'numeric',hour:'numeric',minute:'2-digit'}):'بدون موعد نهائي';
 }
+function supportHrefForAssignment(a){
+ return './support.html?'+new URLSearchParams({source:'assignment',category:'assignment',sourceId:a.id||'',type:a.type||profile.educationType||'public',stage:a.stage||profile.stage||'',grade:String(a.grade||profile.grade||''),subject:a.subject||'',title:'مشكلة في واجب '+(a.title||''),href:'./assignments.html?assignment='+(a.id||'')}).toString();
+}
 function subjectName(id){
   return C.subjectName(data,id,profile.stage,String(profile.grade),profile.educationType)||id||'مادة';
 }
@@ -160,9 +163,9 @@ function render(){
           '<span class="'+(stepGraded?'done':'')+'"><i class="fa-solid '+(stepGraded?'fa-check':'fa-star')+'"></i><small>تم التصحيح</small></span>'+
         '</div>'+
         (lateSubmission?'<div class="assignment-late-note-v8"><i class="fa-solid fa-clock"></i> تم التسليم بعد الموعد المحدد</div>':'')+
-        '<button class="btn '+((st==='pending'||st==='overdue')?'btn-primary':'btn-soft')+'" data-open-assignment="'+a.id+'">'+
+        '<div class="support-actions"><button class="btn '+((st==='pending'||st==='overdue')?'btn-primary':'btn-soft')+'" data-open-assignment="'+a.id+'">'+
           (st==='graded'?'عرض النتيجة والملاحظات':st==='submitted'?'عرض أو تحديث التسليم':st==='overdue'?'تسليم الآن':'فتح الواجب وتسليمه')+' <i class="fa-solid fa-arrow-left"></i>'+
-        '</button>'+
+        '</button><a class="btn btn-soft support-report-link" href="'+supportHrefForAssignment(a)+'"><i class="fa-regular fa-flag"></i> إبلاغ</a></div>'+
       '</div>'+
     '</article>';
   }).join(''):'<div class="feature-empty"><span>📚</span><h3>لا توجد واجبات مطابقة</h3><p>جرّب فلترًا آخر أو غيّر عبارة البحث.</p></div>';

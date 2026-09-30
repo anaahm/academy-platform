@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="./assets/admin-intelligence.css?v=1">
   <link rel="stylesheet" href="./assets/ui-polish.css?v=1">
   <link rel="stylesheet" href="./assets/communications.css?v=1">
+  <link rel="stylesheet" href="./assets/support.css?v=1">
 </head>
 <body class="admin-v3-body">
   <div id="toast" class="toast"></div>
@@ -85,6 +86,7 @@
         <button data-admin-tab="news"><i class="fa-regular fa-newspaper"></i> الأخبار والتحديثات</button>
         <button data-admin-tab="community"><i class="fa-solid fa-users"></i> المجتمع والبلاغات <span id="communityReportBadge" class="nav-badge hidden">0</span></button>
         <button data-admin-tab="communications"><i class="fa-regular fa-comments"></i> مراجعة التواصل <span id="communicationAlertBadge" class="nav-badge hidden">0</span></button>
+        <button data-admin-tab="support"><i class="fa-solid fa-headset"></i> الدعم والشكاوى <span id="supportAlertBadge" class="nav-badge hidden">0</span></button>
         <button data-admin-tab="notifications"><i class="fa-regular fa-bell"></i> الإشعارات الموجهة</button>
         <button data-admin-tab="announcements"><i class="fa-solid fa-bullhorn"></i> الإعلانات</button>
         <button data-admin-tab="settings"><i class="fa-solid fa-sliders"></i> الإعدادات</button>
@@ -472,12 +474,45 @@
               <button class="active" type="button" data-comm-filter="pending">قيد المراجعة <span>0</span></button>
               <button type="button" data-comm-filter="questions">أسئلة الطلاب <span>0</span></button>
               <button type="button" data-comm-filter="replies">ردود المعلمين <span>0</span></button>
-              <button type="button" data-comm-filter="broadcasts">الرسائل والإعلانات <span>0</span></button>\n              <button type="button" data-comm-filter="community">منشورات المجتمع <span>0</span></button>
+              <button type="button" data-comm-filter="broadcasts">الرسائل والإعلانات <span>0</span></button>
+              <button type="button" data-comm-filter="community">منشورات المجتمع <span>0</span></button>
               <button type="button" data-comm-filter="pins">طلبات التثبيت <span>0</span></button>
               <button type="button" data-comm-filter="reviewed">تمت مراجعتها <span>0</span></button>
               <button type="button" data-comm-filter="all">كل السجل <span>0</span></button>
             </aside>
             <main><div id="adminCommunicationList" class="comm-list"></div></main>
+          </div>
+        </section>
+
+        <section class="admin-tab hidden" id="admin-tab-support">
+          <section class="support-admin-hero">
+            <div><span class="section-kicker light">مركز الدعم التشغيلي</span><h2>اعرف المشكلة، صاحبها، ومكانها مباشرة</h2><p>كل تذاكر الطلاب والمعلمين في مكان واحد، مع سياق الدرس أو السؤال، الأولوية، المحادثة، والحالة حتى الإغلاق.</p></div>
+            <div class="admin-intel-hero-side"><article><strong id="supportAdminHeroOpen">0</strong><small>تذكرة مفتوحة</small></article><article><strong id="supportAdminHeroUrgent">0</strong><small>عاجلة الآن</small></article></div>
+          </section>
+          <section class="support-admin-stats">
+            <article><strong id="supportAdminOpen">0</strong><small>مفتوحة</small></article>
+            <article><strong id="supportAdminUrgent">0</strong><small>عاجلة</small></article>
+            <article><strong id="supportAdminWaiting">0</strong><small>بانتظار المستخدم</small></article>
+            <article><strong id="supportAdminStale">0</strong><small>متأخرة +48 ساعة</small></article>
+          </section>
+          <section id="supportAdminInsights" class="support-insights"></section>
+          <div class="admin-intel-toolbar">
+            <label class="admin-global-search" style="flex:1;max-width:560px"><i class="fa-solid fa-magnifying-glass"></i><input id="supportAdminSearch" type="search" placeholder="ابحث بالتذكرة أو الطالب أو المعلم أو الدرس أو السؤال..."></label>
+            <button type="button" id="supportAdminRefresh"><i class="fa-solid fa-rotate"></i> تحديث</button>
+          </div>
+          <div class="support-admin-layout">
+            <aside class="support-admin-filters">
+              <button class="active" type="button" data-support-admin-filter="open">المفتوحة <span>0</span></button>
+              <button type="button" data-support-admin-filter="new">الجديدة <span>0</span></button>
+              <button type="button" data-support-admin-filter="urgent">العاجلة <span>0</span></button>
+              <button type="button" data-support-admin-filter="waiting">مطلوب رد المستخدم <span>0</span></button>
+              <button type="button" data-support-admin-filter="stale">متأخرة +48 ساعة <span>0</span></button>
+              <button type="button" data-support-admin-filter="students">تذاكر الطلاب <span>0</span></button>
+              <button type="button" data-support-admin-filter="teachers">تذاكر المعلمين <span>0</span></button>
+              <button type="button" data-support-admin-filter="resolved">تم الحل <span>0</span></button>
+              <button type="button" data-support-admin-filter="all">كل السجل <span>0</span></button>
+            </aside>
+            <main><div id="supportAdminList" class="support-list"></div></main>
           </div>
         </section>
 
@@ -836,7 +871,8 @@
   <script src="./assets/admin-auth-flow.js?v=33"></script>
   <script src="./assets/admin-intelligence.js?v=1"></script>
   <script src="./assets/admin-communications.js?v=1"></script>
-  <script src="./assets/admin.js?v=55"></script>
+  <script src="./assets/admin-support.js?v=1"></script>
+  <script src="./assets/admin.js?v=56"></script>
   <script src="./assets/admin-notifications.js"></script>
   <script src="./assets/ui-polish.js?v=1"></script>
 </body>
