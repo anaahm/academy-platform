@@ -140,6 +140,7 @@ function makeIndex(data){
  });
  Object.entries(data.quizzes||{}).forEach(([id,q])=>{
   if(!published(q))return;
+  if(profile&&user&&q.targetMode&&q.targetMode!=='all'&&!targetMatches(q))return;
   const sub=subjectMeta(q.subject,q.stage,String(q.grade),q.type),teacherIds=[...new Set([q.teacherId].filter(Boolean).map(String))],teacherNames=teacherIds.map(tid=>teachers[tid]?.name).filter(Boolean);
   teacherIds.forEach(tid=>addScope(tid,q));addContext(q);
   items.push({kind:'quiz',id,title:q.name||'اختبار',description:'اختبار يحتوي على '+(q.questions?.length||0)+' سؤال'+(Number(q.durationMinutes||0)?' • '+Number(q.durationMinutes)+' دقيقة':''),subject:q.subject,subjectName:sub.name,image:sub.imageUrl||'',emoji:sub.emoji||'🧠',type:q.type,stage:q.stage,grade:String(q.grade||''),teacherIds,teacherName:teacherNames.join(' • ')||q.teacherName||'',createdAt:Number(q.createdAt||q.updatedAt||0),search:[q.name,sub.name,teacherNames.join(' '),q.teacherName,'اختبار امتحان تدريب اسئلة'].join(' '),href:quizLink({id,...q})});
@@ -187,7 +188,8 @@ async function fetchIndex(stage=''){
   if(profile&&user)jobs.push(db.ref('assignments').orderByChild('stage').equalTo(profile.stage).once('value'),db.ref('liveSessions').once('value'));
   const snaps=await Promise.all(jobs),data={lessons:snaps[0].val()||{},quizzes:snaps[1].val()||{},files:snaps[2].val()||{},teachers:snaps[3].val()||{}};
   if(profile&&user){
-   data.assignments=snaps[4]?.val()||{};data.live=snaps[5]?.val()||{};
+   const rawAssignments=snaps[4]?.val()||{};data.live=snaps[5]?.val()||{};
+   data.assignments=Object.fromEntries(Object.entries(rawAssignments).filter(([,a])=>studentMatches(a)&&targetMatches(a)));
    const assignmentIds=Object.keys(data.assignments),subSnaps=await Promise.all(assignmentIds.map(id=>db.ref('assignmentSubmissions/'+id+'/'+user.uid).once('value')));
    data.submissions={};assignmentIds.forEach((id,i)=>{if(subSnaps[i].exists())data.submissions[id]=subSnaps[i].val()});
   }
