@@ -281,7 +281,7 @@ function render(){
  }
  $('searchEmpty').classList.add('hidden');$('searchResults').classList.remove('hidden');
  $('searchResults').innerHTML=items.slice(0,120).map(resultHtml).join('');
- $('[data-search-result]').forEach(a=>a.onclick=e=>{const [kind,id]=a.dataset.searchResult.split(':');const item=allResults.find(x=>x.kind===kind&&String(x.id)===String(id));return openSearchItem(e,item)});
+ $$('[data-search-result]').forEach(a=>a.onclick=e=>{const [kind,id]=a.dataset.searchResult.split(':');const item=allResults.find(x=>x.kind===kind&&String(x.id)===String(id));return openSearchItem(e,item)});
 }
 
 function recentHtml(q){return '<button type="button" data-recent-search="'+esc(q)+'"><i class="fa-solid fa-clock-rotate-left"></i> '+esc(q)+'</button>'}
@@ -308,7 +308,7 @@ function renderDiscovery(){
  if(subjects.length)groups.push('<article class="search-discovery-panel-v12"><div><span class="section-kicker">موادك</span><h3>ابدأ من مادة</h3></div><div>'+subjects.map(x=>discoveryCard(x,'مادة صفك')).join('')+'</div></article>');
  if(teachers.length)groups.push('<article class="search-discovery-panel-v12"><div><span class="section-kicker">فريق التدريس</span><h3>مدرسون في صفك</h3></div><div>'+teachers.map(x=>discoveryCard(x,'مدرس')).join('')+'</div></article>');
  $('searchDiscoveryGrid').innerHTML=groups.join('')||'<div class="feature-empty"><span>✨</span><h3>ابدأ بالبحث</h3><p>ستظهر لك هنا اقتراحات تناسب مرحلتك.</p></div>';
- $('#searchDiscoveryGrid [data-search-result]').forEach(a=>a.onclick=e=>{const [kind,id]=a.dataset.searchResult.split(':');const item=allResults.find(x=>x.kind===kind&&String(x.id)===String(id));return openSearchItem(e,item)});
+ $$('#searchDiscoveryGrid [data-search-result]').forEach(a=>a.onclick=e=>{const [kind,id]=a.dataset.searchResult.split(':');const item=allResults.find(x=>x.kind===kind&&String(x.id)===String(id));return openSearchItem(e,item)});
  renderRecent();
 }
 function renderAutocomplete(){
