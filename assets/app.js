@@ -1286,7 +1286,7 @@
     $('exploreFromMenu').addEventListener('click', () => location.href='./explore.html');
     $('logoutBtn').addEventListener('click', async () => { await auth.signOut(); $('userMenu').classList.add('hidden'); });
 
-    $('dashProfileBtn')?.addEventListener('click', () => location.href='./profile.html?tab=account');
+    $('dashSubscriptionBtn')?.addEventListener('click',()=>location.href='./subscription.html');\n    $('dashProfileBtn')?.addEventListener('click', () => location.href='./profile.html?tab=account');
     $('dashStudySettingsBtn')?.addEventListener('click', () => location.href='./profile.html?tab=study');
     $('dashChangeStudyBtn')?.addEventListener('click', () => location.href='./profile.html?tab=study');
     $('dashAccountProfile')?.addEventListener('click', () => location.href='./profile.html?tab=account');
