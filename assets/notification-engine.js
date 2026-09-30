@@ -87,7 +87,7 @@ async function loadNotifications(user,profileInput){
 
   const stage=profile.stage||'';
   const stageQuery=path=>stage?db.ref(path).orderByChild('stage').equalTo(stage):db.ref(path);
-  const [assignSnap,liveSnap,scheduleSnap,annSnap,broadcastSnap,reviewSnap,fileSnap,lessonSnap,quizSnap]=await Promise.all([
+  const [assignSnap,liveSnap,scheduleSnap,annSnap,broadcastSnap,reviewSnap,fileSnap,lessonSnap,quizSnap,subscriptionRequestSnap]=await Promise.all([
     stageQuery('assignments').once('value'),
     db.ref('liveSessions').once('value'),
     db.ref('scheduleEvents').once('value'),
@@ -96,7 +96,8 @@ async function loadNotifications(user,profileInput){
     db.ref('learningV4/reviews/'+user.uid).once('value'),
     stageQuery('files').once('value'),
     stageQuery('lessons').once('value'),
-    stageQuery('quizzes').once('value')
+    stageQuery('quizzes').once('value'),
+    db.ref('subscriptionRequestsV1/'+user.uid).once('value')
   ]);
 
   const items=[];
@@ -181,6 +182,20 @@ async function loadNotifications(user,profileInput){
     const created=Number(q.createdAt||0);
     if(!created||now-created>72*HOUR||studentQuizAttempted(profile,q.id))return;
     push(items,reads,{key:'quiz-new-'+q.id+'-'+created,kind:'quiz',group:'content',category:'academic',icon:'fa-file-circle-question',tone:'violet',title:'اختبار جديد متاح',text:q.name||'اختبار جديد',createdAt:created,href:quizHref(q,q.id,profile),priority:'normal'});
+  });
+
+  /* Subscription request decisions */
+  Object.entries(subscriptionRequestSnap.val()||{}).forEach(([id,r])=>{
+    if(!r||!['approved','rejected'].includes(r.status))return;
+    const stamp=Number(r.reviewedAt||r.updatedAt||r.createdAt||0);if(!stamp||now-stamp>14*DAY)return;
+    push(items,reads,{
+      key:'subscription-request-'+id+'-'+r.status+'-'+stamp,
+      kind:'subscription',group:'system',category:'system',icon:r.status==='approved'?'fa-circle-check':'fa-circle-xmark',
+      tone:r.status==='approved'?'green':'red',
+      title:r.status==='approved'?'تم اعتماد طلب الاشتراك':'تمت مراجعة طلب الاشتراك',
+      text:r.status==='approved'?('تم تفعيل '+(r.planName||'الباقة')+' على حسابك.'):('طلب '+(r.planName||'الباقة')+' لم يتم اعتماده. يمكنك مراجعة التفاصيل أو التواصل مع الدعم.'),
+      createdAt:stamp,href:'./subscription.html',priority:r.status==='approved'?'high':'normal',sourceName:'إدارة الأكاديمية'
+    });
   });
 
   /* Subscription access */
