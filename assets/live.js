@@ -1,6 +1,6 @@
 (() => {
 'use strict';
-const C=window.AcademyCore,S=window.AcademySubscription,$=id=>document.getElementById(id),$=(s,r=document)=>[...r.querySelectorAll(s)];
+const C=window.AcademyCore,S=window.AcademySubscription,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 let user,profile,access=null,sessions=[],attendance={},data={customSubjects:{}},filter='all',viewerTrigger=null,activeSessionId=null,attendanceActive=false,attendanceTimer=null,heroTimer=null,statusTimer=null;
 
 function embed(url=''){return window.AcademyUtils.youtubeEmbed(url)}
