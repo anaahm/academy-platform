@@ -980,7 +980,7 @@ async function archiveLessons(ids=[]){
  const idSet=new Set(unique),linked=values(root.quizzes).filter(q=>q.lessonId&&idSet.has(String(q.lessonId))),now=Date.now(),updates={};
  unique.forEach(id=>{
    const lesson=root.lessons[id],related={};
-   linked.filter(q=>String(q.lessonId)===String(id)).forEach(q=>{related[q.id]=q});
+   linked.filter(q=>String(q.lessonId)===String(id)).forEach(q=>{const copy={...q};delete copy.id;related[q.id]=copy});
    updates['contentArchiveV1/lesson/'+id]={kind:'lesson',sourceId:id,title:lesson.title||'درس',data:lesson,relatedQuizzes:related,archivedAt:now,archivedBy:currentUser?.uid||''};
    updates['lessons/'+id]=null;
  });
@@ -1030,10 +1030,10 @@ async function bulkDuplicateLessons(){
      groupOrder.set(key,max);
    }
    const newId=db.ref('lessons').push().key,order=groupOrder.get(key)+1000;groupOrder.set(key,order);
-   const copy={...l,title:(l.title||'درس')+' — نسخة',isHidden:true,createdAt:now,updatedAt:now,sortOrder:order};
+   const copy={...l,title:(l.title||'درس')+' — نسخة',isHidden:true,workflowStatus:'draft',reviewStatus:'draft',publishAt:null,createdAt:now,updatedAt:now,sortOrder:order};
    delete copy.id;delete copy.teacherSubmissionId;delete copy.orderUpdatedAt;updates['lessons/'+newId]=copy;
  });
- await db.ref().update(updates);await writeAudit('lesson.bulk_duplicate','lesson','bulk',{count:ids.length,ids});clearBulkSelection('lesson');toast('تم إنشاء '+ids.length+' نسخة مخفية');
+ await db.ref().update(updates);await writeAudit('lesson.bulk_duplicate','lesson','bulk',{count:ids.length,ids});clearBulkSelection('lesson');toast('تم إنشاء '+ids.length+' نسخة كمسودات');
 }
 async function bulkArchiveLessons(){
  const ids=[...selectedLessonIds];if(!ids.length)return;
@@ -1055,8 +1055,8 @@ async function bulkDuplicateQuizzes(){
  const ids=[...selectedQuizIds];if(!ids.length)return;
  const ok=await askConfirm({title:'نسخ '+ids.length+' اختبار؟',message:'سيتم إنشاء نسخ مخفية مع نسخ أسئلتها إلى بنك الأسئلة.',acceptText:'إنشاء النسخ'});if(!ok)return;
  const updates={},now=Date.now();
- ids.forEach(id=>{const q=root.quizzes?.[id];if(!q)return;const newId=db.ref('quizzes').push().key,copy={...q,name:(q.name||'اختبار')+' — نسخة',isHidden:true,createdAt:now,updatedAt:now};delete copy.id;delete copy.teacherSubmissionId;updates['quizzes/'+newId]=copy;quizBankUpdates(newId,copy,updates,now)});
- await db.ref().update(updates);await writeAudit('quiz.bulk_duplicate','quiz','bulk',{count:ids.length,ids});clearBulkSelection('quiz');toast('تم إنشاء '+ids.length+' نسخة اختبار مخفية');
+ ids.forEach(id=>{const q=root.quizzes?.[id];if(!q)return;const newId=db.ref('quizzes').push().key,copy={...q,name:(q.name||'اختبار')+' — نسخة',isHidden:true,workflowStatus:'draft',reviewStatus:'draft',publishAt:null,createdAt:now,updatedAt:now};delete copy.id;delete copy.teacherSubmissionId;updates['quizzes/'+newId]=copy;quizBankUpdates(newId,copy,updates,now)});
+ await db.ref().update(updates);await writeAudit('quiz.bulk_duplicate','quiz','bulk',{count:ids.length,ids});clearBulkSelection('quiz');toast('تم إنشاء '+ids.length+' نسخة اختبار كمسودات');
 }
 async function bulkArchiveQuizzes(){
  const ids=[...selectedQuizIds];if(!ids.length)return;
@@ -1168,7 +1168,7 @@ function renderQuizzes(){
      '<div class="admin-content-card-body"><div class="admin-content-card-top"><span>'+esc(typeLabel(q.type))+' • '+esc(gradeLabel(q.stage,q.grade))+'</span><small>'+esc(adminUnitLabel(q))+'</small></div><h3>'+esc(q.name||'اختبار')+'</h3>'+
        '<div class="mix-admin-content-meta"><span><i class="fa-solid fa-list-check"></i> '+questions+' سؤال</span><span><i class="fa-solid fa-book-open"></i> '+esc(subject.name)+'</span>'+(teacher?'<span><i class="fa-solid fa-chalkboard-user"></i> '+esc(teacher)+'</span>':'')+'</div>'+
        (lesson?'<div class="admin-linked-content"><i class="fa-solid fa-link"></i><span>مرتبط بدرس</span><strong>'+esc(lesson.title||'درس')+'</strong></div>':'<div class="admin-linked-content neutral"><i class="fa-solid fa-layer-group"></i><span>'+esc(mode)+'</span></div>')+(publicationState(q)==='scheduled'?'<p class="admin-content-schedule"><i class="fa-regular fa-clock"></i> النشر '+esc(formatAdminDateTime(q.publishAt))+'</p>':'')+
-       '<div class="mix-admin-card-actions"><button class="admin-action-btn success" type="button" data-review-content="quiz|'+q.id+'" title="معاينة ومراجعة الاختبار"><i class="fa-solid fa-eye"></i></button><a class="admin-action-btn" href="'+preview+'" target="_blank" rel="noopener" title="فتح المعاينة في تبويب جديد"><i class="fa-solid fa-arrow-up-right-from-square"></i></a><button class="admin-action-btn" data-edit-quiz="'+q.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><button class="admin-action-btn '+(q.isHidden?'success':'warning')+'" data-toggle-quiz="'+q.id+'" title="'+(q.isHidden?'نشر الاختبار':'إخفاء الاختبار')+'"><i class="fa-solid '+(q.isHidden?'fa-eye':'fa-eye-slash')+'"></i></button><button class="admin-action-btn danger" data-delete-quiz="'+q.id+'" title="حذف"><i class="fa-solid fa-trash"></i></button></div>'+
+       '<div class="mix-admin-card-actions"><button class="admin-action-btn success" type="button" data-review-content="quiz|'+q.id+'" title="معاينة ومراجعة الاختبار"><i class="fa-solid fa-eye"></i></button><a class="admin-action-btn" href="'+preview+'" target="_blank" rel="noopener" title="فتح المعاينة في تبويب جديد"><i class="fa-solid fa-arrow-up-right-from-square"></i></a><button class="admin-action-btn" data-edit-quiz="'+q.id+'" title="تعديل"><i class="fa-solid fa-pen"></i></button><button class="admin-action-btn '+(q.isHidden?'success':'warning')+'" data-toggle-quiz="'+q.id+'" title="'+(q.isHidden?'نشر الاختبار':'إخفاء الاختبار')+'"><i class="fa-solid '+(q.isHidden?'fa-eye':'fa-eye-slash')+'"></i></button><button class="admin-action-btn danger" data-delete-quiz="'+q.id+'" title="أرشفة"><i class="fa-solid fa-box-archive"></i></button></div>'+
      '</div></article>';
  }).join(''):empty('لا توجد اختبارات','غيّر الفلاتر أو أنشئ أول اختبار.');
  $$('[data-review-content]').forEach(b=>b.onclick=()=>{const [kind,id]=b.dataset.reviewContent.split('|');openContentReview(kind,id)});
