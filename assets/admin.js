@@ -740,7 +740,7 @@ async function deleteSubject(id){
  const type=$('curriculumType').value,stage=$('curriculumStage').value,grade=$('curriculumGrade').value;
  const current=root.customSubjects?.[stage]?.[grade],arr=Array.isArray(current)?[...current]:Object.values(current||{});
  const next=arr.filter(x=>!(x?.id===id&&(!x.type||x.type===type)));
- await db.ref('customSubjects/'+stage+'/'+grade).set(next);toast('تم حذف المادة');
+ await db.ref('customSubjects/'+stage+'/'+grade).set(next);await writeAudit('subject.delete','subject',id,{type,stage,grade});toast('تم حذف المادة');
 }
 async function saveSubject(e){
  e.preventDefault();syncSubjectUnits();
@@ -756,11 +756,11 @@ async function saveSubject(e){
    const idx=arr.findIndex(x=>x?.id===editing.id&&(!x.type||x.type===editing.type));
    if(idx<0)arr.push({...value,createdAt:Date.now(),updatedAt:Date.now()});
    else arr[idx]={...arr[idx],...value,updatedAt:Date.now()};
-   await db.ref('customSubjects/'+stage+'/'+grade).set(arr);toast('تم تحديث المادة والصورة والوحدات');
+   await db.ref('customSubjects/'+stage+'/'+grade).set(arr);await writeAudit('subject.update','subject',id,{type,stage,grade,unitCount:units.length});toast('تم تحديث المادة والصورة والوحدات');
  }else{
    if(arr.some(x=>x?.id===id&&(!x.type||x.type===type)))return toast('رمز المادة موجود بالفعل.','error');
    arr.push({...value,createdAt:Date.now()});
-   await db.ref('customSubjects/'+stage+'/'+grade).set(arr);toast('تمت إضافة المادة');
+   await db.ref('customSubjects/'+stage+'/'+grade).set(arr);await writeAudit('subject.create','subject',id,{type,stage,grade,unitCount:units.length});toast('تمت إضافة المادة');
  }
  closeModal('subjectModal');resetSubjectEditor();
 }
