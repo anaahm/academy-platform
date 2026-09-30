@@ -204,7 +204,7 @@ function adminName(){
  return root.adminProfiles?.[currentUser?.uid]?.name||currentUser?.displayName||'مدير المنصة';
 }
 
-const ADMIN_CORE_PATHS=['adminProfiles','lessons','quizzes','studentProfilesV3','parentProfilesV4','teacherProfiles','teacherSubmissions','communicationSubmissionsV1','community'];
+const ADMIN_CORE_PATHS=['adminProfiles','lessons','quizzes','studentProfilesV3','parentProfilesV4','teacherProfiles','teacherSubmissions','communicationSubmissionsV1','supportTicketsV1','community'];
 const ADMIN_TAB_PATHS={
  overview:ADMIN_CORE_PATHS,
  analytics:['studentProfilesV3','lessons','quizzes','files','assignments','assignmentSubmissions','teacherProfiles','teacherSubmissions','contentAnalytics','customSubjects'],
@@ -220,6 +220,7 @@ const ADMIN_TAB_PATHS={
  news:['posts'],
  community:['community'],
  communications:[],
+ support:['supportTicketsV1'],
  notifications:[],
  announcements:['announcements'],
  settings:['settings']
@@ -239,6 +240,7 @@ const adminMeta={
  news:['التواصل','الأخبار والتحديثات'],
  community:['الإشراف','المجتمع والبلاغات'],
  communications:['التواصل','مراجعة التواصل'],
+ support:['الدعم','الدعم والشكاوى'],
  notifications:['التواصل','الإشعارات الموجهة'],
  announcements:['التواصل','الإعلانات'],
  settings:['المنصة','الإعدادات']
@@ -336,6 +338,7 @@ function renderOverview(){
  const lessons=values(root.lessons),quizzes=values(root.quizzes),students=values(root.studentProfilesV3),parents=values(root.parentProfilesV4),teachers=values(root.teacherProfiles);
  const submissions=flattenSubmissions(),pending=submissions.filter(x=>(x.status||'pending')==='pending'),approved=submissions.filter(x=>x.status==='approved'),rejected=submissions.filter(x=>x.status==='rejected');
  const communicationRows=[];Object.values(root.communicationSubmissionsV1||{}).forEach(items=>Object.values(items||{}).forEach(x=>x&&communicationRows.push(x)));const communicationPending=communicationRows.filter(x=>(x.status||'pending')==='pending');
+ const supportRows=[];Object.values(root.supportTicketsV1||{}).forEach(items=>Object.values(items||{}).forEach(x=>x&&supportRows.push(x)));const supportOpen=supportRows.filter(x=>!['resolved','closed'].includes(x.status));const supportUrgent=supportOpen.filter(x=>x.priority==='urgent');
  const activeTeachers=teachers.filter(t=>t.isActive!==false),inactiveTeachers=teachers.filter(t=>t.isActive===false),reports=communityReportCount();
  const contentGaps=lessons.filter(l=>publicationState(l)==='published'&&!(Array.isArray(l.questions)&&l.questions.length)&&!quizzes.some(q=>publicationState(q)==='published'&&q.lessonId===l.id)).length;
  const readyLessons=lessons.filter(l=>{
@@ -354,14 +357,14 @@ function renderOverview(){
    ['fa-people-roof',parents.length,'ولي أمر'],
    ['fa-circle-play',lessons.length,'درس'],
    ['fa-file-circle-question',quizzes.length,'اختبار'],
-   ['fa-clock',pending.length+communicationPending.length,'مراجعة معلقة']
+   ['fa-clock',pending.length+communicationPending.length+supportOpen.length,'مراجعة معلقة']
  ];
  $('overviewStats').innerHTML=stats.map((s,i)=>'<article class="mix-admin-stat stat-'+i+'"><span><i class="fa-solid '+s[0]+'"></i></span><div><strong>'+s[1]+'</strong><small>'+s[2]+'</small></div></article>').join('');
 
  if($('adminOverviewGreeting'))$('adminOverviewGreeting').textContent='أهلًا '+adminName()+'، هذه أهم حالة للأكاديمية الآن.';
  if($('adminOverviewHealth')){$('adminOverviewHealth').textContent=readiness+'%';$('adminOverviewHealth').closest('.mix-admin-command-ring')?.style.setProperty('--health-angle',(readiness*3.6)+'deg')}
  if($('adminOverviewAttention')){
-   const totalAttention=pending.length+communicationPending.length+reports+inactiveTeachers.length+contentGaps;
+   const totalAttention=pending.length+communicationPending.length+supportOpen.length+reports+inactiveTeachers.length+contentGaps;
    $('adminOverviewAttention').innerHTML='<i class="fa-solid fa-bell"></i> '+(totalAttention?totalAttention+' عناصر تحتاج متابعة':'لا توجد مهام عاجلة');
    $('adminOverviewAttention').classList.toggle('has-attention',totalAttention>0);
  }
@@ -369,6 +372,7 @@ function renderOverview(){
  const attention=[];
  if(pending.length)attention.push({icon:'fa-clock',tone:'orange',title:pending.length+' مراجعة محتوى معلقة',text:'طلبات مدرسين تنتظر قرار الإدارة.',tab:'teachers'});
  if(communicationPending.length)attention.push({icon:'fa-comments',tone:'violet',title:communicationPending.length+' طلب تواصل معلق',text:'أسئلة وردود ورسائل تنتظر موافقتك.',tab:'communications'});
+ if(supportOpen.length)attention.push({icon:'fa-headset',tone:supportUrgent.length?'red':'blue',title:supportOpen.length+' تذكرة دعم مفتوحة',text:supportUrgent.length?supportUrgent.length+' منها عاجلة وتحتاج تدخلًا سريعًا.':'راجع التذاكر الجديدة والجارية.',tab:'support'});
  if(reports)attention.push({icon:'fa-flag',tone:'red',title:reports+' بلاغ في المجتمع',text:'راجع المنشورات المبلّغ عنها.',tab:'community'});
  if(inactiveTeachers.length)attention.push({icon:'fa-user-slash',tone:'gray',title:inactiveTeachers.length+' مدرس غير نشط',text:'راجع حالة حسابات فريق التدريس.',tab:'teachers'});
  if(contentGaps)attention.push({icon:'fa-stethoscope',tone:'orange',title:contentGaps+' درس بلا تدريب مرتبط',text:'مركز التحليلات حدد محتوى يحتاج استكمالًا.',tab:'analytics'});
