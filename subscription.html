@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-page="subscription">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta name="theme-color" content="#1646a0">
+  <title>الاشتراك والباقات | الأكاديمية</title>
+  <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./assets/app-icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/learning.css"><link rel="stylesheet" href="./assets/hub.css"><link rel="stylesheet" href="./assets/ui-kit.css?v=35"><link rel="stylesheet" href="./assets/experience.css?v=39"><link rel="stylesheet" href="./assets/future-theme.css?v=1"><link rel="stylesheet" href="./assets/academy-mix-theme.css?v=26"><link rel="stylesheet" href="./assets/ui-polish.css?v=1"><link rel="stylesheet" href="./assets/subscription.css?v=1">
+  <script src="./assets/academy-utils.js"></script>
+</head>
+<body class="feature-page">
+<div id="toast" class="toast" role="status"></div>
+<header class="learning-header"><div class="container learning-nav">
+  <a class="brand" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-crown"></i></span><span><strong>الأكاديمية</strong><small>الاشتراك والباقات</small></span></a>
+  <div class="learning-breadcrumb"><a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><span>الاشتراك</span></div>
+  <div class="learning-user"><a class="icon-btn" href="./notifications.html" aria-label="الإشعارات"><i class="fa-regular fa-bell"></i></a><span class="avatar" id="subscriptionAvatar">ط</span></div>
+</div></header>
+
+<main class="subscription-shell">
+  <section class="subscription-hero">
+    <div><span class="section-kicker light">اشتراكك في مكان واحد</span><h1>اختر الباقة المناسبة وتابع صلاحيتك بوضوح</h1><p>المحتوى المجاني يظل متاحًا للجميع. المحتوى المشترك يحتاج باقة نشطة تشمل المادة المطلوبة، والتفعيل حاليًا يتم من الإدارة بعد طلب الاشتراك.</p></div>
+    <div class="subscription-hero-status">
+      <article><small>حالة الاشتراك</small><strong id="subscriptionHeroStatus">بدون اشتراك</strong></article>
+      <article><small>المتبقي</small><strong id="subscriptionHeroDays">—</strong></article>
+    </div>
+  </section>
+
+  <section class="subscription-current">
+    <div class="subscription-current-grid">
+      <div>
+        <div class="subscription-current-main"><span class="subscription-current-icon">👑</span><div><span class="section-kicker">اشتراكك الحالي</span><h2 id="subscriptionCurrentPlan">لا توجد باقة نشطة</h2><p id="subscriptionCurrentText">يمكنك استخدام المحتوى المجاني وطلب الاشتراك في أي باقة متاحة.</p></div></div>
+        <div class="subscription-progress"><span id="subscriptionProgressBar" style="width:0%"></span></div>
+      </div>
+      <div class="subscription-current-side">
+        <div><small>بداية الاشتراك</small><strong id="subscriptionStart">—</strong></div>
+        <div><small>انتهاء الاشتراك</small><strong id="subscriptionEnd">—</strong></div>
+        <div><small>نطاق الوصول</small><strong id="subscriptionAccess">المجاني فقط</strong></div>
+        <div><small>الحالة</small><strong id="subscriptionStatusText">بدون اشتراك</strong></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="subscription-plans-head"><div><span class="section-kicker">الباقات المتاحة</span><h2>اختر الباقة التي تناسبك</h2><p>لن يتم خصم أي مبلغ داخل المنصة الآن؛ الطلب يذهب للإدارة للمراجعة والتفعيل.</p></div></div>
+  <section class="subscription-plans" id="subscriptionPlans"></section>
+
+  <section class="subscription-current" style="margin-top:18px">
+    <div class="subscription-plans-head" style="margin:0 0 12px"><div><span class="section-kicker">طلباتك</span><h2>طلبات الاشتراك السابقة</h2><p>تابع حالة آخر الطلبات التي أرسلتها للإدارة.</p></div></div>
+    <div class="subscription-request-list" id="subscriptionRequests"></div>
+  </section>
+</main>
+
+<script src="./assets/ui-kit.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="./assets/firebase-config.js"></script><script src="./assets/student-core.js"></script><script src="./assets/subscription-core.js?v=1"></script><script src="./assets/subscription.js?v=1"></script><script src="./assets/activity-tracker.js"></script><script src="./assets/pwa.js"></script><script src="./assets/student-shell.js"></script><script src="./assets/ui-polish.js?v=1"></script>
+</body></html>
