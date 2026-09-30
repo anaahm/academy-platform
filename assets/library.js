@@ -1,12 +1,13 @@
 (() => {
 'use strict';
-const C=window.AcademyCore,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-let user,profile,data={customSubjects:{},files:{}},scope='mine',allLoaded=false;
+const C=window.AcademyCore,S=window.AcademySubscription,$=id=>document.getElementById(id),$=(s,r=document)=>[...r.querySelectorAll(s)];
+let user,profile,access=null,data={customSubjects:{},files:{}},scope='mine',allLoaded=false;
 let favorites={},history={};
 
 function allFiles(){return Object.entries(data.files||{}).map(([id,v])=>({id,...(v||{})}))}
 function publishedFile(f){return f&&f.isHidden!==true&&(!Number(f.publishAt||0)||Number(f.publishAt)<=Date.now())}
 function mineFile(f){return f.type===profile.educationType&&f.stage===profile.stage&&String(f.grade)===String(profile.grade)}
+function fileAccessible(f){return !S||S.canAccess(f,access,f?.subject||'')}
 function isFavorite(id){return !!favorites[id]}
 function historyRow(id){return history[id]||{}}
 function openedAt(id){return Number(historyRow(id).openedAt||0)}
@@ -93,8 +94,8 @@ function renderFeatured(){
  $('libraryFeaturedTitle').textContent=pick.title||'ملف تعليمي';
  $('libraryFeaturedMeta').textContent=[sub.name,kindLabel(kind),pick.lessonTitle?'مرتبط بـ '+pick.lessonTitle:''].filter(Boolean).join(' • ');
  $('libraryFeaturedBadge').textContent=pick.isFeatured?'مهم':'الأحدث';
- btn.disabled=!(safe&&safe!=='#');
- btn.onclick=()=>openFile(pick.id,btn);
+ const allowed=fileAccessible(pick);btn.disabled=!(safe&&safe!=='#');btn.innerHTML=allowed?'فتح الملف <i class="fa-solid fa-arrow-up-right-from-square"></i>':'<i class="fa-solid fa-crown"></i> يتطلب اشتراك';
+ btn.onclick=()=>allowed?openFile(pick.id,btn):S?.lockOverlay({title:'هذا الملف ضمن الاشتراك',text:'فعّل باقة تشمل مادة '+(sub.name||'المادة')+' لفتح الملف.'});
 }
 function renderStats(list){
  const mine=allFiles().filter(f=>publishedFile(f)&&mineFile(f));
@@ -106,7 +107,7 @@ function renderStats(list){
  $('libraryVisible').textContent=list.length;
 }
 function cardHtml(f){
- const sub=subjectMeta(f),kind=fileKind(f),safe=C.safeUrl(f.url),img=C.safeUrl(sub.imageUrl||''),hasImage=img&&img!=='#',fav=isFavorite(f.id),recent=Number(f.createdAt||0)>Date.now()-7*86400000,historyItem=historyRow(f.id),lessonHref=linkedLessonHref(f);
+ const sub=subjectMeta(f),kind=fileKind(f),safe=C.safeUrl(f.url),allowed=fileAccessible(f),img=C.safeUrl(sub.imageUrl||''),hasImage=img&&img!=='#',fav=isFavorite(f.id),recent=Number(f.createdAt||0)>Date.now()-7*86400000,historyItem=historyRow(f.id),lessonHref=linkedLessonHref(f);
  const opened=Number(historyItem.openedAt||0)>0;
  return '<article class="library-card library-card-v10 '+(f.isFeatured?'featured ':'')+(fav?'favorite':'')+'">'+
    '<div class="library-cover-v10 '+(hasImage?'has-image':'')+'" '+(hasImage?'style="background-image:url(&quot;'+C.esc(img)+'&quot;)"':'')+'>'+
@@ -117,20 +118,21 @@ function cardHtml(f){
    '</div>'+
    '<div class="library-card-body-v10">'+
      '<small>'+C.esc(C.typeLabel(f.type))+' • '+C.esc(C.gradeLabel(f.stage,f.grade))+'</small>'+
-     '<h3>'+C.esc(f.title||'ملف تعليمي')+'</h3>'+
+     '<h3>'+C.esc(f.title||'ملف تعليمي')+' '+(f.isFree?'<span class="subscription-access-pill">مجاني</span>':!allowed?'<span class="subscription-access-pill paid">اشتراك</span>':'')+'</h3>'+
      '<p>'+C.esc(f.description||('ملف '+kindLabel(kind)+' لمادة '+(sub.name||'المادة')+'.'))+'</p>'+
      (f.lessonId?'<a class="library-linked-lesson-v10" href="'+C.esc(lessonHref)+'"><i class="fa-solid fa-link"></i><span><small>مرتبط بالدرس</small><strong>'+C.esc(f.lessonTitle||'فتح الدرس المرتبط')+'</strong></span><i class="fa-solid fa-arrow-left"></i></a>':'')+
      '<div class="library-card-meta-v10">'+
        '<span><i class="fa-solid '+kindIcon(kind)+'"></i>'+C.esc(kindLabel(kind))+'</span>'+
        (opened?'<span><i class="fa-solid fa-clock-rotate-left"></i> فُتح '+new Date(Number(historyItem.openedAt)).toLocaleDateString('ar-EG')+'</span>':'<span><i class="fa-solid fa-sparkles"></i> لم تفتحه بعد</span>')+
      '</div>'+
-     (safe&&safe!=='#'?'<a class="btn btn-primary library-open-v10" data-open-file="'+f.id+'" href="'+C.esc(safe)+'" target="_blank" rel="noopener noreferrer">فتح الملف <i class="fa-solid fa-arrow-up-right-from-square"></i></a>':'<span class="btn btn-soft library-open-v10 disabled"><i class="fa-solid fa-ban"></i> الرابط غير متاح</span>')+'<a class="btn btn-soft support-report-link" href="'+C.esc(supportHrefForFile(f))+'"><i class="fa-regular fa-flag"></i> إبلاغ</a>'+
+     (safe&&safe!=='#'?(allowed?'<a class="btn btn-primary library-open-v10" data-open-file="'+f.id+'" href="'+C.esc(safe)+'" target="_blank" rel="noopener noreferrer">فتح الملف <i class="fa-solid fa-arrow-up-right-from-square"></i></a>':'<button class="btn btn-soft library-open-v10" type="button" data-subscription-file="'+f.id+'"><i class="fa-solid fa-crown"></i> يتطلب اشتراك</button>'):'<span class="btn btn-soft library-open-v10 disabled"><i class="fa-solid fa-ban"></i> الرابط غير متاح</span>')+'<a class="btn btn-soft support-report-link" href="'+C.esc(supportHrefForFile(f))+'"><i class="fa-regular fa-flag"></i> إبلاغ</a>'+
    '</div>'+
  '</article>';
 }
 function bindCards(){
  $$('[data-favorite-file]').forEach(b=>b.onclick=async e=>{e.preventDefault();e.stopPropagation();await toggleFavorite(b.dataset.favoriteFile)});
- $$('[data-open-file]').forEach(a=>a.onclick=()=>{recordOpen(a.dataset.openFile).catch(()=>{})});
+ $('[data-open-file]').forEach(a=>a.onclick=()=>{recordOpen(a.dataset.openFile).catch(()=>{})});
+ $('[data-subscription-file]').forEach(b=>b.onclick=()=>{const f=data.files?.[b.dataset.subscriptionFile],sub=f?subjectMeta(f):null;S?.lockOverlay({title:'هذا الملف ضمن الاشتراك',text:'فعّل باقة تشمل مادة '+(sub?.name||'المادة')+' لفتح الملف.'})});
 }
 function render(){
  const list=files();renderStats(list);renderFeatured();resultsCopy(list);
@@ -156,7 +158,7 @@ async function recordOpen(id){
  }catch(err){console.warn('Library history write skipped',err)}
 }
 function openFile(id,trigger){
- const f=data.files?.[id],safe=C.safeUrl(f?.url||'');if(!f||!safe||safe==='#')return C.toast('رابط الملف غير متاح.','error');
+ const f=data.files?.[id],safe=C.safeUrl(f?.url||'');if(!f||!safe||safe==='#')return C.toast('رابط الملف غير متاح.','error');if(!fileAccessible(f)){S?.lockOverlay({title:'هذا الملف ضمن الاشتراك',text:'تحتاج اشتراكًا نشطًا يشمل هذه المادة.'});return}
  recordOpen(id).catch(()=>{});
  window.open(safe,'_blank','noopener,noreferrer');
  trigger?.blur?.();
@@ -186,7 +188,7 @@ $('libraryHeroRecentBtn').onclick=()=>switchScope('recent',document.querySelecto
 (async()=>{
  window.AcademyUI?.showPageLoading('جاري تحميل مكتبتك التعليمية...');
  try{
-   ({user,profile}=await C.requireStudent());$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
+   ({user,profile}=await C.requireStudent());access=S?await S.load(user.uid,profile,true):null;$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
    favorites={...(profile.libraryFavorites||{})};history={...(profile.libraryHistory||{})};
    if($('libraryStudentName'))$('libraryStudentName').textContent=profile.name||user.displayName||'طالبنا';
    if($('libraryHeroText'))$('libraryHeroText').textContent=C.gradeLabel(profile.stage,profile.grade)+' • '+C.typeLabel(profile.educationType)+' — مذكرات ومراجعات وملفات مرتبطة بموادك ودروسك.';
@@ -196,6 +198,7 @@ $('libraryHeroRecentBtn').onclick=()=>switchScope('recent',document.querySelecto
    if(requested){
      const file=data.files?.[requested],safe=C.safeUrl(file?.url||'');
      if(file&&publishedFile(file)&&mineFile(file)&&safe&&safe!=='#'){
+       if(!fileAccessible(file)){S?.lockOverlay({title:'هذا الملف ضمن الاشتراك',text:'تحتاج اشتراكًا نشطًا يشمل هذه المادة.'});return}
        await recordOpen(requested);location.replace(safe);return;
      }
    }
