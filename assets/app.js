@@ -920,11 +920,14 @@
       box.innerHTML='<div class="mix-recommended-empty"><span>🎓</span><div><strong>نجهز لك الدروس المناسبة</strong><p>ستظهر هنا أحدث دروس صفك فور نشرها.</p></div></div>';
       return;
     }
+    const needMap=new Map(subjects.map(s=>[String(s.id),dashboardSubjectNeed(s,profile)]));
     const ordered=rows.sort((a,b)=>{
       const ad=progress[a.id]?.completed?1:0,bd=progress[b.id]?.completed?1:0;
       if(ad!==bd)return ad-bd;
-      const ap=subjectProgressOf(profile,a.subject),bp=subjectProgressOf(profile,b.subject);
-      if(ap!==bp)return ap-bp;
+      const an=needMap.get(String(a.subject))?.score||0,bn=needMap.get(String(b.subject))?.score||0;
+      if(an!==bn)return bn-an;
+      const alast=String(a.id)===String(profile.lastLessonId||'')?1:0,blast=String(b.id)===String(profile.lastLessonId||'')?1:0;
+      if(alast!==blast)return blast-alast;
       return Number(b.createdAt||0)-Number(a.createdAt||0);
     });
     const offset=Math.min(Number(state.recommendedOffset||0),Math.max(0,ordered.length-1));
@@ -934,14 +937,16 @@
       const ids=new Set();if(l.teacherId)ids.add(String(l.teacherId));(Array.isArray(l.videos)?l.videos:[]).forEach(v=>{if(v?.teacherId)ids.add(String(v.teacherId))});
       const teacherNames=[...ids].map(id=>teachers[id]?.name||(l.videos||[]).find(v=>String(v?.teacherId||'')===id)?.name).filter(Boolean);
       const teacherText=teacherNames.length?teacherNames.slice(0,2).join(' • '):(l.teacherName||'فريق الأكاديمية');
-      const done=!!progress[l.id]?.completed;
+      const done=!!progress[l.id]?.completed,need=needMap.get(String(l.subject))||{avg:null,mistakes:0,progress:subjectProgressOf(profile,l.subject)};
+      const recommendationTag=done?'مكتمل':need.mistakes?'راجع '+need.mistakes+' خطأ':need.avg!==null&&need.avg<70?'تقوية':String(l.id)===String(profile.lastLessonId||'')?'كمّل من هنا':'مقترح لك';
+      const recommendationReason=need.mistakes?'لأن عندك أخطاء مفتوحة في '+s.name:need.avg!==null&&need.avg<70?'متوسط اختباراتك '+need.avg+'%':String(l.id)===String(profile.lastLessonId||'')?'آخر درس وصلت له':'مناسب لتقدمك الحالي';
       const q=new URLSearchParams({type:profile.educationType,stage:profile.stage,grade:String(profile.grade),subject:l.subject,id:l.id});
       return '<a class="mix-recommended-card '+(done?'completed':'')+'" href="./lesson.html?'+q.toString()+'">'+
         '<div class="mix-recommended-art '+(subjectImage?'has-image':'')+'" '+(subjectImage?'style="background-image:url(&quot;'+safeHtml(subjectImage)+'&quot;)"':'')+'>'+
           (!subjectImage?'<span>'+safeHtml(s.emoji||'📚')+'</span>':'')+
-          '<em>'+(done?'مكتمل':'مقترح لك')+'</em>'+
+          '<em>'+safeHtml(recommendationTag)+'</em>'+
         '</div>'+
-        '<div class="mix-recommended-copy"><small>'+safeHtml(s.name)+'</small><h3>'+safeHtml(l.title||'درس جديد')+'</h3><p><i class="fa-solid fa-chalkboard-user"></i> '+safeHtml(teacherText)+'</p><div><span><i class="fa-solid fa-circle-play"></i> '+Number((l.videos||[]).length)+' فيديو</span><strong>'+(done?'راجع الدرس':'ابدأ الآن')+' <i class="fa-solid fa-arrow-left"></i></strong></div></div>'+
+        '<div class="mix-recommended-copy"><small>'+safeHtml(s.name)+'</small><h3>'+safeHtml(l.title||'درس جديد')+'</h3><p><i class="fa-solid fa-chalkboard-user"></i> '+safeHtml(teacherText)+'</p><p class="mix-recommended-reason-v13"><i class="fa-solid fa-wand-magic-sparkles"></i> '+safeHtml(recommendationReason)+'</p><div><span><i class="fa-solid fa-circle-play"></i> '+Number((l.videos||[]).length)+' فيديو</span><strong>'+(done?'راجع الدرس':'ابدأ الآن')+' <i class="fa-solid fa-arrow-left"></i></strong></div></div>'+
       '</a>';
     }).join('');
     const refresh=$('recommendedRefreshBtn');
@@ -1067,6 +1072,7 @@
     }).join('');
 
     renderRecommendedLessons(p,subjects);
+    renderSmartHomeRecommendations();
 
     const first = subjects[0];
     const lastSubject = subjects.find(s => s.id === p.lastSubjectId) || first;
