@@ -25,7 +25,7 @@ const defaultSubjects={
 const esc=(v='')=>String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const normalize=(v='')=>String(v).toLowerCase().normalize('NFKD').replace(/[\u064B-\u065F\u0670]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[^p{L}p{N}s]/gu,' ').replace(/\s+/g,' ').trim();
 const safeUrl=(u='')=>window.AcademyUtils.safeUrl(u);
-const published=(x)=>x&&x.isHidden!==true&&x.isActive!==false&&(!Number(x.publishAt||0)||Number(x.publishAt)<=Date.now());
+const published=(x)=>x&&x.workflowStatus!=='draft'&&x.isHidden!==true&&x.isActive!==false&&(!Number(x.publishAt||0)||Number(x.publishAt)<=Date.now());
 const historyKey=()=> 'academy-search-history-v2-'+(user?.uid||'guest');
 const clickKey=()=> 'academy-search-clicks-v2-'+(user?.uid||'guest');
 
