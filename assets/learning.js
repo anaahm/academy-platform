@@ -37,7 +37,7 @@ function ctx(){
 }
 function contentAvailable(item){
  if(state.adminPreview)return true;
- if(!item||item.isHidden)return false;
+ if(!item||item.isHidden||item.workflowStatus==='draft')return false;
  const publishAt=Number(item.publishAt||0);
  return !publishAt||publishAt<=Date.now();
 }
