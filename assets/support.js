@@ -6,6 +6,20 @@ let user,profile,tickets={},filter='all';
 const statusLabels={new:'جديدة',reviewing:'قيد المراجعة',in_progress:'جاري الحل',waiting_user:'مطلوب رد منك',resolved:'تم الحل',closed:'مغلقة'};
 const categoryLabels={technical:'مشكلة تقنية',lesson:'مشكلة في درس',quiz_question:'سؤال أو إجابة خاطئة',video:'فيديو لا يعمل',file:'ملف غير متاح',assignment:'مشكلة في واجب',account:'مشكلة في الحساب أو الدخول',general:'مشكلة عامة'};
 function safeUrl(u=''){try{const x=new URL(u);return ['http:','https:'].includes(x.protocol)?x.href:''}catch{return''}}
+function safeSourceHref(u=''){
+ if(!u)return'';if(String(u).startsWith('./')||String(u).startsWith('/'))return String(u);
+ return safeUrl(u);
+}
+async function compressImage(file){
+ if(!file)return'';if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('صيغة الصورة غير مدعومة');
+ if(file.size>5*1024*1024)throw Error('حجم الصورة أكبر من 5MB');
+ const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)});
+ const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src=data});
+ const max=1280,scale=Math.min(1,max/Math.max(img.width,img.height)),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));
+ canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);const out=canvas.toDataURL('image/jpeg',.72);
+ if(out.length>520000)throw Error('تعذر ضغط الصورة بما يكفي؛ استخدم لقطة أصغر');
+ return out;
+}
 function currentContext(){
  return{
   source:q.get('source')||'support',
@@ -20,7 +34,7 @@ function currentContext(){
   quizTitle:q.get('quizTitle')||'',
   questionIndex:q.get('questionIndex')||'',
   questionText:q.get('questionText')||'',
-  href:q.get('href')||document.referrer||''
+  href:safeSourceHref(q.get('href')||document.referrer||'')
  };
 }
 function initPrefill(){
@@ -65,8 +79,8 @@ async function reply(e){
 $('supportTicketForm').addEventListener('submit',async e=>{
  e.preventDefault();const category=$('supportCategory').value,priority=$('supportPriority').value,title=$('supportTitle').value.trim(),description=$('supportDescription').value.trim(),rawUrl=$('supportScreenshotUrl').value.trim(),screenshotUrl=rawUrl?safeUrl(rawUrl):'';
  if(!title||description.length<5)return C.toast('اكتب عنوانًا ووصفًا أوضح للمشكلة.','error');if(rawUrl&&!screenshotUrl)return C.toast('رابط الصورة غير صالح.','error');
- const ctx=currentContext(),now=Date.now(),ref=C.db.ref('supportTicketsV1/'+user.uid).push(),ticketCode=('T'+now.toString(36).slice(-5)+ref.key.slice(-3)).toUpperCase();
- const payload={ticketCode,requesterId:user.uid,requesterRole:'student',requesterName:profile.name||user.displayName||'طالب',requesterPhone:profile.phone||'',category,priority,title,description,screenshotUrl,status:'new',...ctx,createdAt:now,updatedAt:now};
+ const screenshotData=await compressImage($('supportScreenshotFile')?.files?.[0]);const ctx=currentContext(),now=Date.now(),ref=C.db.ref('supportTicketsV1/'+user.uid).push(),ticketCode=('T'+now.toString(36).slice(-5)+ref.key.slice(-3)).toUpperCase();
+ const payload={ticketCode,requesterId:user.uid,requesterRole:'student',requesterName:profile.name||user.displayName||'طالب',requesterPhone:profile.phone||'',category,priority,title,description,screenshotUrl,screenshotData,status:'new',...ctx,createdAt:now,updatedAt:now};
  const btn=$('supportSubmitBtn');window.AcademyUI?.setButtonLoading(btn,true,'فتح');
  try{await ref.set(payload);e.target.reset();initPrefill();C.toast('تم فتح التذكرة بنجاح ✅')}
  catch(err){console.error(err);C.toast('تعذر فتح التذكرة الآن.','error')}finally{window.AcademyUI?.setButtonLoading(btn,false)}
