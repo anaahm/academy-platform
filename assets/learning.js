@@ -522,7 +522,7 @@ function renderLinkedLessonQuizzes(c,id){
    if(!allowed)return '<button type="button" class="linked-quiz-item is-locked subscription-locked" data-linked-quiz-subscription="'+q.id+'"><span>'+esc(q.name||'اختبار الدرس')+' <small>يتطلب اشتراك</small></span><i class="fa-solid fa-lock"></i></button>';
    return (done(id)||state.adminPreview)?'<a class="linked-quiz-item" href="'+url('lesson.html',c,{quiz:q.id})+'"><span>'+esc(q.name||'اختبار الدرس')+' <small>'+(q.questions?.length||0)+' سؤال</small></span><i class="fa-solid fa-arrow-left"></i></a>':'<div class="linked-quiz-item is-locked"><span>'+esc(q.name||'اختبار الدرس')+' <small>أكمل الدرس لفتح الاختبار</small></span><i class="fa-solid fa-lock"></i></div>';
  }).join(''):'';
- $('[data-linked-quiz-subscription]').forEach(b=>b.onclick=()=>{const q=state.quizzes.find(x=>x.id===b.dataset.linkedQuizSubscription);subscriptionLock(q,c.subject)});
+ $$('[data-linked-quiz-subscription]').forEach(b=>b.onclick=()=>{const q=state.quizzes.find(x=>x.id===b.dataset.linkedQuizSubscription);subscriptionLock(q,c.subject)});
 }
 function showLessonCelebration(c,id,xp=50){
  document.getElementById('lessonCelebration')?.remove();
@@ -684,7 +684,7 @@ function renderFiles(){
      (href?(allowed?'<a href="'+esc(href)+'" target="_blank" rel="noopener noreferrer">فتح الملف <i class="fa-solid fa-arrow-up-right-from-square"></i></a>':'<button type="button" class="resource-subscription-lock" data-resource-subscription="'+f.id+'"><i class="fa-solid fa-crown"></i> يتطلب اشتراك</button>'):'<span class="resource-link-disabled"><i class="fa-solid fa-ban"></i> الرابط غير متاح</span>')+
    '</article>';
  }).join(''):'<div class="empty-state"><span>📎</span><h3>لا توجد مرفقات لهذه المادة حاليًا</h3></div>';
- $('[data-resource-subscription]').forEach(b=>b.onclick=()=>{const f=state.files.find(x=>x.id===b.dataset.resourceSubscription);subscriptionLock(f,f?.subject||ctx().subject)});
+ $$('[data-resource-subscription]').forEach(b=>b.onclick=()=>{const f=state.files.find(x=>x.id===b.dataset.resourceSubscription);subscriptionLock(f,f?.subject||ctx().subject)});
 
 }
 function renderOutline(c,l){
@@ -696,7 +696,7 @@ function renderOutline(c,l){
    const body='<span class="outline-num">'+(allowed?(complete?'<i class="fa-solid fa-check"></i>':i+1):'<i class="fa-solid fa-lock"></i>')+'</span><span><strong>'+esc(x.title||'درس')+'</strong><small>'+(active?'أنت هنا':!allowed?'يتطلب اشتراك':complete?'مكتمل':'متاح')+'</small></span>';
    return allowed?'<a class="outline-item '+(active?'active ':'')+(complete?'complete':'')+'" href="'+url('lesson.html',c,{id:x.id})+'" '+(active?'aria-current="page"':'')+'>'+body+'</a>':'<button type="button" class="outline-item subscription-locked" data-outline-subscription="'+x.id+'">'+body+'</button>';
  }).join('');
- $('[data-outline-subscription]').forEach(b=>b.onclick=()=>{const item=state.unitLessons.find(x=>x.id===b.dataset.outlineSubscription);subscriptionLock(item,c.subject)});
+ $$('[data-outline-subscription]').forEach(b=>b.onclick=()=>{const item=state.unitLessons.find(x=>x.id===b.dataset.outlineSubscription);subscriptionLock(item,c.subject)});
 }
 function renderNav(c){
  const route=lessonRouteLessons(),i=route.findIndex(l=>l.id===state.currentLesson.id),prev=route[i-1],next=route[i+1];
