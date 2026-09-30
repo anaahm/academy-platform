@@ -33,7 +33,7 @@ function fillSubjects(select,stage,grade,type,keep){
  if(!select)return;const rows=subjectRows(stage,grade,type);select.innerHTML=rows.length?rows.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join(''):'<option value="">لا توجد مواد</option>';if(keep&&rows.some(x=>x.id===keep))select.value=keep;
 }
 function bindScope(prefix){
- const type=$(prefix+'Type'),stage=$(prefix+'Stage'),grade=$(prefix+'Grade'),subject=$(prefix+'Subject');if(!type||!stage||!grade||!subject)return;
+ const type=$(prefix+'Type'),stage=$(prefix+'Stage'),grade=$(prefix+'Grade'),subject=$(prefix+'Subject');if(!type||!stage||!grade||!subject)return;if(type.dataset.contentOpsBound==='1'){fillGrades(grade,stage.value,grade.value||'1');fillSubjects(subject,stage.value,grade.value,type.value,subject.value);return}type.dataset.contentOpsBound='1';
  const syncGrade=()=>{const old=grade.value;fillGrades(grade,stage.value,old);fillSubjects(subject,stage.value,grade.value,type.value,subject.value);refreshPreview()};
  const syncSubject=()=>{fillSubjects(subject,stage.value,grade.value,type.value,subject.value);refreshPreview()};
  type.addEventListener('change',syncSubject);stage.addEventListener('change',syncGrade);grade.addEventListener('change',syncSubject);
