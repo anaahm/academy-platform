@@ -193,11 +193,19 @@
   async function loadDashboardLessonCatalog(profile){
     if(!profile?.stage)return;
     try{
-      const snap=await database.ref('lessons').orderByChild('stage').equalTo(profile.stage).once('value');
-      state.dbData.lessons=snap.val()||{};
+      const [lessonsSnap,quizzesSnap,filesSnap]=await Promise.all([
+        database.ref('lessons').orderByChild('stage').equalTo(profile.stage).once('value'),
+        database.ref('quizzes').orderByChild('stage').equalTo(profile.stage).once('value'),
+        database.ref('files').orderByChild('stage').equalTo(profile.stage).once('value')
+      ]);
+      state.dbData.lessons=lessonsSnap.val()||{};
+      state.dbData.quizzes=quizzesSnap.val()||{};
+      state.dbData.files=filesSnap.val()||{};
     }catch(error){
-      console.warn('Dashboard lesson catalog unavailable',error);
+      console.warn('Dashboard learning catalog unavailable',error);
       state.dbData.lessons=state.dbData.lessons||{};
+      state.dbData.quizzes=state.dbData.quizzes||{};
+      state.dbData.files=state.dbData.files||{};
     }
   }
 
