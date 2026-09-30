@@ -164,6 +164,7 @@ function compute(ctx){
 function render(ctx){
  state.lastCtx=ctx;const data=compute(ctx),root=ctx.root;
  const high=data.issues.filter(x=>x.severity==='high').length,medium=data.issues.filter(x=>x.severity==='medium').length;
+ const badge=document.getElementById('analyticsAlertBadge');if(badge){badge.textContent=high+medium;badge.classList.toggle('hidden',high+medium===0)}
  document.getElementById('adminIntelHeroIssues').textContent=high+medium;document.getElementById('adminIntelHeroActive').textContent=data.active7;
  document.getElementById('adminIntelPeriodText').textContent='آخر '+state.days+' أيام • تم التحديث '+new Date().toLocaleTimeString('ar-EG',{hour:'numeric',minute:'2-digit'});
  const kpis=[
