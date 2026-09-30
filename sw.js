@@ -1,4 +1,4 @@
-const CACHE='academy-shell-2026-09-30-v80';
+const CACHE='academy-shell-2026-09-30-v82';
 const CORE=[
  './','./index.html','./offline.html',
  './explore.html','./search.html','./news.html','./subject.html','./lesson.html','./profile.html',
