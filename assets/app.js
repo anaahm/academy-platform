@@ -539,6 +539,19 @@
   async function loadDailyGoals() {
     if(!state.user)return;
     try{
+      if(window.AcademyGame&&state.profile){
+        const synced=await window.AcademyGame.syncDailyMissionRewards(state.user.uid,state.profile);
+        state.profile=synced.profile||state.profile;
+        const missions=window.AcademyGame.dailyMissions(state.profile,todayKey());
+        const goals={};missions.forEach(m=>goals[m.id]=!!m.done);
+        renderDailyGoals(goals);
+        if(synced.gained){
+          const total=Number(state.profile?.stats?.totalXP||0),level=Number(state.profile?.stats?.level||Math.floor(total/1000)+1),inLevel=total%1000,pct=total>0&&inLevel===0?100:Math.round(inLevel/1000*100),remain=inLevel===0&&total>0?1000:1000-inLevel;
+          if($('xpStat'))$('xpStat').textContent=total;if($('heroXpValue'))$('heroXpValue').textContent=total;if($('heroLevelValue'))$('heroLevelValue').textContent=level;if($('heroLevelProgress'))$('heroLevelProgress').style.width=pct+'%';if($('heroNextLevelText'))$('heroNextLevelText').textContent='باقي '+remain+' XP للمستوى التالي';
+          toast('أضفنا +'+synced.gained+' XP من مهام اليوم المكتملة 🎉');
+        }
+        return;
+      }
       const snap=await database.ref('studentProfilesV3/'+state.user.uid+'/dailyGoals/'+todayKey()).once('value');
       renderDailyGoals(snap.val()||{});
     }catch(e){console.warn('Daily goals load failed',e)}
@@ -1456,7 +1469,13 @@
     $('dashMobileMenu').addEventListener('click', () => document.querySelector('.dashboard-sidebar').classList.toggle('open'));
 
     initDashboardSidebar();
-    $$('[data-daily-goal]').forEach(btn=>btn.addEventListener('click',()=>toggleDailyGoal(btn.dataset.dailyGoal)));
+    $('[data-daily-goal]').forEach(btn=>btn.addEventListener('click',()=>{
+      const key=btn.dataset.dailyGoal;
+      if(key==='assignment')location.href='./assignments.html';
+      else if(key==='quiz')location.href='./exam-center.html';
+      else if(key==='review')location.href='./planner.html';
+      else $('continueLearningBtn')?.click();
+    }));
     $('dailyQuickStart')?.addEventListener('click',()=>{
       const firstIncomplete=$$('[data-daily-goal]').find(btn=>!btn.classList.contains('completed'));
       const key=firstIncomplete?.dataset.dailyGoal||'lesson';
