@@ -7,6 +7,14 @@ let user=null,teacher={},tickets={},filter='all',stop=null;
 const statusLabels={new:'جديدة',reviewing:'قيد المراجعة',in_progress:'جاري الحل',waiting_user:'مطلوب رد منك',resolved:'تم الحل',closed:'مغلقة'};
 const categoryLabels={technical:'مشكلة تقنية',content:'مشكلة محتوى',students:'مشكلة مع الطلاب',assignment:'واجب أو تصحيح',account:'الحساب والصلاحيات',general:'طلب أو مشكلة عامة'};
 function safeUrl(u=''){try{const x=new URL(u);return ['http:','https:'].includes(x.protocol)?x.href:''}catch{return''}}
+async function compressImage(file){
+ if(!file)return'';if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('صيغة الصورة غير مدعومة');
+ if(file.size>5*1024*1024)throw Error('حجم الصورة أكبر من 5MB');
+ const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)});
+ const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src=data});
+ const max=1280,scale=Math.min(1,max/Math.max(img.width,img.height)),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+ const out=canvas.toDataURL('image/jpeg',.72);if(out.length>520000)throw Error('تعذر ضغط الصورة بما يكفي؛ استخدم لقطة أصغر');return out;
+}
 function rows(){return Object.entries(tickets||{}).map(([id,v])=>({id,...(v||{})})).sort((a,b)=>Number(b.updatedAt||b.createdAt||0)-Number(a.updatedAt||a.createdAt||0))}
 function filteredRows(){const all=rows();if(filter==='all')return all;if(filter==='open')return all.filter(x=>!['resolved','closed'].includes(x.status));return all.filter(x=>x.status===filter)}
 function messages(t){return Object.entries(t.messages||{}).map(([id,v])=>({id,...(v||{})})).sort((a,b)=>Number(a.createdAt||0)-Number(b.createdAt||0))}
@@ -38,11 +46,12 @@ async function reply(e){
 async function submit(e){
  e.preventDefault();const category=$('teacherSupportCategory').value,priority=$('teacherSupportPriority').value,title=$('teacherSupportTitle').value.trim(),description=$('teacherSupportDescription').value.trim(),raw=$('teacherSupportScreenshot').value.trim(),screenshotUrl=raw?safeUrl(raw):'';
  if(!title||description.length<5)return window.AcademyUI?.toast?.('اكتب عنوانًا ووصفًا أوضح.','error');if(raw&&!screenshotUrl)return window.AcademyUI?.toast?.('رابط الصورة غير صالح.','error');
- const now=Date.now(),ref=db.ref('supportTicketsV1/'+user.uid).push(),ticketCode=('T'+now.toString(36).slice(-5)+ref.key.slice(-3)).toUpperCase();
- const payload={ticketCode,requesterId:user.uid,requesterRole:'teacher',requesterName:teacher.name||user.displayName||'مدرس',requesterEmail:teacher.email||user.email||'',category,priority,title,description,screenshotUrl,status:'new',source:'teacher_portal',createdAt:now,updatedAt:now};
  const btn=$('teacherSupportSubmit');window.AcademyUI?.setButtonLoading(btn,true,'فتح');
- try{await ref.set(payload);e.target.reset();window.AcademyUI?.toast?.('تم فتح تذكرة الدعم ✅')}
- catch(err){console.error(err);window.AcademyUI?.toast?.('تعذر فتح التذكرة.','error')}finally{window.AcademyUI?.setButtonLoading(btn,false)}
+ try{
+   const screenshotData=await compressImage($('teacherSupportScreenshotFile')?.files?.[0]),now=Date.now(),ref=db.ref('supportTicketsV1/'+user.uid).push(),ticketCode=('T'+now.toString(36).slice(-5)+ref.key.slice(-3)).toUpperCase();
+   const payload={ticketCode,requesterId:user.uid,requesterRole:'teacher',requesterName:teacher.name||user.displayName||'مدرس',requesterEmail:teacher.email||user.email||'',category,priority,title,description,screenshotUrl,screenshotData,status:'new',source:'teacher_portal',createdAt:now,updatedAt:now};
+   await ref.set(payload);e.target.reset();window.AcademyUI?.toast?.('تم فتح تذكرة الدعم ✅')
+ }catch(err){console.error(err);window.AcademyUI?.toast?.(err?.message||'تعذر فتح التذكرة.','error')}finally{window.AcademyUI?.setButtonLoading(btn,false)}
 }
 function mount(){
  $('teacherSupportForm')?.addEventListener('submit',submit);
