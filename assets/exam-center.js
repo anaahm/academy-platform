@@ -180,7 +180,7 @@ function render(){
  }).join(''):'<div class="feature-empty"><span>📭</span><h3>لا توجد اختبارات مطابقة</h3><p>جرّب مادة أخرى أو غيّر عبارة البحث.</p></div>';
 
  $$('[data-subscription-exam]').forEach(btn=>btn.onclick=()=>S?.lockOverlay({title:'هذا الاختبار ضمن الاشتراك',text:'فعّل باقة تشمل هذه المادة لتبدأ الاختبار.'}));
- $('[data-locked-exam]').forEach(btn=>btn.onclick=()=>C.toast(btn.dataset.lockReason||'أكمل الدروس المطلوبة أولًا.','error'));
+ $$('[data-locked-exam]').forEach(btn=>btn.onclick=()=>C.toast(btn.dataset.lockReason||'أكمل الدروس المطلوبة أولًا.','error'));
 }
 $$('[data-exam-filter]').forEach(b=>b.onclick=()=>{
  filter=b.dataset.examFilter;
