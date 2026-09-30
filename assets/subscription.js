@@ -11,6 +11,16 @@ function subjectsText(plan){
 }
 function renderCurrent(){
  const sub=access.subscription,plan=access.plan,status=access.status;
+ if(access.enforced!==true){
+   $('subscriptionHeroStatus').textContent='الوصول مفتوح';
+   $('subscriptionHeroDays').textContent='—';
+   $('subscriptionCurrentPlan').textContent=plan?.name||'نظام الاشتراكات غير مفعل بعد';
+   $('subscriptionStatusText').textContent='غير مفروض حاليًا';
+   $('subscriptionStart').textContent=fmt(sub?.startsAt);$('subscriptionEnd').textContent=fmt(sub?.endsAt);$('subscriptionAccess').textContent='كل المحتوى متاح حاليًا';
+   $('subscriptionCurrentText').textContent='الإدارة تجهز الباقات حاليًا. لن يُقفل أي محتوى قبل تفعيل نظام الاشتراكات من لوحة الإدارة.';
+   $('subscriptionProgressBar').style.width='100%';
+   return;
+ }
  $('subscriptionHeroStatus').textContent=S.statusLabel(status);$('subscriptionHeroDays').textContent=access.active?access.daysLeft+' يوم':'—';
  $('subscriptionCurrentPlan').textContent=plan?.name||'لا توجد باقة نشطة';$('subscriptionStatusText').textContent=S.statusLabel(status);$('subscriptionStart').textContent=fmt(sub?.startsAt);$('subscriptionEnd').textContent=fmt(sub?.endsAt);$('subscriptionAccess').textContent=access.active?subjectsText(plan):'المجاني فقط';
  $('subscriptionCurrentText').textContent=access.active?'اشتراكك فعال ويمكنك الوصول للمحتوى الذي تشمله الباقة.':status==='pending'?'اشتراكك موجود لكنه لم يبدأ بعد.':status==='suspended'?'الاشتراك موقوف حاليًا. تواصل مع الإدارة إذا احتجت مساعدة.':status==='expired'?'انتهت مدة اشتراكك ويمكنك طلب تجديد أو باقة جديدة.':'يمكنك استخدام المحتوى المجاني وطلب الاشتراك في أي باقة متاحة.';
@@ -35,7 +45,7 @@ function renderRequests(){
 }
 async function requestPlan(id,btn){
  const plan=access.plans?.[id];if(!plan)return;
- const pending=requestRows().some(r=>r.planId===id&&r.status==='pending');if(pending)return C.toast('لديك طلب قيد المراجعة لهذه الباقة.','error');
+ const pending=requestRows().find(r=>r.status==='pending');if(pending)return C.toast('لديك طلب اشتراك قيد المراجعة بالفعل: '+(pending.planName||'الباقة المختارة')+'.','error');
  window.AcademyUI?.setButtonLoading(btn,true,'إرسال');
  try{
    const ref=C.db.ref('subscriptionRequestsV1/'+user.uid).push(),now=Date.now();

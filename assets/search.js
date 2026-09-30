@@ -4,10 +4,10 @@
 const cfg=window.ACADEMY_FIREBASE_CONFIG;
 if(!cfg)throw new Error('Firebase config missing');
 if(!firebase.apps.length)firebase.initializeApp(cfg);
-const db=firebase.database(),auth=firebase.auth();
+const db=firebase.database(),auth=firebase.auth(),S=window.AcademySubscription;
 const $=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 
-let root={customSubjects:{}},allResults=[],activeType='all',activeScope=null,loadToken=0,user=null,profile=null,autocompleteTimer=null;
+let root={customSubjects:{}},allResults=[],activeType='all',activeScope=null,loadToken=0,user=null,profile=null,access=null,autocompleteTimer=null;
 const indexCache=new Map(),stageNames={primary:'ابتدائي',prep:'إعدادي',sec:'ثانوي'};
 const gradeCounts={primary:6,prep:3,sec:3};
 const defaultSubjects={
@@ -136,19 +136,19 @@ function makeIndex(data){
   const sub=subjectMeta(l.subject,l.stage,String(l.grade),l.type),teacherIds=teacherIdsFromLesson(l),teacherNames=teacherIds.map(tid=>teachers[tid]?.name).filter(Boolean);
   teacherIds.forEach(tid=>addScope(tid,l));addContext(l);
   const text=plainText(l.content||'').slice(0,700),createdAt=Number(l.createdAt||l.updatedAt||0);
-  items.push({kind:'lesson',id,title:l.title||'درس',description:text.slice(0,175)||'شرح ودرس داخل الأكاديمية.',subject:l.subject,subjectName:sub.name,image:sub.imageUrl||'',emoji:sub.emoji||'📚',type:l.type,stage:l.stage,grade:String(l.grade||''),teacherIds,teacherName:teacherNames.join(' • ')||l.teacherName||'',createdAt,search:[l.title,text,sub.name,teacherNames.join(' '),l.teacherName,'درس شرح فيديو'].join(' '),href:lessonLink({id,...l})});
+  items.push({kind:'lesson',id,title:l.title||'درس',description:text.slice(0,175)||'شرح ودرس داخل الأكاديمية.',subject:l.subject,subjectName:sub.name,image:sub.imageUrl||'',emoji:sub.emoji||'📚',type:l.type,stage:l.stage,grade:String(l.grade||''),isFree:!!l.isFree,teacherIds,teacherName:teacherNames.join(' • ')||l.teacherName||'',createdAt,search:[l.title,text,sub.name,teacherNames.join(' '),l.teacherName,'درس شرح فيديو'].join(' '),href:lessonLink({id,...l})});
  });
  Object.entries(data.quizzes||{}).forEach(([id,q])=>{
   if(!published(q))return;
   if(profile&&user&&q.targetMode&&q.targetMode!=='all'&&!targetMatches(q))return;
   const sub=subjectMeta(q.subject,q.stage,String(q.grade),q.type),teacherIds=[...new Set([q.teacherId].filter(Boolean).map(String))],teacherNames=teacherIds.map(tid=>teachers[tid]?.name).filter(Boolean);
   teacherIds.forEach(tid=>addScope(tid,q));addContext(q);
-  items.push({kind:'quiz',id,title:q.name||'اختبار',description:'اختبار يحتوي على '+(q.questions?.length||0)+' سؤال'+(Number(q.durationMinutes||0)?' • '+Number(q.durationMinutes)+' دقيقة':''),subject:q.subject,subjectName:sub.name,image:sub.imageUrl||'',emoji:sub.emoji||'🧠',type:q.type,stage:q.stage,grade:String(q.grade||''),teacherIds,teacherName:teacherNames.join(' • ')||q.teacherName||'',createdAt:Number(q.createdAt||q.updatedAt||0),search:[q.name,sub.name,teacherNames.join(' '),q.teacherName,'اختبار امتحان تدريب اسئلة'].join(' '),href:quizLink({id,...q})});
+  items.push({kind:'quiz',id,title:q.name||'اختبار',description:'اختبار يحتوي على '+(q.questions?.length||0)+' سؤال'+(Number(q.durationMinutes||0)?' • '+Number(q.durationMinutes)+' دقيقة':''),subject:q.subject,subjectName:sub.name,image:sub.imageUrl||'',emoji:sub.emoji||'🧠',type:q.type,stage:q.stage,grade:String(q.grade||''),isFree:!!q.isFree,teacherIds,teacherName:teacherNames.join(' • ')||q.teacherName||'',createdAt:Number(q.createdAt||q.updatedAt||0),search:[q.name,sub.name,teacherNames.join(' '),q.teacherName,'اختبار امتحان تدريب اسئلة'].join(' '),href:quizLink({id,...q})});
  });
  Object.entries(data.files||{}).forEach(([id,f])=>{
   if(!published(f))return;
   const sub=subjectMeta(f.subject,f.stage,String(f.grade),f.type);addContext(f);
-  items.push({kind:'file',id,title:f.title||'ملف',description:f.description||('ملف '+(f.fileType||'PDF')+' للمراجعة والتعلم.'),subject:f.subject,subjectName:sub.name,image:sub.imageUrl||'',emoji:sub.emoji||'📄',type:f.type,stage:f.stage,grade:String(f.grade||''),teacherIds:f.teacherId?[String(f.teacherId)]:[],teacherName:f.teacherName||'',createdAt:Number(f.createdAt||f.updatedAt||0),important:!!f.isFeatured,search:[f.title,f.description,sub.name,f.fileType,f.lessonTitle,'ملف pdf مذكرة مراجعة مرجع'].join(' '),href:fileLink(id)});
+  items.push({kind:'file',id,title:f.title||'ملف',description:f.description||('ملف '+(f.fileType||'PDF')+' للمراجعة والتعلم.'),subject:f.subject,subjectName:sub.name,image:sub.imageUrl||'',emoji:sub.emoji||'📄',type:f.type,stage:f.stage,grade:String(f.grade||''),isFree:!!f.isFree,teacherIds:f.teacherId?[String(f.teacherId)]:[],teacherName:f.teacherName||'',createdAt:Number(f.createdAt||f.updatedAt||0),important:!!f.isFeatured,search:[f.title,f.description,sub.name,f.fileType,f.lessonTitle,'ملف pdf مذكرة مراجعة مرجع'].join(' '),href:fileLink(id)});
  });
 
  contexts.forEach(ctx=>{
@@ -173,7 +173,7 @@ function makeIndex(data){
   Object.entries(data.live||{}).forEach(([id,s])=>{
    if(!studentMatches(s))return;
    const sub=subjectMeta(s.subject,profile.stage,String(profile.grade),profile.educationType),status=liveStatus(s);
-   items.push({kind:'live',id,title:s.title||'جلسة مباشرة',description:(status==='live'?'مباشر الآن':status==='upcoming'?'جلسة قادمة':'جلسة منتهية')+(s.teacher?' • '+s.teacher:''),subject:s.subject||'',subjectName:s.subject?sub.name:'جلسة عامة',image:sub.imageUrl||'',emoji:sub.emoji||'🔴',type:s.type||profile.educationType,stage:s.stage||profile.stage,grade:String(s.grade||profile.grade),teacherIds:s.teacherId?[String(s.teacherId)]:[],teacherName:s.teacher||'',createdAt:Number(s.createdAt||s.scheduledTime||0),status,search:[s.title,s.teacher,sub.name,'بث مباشر جلسة حصة zoom youtube'].join(' '),href:liveLink(id)});
+   items.push({kind:'live',id,title:s.title||'جلسة مباشرة',description:(status==='live'?'مباشر الآن':status==='upcoming'?'جلسة قادمة':'جلسة منتهية')+(s.teacher?' • '+s.teacher:''),subject:s.subject||'',subjectName:s.subject?sub.name:'جلسة عامة',image:sub.imageUrl||'',emoji:sub.emoji||'🔴',type:s.type||profile.educationType,stage:s.stage||profile.stage,grade:String(s.grade||profile.grade),isFree:!!s.isFree,teacherIds:s.teacherId?[String(s.teacherId)]:[],teacherName:s.teacher||'',createdAt:Number(s.createdAt||s.scheduledTime||0),status,search:[s.title,s.teacher,sub.name,'بث مباشر جلسة حصة zoom youtube'].join(' '),href:liveLink(id)});
   });
  }
  return items;
@@ -234,6 +234,16 @@ function countsForQuery(){
 function kindLabel(k){return{subject:'مادة',lesson:'درس',teacher:'مدرس',quiz:'اختبار',file:'ملف',assignment:'واجب',live:'بث مباشر'}[k]||'محتوى'}
 function icon(k){return{subject:'fa-book-open',lesson:'fa-circle-play',teacher:'fa-chalkboard-user',quiz:'fa-file-circle-question',file:'fa-file-pdf',assignment:'fa-clipboard-check',live:'fa-tower-broadcast'}[k]||'fa-link'}
 function educationLabel(t){return t==='azhar'?'أزهر':t==='public'?'تعليم عام':'الأكاديمية'}
+function paidKind(x){return ['lesson','quiz','file','live'].includes(x?.kind)}
+function resultAccessible(x){return !paidKind(x)||!S||S.canAccess(x,access,x?.subject||'')}
+function openSearchItem(e,item){
+ if(!item)return false;
+ recordClick(item);
+ if(resultAccessible(item))return true;
+ e?.preventDefault?.();
+ S?.lockOverlay({title:'هذا المحتوى ضمن الاشتراك',text:'المحتوى ظاهر في البحث للاستكشاف، لكن فتحه يحتاج باقة نشطة تشمل '+(item.subjectName||'هذه المادة')+'.'});
+ return false;
+}
 function resultHtml(x){
  const visual=x.image?'<img src="'+esc(x.image)+'" alt="" loading="lazy">':'<span>'+esc(x.emoji||'📚')+'</span>';
  const context=x.kind==='teacher'
@@ -244,12 +254,12 @@ function resultHtml(x){
   x.type?'<span>'+educationLabel(x.type)+'</span>':'',
   x.teacherName&&x.kind!=='teacher'?'<span><i class="fa-solid fa-chalkboard-user"></i> '+esc(x.teacherName)+'</span>':'',
   isPersonal(x)?'<span class="personal"><i class="fa-solid fa-sparkles"></i> مناسب لك</span>':'',
-  x.status?'<span class="status-'+esc(x.status)+'">'+esc(x.status)+'</span>':''
+  x.status?'<span class="status-'+esc(x.status)+'">'+esc(x.status)+'</span>':'',x.isFree&&paidKind(x)?'<span class="subscription-access-pill">مجاني</span>':(!resultAccessible(x)&&paidKind(x)?'<span class="subscription-access-pill paid">اشتراك</span>':'')
  ].filter(Boolean).join('');
  return '<a class="search-result-card search-result-card-v12 '+x.kind+'" href="'+esc(x.href||'#')+'" data-search-result="'+esc(x.kind+':'+x.id)+'">'+
   '<div class="search-result-visual-v12 '+(x.image?'has-image':'')+'">'+visual+'<em>'+kindLabel(x.kind)+'</em></div>'+
   '<div class="search-result-copy-v12"><small>'+esc(context)+'</small><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||'')+'</p><div class="search-result-tags">'+tags+'</div></div>'+
-  '<span class="search-result-open"><i class="fa-solid fa-arrow-left"></i></span>'+
+  '<span class="search-result-open"><i class="fa-solid '+(resultAccessible(x)?'fa-arrow-left':'fa-lock')+'"></i></span>'+
  '</a>';
 }
 function countId(kind){return{subject:'countSubjects',lesson:'countLessons',teacher:'countTeachers',quiz:'countQuizzes',file:'countFiles',assignment:'countAssignments',live:'countLive'}[kind]}
@@ -271,7 +281,7 @@ function render(){
  }
  $('searchEmpty').classList.add('hidden');$('searchResults').classList.remove('hidden');
  $('searchResults').innerHTML=items.slice(0,120).map(resultHtml).join('');
- $$('[data-search-result]').forEach(a=>a.onclick=()=>{const [kind,id]=a.dataset.searchResult.split(':');const item=allResults.find(x=>x.kind===kind&&String(x.id)===String(id));if(item)recordClick(item)});
+ $$('[data-search-result]').forEach(a=>a.onclick=e=>{const [kind,id]=a.dataset.searchResult.split(':');const item=allResults.find(x=>x.kind===kind&&String(x.id)===String(id));return openSearchItem(e,item)});
 }
 
 function recentHtml(q){return '<button type="button" data-recent-search="'+esc(q)+'"><i class="fa-solid fa-clock-rotate-left"></i> '+esc(q)+'</button>'}
@@ -298,7 +308,7 @@ function renderDiscovery(){
  if(subjects.length)groups.push('<article class="search-discovery-panel-v12"><div><span class="section-kicker">موادك</span><h3>ابدأ من مادة</h3></div><div>'+subjects.map(x=>discoveryCard(x,'مادة صفك')).join('')+'</div></article>');
  if(teachers.length)groups.push('<article class="search-discovery-panel-v12"><div><span class="section-kicker">فريق التدريس</span><h3>مدرسون في صفك</h3></div><div>'+teachers.map(x=>discoveryCard(x,'مدرس')).join('')+'</div></article>');
  $('searchDiscoveryGrid').innerHTML=groups.join('')||'<div class="feature-empty"><span>✨</span><h3>ابدأ بالبحث</h3><p>ستظهر لك هنا اقتراحات تناسب مرحلتك.</p></div>';
- $$('#searchDiscoveryGrid [data-search-result]').forEach(a=>a.onclick=()=>{const [kind,id]=a.dataset.searchResult.split(':');const item=allResults.find(x=>x.kind===kind&&String(x.id)===String(id));if(item)recordClick(item)});
+ $$('#searchDiscoveryGrid [data-search-result]').forEach(a=>a.onclick=e=>{const [kind,id]=a.dataset.searchResult.split(':');const item=allResults.find(x=>x.kind===kind&&String(x.id)===String(id));return openSearchItem(e,item)});
  renderRecent();
 }
 function renderAutocomplete(){
@@ -310,7 +320,7 @@ function renderAutocomplete(){
  box.classList.remove('hidden');
  $$('[data-autocomplete-id]',box).forEach(b=>b.onclick=()=>{
   const item=allResults.find(x=>x.kind===b.dataset.autocompleteKind&&String(x.id)===String(b.dataset.autocompleteId));
-  if(!item)return;$('searchInput').value=item.title;box.classList.add('hidden');saveSearch(item.title);recordClick(item);location.href=item.href;
+  if(!item)return;$('searchInput').value=item.title;box.classList.add('hidden');saveSearch(item.title);if(!resultAccessible(item)){openSearchItem(null,item);return}recordClick(item);location.href=item.href;
  });
 }
 function updateGradeOptions(){
@@ -402,7 +412,7 @@ $('clearSearchHistory').onclick=()=>{setLocal(historyKey(),[]);renderRecent()};
   const [subjectsSnap,currentUser]=await Promise.all([db.ref('customSubjects').once('value'),authReady]);
   root.customSubjects=subjectsSnap.val()||{};user=currentUser||null;
   if(user){
-   try{profile=(await db.ref('studentProfilesV3/'+user.uid).once('value')).val()||null}catch(e){console.warn('Search profile personalization unavailable',e)}
+   try{profile=(await db.ref('studentProfilesV3/'+user.uid).once('value')).val()||null;if(profile&&S)access=await S.load(user.uid,profile,true)}catch(e){console.warn('Search profile personalization unavailable',e)}
   }
   const params=new URLSearchParams(location.search),q=params.get('q')||'',stage=params.get('stage'),grade=params.get('grade');
   $('searchInput').value=q;
