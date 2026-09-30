@@ -425,7 +425,7 @@ function renderLesson(){
  state.unitLessons=state.lessons.filter(l=>Number(l.unit||1)===Number(lesson.unit||1)&&(!routeTeacher||lessonHasTeacher(l,routeTeacher)));
  trackContentEvent(id,'views');
  if(state.user&&!state.adminPreview) db.ref('studentProfilesV3/'+state.user.uid).update({lastLessonTitle:lesson.title||'',lastSubjectId:c.subject,lastLessonId:id,lastActiveAt:Date.now()}).catch(()=>{});
- document.title=(lesson.title||'الدرس')+' | الأكاديمية';$('lessonTitle').textContent=lesson.title||'الدرس';$('lessonMeta').textContent=unitName(c,lesson.unit||1)+' • '+state.subject.name;if($('reportContentIssue'))$('reportContentIssue').href=supportHref({source:'lesson',category:'lesson',sourceId:id,lessonId:id,lessonTitle:lesson.title||'درس',title:'مشكلة في درس '+(lesson.title||'')});
+ document.title=(lesson.title||'الدرس')+' | الأكاديمية';$('lessonTitle').textContent=lesson.title||'الدرس';$('lessonMeta').textContent=unitName(c,lesson.unit||1)+' • '+state.subject.name;if($('reportContentIssue'))$('reportContentIssue').href=supportHref({source:'lesson',category:'lesson',sourceId:id,lessonId:id,lessonTitle:lesson.title||'درس',title:'مشكلة في درس '+(lesson.title||'')});if($('reportVideoIssue'))$('reportVideoIssue').href=supportHref({source:'lesson_video',category:'video',sourceId:id,lessonId:id,lessonTitle:lesson.title||'درس',title:'الفيديو لا يعمل في درس '+(lesson.title||'')});
  const lessonHero=$('lessonHeroCard'),subjectImage=state.subject?.imageUrl?safeUrl(state.subject.imageUrl):'';
  if(lessonHero){
    const validImage=subjectImage&&subjectImage!=='#'?subjectImage:'';
