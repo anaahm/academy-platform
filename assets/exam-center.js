@@ -3,7 +3,7 @@
 const C=window.AcademyCore,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 let profile,user,data={customSubjects:{},quizzes:{},lessons:{}},filter='all';
 function contentVisible(item){
- if(!item||item.isHidden)return false;
+ if(!item||item.isHidden||item.workflowStatus==='draft')return false;
  const at=Number(item.publishAt||0);
  return !at||at<=Date.now();
 }
