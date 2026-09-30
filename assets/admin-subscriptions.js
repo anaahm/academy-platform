@@ -5,7 +5,7 @@ if(!firebase.apps.length)firebase.initializeApp(window.ACADEMY_FIREBASE_CONFIG);
 const auth=firebase.auth(),db=firebase.database(),$=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const ask=opts=>window.AcademyUI?.confirm?window.AcademyUI.confirm(opts):Promise.resolve(confirm(opts?.message||opts?.title||'تأكيد؟'));
-let user=null,plans={},students={},subscriptions={},requests={},customSubjects={},selectedStudentId='',editPlanId='',stops=[];
+let user=null,plans={},students={},subscriptions={},requests={},customSubjects={},settings={},selectedStudentId='',editPlanId='',stops=[];
 const defaults={
  primary:[['arabic','اللغة العربية'],['math','الرياضيات'],['science','العلوم'],['english','اللغة الإنجليزية'],['social','الدراسات الاجتماعية'],['religion','التربية الدينية']],
  prep:[['arabic','اللغة العربية'],['math','الرياضيات'],['science','العلوم'],['english','اللغة الإنجليزية'],['social','الدراسات الاجتماعية'],['computer','الحاسب الآلي']],
@@ -107,15 +107,16 @@ async function reviewRequest(key,approved){
  updates['notificationBroadcasts/'+nid]={source:'admin',title:approved?'تم تفعيل اشتراكك':'تحديث طلب الاشتراك',text:approved?('تم '+((current.planId===r.planId&&subState(current)==='active')?'تجديد':'تفعيل')+' باقة '+(plan.name||r.planName||'الاشتراك')+' بنجاح.'):'تمت مراجعة طلب باقة '+(r.planName||'الاشتراك')+' ولم يتم اعتماده حاليًا.',targetMode:'students',targetStudentIds:[uid],href:'./subscription.html',priority:approved?'high':'normal',isActive:true,createdAt:ts,expiresAt:ts+14*86400000};
  await db.ref().update(updates);window.AcademyUI?.toast?.(approved?'تم اعتماد الطلب وتفعيل/تجديد الاشتراك ✅':'تم رفض الطلب');
 }
-function render(){stats();renderPlans();renderStudents();renderRequests();if(selectedStudentId&&students[selectedStudentId])selectStudent(selectedStudentId)}
+function render(){stats();renderPlans();renderStudents();renderRequests();if($('subscriptionEnforceAccess')){$('subscriptionEnforceAccess').checked=settings.enforceAccess===true;$('subscriptionEnforceLabel').textContent=settings.enforceAccess===true?'مفعلة الآن':'غير مفعلة'}if(selectedStudentId&&students[selectedStudentId])selectStudent(selectedStudentId)}
 function bind(){
  $('subscriptionPlanForm')?.addEventListener('submit',savePlan);$('planAccessMode')?.addEventListener('change',()=>renderSubjectChecks(selectedSubjects()));$('planCancelEdit')?.addEventListener('click',resetPlan);
+ $('subscriptionEnforceAccess')?.addEventListener('change',async e=>{const enabled=e.target.checked;await db.ref('subscriptionSettingsV1').update({enforceAccess:enabled,updatedAt:Date.now(),updatedBy:user?.uid||''});window.AcademyUI?.toast?.(enabled?'تم تفعيل حماية المحتوى بالاشتراكات ✅':'تم إيقاف حماية الاشتراكات مؤقتًا')});
  $('subscriptionStudentSearch')?.addEventListener('input',renderStudents);$('studentSubscriptionForm')?.addEventListener('submit',saveStudentSubscription);$('studentPlanId')?.addEventListener('change',updateEndFromPlan);$('studentSubStart')?.addEventListener('change',updateEndFromPlan);
  document.querySelectorAll('[data-sub-quick]').forEach(b=>b.onclick=()=>quickAction(b.dataset.subQuick));
  resetPlan();fillPlanSelect();
 }
 function listen(path,key){const ref=db.ref(path),handler=s=>{window.__academySubscriptionAdminBusy=true;dataUpdate(key,s.val()||{});window.__academySubscriptionAdminBusy=false;render()};ref.on('value',handler);stops.push(()=>ref.off('value',handler))}
-function dataUpdate(key,value){if(key==='plans')plans=value;if(key==='students')students=value;if(key==='subscriptions')subscriptions=value;if(key==='requests')requests=value;if(key==='customSubjects')customSubjects=value}
-auth.onAuthStateChanged(async u=>{stops.splice(0).forEach(fn=>fn());user=u;if(!u)return;try{const isAdmin=(await db.ref('adminProfiles/'+u.uid+'/isAdmin').once('value')).val();if(isAdmin!==true)return;bind();listen('subscriptionPlansV1','plans');listen('studentProfilesV3','students');listen('studentSubscriptionsV1','subscriptions');listen('subscriptionRequestsV1','requests');listen('customSubjects','customSubjects')}catch(err){console.warn('Subscription admin unavailable',err)}});
+function dataUpdate(key,value){if(key==='plans')plans=value;if(key==='students')students=value;if(key==='subscriptions')subscriptions=value;if(key==='requests')requests=value;if(key==='customSubjects')customSubjects=value;if(key==='settings')settings=value}
+auth.onAuthStateChanged(async u=>{stops.splice(0).forEach(fn=>fn());user=u;if(!u)return;try{const isAdmin=(await db.ref('adminProfiles/'+u.uid+'/isAdmin').once('value')).val();if(isAdmin!==true)return;bind();listen('subscriptionPlansV1','plans');listen('studentProfilesV3','students');listen('studentSubscriptionsV1','subscriptions');listen('subscriptionRequestsV1','requests');listen('customSubjects','customSubjects');listen('subscriptionSettingsV1','settings')}catch(err){console.warn('Subscription admin unavailable',err)}});
 window.addEventListener('pagehide',()=>stops.splice(0).forEach(fn=>fn()));
 })();
