@@ -14,6 +14,17 @@ function statusClass(s){return ['approved','rejected','changes_requested'].inclu
 function kindLabel(k,c){return k==='student_question'?'سؤال طالب':k==='student_forum_post'?'منشور مجتمع':k==='teacher_reply'?'رد معلم':k==='pin_request'?'طلب تثبيت':c==='message'?'رسالة معلم':'إعلان معلم'}
 function kindIcon(k){return k==='student_question'?'fa-circle-question':k==='student_forum_post'?'fa-users':k==='teacher_reply'?'fa-reply':k==='pin_request'?'fa-thumbtack':'fa-bullhorn'}
 function isPending(r){return !r.status||r.status==='pending'}
+function teacherAssignments(t){
+ if(Array.isArray(t?.assignments))return t.assignments.filter(Boolean);
+ if(t?.assignments&&typeof t.assignments==='object')return Object.values(t.assignments).filter(Boolean);
+ if(Array.isArray(t?.subjects))return t.subjects.map(x=>typeof x==='string'?{subject:x}:x);
+ return[];
+}
+function teacherMatches(t,row){
+ return t?.isActive!==false&&teacherAssignments(t).some(a=>
+   (!a.type||a.type===row.type)&&(!a.stage||a.stage===row.stage)&&(!a.grade||String(a.grade)===String(row.grade))&&(!a.subject||a.subject===row.subject)
+ );
+}
 function filtered(){
  const q=search.trim().toLowerCase();
  return rows.filter(r=>{
@@ -84,7 +95,13 @@ async function approve(key,btn){
    if(row.kind==='student_question'){
      if(!row.lessonId||!row.text||!row.studentId)throw Error('بيانات السؤال غير مكتملة');
      const lesson=(await db.ref('lessons/'+row.lessonId).once('value')).val();if(!lesson)throw Error('الدرس غير موجود');
-     const thread={id,status:'approved',studentId:row.studentId,studentName:row.actorName||row.studentName||'طالب',teacherId:row.recipientTeacherId||lesson.teacherId||'',teacherName:row.recipientTeacherName||lesson.teacherName||'مدرس المادة',type:row.type||lesson.type||'public',stage:row.stage||lesson.stage||'',grade:String(row.grade||lesson.grade||''),subject:row.subject||lesson.subject||'',subjectName:row.subjectName||'',lessonId:row.lessonId,lessonTitle:row.lessonTitle||lesson.title||'درس',visibility:row.visibility==='private'?'private':'public',text:row.text,pinned:false,createdAt:Number(row.createdAt||now),approvedAt:now,updatedAt:now,submissionId:id};
+     const context={type:row.type||lesson.type||'public',stage:row.stage||lesson.stage||'',grade:String(row.grade||lesson.grade||''),subject:row.subject||lesson.subject||''};
+     let routedTeacherId=row.recipientTeacherId||lesson.teacherId||(Array.isArray(lesson.videos)?lesson.videos.find(v=>v?.teacherId)?.teacherId:'')||'',routedTeacherName=row.recipientTeacherName||lesson.teacherName||'';
+     if(!routedTeacherId){
+       const teacherSnap=await db.ref('teacherProfiles').once('value'),teacherRows=Object.entries(teacherSnap.val()||{}).map(([tid,t])=>({id:tid,...(t||{})})),match=teacherRows.find(t=>teacherMatches(t,context));
+       if(match){routedTeacherId=match.id;routedTeacherName=match.name||match.email||'مدرس المادة'}
+     }
+     const thread={id,status:'approved',studentId:row.studentId,studentName:row.actorName||row.studentName||'طالب',teacherId:routedTeacherId,teacherName:routedTeacherName||'مدرس المادة',type:context.type,stage:context.stage,grade:context.grade,subject:context.subject,subjectName:row.subjectName||'',lessonId:row.lessonId,lessonTitle:row.lessonTitle||lesson.title||'درس',visibility:row.visibility==='private'?'private':'public',text:row.text,pinned:false,createdAt:Number(row.createdAt||now),approvedAt:now,updatedAt:now,submissionId:id};
      updates['lessonDiscussionsV1/'+row.lessonId+'/'+id]=thread;
      if(thread.teacherId)updates['teacherCommunicationInboxV1/'+thread.teacherId+'/'+id]={...thread,hasApprovedReply:false};
      const nId=db.ref('notificationBroadcasts').push().key;
@@ -96,7 +113,7 @@ async function approve(key,btn){
      updates['notificationBroadcasts/'+nId]={source:'admin',title:'تم اعتماد منشورك',text:'منشورك «'+row.title+'» أصبح ظاهرًا في مجتمع الطلاب.',targetMode:'students',targetStudentIds:[row.actorId],href:'./community.html',priority:'normal',isActive:true,createdAt:now,expiresAt:now+7*86400000};
    }else if(row.kind==='teacher_reply'){
      if(!row.lessonId||!row.threadId||!row.studentId||!row.text)throw Error('بيانات الرد غير مكتملة');
-     const thread=(await db.ref('lessonDiscussionsV1/'+row.lessonId+'/'+row.threadId).once('value')).val();if(!thread)throw Error('السؤال الأصلي غير موجود');
+     const thread=(await db.ref('lessonDiscussionsV1/'+row.lessonId+'/'+row.threadId).once('value')).val();if(!thread)throw Error('السؤال الأصلي غير موجود');if(thread.teacherId&&thread.teacherId!==row.actorId)throw Error('هذا السؤال موجه إلى مدرس آخر');
      updates['lessonDiscussionsV1/'+row.lessonId+'/'+row.threadId+'/replies/'+id]={id,status:'approved',teacherId:row.actorId,teacherName:row.actorName||'المدرس',text:row.text,createdAt:Number(row.createdAt||now),approvedAt:now,submissionId:id};
      updates['lessonDiscussionsV1/'+row.lessonId+'/'+row.threadId+'/updatedAt']=now;
      updates['teacherCommunicationInboxV1/'+row.actorId+'/'+row.threadId+'/hasApprovedReply']=true;
@@ -105,6 +122,7 @@ async function approve(key,btn){
      updates['notificationBroadcasts/'+nId]={source:'teacher',teacherId:row.actorId,teacherName:row.actorName||'المدرس',title:'رد جديد على سؤالك',text:row.text,targetMode:'students',targetStudentIds:[row.studentId],type:row.type||thread.type||'public',stage:row.stage||thread.stage||'',grade:String(row.grade||thread.grade||''),subject:row.subject||thread.subject||'',href:lessonHref({...thread,lessonId:row.lessonId}),priority:'high',isActive:true,createdAt:now,expiresAt:now+14*86400000};
    }else if(row.kind==='teacher_broadcast'){
      if(!row.title||!row.text||!row.subject)throw Error('بيانات الرسالة غير مكتملة');
+     const teacher=(await db.ref('teacherProfiles/'+row.actorId).once('value')).val();if(!teacher||teacher.isActive===false)throw Error('حساب المعلم غير نشط');if(!teacherMatches(teacher,row))throw Error('المادة أو الصف غير مسندين لهذا المعلم');
      let targetMode=row.targetMode||'all',targetStudentIds=Array.isArray(row.targetStudentIds)?row.targetStudentIds:[],targetGroupId=row.targetGroupId||'';
      if(targetMode==='group'){
        const members=teacherGroups?.[row.actorId]?.[targetGroupId]?.members||[];
@@ -116,6 +134,7 @@ async function approve(key,btn){
      updates['communicationSubmissionsV1/'+actorId+'/'+id+'/broadcastId']=nId;
    }else if(row.kind==='pin_request'){
      if(!row.lessonId||!row.threadId)throw Error('بيانات طلب التثبيت غير مكتملة');
+     const teacher=(await db.ref('teacherProfiles/'+row.actorId).once('value')).val();if(!teacher||teacher.isActive===false)throw Error('حساب المعلم غير نشط');
      const thread=(await db.ref('lessonDiscussionsV1/'+row.lessonId+'/'+row.threadId).once('value')).val();if(!thread||thread.visibility==='private')throw Error('لا يمكن تثبيت هذا السؤال');
      updates['lessonDiscussionsV1/'+row.lessonId+'/'+row.threadId+'/pinned']=true;
      updates['lessonDiscussionsV1/'+row.lessonId+'/'+row.threadId+'/pinnedAt']=now;
