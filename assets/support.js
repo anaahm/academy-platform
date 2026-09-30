@@ -79,11 +79,12 @@ async function reply(e){
 $('supportTicketForm').addEventListener('submit',async e=>{
  e.preventDefault();const category=$('supportCategory').value,priority=$('supportPriority').value,title=$('supportTitle').value.trim(),description=$('supportDescription').value.trim(),rawUrl=$('supportScreenshotUrl').value.trim(),screenshotUrl=rawUrl?safeUrl(rawUrl):'';
  if(!title||description.length<5)return C.toast('اكتب عنوانًا ووصفًا أوضح للمشكلة.','error');if(rawUrl&&!screenshotUrl)return C.toast('رابط الصورة غير صالح.','error');
- const screenshotData=await compressImage($('supportScreenshotFile')?.files?.[0]);const ctx=currentContext(),now=Date.now(),ref=C.db.ref('supportTicketsV1/'+user.uid).push(),ticketCode=('T'+now.toString(36).slice(-5)+ref.key.slice(-3)).toUpperCase();
- const payload={ticketCode,requesterId:user.uid,requesterRole:'student',requesterName:profile.name||user.displayName||'طالب',requesterPhone:profile.phone||'',category,priority,title,description,screenshotUrl,screenshotData,status:'new',...ctx,createdAt:now,updatedAt:now};
  const btn=$('supportSubmitBtn');window.AcademyUI?.setButtonLoading(btn,true,'فتح');
- try{await ref.set(payload);e.target.reset();initPrefill();C.toast('تم فتح التذكرة بنجاح ✅')}
- catch(err){console.error(err);C.toast('تعذر فتح التذكرة الآن.','error')}finally{window.AcademyUI?.setButtonLoading(btn,false)}
+ try{
+   const screenshotData=await compressImage($('supportScreenshotFile')?.files?.[0]),ctx=currentContext(),now=Date.now(),ref=C.db.ref('supportTicketsV1/'+user.uid).push(),ticketCode=('T'+now.toString(36).slice(-5)+ref.key.slice(-3)).toUpperCase();
+   const payload={ticketCode,requesterId:user.uid,requesterRole:'student',requesterName:profile.name||user.displayName||'طالب',requesterPhone:profile.phone||'',category,priority,title,description,screenshotUrl,screenshotData,status:'new',...ctx,createdAt:now,updatedAt:now};
+   await ref.set(payload);e.target.reset();initPrefill();C.toast('تم فتح التذكرة بنجاح ✅')
+ }catch(err){console.error(err);C.toast(err?.message||'تعذر فتح التذكرة الآن.','error')}finally{window.AcademyUI?.setButtonLoading(btn,false)}
 });
 document.querySelectorAll('[data-support-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.supportFilter;render()});
 (async()=>{
