@@ -45,7 +45,7 @@ function renderRequests(){
 }
 async function requestPlan(id,btn){
  const plan=access.plans?.[id];if(!plan)return;
- const pending=requestRows().some(r=>r.planId===id&&r.status==='pending');if(pending)return C.toast('لديك طلب قيد المراجعة لهذه الباقة.','error');
+ const pending=requestRows().find(r=>r.status==='pending');if(pending)return C.toast('لديك طلب اشتراك قيد المراجعة بالفعل: '+(pending.planName||'الباقة المختارة')+'.','error');
  window.AcademyUI?.setButtonLoading(btn,true,'إرسال');
  try{
    const ref=C.db.ref('subscriptionRequestsV1/'+user.uid).push(),now=Date.now();
