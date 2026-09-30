@@ -219,6 +219,7 @@ const ADMIN_TAB_PATHS={
  students:['studentProfilesV3'],
  news:['posts'],
  community:['community'],
+ communications:[],
  notifications:[],
  announcements:['announcements'],
  settings:['settings']
@@ -237,6 +238,7 @@ const adminMeta={
  students:['المتعلمون','إدارة الطلاب'],
  news:['التواصل','الأخبار والتحديثات'],
  community:['الإشراف','المجتمع والبلاغات'],
+ communications:['التواصل','مراجعة التواصل'],
  notifications:['التواصل','الإشعارات الموجهة'],
  announcements:['التواصل','الإعلانات'],
  settings:['المنصة','الإعدادات']
