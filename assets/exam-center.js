@@ -1,6 +1,6 @@
 (() => {
 'use strict';
-const C=window.AcademyCore,S=window.AcademySubscription,$=id=>document.getElementById(id),$=(s,r=document)=>[...r.querySelectorAll(s)];
+const C=window.AcademyCore,S=window.AcademySubscription,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 let profile,user,access=null,data={customSubjects:{},quizzes:{},lessons:{}},filter='all';
 function contentVisible(item){
  if(!item||item.isHidden||item.workflowStatus==='draft')return false;
