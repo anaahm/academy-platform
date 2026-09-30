@@ -71,6 +71,7 @@ async function importPackage(e){
  e.preventDefault();const raw=$('contentImportJson').value.trim(),btn=e.submitter;if(!raw)return toast('اختر ملف JSON أو الصق الحزمة أولًا.','error');
  let pkg;try{pkg=JSON.parse(raw)}catch{return toast('ملف JSON غير صالح.','error')}
  if(!pkg||!Array.isArray(pkg.lessons)||!Array.isArray(pkg.quizzes))return toast('هذه ليست حزمة محتوى صالحة.','error');
+ try{if(window.AcademyUtils?.validateQuestions){pkg.lessons=pkg.lessons.map(x=>({...x,questions:Array.isArray(x.questions)&&x.questions.length?window.AcademyUtils.validateQuestions(x.questions):[]}));pkg.quizzes=pkg.quizzes.map(x=>({...x,questions:window.AcademyUtils.validateQuestions(x.questions||[])}));if(pkg.quizzes.some(x=>!x.questions.length))throw Error('يوجد اختبار بلا أسئلة')}}catch(err){return toast(err.message||'الحزمة تحتوي أسئلة غير صالحة.','error')}
  const sc=scope('import'),updates={},map=new Map(),ts=now();window.AcademyUI?.setButtonLoading(btn,true,'استيراد');
  try{
   for(const src of pkg.lessons){
@@ -90,7 +91,7 @@ async function readImportFile(file){
 async function unitOperation(e){
  e.preventDefault();const src=scope('unitSource'),dst=scope('unitTarget'),sourceUnit=Math.max(1,Number($('unitSourceNumber').value||1)),targetUnit=Math.max(1,Number($('unitTargetNumber').value||1)),mode=$('unitOperationMode').value,includeQuizzes=$('unitIncludeQuizzes').checked,btn=e.submitter;
  const lessons=vals(data.lessons).filter(x=>x.type===src.type&&x.stage===src.stage&&String(x.grade)===src.grade&&x.subject===src.subject&&Number(x.unit||1)===sourceUnit);if(!lessons.length)return toast('لا توجد دروس في الوحدة المصدر.','error');
- const ids=new Set(lessons.map(x=>x.id)),quizzes=includeQuizzes?vals(data.quizzes).filter(q=>q.type===src.type&&q.stage===src.stage&&String(q.grade)===src.grade&&q.subject===src.subject&&(q.lessonId?ids.has(String(q.lessonId)):Number(q.unit||0)===sourceUnit)):[];
+ const ids=new Set(lessons.map(x=>x.id)),effectiveInclude=includeQuizzes||mode==='move',quizzes=effectiveInclude?vals(data.quizzes).filter(q=>q.type===src.type&&q.stage===src.stage&&String(q.grade)===src.grade&&q.subject===src.subject&&(q.lessonId?ids.has(String(q.lessonId)):Number(q.unit||0)===sourceUnit)):[];
  const ok=await ask({title:(mode==='copy'?'نسخ':'نقل')+' الوحدة؟',message:'سيتم '+(mode==='copy'?'نسخ':'نقل')+' '+lessons.length+' درس'+(quizzes.length?' و'+quizzes.length+' اختبار':'')+' إلى '+typeName(dst.type)+' — '+gradeName(dst.stage,dst.grade)+'.',acceptText:mode==='copy'?'إنشاء النسخة':'نقل المحتوى'});if(!ok)return;
  window.AcademyUI?.setButtonLoading(btn,true,'تنفيذ');try{
   const updates={},map=new Map(),ts=now();
