@@ -48,7 +48,7 @@ async function claim(reward){
 }
 (async()=>{
  window.AcademyUI?.showPageLoading('جاري تجهيز تحدياتك...');
- try{({user,profile}=await C.requireStudent());$('gameAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');weeklyXp=await G.getWeeklyXP(user.uid);render()}
+ try{({user,profile}=await C.requireStudent());$('gameAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');const synced=await G.syncDailyMissionRewards(user.uid,profile);profile=synced.profile||profile;weeklyXp=await G.getWeeklyXP(user.uid);if(synced.gained)C.toast('أضفنا +'+synced.gained+' XP من مهام اليوم المكتملة 🎉');render()}
  catch(err){console.error(err);C.toast('تعذر تحميل مركز التحديات.','error')}
  finally{window.AcademyUI?.hidePageLoading()}
 })();
