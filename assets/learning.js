@@ -684,7 +684,7 @@ function renderFiles(){
      (href?(allowed?'<a href="'+esc(href)+'" target="_blank" rel="noopener noreferrer">فتح الملف <i class="fa-solid fa-arrow-up-right-from-square"></i></a>':'<button type="button" class="resource-subscription-lock" data-resource-subscription="'+f.id+'"><i class="fa-solid fa-crown"></i> يتطلب اشتراك</button>'):'<span class="resource-link-disabled"><i class="fa-solid fa-ban"></i> الرابط غير متاح</span>')+
    '</article>';
  }).join(''):'<div class="empty-state"><span>📎</span><h3>لا توجد مرفقات لهذه المادة حاليًا</h3></div>';
- $('[data-resource-subscription]').forEach(b=>b.onclick=()=>{const f=state.files.find(x=>x.id===b.dataset.resourceSubscription);subscriptionLock(f,f?.subject||ctx().subject)});
+ $$('[data-resource-subscription]').forEach(b=>b.onclick=()=>{const f=state.files.find(x=>x.id===b.dataset.resourceSubscription);subscriptionLock(f,f?.subject||ctx().subject)});
 
 }
 function renderOutline(c,l){
