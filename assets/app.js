@@ -922,9 +922,9 @@
   function renderRecommendedLessons(profile,subjects){
     const box=$('dashboardRecommendedLessons');if(!box)return;
     const subjectMap=new Map(subjects.map(s=>[s.id,s]));
-    const progress=profile?.learningProgress||{},teachers=state.dbData.settings?.publicTeachers||{};
+    const progress=profile?.learningProgress||{},teachers=state.publicTeachers||state.dbData.settings?.publicTeachers||{};
     const rows=Object.entries(state.dbData.lessons||{}).map(([id,v])=>({id,...(v||{})}))
-      .filter(l=>l&&!l.isHidden&&l.type===profile.educationType&&l.stage===profile.stage&&String(l.grade)===String(profile.grade)&&subjectMap.has(l.subject));
+      .filter(l=>l&&!l.isHidden&&(!Number(l.publishAt||0)||Number(l.publishAt)<=Date.now())&&l.type===profile.educationType&&l.stage===profile.stage&&String(l.grade)===String(profile.grade)&&subjectMap.has(l.subject));
     if(!rows.length){
       box.innerHTML='<div class="mix-recommended-empty"><span>🎓</span><div><strong>نجهز لك الدروس المناسبة</strong><p>ستظهر هنا أحدث دروس صفك فور نشرها.</p></div></div>';
       return;
