@@ -19,7 +19,8 @@ function filtered(){
  return rows.filter(r=>{
    if(filter==='pending'&&!isPending(r))return false;
    if(filter==='questions'&&r.kind!=='student_question')return false;
-   if(filter==='replies'&&r.kind!=='teacher_reply')return false;\n   if(filter==='community'&&r.kind!=='student_forum_post')return false;
+   if(filter==='replies'&&r.kind!=='teacher_reply')return false;
+   if(filter==='community'&&r.kind!=='student_forum_post')return false;
    if(filter==='broadcasts'&&r.kind!=='teacher_broadcast')return false;
    if(filter==='pins'&&r.kind!=='pin_request')return false;
    if(filter==='reviewed'&&isPending(r))return false;
