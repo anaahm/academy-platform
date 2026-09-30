@@ -463,6 +463,10 @@
             <div><span class="section-kicker light">إدارة الوصول</span><h2>الباقات والاشتراكات من مكان واحد</h2><p>أنشئ الباقات، حدد المواد المشمولة، فعّل اشتراك الطلاب يدويًا، وتابع الطلبات والانتهاء قبل ربط بوابة الدفع النهائية.</p></div>
             <div class="subscription-admin-hero-side"><article><strong id="subscriptionAdminHeroActive">0</strong><small>اشتراك نشط</small></article><article><strong id="subscriptionAdminHeroRequests">0</strong><small>طلب ينتظر</small></article></div>
           </section>
+          <article class="subscription-admin-card" style="margin-bottom:14px">
+            <div class="subscription-admin-head"><div><span class="section-kicker">مفتاح الحماية</span><h3>تفعيل صلاحيات الاشتراك على المحتوى</h3><p>اتركه متوقفًا أثناء إعداد الباقات. عند تفعيله سيظل المحتوى المحدد «مجاني» متاحًا، وباقي المحتوى يحتاج اشتراكًا مناسبًا.</p></div><span>🛡️</span></div>
+            <label class="switch-field full"><span>حماية المحتوى</span><div><input id="subscriptionEnforceAccess" type="checkbox"><strong id="subscriptionEnforceLabel">غير مفعلة</strong></div></label>
+          </article>
           <section class="subscription-admin-stats">
             <article><strong id="subscriptionAdminActive">0</strong><small>اشتراكات نشطة</small></article>
             <article><strong id="subscriptionAdminSoon">0</strong><small>تنتهي خلال 7 أيام</small></article>
@@ -503,7 +507,7 @@
               <div class="subscription-admin-head"><div><span class="section-kicker">اشتراك الطالب</span><h3 id="selectedSubscriptionStudent">لم يتم اختيار طالب</h3><p id="selectedSubscriptionContact">اختر طالبًا من القائمة.</p></div><span>🔐</span></div>
               <form id="studentSubscriptionForm" class="subscription-admin-form hidden">
                 <label class="full"><span>الباقة</span><select id="studentPlanId"></select></label>
-                <label><span>الحالة</span><select id="studentSubStatus"><option value="active">نشط</option><option value="pending">قيد الانتظار</option><option value="suspended">موقوف</option><option value="cancelled">ملغي</option></select></label>
+                <label><span>الحالة</span><select id="studentSubStatus"><option value="active">نشط</option><option value="pending">قيد الانتظار</option><option value="suspended">موقوف</option><option value="expired">منتهي</option><option value="cancelled">ملغي</option></select></label>
                 <label><span>تاريخ البداية</span><input id="studentSubStart" type="datetime-local"></label>
                 <label><span>تاريخ الانتهاء</span><input id="studentSubEnd" type="datetime-local"></label>
                 <label class="full"><span>ملاحظات داخلية</span><textarea id="studentSubNotes" maxlength="500" placeholder="مثال: تم التحويل يدويًا..."></textarea></label>
