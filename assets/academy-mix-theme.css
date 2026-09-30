@@ -2384,3 +2384,36 @@ input:focus,select:focus,textarea:focus{
  .search-result-card-v12{grid-template-columns:86px minmax(0,1fr) 28px!important;min-height:150px}.search-result-copy-v12{padding:10px 8px}.search-result-copy-v12 h3{font-size:10px!important}.search-result-tags span{font-size:4px!important}
  .ref-dashboard-search-wrap-v12{max-width:none}.dash-search-suggestions-v12{position:fixed;top:68px;right:8px;left:8px}
 }
+
+/* Smart student home v13 */
+.dashboard-smart-plan-v13{
+  margin:0 0 15px;padding:16px;border:1px solid #dbeafe;border-radius:22px;
+  background:linear-gradient(135deg,#ffffff 0%,#f8fbff 56%,#f5f3ff 100%);
+  box-shadow:0 12px 30px rgba(15,23,42,.065);position:relative;overflow:hidden;
+}
+.dashboard-smart-plan-v13::before{content:"";position:absolute;width:190px;height:190px;border-radius:50%;left:-85px;top:-95px;background:rgba(99,102,241,.06)}
+.dashboard-smart-plan-head-v13{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:13px}
+.dashboard-smart-plan-title-v13{display:flex;align-items:center;gap:10px}.dashboard-smart-plan-icon-v13{width:48px;height:48px;min-width:48px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(135deg,#4f46e5,#2563eb);color:#fff;font-size:18px;box-shadow:0 10px 20px rgba(79,70,229,.18)}
+.dashboard-smart-plan-title-v13 h2{margin:1px 0 2px;font-size:20px;color:#0f172a}.dashboard-smart-plan-title-v13 p{margin:0;font-size:7px;line-height:1.7;color:#64748b}
+.dashboard-smart-plan-signals-v13{display:flex;align-items:center;gap:6px}.dashboard-smart-plan-signals-v13>span{min-width:76px;padding:7px 8px;border-radius:12px;border:1px solid #eef2f7;background:#fff;display:grid;grid-template-columns:24px 1fr;grid-template-areas:"icon number" "icon label";column-gap:6px;align-items:center;box-shadow:0 5px 14px rgba(15,23,42,.035)}.dashboard-smart-plan-signals-v13 i{grid-area:icon;width:24px;height:24px;border-radius:8px;display:grid;place-items:center}.dashboard-smart-plan-signals-v13 b{grid-area:number;font-size:10px;color:#0f172a}.dashboard-smart-plan-signals-v13 small{grid-area:label;font-size:5px;color:#94a3b8}.dashboard-smart-plan-signals-v13 .urgent i{background:#fef2f2;color:#dc2626}.dashboard-smart-plan-signals-v13 .review i{background:#f5f3ff;color:#7c3aed}.dashboard-smart-plan-signals-v13 .new i{background:#ecfeff;color:#0891b2}
+
+.dashboard-smart-plan-grid-v13{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.smart-plan-card-v13{min-width:0;min-height:225px;padding:12px;border:1px solid #e2e8f0;border-radius:17px;background:#fff;text-decoration:none;color:#0f172a;display:flex;flex-direction:column;transition:.22s ease;box-shadow:0 6px 18px rgba(15,23,42,.04)}
+.smart-plan-card-v13:hover{transform:translateY(-4px);box-shadow:0 14px 28px rgba(15,23,42,.085);border-color:#bfdbfe}
+.smart-plan-card-v13.primary{background:linear-gradient(180deg,#fff,#eff6ff);border-color:#bfdbfe}.smart-plan-card-v13.review{background:linear-gradient(180deg,#fff,#faf5ff);border-color:#e9d5ff}.smart-plan-card-v13.quiz{background:linear-gradient(180deg,#fff,#f5f3ff);border-color:#ddd6fe}.smart-plan-card-v13.fresh{background:linear-gradient(180deg,#fff,#ecfeff);border-color:#bae6fd}
+.smart-plan-card-top-v13{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-bottom:9px}.smart-plan-card-icon-v13{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:#eff6ff;color:#2563eb}.smart-plan-card-v13.review .smart-plan-card-icon-v13{background:#f5f3ff;color:#7c3aed}.smart-plan-card-v13.quiz .smart-plan-card-icon-v13{background:#ede9fe;color:#6d28d9}.smart-plan-card-v13.fresh .smart-plan-card-icon-v13{background:#ecfeff;color:#0891b2}
+.smart-plan-card-badge-v13{max-width:120px;padding:5px 7px;border-radius:999px;background:#fff;border:1px solid #e2e8f0;color:#475569;font-size:5px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.smart-plan-card-v13>small{font-size:6px;font-weight:900;color:#2563eb}.smart-plan-card-v13 h3{margin:3px 0 5px;font-size:13px;line-height:1.45;color:#0f172a}.smart-plan-card-v13>p{margin:0 0 8px;font-size:7px;line-height:1.7;color:#64748b}
+.smart-plan-reason-v13{margin-top:auto;padding:8px;border-radius:11px;background:rgba(255,255,255,.72);border:1px solid rgba(226,232,240,.9);display:grid;grid-template-columns:22px minmax(0,1fr);gap:6px;align-items:start}.smart-plan-reason-v13 i{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;background:#eef2ff;color:#4f46e5;font-size:7px}.smart-plan-reason-v13 span{font-size:6px;line-height:1.65;color:#64748b}
+.smart-plan-card-foot-v13{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(226,232,240,.8);color:#2563eb}.smart-plan-card-foot-v13 strong{font-size:7px}.smart-plan-card-foot-v13 i{font-size:8px}
+.smart-plan-loading-v13,.smart-plan-empty-v13{grid-column:1/-1;min-height:120px;padding:18px;border:1px dashed #cbd5e1;border-radius:16px;background:rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;gap:10px;text-align:center}.smart-plan-loading-v13>span{width:34px;height:34px;border:4px solid #dbeafe;border-top-color:#2563eb;border-radius:50%;animation:mixSpin .8s linear infinite}.smart-plan-loading-v13 strong,.smart-plan-empty-v13 strong{display:block;font-size:10px;color:#0f172a}.smart-plan-loading-v13 p,.smart-plan-empty-v13 p{margin:2px 0;font-size:7px;color:#64748b}.smart-plan-empty-v13>span{font-size:31px}.smart-plan-empty-v13 a{min-height:36px;padding:0 10px;border-radius:10px;background:#2563eb;color:#fff;display:inline-flex;align-items:center;gap:5px;text-decoration:none;font-size:7px;font-weight:900}
+.mix-recommended-reason-v13{margin:6px 0!important;padding:6px 7px!important;border-radius:9px!important;background:#f8fafc!important;color:#64748b!important;font-size:6px!important;line-height:1.6!important}.mix-recommended-reason-v13 i{color:#7c3aed;margin-left:3px}
+
+@keyframes mixSpin{to{transform:rotate(360deg)}}
+@media(max-width:1180px){
+  .dashboard-smart-plan-grid-v13{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .dashboard-smart-plan-v13{padding:12px;border-radius:18px}.dashboard-smart-plan-head-v13{align-items:flex-start;flex-direction:column}.dashboard-smart-plan-signals-v13{width:100%;display:grid;grid-template-columns:repeat(3,1fr)}.dashboard-smart-plan-signals-v13>span{min-width:0}
+  .dashboard-smart-plan-grid-v13{grid-template-columns:1fr}.smart-plan-card-v13{min-height:190px}
+}
