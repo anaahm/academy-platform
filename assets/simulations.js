@@ -1,7 +1,7 @@
 (() => {
 'use strict';
-const C=window.AcademyCore,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-let user,profile,data={simulations:{},quizzes:{}},current=null,timer=null,endAt=0,index=0,answers=[];
+const C=window.AcademyCore,S=window.AcademySubscription,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+let user,profile,access=null,data={simulations:{},quizzes:{}},current=null,timer=null,endAt=0,index=0,answers=[];
 
 const map={ar:'arabic',ma:'math',sc:'science',en:'english'};
 const labels={ar:'عربي',ma:'رياضيات',sc:'علوم',en:'إنجليزي'};
@@ -13,29 +13,29 @@ function sims(){
  return Object.entries(data.simulations||{}).map(([id,v])=>({id,...v})).filter(s=>!s.isHidden&&s.type===profile.educationType&&s.stage===profile.stage&&String(s.grade)===String(profile.grade)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
 }
 function renderStats(){
- const hs=history();$('simAvailable').textContent=sims().length;$('simAttempts').textContent=hs.length;$('simBest').textContent=(hs.length?Math.max(...hs.map(x=>Number(x.score||0))):0)+'%';$('simEarnedXp').textContent=hs.reduce((a,x)=>a+Number(x.xp||0),0);
+ const hs=history(),available=sims().filter(x=>!S||S.canAccess(x,access,x.subject||''));$('simAvailable').textContent=available.length;$('simAttempts').textContent=hs.length;$('simBest').textContent=(hs.length?Math.max(...hs.map(x=>Number(x.score||0))):0)+'%';$('simEarnedXp').textContent=hs.reduce((a,x)=>a+Number(x.xp||0),0);
 }
 function render(){
  const list=sims();$('simGrid').innerHTML=list.length?list.map(s=>{
    const counts=s.counts||{},total=Object.values(counts).reduce((a,n)=>a+Number(n||0),0);
-   return '<article class="sim-card"><span class="feature-card-icon amber"><i class="fa-solid fa-stopwatch"></i></span><h3>'+C.esc(s.name||'محاكي')+'</h3><p>'+Number(s.time||60)+' دقيقة • '+total+' سؤال</p><div class="sim-counts">'+Object.entries(map).map(([k])=>'<span><strong>'+Number(counts[k]||0)+'</strong>'+labels[k]+'</span>').join('')+'</div><button class="btn btn-primary btn-block" data-start-sim="'+s.id+'">ابدأ المحاكاة</button></article>';
+   const allowed=!S||S.canAccess(s,access,s.subject||'');return '<article class="sim-card '+(allowed?'':'locked')+'"><span class="feature-card-icon amber"><i class="fa-solid '+(allowed?'fa-stopwatch':'fa-lock')+'"></i></span><h3>'+C.esc(s.name||'محاكي')+' '+(s.isFree?'<span class="subscription-access-pill">مجاني</span>':!allowed?'<span class="subscription-access-pill paid">اشتراك</span>':'')+'</h3><p>'+Number(s.time||60)+' دقيقة • '+total+' سؤال</p><div class="sim-counts">'+Object.entries(map).map(([k])=>'<span><strong>'+Number(counts[k]||0)+'</strong>'+labels[k]+'</span>').join('')+'</div><button class="btn '+(allowed?'btn-primary':'btn-soft')+' btn-block" data-start-sim="'+s.id+'">'+(allowed?'ابدأ المحاكاة':'<i class="fa-solid fa-crown"></i> يتطلب اشتراك')+'</button></article>';
  }).join(''):'<div class="feature-empty"><span>⏱️</span><h3>لا توجد محاكيات متاحة لصفك الآن</h3><p>عندما تضيف الإدارة محاكيًا مناسبًا لمرحلتك سيظهر هنا.</p></div>';
  $$('[data-start-sim]').forEach(b=>b.onclick=()=>start(b.dataset.startSim));
 }
-function pools(){
- const q=Object.values(data.quizzes||{}).filter(x=>!x.isHidden&&x.type===profile.educationType&&x.stage===profile.stage&&String(x.grade)===String(profile.grade));
+function pools(sim){
+ const q=Object.values(data.quizzes||{}).filter(x=>!x.isHidden&&x.workflowStatus!=='draft'&&(!Number(x.publishAt||0)||Number(x.publishAt)<=Date.now())&&x.type===profile.educationType&&x.stage===profile.stage&&String(x.grade)===String(profile.grade)&&(sim?.isFree?x.isFree===true:(!S||S.canAccess(x,access,x.subject||''))));
  const out={};Object.values(map).forEach(sub=>out[sub]=[]);
  q.forEach(quiz=>{if(!out[quiz.subject])return;(quiz.questions||[]).forEach(x=>{if(x?.text&&Array.isArray(x.opts)&&x.opts.length>=2)out[quiz.subject].push({...x,subject:quiz.subject})})});
  return out;
 }
 function shuffle(a){const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]]}return x}
 function buildQuestions(sim){
- const p=pools(),result=[];
+ const p=pools(sim),result=[];
  Object.entries(map).forEach(([key,subject])=>{const want=Number(sim.counts?.[key]||0);result.push(...shuffle(p[subject]||[]).slice(0,want))});
  return shuffle(result);
 }
 async function start(id){
- const sim=sims().find(x=>x.id===id);if(!sim)return;
+ const sim=sims().find(x=>x.id===id);if(!sim)return;if(S&&!S.canAccess(sim,access,sim.subject||'')){S.lockOverlay({title:'المحاكي ضمن الاشتراك',text:'هذا المحاكي يحتاج باقة نشطة مناسبة.'});return}
  const questions=buildQuestions(sim);const requested=Object.values(sim.counts||{}).reduce((a,n)=>a+Number(n||0),0);
  if(!questions.length)return C.toast('لا توجد أسئلة كافية لهذا المحاكي بعد.','error');
  if(questions.length<requested){const ok=await window.AcademyUI.confirm({title:'عدد الأسئلة أقل من المطلوب',message:'المحاكي سيبدأ بالأسئلة المتاحة حاليًا بدل العدد الكامل المحدد.',tone:'warning',acceptText:'ابدأ بالمتاح'});if(!ok)return;}
@@ -84,7 +84,7 @@ async function finish(auto){
 (async()=>{
  window.AcademyUI?.showPageLoading('جاري تجهيز المحاكيات...');
  try{
-   ({user,profile}=await C.requireStudent());$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
+   ({user,profile}=await C.requireStudent());access=S?await S.load(user.uid,profile,true):null;$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
    const [s,q]=await Promise.all([
      C.db.ref('simulations').orderByChild('stage').equalTo(profile.stage).once('value'),
      C.db.ref('quizzes').orderByChild('stage').equalTo(profile.stage).once('value')

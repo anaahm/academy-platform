@@ -1,7 +1,7 @@
 (() => {
 'use strict';
-const C=window.AcademyCore,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-let user,profile,sessions=[],attendance={},data={customSubjects:{}},filter='all',viewerTrigger=null,activeSessionId=null,attendanceActive=false,attendanceTimer=null,heroTimer=null,statusTimer=null;
+const C=window.AcademyCore,S=window.AcademySubscription,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+let user,profile,access=null,sessions=[],attendance={},data={customSubjects:{}},filter='all',viewerTrigger=null,activeSessionId=null,attendanceActive=false,attendanceTimer=null,heroTimer=null,statusTimer=null;
 
 function embed(url=''){return window.AcademyUtils.youtubeEmbed(url)}
 function matchesStudent(s){
@@ -20,6 +20,7 @@ function statusOf(s){
 }
 function eligible(){return sessions.filter(matchesStudent).map(s=>({...s,status:statusOf(s)}))}
 function statusLabel(s){return s==='live'?'مباشر الآن':s==='upcoming'?'جلسة قادمة':'جلسة منتهية'}
+function sessionAccessible(s){return !S||S.canAccess(s,access,s?.subject||'')}
 function subjectMeta(id){
  const list=C.subjectsFor(data,profile.stage,String(profile.grade),profile.educationType)||[];
  return list.find(s=>String(s.id)===String(id))||{id,name:id?C.subjectName(data,id,profile.stage,String(profile.grade),profile.educationType):'جلسة عامة',emoji:'🎥'};
@@ -68,7 +69,7 @@ function renderHero(){
  if(btn){
    btn.disabled=!pick;
    btn.innerHTML=pick?(pick.status==='live'?'ادخل الجلسة الآن <i class="fa-solid fa-arrow-left"></i>':'عرض الجلسة <i class="fa-solid fa-arrow-left"></i>'):'لا توجد جلسة <i class="fa-solid fa-check"></i>';
-   btn.onclick=()=>{if(pick)openSession(pick.id,btn)};
+   btn.innerHTML=pick?(sessionAccessible(pick)?(pick.status==='live'?'ادخل الجلسة الآن <i class="fa-solid fa-arrow-left"></i>':'عرض الجلسة <i class="fa-solid fa-arrow-left"></i>'):'<i class="fa-solid fa-crown"></i> يتطلب اشتراك'):'لا توجد جلسة <i class="fa-solid fa-check"></i>';btn.onclick=()=>{if(pick)openSession(pick.id,btn)};
  }
 }
 function renderStats(){
@@ -100,7 +101,7 @@ function render(){
  });
  $('liveGrid').innerHTML=list.length?list.map(s=>{
    const sub=subjectMeta(s.subject),img=C.safeUrl(sub.imageUrl||''),hasImage=img&&img!=='#',wasAttended=attended(s),replay=!!replayUrl(s);
-   const duration=Number(s.duration||60),timeState=s.status==='live'?'جارية الآن':s.status==='upcoming'?countdownText(s.scheduledTime):'انتهت';
+   const allowed=sessionAccessible(s),duration=Number(s.duration||60),timeState=s.status==='live'?'جارية الآن':s.status==='upcoming'?countdownText(s.scheduledTime):'انتهت';
    return '<article class="live-card live-card-v9 '+s.status+'">'+
      '<div class="live-cover live-cover-v9 '+(hasImage?'has-image':'')+'" '+(hasImage?'style="background-image:url(&quot;'+C.esc(img)+'&quot;)"':'')+'>'+
        (!hasImage?'<span class="live-cover-emoji-v9">'+C.esc(sub.emoji||'🎥')+'</span>':'')+
@@ -108,13 +109,13 @@ function render(){
        '<em>'+C.esc(sub.name||'جلسة عامة')+'</em>'+
      '</div>'+
      '<div class="live-card-body live-card-body-v9">'+
-       '<div class="live-card-title-v9"><div><small>'+C.esc(s.teacher||'المدرس')+'</small><h3>'+C.esc(s.title||'جلسة مباشرة')+'</h3></div>'+(wasAttended?'<span class="live-attended-badge-v9"><i class="fa-solid fa-user-check"></i> حضرت</span>':'')+'</div>'+
+       '<div class="live-card-title-v9"><div><small>'+C.esc(s.teacher||'المدرس')+'</small><h3>'+C.esc(s.title||'جلسة مباشرة')+' '+(s.isFree?'<span class="subscription-access-pill">مجاني</span>':!allowed?'<span class="subscription-access-pill paid">اشتراك</span>':'')+'</h3></div>'+(wasAttended?'<span class="live-attended-badge-v9"><i class="fa-solid fa-user-check"></i> حضرت</span>':'')+'</div>'+
        '<div class="live-card-metrics-v9">'+
          '<span><i class="fa-regular fa-clock"></i><b>'+duration+' د</b><small>مدة الجلسة</small></span>'+
          '<span class="'+(s.status==='live'?'live':'')+'"><i class="fa-solid fa-calendar-day"></i><b>'+C.esc(timeState)+'</b><small>'+C.esc(dateText(s.scheduledTime))+'</small></span>'+
        '</div>'+
        (wasAttended?'<div class="live-attendance-note-v9"><i class="fa-solid fa-circle-check"></i> تم تسجيل حضورك'+(attendanceMinutes(s)?' • '+attendanceMinutes(s)+' دقيقة مسجلة':'')+'</div>':'')+
-       '<button class="btn '+(s.status==='live'?'btn-primary':'btn-soft')+'" data-open-session="'+s.id+'">'+cardButtonLabel(s)+' <i class="fa-solid fa-arrow-left"></i></button>'+
+       '<button class="btn '+(allowed&&s.status==='live'?'btn-primary':'btn-soft')+'" data-open-session="'+s.id+'">'+(allowed?cardButtonLabel(s)+' <i class="fa-solid fa-arrow-left"></i>':'<i class="fa-solid fa-crown"></i> يتطلب اشتراك')+'</button>'+
      '</div>'+
    '</article>';
  }).join(''):'<div class="feature-empty"><span>📡</span><h3>لا توجد جلسات في هذا القسم</h3><p>جرّب قسمًا آخر، أو انتظر إضافة جلسة مناسبة لمرحلتك.</p></div>';
@@ -181,7 +182,7 @@ if($('liveHeroReplayBtn'))$('liveHeroReplayBtn').onclick=()=>document.querySelec
 (async()=>{
  window.AcademyUI?.showPageLoading('جاري تحميل الجلسات والبث...');
  try{
-   ({user,profile}=await C.requireStudent());$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
+   ({user,profile}=await C.requireStudent());access=S?await S.load(user.uid,profile,true):null;$('pageAvatar').textContent=C.initials(profile.name||user.displayName||'طالب');
    if($('liveStudentName'))$('liveStudentName').textContent=profile.name||user.displayName||'طالبنا';
    if($('liveHeroText'))$('liveHeroText').textContent=C.gradeLabel(profile.stage,profile.grade)+' • '+C.typeLabel(profile.educationType)+' — تابع الجلسات المباشرة وإعاداتها وحضورك من مكان واحد.';
    const ref=C.db.ref('liveSessions'),attendanceRef=C.db.ref('analyticsV4/students/'+user.uid+'/attendance');

@@ -7,7 +7,7 @@ if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(), db=firebase.database();
 const $=id=>document.getElementById(id), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const page=document.documentElement.dataset.page, params=new URLSearchParams(location.search);
-const state={user:null,profile:null,data:{},lessons:[],quizzes:[],files:[],subject:null,currentLesson:null,unitLessons:[],quiz:null,quizIndex:0,teacherFilter:'',adminPreview:false};
+const state={user:null,profile:null,access:null,data:{},lessons:[],quizzes:[],files:[],subject:null,currentLesson:null,unitLessons:[],quiz:null,quizIndex:0,teacherFilter:'',adminPreview:false};
 const requestedAdminPreview=params.get('adminPreview')==='1';
 
 const stages={primary:{name:'المرحلة الابتدائية',emoji:'🎒'},prep:{name:'المرحلة الإعدادية',emoji:'📚'},sec:{name:'المرحلة الثانوية',emoji:'🎓'}};
@@ -34,6 +34,15 @@ function toast(msg,type='success'){
 function ctx(){
  const p=state.profile||{};
  return {type:params.get('type')||p.educationType||'public',stage:params.get('stage')||p.stage||'prep',grade:params.get('grade')||String(p.grade||1),subject:params.get('subject')||null};
+}
+function subscriptionCan(item,subject=''){
+ if(state.adminPreview)return true;
+ const S=window.AcademySubscription;if(!S)return true;
+ return S.canAccess(item,state.access,subject||item?.subject||ctx().subject||'');
+}
+function subscriptionLock(item,subject=''){
+ const S=window.AcademySubscription;if(!S)return;
+ S.lockOverlay({title:item?.isFree?'':'هذا المحتوى يحتاج اشتراكًا',text:'هذا المحتوى ليس مجانيًا، ويحتاج اشتراكًا نشطًا يشمل مادة '+(state.subject?.name||subjectFor(ctx()).name||'المادة')+'.'});
 }
 function contentAvailable(item){
  if(state.adminPreview)return true;
@@ -292,6 +301,7 @@ function renderSubject(){
  if(continueHero){
    continueHero.disabled=!state.lessons.length;
    continueHero.onclick=()=>{
+     if(next&&!subscriptionCan(next,c.subject)){subscriptionLock(next,c.subject);return}
      if(next)location.href=url('lesson.html',c,{id:next.id});
      else if(state.lessons.length)document.querySelector('.curriculum-column')?.scrollIntoView({behavior:'smooth',block:'start'});
    };
@@ -324,28 +334,25 @@ function renderCurriculum(c,filter){
    const items=[];
    const unitComplete=!d.lessons.length||d.lessons.every(x=>done(x.id));
    if(filter!=='quizzes')d.lessons.forEach((l,i)=>{
-     const complete=done(l.id),current=next?.id===l.id;
-     const cls=complete?'complete':current?'current':'upcoming';
-     const status=complete?'مكتمل':current?'خطوتك التالية':'متاح';
-     items.push('<a class="curriculum-item '+cls+'" href="'+url('lesson.html',c,{id:l.id})+'" aria-label="فتح درس '+esc(l.title||'درس')+'">'+
-       '<span class="item-icon '+(complete?'done':current?'current':'')+'"><i class="fa-solid '+(complete?'fa-check':current?'fa-play':'fa-circle-play')+'"></i></span>'+
-       '<div><div class="curriculum-title-line"><h4>'+esc(l.title||'درس')+'</h4>'+(current?'<span class="next-step-badge">التالي لك</span>':'')+'</div><p>الدرس '+(i+1)+' • '+(l.videos?.length||0)+' فيديو • '+(l.questions?.length||0)+' سؤال</p></div>'+
-       '<div class="item-action"><span class="item-state '+(complete?'complete':current?'current':'')+'">'+status+'</span><span class="item-open"><i class="fa-solid fa-arrow-left"></i></span></div>'+
-     '</a>');
+     const complete=done(l.id),current=next?.id===l.id,subLocked=!subscriptionCan(l,c.subject);
+     const cls=subLocked?'locked subscription-locked':complete?'complete':current?'current':'upcoming';
+     const status=subLocked?'يتطلب اشتراك':complete?'مكتمل':current?'خطوتك التالية':'متاح';
+     const lessonBody='<span class="item-icon '+(subLocked?'locked':complete?'done':current?'current':'')+'"><i class="fa-solid '+(subLocked?'fa-lock':complete?'fa-check':current?'fa-play':'fa-circle-play')+'"></i></span>'+
+       '<div><div class="curriculum-title-line"><h4>'+esc(l.title||'درس')+'</h4>'+(l.isFree?'<span class="subscription-access-pill">مجاني</span>':subLocked?'<span class="subscription-access-pill paid">اشتراك</span>':current?'<span class="next-step-badge">التالي لك</span>':'')+'</div><p>الدرس '+(i+1)+' • '+(l.videos?.length||0)+' فيديو • '+(l.questions?.length||0)+' سؤال</p></div>'+
+       '<div class="item-action"><span class="item-state '+(subLocked?'locked':complete?'complete':current?'current':'')+'">'+status+'</span><span class="item-open"><i class="fa-solid '+(subLocked?'fa-lock':'fa-arrow-left')+'"></i></span></div>';
+     items.push(subLocked?'<button type="button" class="curriculum-item '+cls+'" data-subscription-lock="lesson|'+l.id+'">'+lessonBody+'</button>':'<a class="curriculum-item '+cls+'" href="'+url('lesson.html',c,{id:l.id})+'" aria-label="فتح درس '+esc(l.title||'درس')+'">'+lessonBody+'</a>');
    });
    if(filter!=='lessons')d.quizzes.filter(q=>q.lessonId).forEach(q=>{
-     const linked=state.lessons.find(l=>l.id===q.lessonId),locked=!linked||!done(q.lessonId);
-     const body='<span class="item-icon quiz"><i class="fa-solid '+(locked?'fa-lock':'fa-file-circle-question')+'"></i></span><div><h4>'+esc(q.name||'اختبار الدرس')+'</h4><p>مرتبط بدرس: '+esc(linked?.title||'درس غير متاح')+' • '+(q.questions?.length||0)+' سؤال</p></div><div class="item-action"><span class="item-state '+(locked?'locked':'quiz-ready')+'">'+(locked?'أكمل الدرس':'ابدأ الاختبار')+'</span></div>';
-     items.push(locked?'<button type="button" class="curriculum-item quiz-item locked locked-curriculum-action" data-locked-quiz="lesson" aria-label="أكمل الدرس لفتح الاختبار">'+body+'</button>':'<a class="curriculum-item quiz-item unlocked" href="'+url('lesson.html',c,{quiz:q.id})+'">'+body+'</a>');
+     const linked=state.lessons.find(l=>l.id===q.lessonId),subLocked=!subscriptionCan(q,c.subject),locked=subLocked||!linked||!done(q.lessonId);
+     const body='<span class="item-icon quiz"><i class="fa-solid '+(locked?'fa-lock':'fa-file-circle-question')+'"></i></span><div><h4>'+esc(q.name||'اختبار الدرس')+'</h4><p>مرتبط بدرس: '+esc(linked?.title||'درس غير متاح')+' • '+(q.questions?.length||0)+' سؤال</p></div><div class="item-action"><span class="item-state '+(locked?'locked':'quiz-ready')+'">'+(subLocked?'يتطلب اشتراك':locked?'أكمل الدرس':'ابدأ الاختبار')+'</span></div>';
+     items.push(subLocked?'<button type="button" class="curriculum-item quiz-item locked subscription-locked" data-subscription-lock="quiz|'+q.id+'">'+body+'</button>':locked?'<button type="button" class="curriculum-item quiz-item locked locked-curriculum-action" data-locked-quiz="lesson" aria-label="أكمل الدرس لفتح الاختبار">'+body+'</button>':'<a class="curriculum-item quiz-item unlocked" href="'+url('lesson.html',c,{quiz:q.id})+'">'+body+'</a>');
    });
    if(filter!=='lessons')d.quizzes.filter(q=>!q.lessonId).forEach(q=>{
-     const locked=!unitComplete;
+     const subLocked=!subscriptionCan(q,c.subject),locked=subLocked||!unitComplete;
      const body='<span class="item-icon quiz"><i class="fa-solid '+(locked?'fa-lock':'fa-file-circle-question')+'"></i></span>'+
-       '<div><h4>'+esc(q.name||'اختبار الوحدة')+'</h4><p>'+(locked?'أكمل دروس الوحدة لفتح الاختبار':'جاهز الآن • ')+(q.questions?.length||0)+' سؤال</p></div>'+
+       '<div><h4>'+esc(q.name||'اختبار الوحدة')+(q.isFree?' <span class="subscription-access-pill">مجاني</span>':subLocked?' <span class="subscription-access-pill paid">اشتراك</span>':'')+'</h4><p>'+(subLocked?'هذه الباقة لا تشمل الاختبار':locked?'أكمل دروس الوحدة لفتح الاختبار':'جاهز الآن • ')+(q.questions?.length||0)+' سؤال</p></div>'+
        '<div class="item-action"><span class="item-state '+(locked?'locked':'quiz-ready')+'">'+(locked?'مغلق':'ابدأ الاختبار')+'</span><span class="item-open '+(locked?'locked-action':'')+'"><i class="fa-solid '+(locked?'fa-lock':'fa-arrow-left')+'"></i></span></div>';
-     items.push(locked
-       ?'<button type="button" class="curriculum-item quiz-item locked locked-curriculum-action" data-locked-quiz="'+u+'" aria-label="اختبار مغلق">'+body+'</button>'
-       :'<a class="curriculum-item quiz-item unlocked" href="'+url('lesson.html',c,{quiz:q.id})+'" aria-label="فتح اختبار '+esc(q.name||'الوحدة')+'">'+body+'</a>');
+     items.push(subLocked?'<button type="button" class="curriculum-item quiz-item locked subscription-locked" data-subscription-lock="quiz|'+q.id+'">'+body+'</button>':locked?'<button type="button" class="curriculum-item quiz-item locked locked-curriculum-action" data-locked-quiz="'+u+'" aria-label="اختبار مغلق">'+body+'</button>':'<a class="curriculum-item quiz-item unlocked" href="'+url('lesson.html',c,{quiz:q.id})+'" aria-label="فتح اختبار '+esc(q.name||'الوحدة')+'">'+body+'</a>');
    });
    if(!items.length)return'';
    const dcount=d.lessons.filter(x=>done(x.id)).length,pct=d.lessons.length?Math.round(dcount/d.lessons.length*100):0;
@@ -359,14 +366,14 @@ function renderCurriculum(c,filter){
  if(comprehensive.length&&filter!=='lessons'){
    const unlocked=subjectIsComplete();
    const body=comprehensive.map(q=>{
-     const content='<span class="item-icon quiz"><i class="fa-solid '+(unlocked?'fa-file-circle-question':'fa-lock')+'"></i></span><div><h4>'+esc(q.name||'اختبار شامل')+'</h4><p>'+(q.questions?.length||0)+' سؤال</p></div><div class="item-action"><span class="item-state '+(unlocked?'quiz-ready':'locked')+'">'+(unlocked?'جاهز':'مغلق')+'</span><span class="item-open '+(unlocked?'':'locked-action')+'"><i class="fa-solid '+(unlocked?'fa-arrow-left':'fa-lock')+'"></i></span></div>';
-     return unlocked
-       ?'<a class="curriculum-item quiz-item unlocked" href="'+url('lesson.html',c,{quiz:q.id})+'">'+content+'</a>'
-       :'<button type="button" class="curriculum-item quiz-item locked locked-curriculum-action" data-locked-quiz="all">'+content+'</button>';
+     const subLocked=!subscriptionCan(q,c.subject),canOpen=unlocked&&!subLocked;
+     const content='<span class="item-icon quiz"><i class="fa-solid '+(canOpen?'fa-file-circle-question':'fa-lock')+'"></i></span><div><h4>'+esc(q.name||'اختبار شامل')+(q.isFree?' <span class="subscription-access-pill">مجاني</span>':subLocked?' <span class="subscription-access-pill paid">اشتراك</span>':'')+'</h4><p>'+(q.questions?.length||0)+' سؤال</p></div><div class="item-action"><span class="item-state '+(canOpen?'quiz-ready':'locked')+'">'+(subLocked?'يتطلب اشتراك':unlocked?'جاهز':'مغلق')+'</span><span class="item-open '+(canOpen?'':'locked-action')+'"><i class="fa-solid '+(canOpen?'fa-arrow-left':'fa-lock')+'"></i></span></div>';
+     return subLocked?'<button type="button" class="curriculum-item quiz-item locked subscription-locked" data-subscription-lock="quiz|'+q.id+'">'+content+'</button>':unlocked?'<a class="curriculum-item quiz-item unlocked" href="'+url('lesson.html',c,{quiz:q.id})+'">'+content+'</a>':'<button type="button" class="curriculum-item quiz-item locked locked-curriculum-action" data-locked-quiz="all">'+content+'</button>';
    }).join('');
    cards.push('<section class="unit-card comprehensive-card '+(unlocked?'unit-complete':'')+'"><header class="unit-head"><div class="unit-head-main"><span class="unit-number"><i class="fa-solid fa-trophy"></i></span><div><h3>اختبارات شاملة</h3><p>'+(unlocked?'أنت جاهز لتقييم المنهج كاملًا':'تفتح بعد إكمال جميع دروس المادة')+'</p></div></div><div class="unit-head-actions"><button type="button" class="unit-toggle" data-toggle-unit="comprehensive" aria-expanded="true" aria-controls="unitItems-comprehensive" title="طي أو فتح الاختبارات"><i class="fa-solid fa-chevron-up"></i></button></div></header><div class="unit-items" id="unitItems-comprehensive">'+body+'</div></section>');
  }
  $('curriculumList').innerHTML=cards.join('')||'<div class="empty-state"><span>🔎</span><h3>لا يوجد محتوى بهذا الفلتر</h3></div>';
+ $$('[data-subscription-lock]').forEach(b=>b.onclick=()=>subscriptionLock());
  $$('[data-locked-quiz]').forEach(b=>b.onclick=()=>{
    toast(b.dataset.lockedQuiz==='lesson'?'أكمل الدرس المرتبط لفتح الاختبار.':b.dataset.lockedQuiz==='all'?'أكمل دروس المادة أولًا لفتح الاختبار الشامل.':'أكمل دروس هذه الوحدة أولًا لفتح الاختبار.','error');
  });
@@ -381,7 +388,7 @@ function renderCurriculum(c,filter){
 
 function renderSubjectSide(c){
  const next=state.lessons.find(l=>!done(l.id))||state.lessons[0];
- if(next){$('resumeTitle').textContent=done(next.id)?'راجع أول درس':next.title||'ابدأ أول درس';$('resumeDescription').textContent=unitName(c,next.unit||1)+' • '+(next.videos?.length||0)+' فيديو';$('resumeBtn').onclick=()=>location.href=url('lesson.html',c,{id:next.id})} else $('resumeBtn').disabled=true;
+ if(next){const allowed=subscriptionCan(next,c.subject);$('resumeTitle').textContent=done(next.id)?'راجع أول درس':next.title||'ابدأ أول درس';$('resumeDescription').textContent=unitName(c,next.unit||1)+' • '+(next.videos?.length||0)+' فيديو'+(allowed?'':' • يتطلب اشتراك');$('resumeBtn').onclick=()=>allowed?location.href=url('lesson.html',c,{id:next.id}):subscriptionLock(next,c.subject)} else $('resumeBtn').disabled=true;
  const week=Math.min(3,state.lessons.filter(l=>pLesson(l.id).completedAt&&Date.now()-pLesson(l.id).completedAt<604800000).length);
  $('weeklyProgressText').textContent=week+' من 3';$('weeklyProgressBar').style.width=(week/3*100)+'%';
  $('exploreStagesBtn').onclick=()=>openLearningExplorer();$('exploreOtherSubjectsBtn').onclick=()=>openLearningExplorer();
@@ -420,7 +427,7 @@ function renderLesson(){
  const c=ctx(),quizId=params.get('quiz'); if(quizId){renderQuizOnly(c,quizId);return}
  const id=params.get('id'), lesson=state.data.lessons?.[id];
  if(!id||!lesson||!contentAvailable(lesson)){toast('الدرس غير موجود أو غير متاح.','error');setTimeout(()=>history.back(),900);return}
- state.currentLesson={...lesson,id};state.subject=subjectFor(c);filterContent(c);
+ state.currentLesson={...lesson,id};state.subject=subjectFor(c);filterContent(c);if(state.user&&!state.adminPreview&&!subscriptionCan(lesson,c.subject)){document.title=(lesson.title||'الدرس')+' | الأكاديمية';$('lessonTitle').textContent=lesson.title||'الدرس';$('lessonMeta').textContent=state.subject.name;subscriptionLock(lesson,c.subject);return}
  const routeTeacher=params.get('teacher')||'';
  state.unitLessons=state.lessons.filter(l=>Number(l.unit||1)===Number(lesson.unit||1)&&(!routeTeacher||lessonHasTeacher(l,routeTeacher)));
  trackContentEvent(id,'views');
@@ -1128,7 +1135,7 @@ function renderQuizOnly(c,id){
    const allowed=mode==='all'||(mode==='students'&&ids.includes(state.user?.uid))||(mode==='group'&&q.targetGroupId&&(state.profile?.classGroupId===q.targetGroupId||groups.includes(q.targetGroupId)));
    if(!state.adminPreview&&!allowed){toast('هذا الاختبار غير مخصص لحسابك.','error');setTimeout(()=>history.back(),900);return}
  }if(!q||!contentAvailable(q)){toast('الاختبار غير موجود.','error');setTimeout(()=>history.back(),800);return}
- state.currentQuiz={...q,id};
+ state.currentQuiz={...q,id};if(state.user&&!state.adminPreview&&!subscriptionCan(q,c.subject)){state.subject=subjectFor(c);document.title=(q.name||'اختبار')+' | الأكاديمية';$('lessonTitle').textContent=q.name||'اختبار';$('lessonMeta').textContent=state.subject.name;subscriptionLock(q,c.subject);return}
  filterContent(c);
  const unit=Number(q.unit||0);
  const unlocked=q.lessonId?done(q.lessonId):unit===0?subjectIsComplete():unitIsComplete(unit);
@@ -1248,6 +1255,7 @@ async function init(){
        else renderAdminPreviewBanner();
      }
      await loadProfile(user);
+     if(user&&!state.adminPreview&&window.AcademySubscription)state.access=await window.AcademySubscription.load(user.uid,state.profile,true);
      if(page==='subject'){renderSubject();bindLearningExplorer()}
      if(page==='lesson')renderLesson();
    }finally{window.AcademyUI?.hidePageLoading()}

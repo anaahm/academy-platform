@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="./assets/academy-mix-theme.css?v=19">
   <link rel="stylesheet" href="./assets/growth-pack.css?v=1">
   <link rel="stylesheet" href="./assets/ui-polish.css?v=1">
+  <link rel="stylesheet" href="./assets/subscription.css?v=1">
 </head>
 <body class="learning-body">
   <div id="toast" class="toast"></div>
@@ -78,6 +79,11 @@
             <article><span class="stat-icon indigo"><i class="fa-regular fa-clock"></i></span><div><strong id="profileStudyMinutes">0</strong><small>دقيقة دراسة</small></div></article>
             <article><span class="stat-icon rose"><i class="fa-solid fa-triangle-exclamation"></i></span><div><strong id="profileMistakesTotal">0</strong><small>خطأ للمراجعة</small></div></article>
           </div>
+
+          <article class="profile-card profile-subscription-card hidden" id="profileSubscriptionCard">
+            <div class="profile-card-head"><div><span class="section-kicker">اشتراكك</span><h2>الباقة وصلاحية الوصول</h2></div><span>👑</span></div>
+            <div class="profile-subscription-body"><div class="profile-subscription-copy"><strong id="profileSubscriptionTitle">جاري تحميل الاشتراك...</strong><small id="profileSubscriptionText">—</small><small><span id="profileSubscriptionStatus">—</span> • <span id="profileSubscriptionEnd">—</span></small></div><div class="profile-subscription-actions"><a class="btn btn-primary" href="./subscription.html">إدارة الاشتراك</a><a class="btn btn-soft" href="./support.html?category=general&title=استفسار%20عن%20الاشتراك">الدعم</a></div></div>
+          </article>
 
           <div class="profile-insight-grid-v6">
             <article class="profile-card profile-week-card-v6">
@@ -177,8 +183,10 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="./assets/firebase-config.js"></script>
   <script src="./assets/student-core.js"></script>
+  <script src="./assets/subscription-core.js?v=1"></script>
   <script src="./assets/gamification.js?v=1"></script>
   <script src="./assets/profile.js?v=43"></script>
+  <script src="./assets/subscription-widget.js?v=1"></script>
 <script src="./assets/growth-pack.js?v=1"></script>
   <script src="./assets/activity-tracker.js"></script>
   <script src="./assets/pwa.js"></script>
