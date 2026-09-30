@@ -164,7 +164,7 @@ function initTeacherCollapse(){
  window.addEventListener('resize',apply,{passive:true});
 }
 function switchTab(tab,updateUrl=true){
- const allowed=['home','content','submit','quizzes','assignments','notifications','students','analytics','profile'];
+ const allowed=['home','content','submit','quizzes','assignments','notifications','communications','students','analytics','profile','support'];
  if(!allowed.includes(tab))tab='home';
  const labels={
    home:['الرئيسية','ملخص عملك التعليمي اليوم'],
@@ -173,6 +173,7 @@ function switchTab(tab,updateUrl=true){
    quizzes:['إنشاء اختبار','أضف أسئلة مرتبطة بدرس وأرسلها لاعتماد الإدارة'],
    assignments:['الواجبات','إنشاء الواجبات ومتابعة تسليمات الطلاب'],
    notifications:['إشعارات الطلاب','أرسل رسالة لطلاب موادك بعد اعتماد الإدارة'],
+ support:['الدعم','افتح تذكرة وتابع رد إدارة الأكاديمية'],
    students:['تفاعل الطلاب','إحصائيات مجمعة لأداء محتواك'],
    analytics:['الإحصائيات','تحليل المشاهدات والإكمال ونتائج التدريبات'],
    profile:['ملفي العام','معلوماتك التي يراها الطلاب بعد الموافقة']
