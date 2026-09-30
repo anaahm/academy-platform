@@ -132,7 +132,7 @@ function cardHtml(f){
 function bindCards(){
  $$('[data-favorite-file]').forEach(b=>b.onclick=async e=>{e.preventDefault();e.stopPropagation();await toggleFavorite(b.dataset.favoriteFile)});
  $('[data-open-file]').forEach(a=>a.onclick=()=>{recordOpen(a.dataset.openFile).catch(()=>{})});
- $('[data-subscription-file]').forEach(b=>b.onclick=()=>{const f=data.files?.[b.dataset.subscriptionFile],sub=f?subjectMeta(f):null;S?.lockOverlay({title:'هذا الملف ضمن الاشتراك',text:'فعّل باقة تشمل مادة '+(sub?.name||'المادة')+' لفتح الملف.'})});
+ $$('[data-subscription-file]').forEach(b=>b.onclick=()=>{const f=data.files?.[b.dataset.subscriptionFile],sub=f?subjectMeta(f):null;S?.lockOverlay({title:'هذا الملف ضمن الاشتراك',text:'فعّل باقة تشمل مادة '+(sub?.name||'المادة')+' لفتح الملف.'})});
 }
 function render(){
  const list=files();renderStats(list);renderFeatured();resultsCopy(list);
