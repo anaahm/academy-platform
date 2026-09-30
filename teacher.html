@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="./assets/academy-mix-theme.css?v=24">
   <link rel="stylesheet" href="./assets/growth-pack.css?v=1">
   <link rel="stylesheet" href="./assets/ui-polish.css?v=1">
+  <link rel="stylesheet" href="./assets/support.css?v=1">
   <link rel="stylesheet" href="./assets/communications.css?v=1">
 </head>
 <body class="teacher-v3-body">
@@ -46,6 +47,7 @@
         <button data-teacher-tab="students" role="tab" aria-selected="false" aria-controls="teacher-tab-students"><i class="fa-solid fa-users"></i> الطلاب</button>
         <button data-teacher-tab="analytics" role="tab" aria-selected="false" aria-controls="teacher-tab-analytics"><i class="fa-solid fa-chart-line"></i> الإحصائيات</button>
         <button data-teacher-tab="profile" role="tab" aria-selected="false" aria-controls="teacher-tab-profile"><i class="fa-solid fa-id-card"></i> ملفي العام</button>
+        <button data-teacher-tab="support" role="tab" aria-selected="false" aria-controls="teacher-tab-support"><i class="fa-solid fa-headset"></i> الدعم <span id="teacherSupportNavBadge" class="nav-badge hidden">0</span></button>
       </nav>
     </aside>
     <div class="teacher-mobile-overlay hidden" id="teacherOverlay"></div>
@@ -300,6 +302,27 @@
           </article>
         </section>
 
+        <section class="teacher-tab hidden" id="teacher-tab-support" role="tabpanel">
+          <section class="teacher-grid">
+            <article class="teacher-card">
+              <div class="teacher-card-head"><div><span class="section-kicker">تذكرة دعم جديدة</span><h3>تواصل مع إدارة الأكاديمية</h3><p>للمشكلات التقنية، الصلاحيات، المحتوى أو أي مشكلة تحتاج تدخل الإدارة.</p></div><span>🎫</span></div>
+              <form id="teacherSupportForm" class="support-form">
+                <label><span>نوع المشكلة</span><select id="teacherSupportCategory"><option value="technical">مشكلة تقنية</option><option value="content">مشكلة محتوى</option><option value="students">مشكلة مع الطلاب</option><option value="assignment">واجب أو تصحيح</option><option value="account">الحساب والصلاحيات</option><option value="general">طلب أو مشكلة عامة</option></select></label>
+                <label><span>الأولوية</span><select id="teacherSupportPriority"><option value="normal">عادي</option><option value="high">مهم</option><option value="urgent">عاجل</option></select></label>
+                <label class="full"><span>العنوان</span><input id="teacherSupportTitle" required maxlength="140" placeholder="اكتب عنوانًا واضحًا للمشكلة"></label>
+                <label class="full"><span>التفاصيل</span><textarea id="teacherSupportDescription" required minlength="5" maxlength="2200" placeholder="اشرح المشكلة بالتفصيل..."></textarea></label>
+                <label class="full"><span>رابط صورة أو لقطة شاشة — اختياري</span><input id="teacherSupportScreenshot" type="url" dir="ltr" maxlength="700" placeholder="https://..."></label>
+                <button class="btn btn-primary full" id="teacherSupportSubmit" type="submit"><i class="fa-solid fa-paper-plane"></i> فتح التذكرة</button>
+              </form>
+            </article>
+            <article class="teacher-card">
+              <div class="teacher-card-head"><div><span class="section-kicker">متابعة الدعم</span><h3>تذاكرك</h3><p><strong id="teacherSupportOpenCount">0</strong> مفتوحة • <strong id="teacherSupportWaitingCount">0</strong> تحتاج ردك.</p></div><span>🧭</span></div>
+              <div class="support-toolbar"><button class="active" data-teacher-support-filter="all">الكل</button><button data-teacher-support-filter="open">المفتوحة</button><button data-teacher-support-filter="waiting_user">مطلوب رد</button><button data-teacher-support-filter="resolved">تم الحل</button></div>
+              <div id="teacherSupportList" class="support-list"></div>
+            </article>
+          </section>
+        </section>
+
         <section class="teacher-tab hidden" id="teacher-tab-analytics" role="tabpanel">
           <section class="teacher-grid">
             <article class="teacher-card">
@@ -354,6 +377,7 @@
   <script src="./assets/teacher.js?v=45"></script>
 <script src="./assets/growth-pack.js?v=1"></script>
   <script src="./assets/teacher-communications.js?v=1"></script>
+  <script src="./assets/teacher-support.js?v=1"></script>
   <script src="./assets/ui-polish.js?v=1"></script>
 </body>
 </html>
