@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="./assets/academy-mix-theme.css?v=24">
   <link rel="stylesheet" href="./assets/admin-intelligence.css?v=1">
   <link rel="stylesheet" href="./assets/ui-polish.css?v=1">
+  <link rel="stylesheet" href="./assets/communications.css?v=1">
 </head>
 <body class="admin-v3-body">
   <div id="toast" class="toast"></div>
@@ -83,6 +84,7 @@
         <span class="admin-nav-label">المنصة</span>
         <button data-admin-tab="news"><i class="fa-regular fa-newspaper"></i> الأخبار والتحديثات</button>
         <button data-admin-tab="community"><i class="fa-solid fa-users"></i> المجتمع والبلاغات <span id="communityReportBadge" class="nav-badge hidden">0</span></button>
+        <button data-admin-tab="communications"><i class="fa-regular fa-comments"></i> مراجعة التواصل <span id="communicationAlertBadge" class="nav-badge hidden">0</span></button>
         <button data-admin-tab="notifications"><i class="fa-regular fa-bell"></i> الإشعارات الموجهة</button>
         <button data-admin-tab="announcements"><i class="fa-solid fa-bullhorn"></i> الإعلانات</button>
         <button data-admin-tab="settings"><i class="fa-solid fa-sliders"></i> الإعدادات</button>
@@ -450,6 +452,35 @@
           <div id="studentsAdminList" class="admin-table-wrap"></div>
         </section>
 
+        <section class="admin-tab hidden" id="admin-tab-communications">
+          <section class="admin-intel-hero">
+            <div><span class="section-kicker light">بوابة الموافقة المركزية</span><h2>كل تواصل يمر من هنا أولًا</h2><p>أسئلة الطلاب، ردود المعلمين، الرسائل، الإعلانات وطلبات تثبيت الأسئلة لا تظهر للطرف الآخر قبل قرار الإدارة.</p></div>
+            <div class="admin-intel-hero-side"><article><strong id="adminCommPending">0</strong><small>قيد المراجعة</small></article><article><strong id="adminCommQuestions">0</strong><small>أسئلة طلاب</small></article></div>
+          </section>
+          <section class="comm-admin-stats">
+            <article><strong id="adminCommQuestions">0</strong><small>أسئلة تنتظر قرارًا</small></article>
+            <article><strong id="adminCommReplies">0</strong><small>ردود معلمين</small></article>
+            <article><strong id="adminCommBroadcasts">0</strong><small>رسائل وإعلانات</small></article>
+            <article><strong id="adminCommPending">0</strong><small>الإجمالي المعلق</small></article>
+          </section>
+          <div class="admin-intel-toolbar">
+            <label class="admin-global-search" style="flex:1;max-width:520px"><i class="fa-solid fa-magnifying-glass"></i><input id="adminCommunicationSearch" type="search" placeholder="ابحث باسم الطالب أو المعلم أو نص الرسالة..."></label>
+            <button type="button" id="adminCommunicationRefresh"><i class="fa-solid fa-rotate"></i> تحديث</button>
+          </div>
+          <div class="comm-admin-layout">
+            <aside class="comm-admin-filters" aria-label="تصفية طلبات التواصل">
+              <button class="active" type="button" data-comm-filter="pending">قيد المراجعة <span>0</span></button>
+              <button type="button" data-comm-filter="questions">أسئلة الطلاب <span>0</span></button>
+              <button type="button" data-comm-filter="replies">ردود المعلمين <span>0</span></button>
+              <button type="button" data-comm-filter="broadcasts">الرسائل والإعلانات <span>0</span></button>
+              <button type="button" data-comm-filter="pins">طلبات التثبيت <span>0</span></button>
+              <button type="button" data-comm-filter="reviewed">تمت مراجعتها <span>0</span></button>
+              <button type="button" data-comm-filter="all">كل السجل <span>0</span></button>
+            </aside>
+            <main><div id="adminCommunicationList" class="comm-list"></div></main>
+          </div>
+        </section>
+
         <section class="admin-tab" id="admin-tab-news">
           <div class="admin-section-head"><div><span class="section-kicker">تحديثات المنصة</span><h2>الأخبار والإعلانات المطولة</h2><p>انشر تحديثات تظهر في الصفحة العامة وصفحة الأخبار.</p></div></div>
           <div class="admin-teacher-grid">
@@ -804,6 +835,7 @@
   <script src="./assets/firebase-config.js"></script>
   <script src="./assets/admin-auth-flow.js?v=33"></script>
   <script src="./assets/admin-intelligence.js?v=1"></script>
+  <script src="./assets/admin-communications.js?v=1"></script>
   <script src="./assets/admin.js?v=54"></script>
   <script src="./assets/admin-notifications.js"></script>
   <script src="./assets/ui-polish.js?v=1"></script>
