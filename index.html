@@ -21,6 +21,7 @@
   <script src="./assets/academy-utils.js"></script>
   <link rel="stylesheet" href="./assets/academy-mix-theme.css?v=26">
   <link rel="stylesheet" href="./assets/ui-polish.css?v=1">
+  <link rel="stylesheet" href="./assets/subscription.css?v=1">
 </head>
 <body>
   <div id="toast" class="toast" role="status"></div>
@@ -316,6 +317,10 @@
               </aside>
             </div>
           </section>
+          <section class="subscription-dashboard-strip hidden" id="dashboardSubscriptionStrip">
+            <div class="subscription-dashboard-main"><span><i class="fa-solid fa-crown"></i></span><div><strong id="dashboardSubscriptionTitle">جاري تحميل الاشتراك...</strong><small id="dashboardSubscriptionText">سنوضح لك حالة الباقة وصلاحية الوصول هنا.</small></div></div>
+            <a id="dashboardSubscriptionCta" href="./subscription.html">عرض الباقات</a>
+          </section>
 
           <section class="future-progress-overview dashboard-stat-band-v3" aria-label="ملخص تقدم الطالب">
             <article class="future-overall-progress dashboard-overall-v3">
@@ -576,8 +581,10 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="./assets/firebase-config.js"></script>
   <script src="./assets/student-core.js"></script>
+  <script src="./assets/subscription-core.js?v=1"></script>
   <script src="./assets/gamification.js?v=1"></script>
   <script src="./assets/app.js?v=50"></script>
+  <script src="./assets/subscription-widget.js?v=1"></script>
   <script src="./assets/notification-engine.js?v=2"></script>
   <script src="./assets/notification-widget.js?v=2"></script>
   <script src="./assets/activity-tracker.js"></script>
