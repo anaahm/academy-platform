@@ -1,6 +1,6 @@
 (() => {
 'use strict';
-const C=window.AcademyCore,S=window.AcademySubscription,$=id=>document.getElementById(id),$=(s,r=document)=>[...r.querySelectorAll(s)];
+const C=window.AcademyCore,S=window.AcademySubscription,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 let user,profile,access=null,assignments=[],submissions={},data={customSubjects:{}},filter='all',activeAssignment=null,lastModalTrigger=null;
 
 function assignmentAccessible(a){return !S||S.canAccess(a,access,a?.subject||'')}
