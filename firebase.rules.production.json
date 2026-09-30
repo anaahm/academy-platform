@@ -296,14 +296,16 @@
       ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
     },
     "studentSubscriptionsV1": {
+      ".read": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true",
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
+        ".read": "auth != null && auth.uid === $uid",
         ".write": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true"
       }
     },
     "subscriptionRequestsV1": {
+      ".read": "auth != null && root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true",
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true)",
+        ".read": "auth != null && auth.uid === $uid",
         "$requestId": {
           ".write": "auth != null && (root.child('adminProfiles').child(auth.uid).child('isAdmin').val() === true || (auth.uid === $uid && !data.exists() && newData.child('studentId').val() === auth.uid && newData.child('status').val() === 'pending'))"
         }
