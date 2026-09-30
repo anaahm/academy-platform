@@ -9,7 +9,7 @@ const groups={
   learn:['subject.html','lesson.html','explore.html','search.html'],
   plan:['planner.html','schedule.html','assignments.html','weekly-report.html','progress.html'],
   profile:['profile.html'],
-  more:['library.html','exam-center.html','simulations.html','community.html','leaderboard.html','challenges.html','notifications.html','support.html','live.html','news.html']
+  more:['library.html','exam-center.html','simulations.html','community.html','leaderboard.html','challenges.html','notifications.html','support.html','subscription.html','live.html','news.html']
 };
 function activeFor(key){return groups[key]?.includes(path)}
 
@@ -42,6 +42,7 @@ function openMore(trigger){
       <a href="./library.html"><i class="fa-solid fa-folder-open"></i><span><strong>المكتبة</strong><small>ملفات ومراجع</small></span></a>
       <a href="./live.html"><i class="fa-solid fa-tower-broadcast"></i><span><strong>البث</strong><small>الجلسات المباشرة</small></span></a>
       <a href="./notifications.html"><i class="fa-regular fa-bell"></i><span><strong>الإشعارات والرسائل</strong><small>الردود والإعلانات والتحديثات</small></span></a>\n      <a href="./support.html"><i class="fa-solid fa-headset"></i><span><strong>الدعم والشكاوى</strong><small>تذكرة أو بلاغ عن المحتوى</small></span></a>
+      <a href="./subscription.html"><i class="fa-solid fa-crown"></i><span><strong>الاشتراك والباقات</strong><small>باقتك وصلاحية الوصول</small></span></a>
       <a href="./community.html"><i class="fa-solid fa-users"></i><span><strong>المجتمع</strong><small>المنتدى والمجموعات</small></span></a>
       <a href="./leaderboard.html"><i class="fa-solid fa-ranking-star"></i><span><strong>المتصدرون</strong><small>الترتيب والدوريات</small></span></a>\n      <a href="./challenges.html"><i class="fa-solid fa-trophy"></i><span><strong>التحديات</strong><small>مهام ومكافآت وشارات</small></span></a>
       <a href="./weekly-report.html"><i class="fa-solid fa-chart-column"></i><span><strong>تقريري</strong><small>ملخص الأسبوع</small></span></a>
