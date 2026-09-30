@@ -1,8 +1,10 @@
 (() => {
 'use strict';
-const C=window.AcademyCore,$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-let user,profile,assignments=[],submissions={},data={customSubjects:{}},filter='all',activeAssignment=null,lastModalTrigger=null;
+const C=window.AcademyCore,S=window.AcademySubscription,$=id=>document.getElementById(id),$=(s,r=document)=>[...r.querySelectorAll(s)];
+let user,profile,access=null,assignments=[],submissions={},data={customSubjects:{}},filter='all',activeAssignment=null,lastModalTrigger=null;
 
+function assignmentAccessible(a){return !S||S.canAccess(a,access,a?.subject||'')}
+function canOpenAssignment(a){return assignmentAccessible(a)||!!submissions[a?.id]}
 function targetMatches(a){
   const mode=a.targetMode||'all';
   if(mode==='students'){
@@ -90,7 +92,7 @@ function countdownText(ts){
 }
 function renderHero(){
   const all=matching(),pending=all.filter(a=>statusFor(a)==='pending'),overdue=all.filter(a=>statusFor(a)==='overdue'),graded=all.filter(a=>statusFor(a)==='graded');
-  const candidate=overdue[0]||pending[0]||null;
+  const candidate=[...overdue,...pending].find(canOpenAssignment)||null;
   if($('assignmentHeroPending'))$('assignmentHeroPending').textContent=pending.length;
   if($('assignmentHeroOverdue'))$('assignmentHeroOverdue').textContent=overdue.length;
   if($('assignmentHeroGraded'))$('assignmentHeroGraded').textContent=graded.length;
@@ -138,7 +140,7 @@ function render(){
       :'كل المطلوب منك مرتب حسب أقرب موعد.';
   }
   $('assignmentList').innerHTML=arr.length?arr.map(a=>{
-    const s=submissions[a.id],st=statusFor(a),overdue=st==='overdue',soon=isDueSoon(a),fresh=isNewAssignment(a),sub=subjectMeta(a.subject);
+    const s=submissions[a.id],st=statusFor(a),overdue=st==='overdue',soon=isDueSoon(a),fresh=isNewAssignment(a),sub=subjectMeta(a.subject),allowed=canOpenAssignment(a),paidLocked=!assignmentAccessible(a)&&!s;
     const submittedAt=Number(s?.submittedAt||0),lateSubmission=!!s&&(s.late===true||(!s.late&&a.dueAt&&submittedAt>Number(a.dueAt)));
     const statusClass=st==='graded'?'approved':st==='submitted'?'info':st==='overdue'?'danger':'pending';
     const icon=st==='graded'?'fa-star':st==='submitted'?'fa-paper-plane':st==='overdue'?'fa-triangle-exclamation':'fa-clipboard-list';
@@ -151,7 +153,7 @@ function render(){
         '<div class="assignment-cover-badges-v8">'+(fresh?'<b class="new">جديد</b>':'')+'<b class="'+statusClass+'">'+statusLabel(st)+'</b></div>'+
       '</div>'+
       '<div class="assignment-card-body-v8">'+
-        '<div class="assignment-card-title-v8"><div><small>'+C.esc(a.teacherName||'المدرس')+'</small><h3>'+C.esc(a.title||'واجب')+'</h3></div>'+(st==='graded'?'<strong class="assignment-score-v8">'+percent+'%</strong>':'<span class="assignment-kind-icon-v8"><i class="fa-solid '+icon+'"></i></span>')+'</div>'+
+        '<div class="assignment-card-title-v8"><div><small>'+C.esc(a.teacherName||'المدرس')+'</small><h3>'+C.esc(a.title||'واجب')+' '+(a.isFree?'<span class="subscription-access-pill">مجاني</span>':paidLocked?'<span class="subscription-access-pill paid">اشتراك</span>':'')+'</h3></div>'+(st==='graded'?'<strong class="assignment-score-v8">'+percent+'%</strong>':'<span class="assignment-kind-icon-v8"><i class="fa-solid '+icon+'"></i></span>')+'</div>'+
         '<p>'+C.esc((a.instructions||'لا توجد تعليمات مختصرة.').slice(0,145))+'</p>'+
         '<div class="assignment-metrics-v8">'+
           '<span class="'+(overdue?'danger':soon?'warning':'')+'"><i class="fa-regular fa-clock"></i><b>'+C.esc(countdownText(Number(a.dueAt||0)))+'</b><small>'+C.esc(fullDate(Number(a.dueAt||0)))+'</small></span>'+
@@ -163,8 +165,8 @@ function render(){
           '<span class="'+(stepGraded?'done':'')+'"><i class="fa-solid '+(stepGraded?'fa-check':'fa-star')+'"></i><small>تم التصحيح</small></span>'+
         '</div>'+
         (lateSubmission?'<div class="assignment-late-note-v8"><i class="fa-solid fa-clock"></i> تم التسليم بعد الموعد المحدد</div>':'')+
-        '<div class="support-actions"><button class="btn '+((st==='pending'||st==='overdue')?'btn-primary':'btn-soft')+'" data-open-assignment="'+a.id+'">'+
-          (st==='graded'?'عرض النتيجة والملاحظات':st==='submitted'?'عرض أو تحديث التسليم':st==='overdue'?'تسليم الآن':'فتح الواجب وتسليمه')+' <i class="fa-solid fa-arrow-left"></i>'+
+        '<div class="support-actions"><button class="btn '+(paidLocked?'btn-soft':(st==='pending'||st==='overdue')?'btn-primary':'btn-soft')+'" data-open-assignment="'+a.id+'">'+
+          (paidLocked?'<i class="fa-solid fa-crown"></i> يتطلب اشتراك':st==='graded'?'عرض النتيجة والملاحظات':st==='submitted'?'عرض أو تحديث التسليم':st==='overdue'?'تسليم الآن':'فتح الواجب وتسليمه')+(paidLocked?'':' <i class="fa-solid fa-arrow-left"></i>')+
         '</button><a class="btn btn-soft support-report-link" href="'+supportHrefForAssignment(a)+'"><i class="fa-regular fa-flag"></i> إبلاغ</a></div>'+
       '</div>'+
     '</article>';
@@ -180,6 +182,7 @@ function submissionStateBlock(a,s){
 }
 function openAssignment(id){
   const a=assignments.find(x=>x.id===id);if(!a)return;
+  if(!canOpenAssignment(a)){S?.lockOverlay({title:'هذا الواجب ضمن الاشتراك',text:'فعّل باقة تشمل مادة '+subjectName(a.subject)+' لفتح الواجب وتسليمه.'});return}
   activeAssignment=a;
   const s=submissions[id],st=statusFor(a),overdue=st==='overdue';
   const percent=s?.status==='graded'
