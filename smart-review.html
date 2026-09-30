@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-page="smart-review">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="theme-color" content="#312e81">
+  <title>المراجعة الذكية | الأكاديمية</title>
+  <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./assets/app-icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="./assets/styles.css"><link rel="stylesheet" href="./assets/learning.css"><link rel="stylesheet" href="./assets/hub.css">
+  <link rel="stylesheet" href="./assets/ui-kit.css?v=35"><link rel="stylesheet" href="./assets/experience.css?v=39"><link rel="stylesheet" href="./assets/future-theme.css?v=1"><link rel="stylesheet" href="./assets/academy-mix-theme.css?v=26">
+  <link rel="stylesheet" href="./assets/growth-pack.css?v=1">
+  <script src="./assets/academy-utils.js"></script>
+</head>
+<body class="feature-page">
+<div id="toast" class="toast" role="status"></div>
+<header class="learning-header"><div class="container learning-nav">
+  <a class="brand" href="./index.html"><span class="brand-mark"><i class="fa-solid fa-brain"></i></span><span><strong>الأكاديمية</strong><small>المراجعة الذكية</small></span></a>
+  <div class="learning-breadcrumb"><a href="./index.html">الرئيسية</a><i class="fa-solid fa-chevron-left"></i><a href="./profile.html?tab=mistakes">دفتر الأخطاء</a><i class="fa-solid fa-chevron-left"></i><span>مراجعة ذكية</span></div>
+  <div class="learning-user"><a class="icon-btn" href="./planner.html" title="مخطط المذاكرة"><i class="fa-solid fa-list-check"></i></a><span class="avatar" id="reviewAvatar">ط</span></div>
+</div></header>
+
+<main class="smart-review-shell">
+  <section class="smart-review-hero">
+    <div><span class="section-kicker light">مراجعة متباعدة • أخطاؤك فقط</span><h1>حوّل كل خطأ إلى معلومة ثابتة</h1><p>الأسئلة التي أخطأت فيها تعود لك في الوقت المناسب. كل إجابة صحيحة تؤجل السؤال مدة أطول، وبعد ثلاث مراجعات صحيحة متتالية ينتقل إلى قائمة الإتقان.</p></div>
+    <div class="smart-review-score"><div><strong id="reviewTotal">0</strong><small>خطأ نشط</small></div><div><strong id="reviewDue">0</strong><small>مستحق الآن</small></div><div><strong id="reviewMastered">0</strong><small>تم إتقانه</small></div></div>
+  </section>
+
+  <section class="smart-review-toolbar" aria-label="فلاتر المراجعة">
+    <button type="button" class="active" data-review-mode="due">المستحق الآن</button>
+    <button type="button" data-review-mode="all">كل الأخطاء</button>
+    <select id="reviewSubjectFilter" aria-label="المادة"><option value="">كل المواد</option></select>
+    <button type="button" id="startSmartReview"><i class="fa-solid fa-play"></i> ابدأ جلسة مراجعة</button>
+    <a href="./profile.html?tab=mistakes"><i class="fa-solid fa-list-check"></i> دفتر الأخطاء</a>
+  </section>
+
+  <section id="reviewOverview" class="growth-two">
+    <article class="growth-card"><div class="growth-head"><div><span class="growth-kicker">الأولوية الآن</span><h2 id="reviewOverviewTitle">نجهز قائمة المراجعة...</h2><p class="growth-muted" id="reviewOverviewText"></p></div><span class="growth-pill" id="reviewOverviewBadge">0 سؤال</span></div><div id="reviewDueList" class="growth-list"></div></article>
+    <aside class="growth-card"><div class="growth-head"><div><span class="growth-kicker">كيف يعمل النظام؟</span><h3>3 إجابات صحيحة = إتقان</h3></div><span>🧠</span></div><div class="growth-list"><div class="growth-row"><div class="growth-row-main"><span>1</span><div><strong>بعد يوم</strong><small>مراجعة أولى سريعة</small></div></div></div><div class="growth-row"><div class="growth-row-main"><span>2</span><div><strong>بعد 3 أيام</strong><small>تثبيت المعلومة</small></div></div></div><div class="growth-row"><div class="growth-row-main"><span>3</span><div><strong>بعد أسبوع</strong><small>ينتقل السؤال للإتقان عند نجاحك</small></div></div></div></div></aside>
+  </section>
+
+  <section id="reviewSession" class="review-question-card hidden" aria-live="polite">
+    <div class="growth-head"><div><span class="growth-kicker" id="reviewQuestionMeta">السؤال 1</span><h2 id="reviewQuestionText">السؤال</h2></div><span class="growth-pill" id="reviewSessionProgress">1 / 1</span></div>
+    <div class="review-options" id="reviewOptions"></div>
+    <div class="review-feedback hidden" id="reviewFeedback"></div>
+    <div class="review-footer"><div class="growth-muted" id="reviewNextSchedule">اختر إجابتك أولًا.</div><button type="button" id="reviewNextBtn" disabled>التالي <i class="fa-solid fa-arrow-left"></i></button></div>
+  </section>
+</main>
+
+<script src="./assets/ui-kit.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="./assets/firebase-config.js"></script><script src="./assets/student-core.js"></script><script src="./assets/pro-features.js"></script>
+<script src="./assets/smart-review.js?v=1"></script><script src="./assets/activity-tracker.js"></script><script src="./assets/pwa.js"></script><script src="./assets/student-shell.js"></script>
+</body></html>
