@@ -41,7 +41,7 @@ function openMore(trigger){
       <a href="./progress.html"><i class="fa-solid fa-chart-line"></i><span><strong>التقدم</strong><small>نتائجك ونشاطك</small></span></a>
       <a href="./library.html"><i class="fa-solid fa-folder-open"></i><span><strong>المكتبة</strong><small>ملفات ومراجع</small></span></a>
       <a href="./live.html"><i class="fa-solid fa-tower-broadcast"></i><span><strong>البث</strong><small>الجلسات المباشرة</small></span></a>
-      <a href="./notifications.html"><i class="fa-regular fa-bell"></i><span><strong>الإشعارات</strong><small>كل المهم والجديد</small></span></a>
+      <a href="./notifications.html"><i class="fa-regular fa-bell"></i><span><strong>الإشعارات والرسائل</strong><small>الردود والإعلانات والتحديثات</small></span></a>
       <a href="./community.html"><i class="fa-solid fa-users"></i><span><strong>المجتمع</strong><small>المنتدى والمجموعات</small></span></a>
       <a href="./leaderboard.html"><i class="fa-solid fa-ranking-star"></i><span><strong>المتصدرون</strong><small>الترتيب والدوريات</small></span></a>\n      <a href="./challenges.html"><i class="fa-solid fa-trophy"></i><span><strong>التحديات</strong><small>مهام ومكافآت وشارات</small></span></a>
       <a href="./weekly-report.html"><i class="fa-solid fa-chart-column"></i><span><strong>تقريري</strong><small>ملخص الأسبوع</small></span></a>
