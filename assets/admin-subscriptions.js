@@ -27,6 +27,11 @@ function subjectRows(){
 function planRows(){return vals(plans).sort((a,b)=>Number(a.sortOrder||999)-Number(b.sortOrder||999)||Number(a.price||0)-Number(b.price||0))}
 function subscriptionRows(){return vals(subscriptions)}
 function requestRows(){const out=[];Object.entries(requests||{}).forEach(([uid,items])=>Object.entries(items||{}).forEach(([id,v])=>out.push({uid,id,...(v||{})})));return out.sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0))}
+function renderSystemState(){
+ const enabled=settings.enabled===true,box=$('subscriptionSystemEnabled'),text=$('subscriptionSystemEnabledText');
+ if(box)box.checked=enabled;
+ if(text)text.textContent=enabled?'مفعل — القفل يعمل حسب الباقات الآن':'غير مفعل — كل المحتوى متاح حاليًا';
+}
 function stats(){
  const rows=subscriptionRows(),active=rows.filter(x=>subState(x)==='active'),soon=active.filter(x=>Number(x.endsAt||0)-Date.now()<=7*86400000),expired=rows.filter(x=>subState(x)==='expired'),pending=requestRows().filter(x=>x.status==='pending');
  $('subscriptionAdminActive').textContent=active.length;$('subscriptionAdminSoon').textContent=soon.length;$('subscriptionAdminExpired').textContent=expired.length;$('subscriptionAdminRequests').textContent=pending.length;$('subscriptionAdminHeroActive').textContent=active.length;$('subscriptionAdminHeroRequests').textContent=pending.length;
@@ -113,10 +118,21 @@ function bind(){
  $('subscriptionEnforceAccess')?.addEventListener('change',async e=>{const enabled=e.target.checked;await db.ref('subscriptionSettingsV1').update({enforceAccess:enabled,updatedAt:Date.now(),updatedBy:user?.uid||''});window.AcademyUI?.toast?.(enabled?'تم تفعيل حماية المحتوى بالاشتراكات ✅':'تم إيقاف حماية الاشتراكات مؤقتًا')});
  $('subscriptionStudentSearch')?.addEventListener('input',renderStudents);$('studentSubscriptionForm')?.addEventListener('submit',saveStudentSubscription);$('studentPlanId')?.addEventListener('change',updateEndFromPlan);$('studentSubStart')?.addEventListener('change',updateEndFromPlan);
  document.querySelectorAll('[data-sub-quick]').forEach(b=>b.onclick=()=>quickAction(b.dataset.subQuick));
+ $('subscriptionSystemEnabled')?.addEventListener('change',async e=>{
+   const enabled=!!e.target.checked;
+   if(enabled){
+     const activePlans=planRows().filter(p=>p.isActive!==false);
+     if(!activePlans.length){e.target.checked=false;return window.AcademyUI?.toast?.('أنشئ باقة نشطة واحدة على الأقل قبل تشغيل النظام.','error')}
+     const ok=await ask({title:'تفعيل نظام الاشتراكات؟',message:'بعد التفعيل، أي محتوى غير مجاني سيحتاج اشتراكًا نشطًا يشمله. المحتوى المجاني سيظل مفتوحًا.',acceptText:'تفعيل النظام'});
+     if(!ok){e.target.checked=false;return}
+   }
+   await db.ref('subscriptionSettingsV1').update({enabled,updatedAt:Date.now(),updatedBy:user.uid});
+   window.AcademyUI?.toast?.(enabled?'تم تفعيل نظام الاشتراكات ✅':'تم إيقاف القفل مؤقتًا وأصبح المحتوى متاحًا للجميع.');
+ });
  resetPlan();fillPlanSelect();
 }
 function listen(path,key){const ref=db.ref(path),handler=s=>{window.__academySubscriptionAdminBusy=true;dataUpdate(key,s.val()||{});window.__academySubscriptionAdminBusy=false;render()};ref.on('value',handler);stops.push(()=>ref.off('value',handler))}
 function dataUpdate(key,value){if(key==='plans')plans=value;if(key==='students')students=value;if(key==='subscriptions')subscriptions=value;if(key==='requests')requests=value;if(key==='customSubjects')customSubjects=value;if(key==='settings')settings=value}
-auth.onAuthStateChanged(async u=>{stops.splice(0).forEach(fn=>fn());user=u;if(!u)return;try{const isAdmin=(await db.ref('adminProfiles/'+u.uid+'/isAdmin').once('value')).val();if(isAdmin!==true)return;bind();listen('subscriptionPlansV1','plans');listen('studentProfilesV3','students');listen('studentSubscriptionsV1','subscriptions');listen('subscriptionRequestsV1','requests');listen('customSubjects','customSubjects');listen('subscriptionSettingsV1','settings')}catch(err){console.warn('Subscription admin unavailable',err)}});
+auth.onAuthStateChanged(async u=>{stops.splice(0).forEach(fn=>fn());user=u;if(!u)return;try{const isAdmin=(await db.ref('adminProfiles/'+u.uid+'/isAdmin').once('value')).val();if(isAdmin!==true)return;bind();listen('subscriptionPlansV1','plans');listen('studentProfilesV3','students');listen('studentSubscriptionsV1','subscriptions');listen('subscriptionRequestsV1','requests');listen('customSubjects','customSubjects');listen('subscriptionSettingsV1','settings');listen('subscriptionSettingsV1','settings')}catch(err){console.warn('Subscription admin unavailable',err)}});
 window.addEventListener('pagehide',()=>stops.splice(0).forEach(fn=>fn()));
 })();
