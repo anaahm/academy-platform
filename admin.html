@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="./assets/communications.css?v=1">
   <link rel="stylesheet" href="./assets/support.css?v=1">
   <link rel="stylesheet" href="./assets/admin-content-ops.css?v=1">
+  <link rel="stylesheet" href="./assets/subscription.css?v=1">
 </head>
 <body class="admin-v3-body">
   <div id="toast" class="toast"></div>
@@ -83,6 +84,7 @@
         <span class="admin-nav-label">المستخدمون</span>
         <button data-admin-tab="teachers"><i class="fa-solid fa-chalkboard-user"></i> المدرسون والمراجعات <span id="pendingBadge" class="nav-badge hidden">0</span></button>
         <button data-admin-tab="students"><i class="fa-solid fa-user-graduate"></i> الطلاب</button>
+        <button data-admin-tab="subscriptions"><i class="fa-solid fa-crown"></i> الاشتراكات والباقات <span id="subscriptionAdminBadge" class="nav-badge hidden">0</span></button>
 
         <span class="admin-nav-label">المنصة</span>
         <button data-admin-tab="news"><i class="fa-regular fa-newspaper"></i> الأخبار والتحديثات</button>
@@ -454,6 +456,67 @@
           </div>
           <div class="mix-admin-results-meta"><span id="studentResultsCount">0 طالب ظاهر</span><small>يمكنك البحث بالاسم أو الهاتف أو البريد.</small></div>
           <div id="studentsAdminList" class="admin-table-wrap"></div>
+        </section>
+
+        <section class="admin-tab hidden" id="admin-tab-subscriptions">
+          <section class="subscription-admin-hero">
+            <div><span class="section-kicker light">إدارة الوصول</span><h2>الباقات والاشتراكات من مكان واحد</h2><p>أنشئ الباقات، حدد المواد المشمولة، فعّل اشتراك الطلاب يدويًا، وتابع الطلبات والانتهاء قبل ربط بوابة الدفع النهائية.</p></div>
+            <div class="subscription-admin-hero-side"><article><strong id="subscriptionAdminHeroActive">0</strong><small>اشتراك نشط</small></article><article><strong id="subscriptionAdminHeroRequests">0</strong><small>طلب ينتظر</small></article></div>
+          </section>
+          <section class="subscription-admin-stats">
+            <article><strong id="subscriptionAdminActive">0</strong><small>اشتراكات نشطة</small></article>
+            <article><strong id="subscriptionAdminSoon">0</strong><small>تنتهي خلال 7 أيام</small></article>
+            <article><strong id="subscriptionAdminExpired">0</strong><small>منتهية</small></article>
+            <article><strong id="subscriptionAdminRequests">0</strong><small>طلبات معلقة</small></article>
+          </section>
+          <section class="subscription-admin-grid">
+            <article class="subscription-admin-card">
+              <div class="subscription-admin-head"><div><span class="section-kicker">الباقات</span><h3>إنشاء أو تعديل باقة</h3><p>يمكن للباقة فتح كل المواد أو مواد محددة فقط.</p></div><span>👑</span></div>
+              <form id="subscriptionPlanForm" class="subscription-admin-form">
+                <label><span>اسم الباقة</span><input id="planName" required maxlength="80" placeholder="مثال: الباقة الشاملة"></label>
+                <label><span>السعر بالجنيه</span><input id="planPrice" type="number" min="0" step="1" value="0"></label>
+                <label><span>مدة الاشتراك بالأيام</span><input id="planDurationDays" type="number" min="1" max="730" value="30"></label>
+                <label><span>ترتيب الظهور</span><input id="planSortOrder" type="number" min="0" value="100"></label>
+                <label><span>شارة الباقة</span><input id="planBadge" maxlength="30" placeholder="الأكثر اختيارًا"></label>
+                <label><span>الأيقونة</span><input id="planIcon" maxlength="8" value="👑"></label>
+                <label><span>نوع الوصول</span><select id="planAccessMode"><option value="all">كل المواد</option><option value="subjects">مواد محددة</option></select></label>
+                <label><span>المسار المستهدف</span><select id="planTargetType"><option value="">كل المسارات</option><option value="public">تعليم عام</option><option value="azhar">أزهر</option></select></label>
+                <label><span>المرحلة المستهدفة</span><select id="planTargetStage"><option value="">كل المراحل</option><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
+                <label><span>الصف المستهدف</span><select id="planTargetGrade"><option value="">كل الصفوف</option><option value="1">الصف 1</option><option value="2">الصف 2</option><option value="3">الصف 3</option><option value="4">الصف 4</option><option value="5">الصف 5</option><option value="6">الصف 6</option></select></label>
+                <label class="full"><span>وصف الباقة</span><textarea id="planDescription" maxlength="400" placeholder="اشرح للطالب ما الذي يحصل عليه..."></textarea></label>
+                <div class="full"><span style="font-size:10px;font-weight:900;color:#405570;display:block;margin-bottom:6px">المواد المشمولة عند اختيار «مواد محددة»</span><div id="planSubjects" class="subscription-subject-checks"></div></div>
+                <label class="switch-field full"><span>حالة الباقة</span><div><input id="planActive" type="checkbox" checked><strong>متاحة للطلاب</strong></div></label>
+                <div class="full subscription-admin-actions"><button class="btn btn-primary" id="planSaveBtn" type="submit"><i class="fa-solid fa-plus"></i> إنشاء الباقة</button><button class="btn btn-soft hidden" id="planCancelEdit" type="button">إلغاء التعديل</button></div>
+              </form>
+            </article>
+            <article class="subscription-admin-card">
+              <div class="subscription-admin-head"><div><span class="section-kicker">الباقات الحالية</span><h3>كل الباقات</h3><p>أوقف الباقة بدل حذفها إذا كانت مستخدمة.</p></div><span>📦</span></div>
+              <div id="subscriptionAdminPlans" class="subscription-admin-list"></div>
+            </article>
+
+            <article class="subscription-admin-card">
+              <div class="subscription-admin-head"><div><span class="section-kicker">الطلاب</span><h3>اختر طالبًا لإدارة اشتراكه</h3><p>ابحث بالاسم أو الهاتف أو البريد.</p></div><span>🎓</span></div>
+              <div class="subscription-toolbar"><input id="subscriptionStudentSearch" type="search" placeholder="ابحث عن طالب..."></div>
+              <div id="subscriptionStudentList" class="subscription-admin-list"></div>
+            </article>
+            <article class="subscription-admin-card">
+              <div class="subscription-admin-head"><div><span class="section-kicker">اشتراك الطالب</span><h3 id="selectedSubscriptionStudent">لم يتم اختيار طالب</h3><p id="selectedSubscriptionContact">اختر طالبًا من القائمة.</p></div><span>🔐</span></div>
+              <form id="studentSubscriptionForm" class="subscription-admin-form hidden">
+                <label class="full"><span>الباقة</span><select id="studentPlanId"></select></label>
+                <label><span>الحالة</span><select id="studentSubStatus"><option value="active">نشط</option><option value="pending">قيد الانتظار</option><option value="suspended">موقوف</option><option value="cancelled">ملغي</option></select></label>
+                <label><span>تاريخ البداية</span><input id="studentSubStart" type="datetime-local"></label>
+                <label><span>تاريخ الانتهاء</span><input id="studentSubEnd" type="datetime-local"></label>
+                <label class="full"><span>ملاحظات داخلية</span><textarea id="studentSubNotes" maxlength="500" placeholder="مثال: تم التحويل يدويًا..."></textarea></label>
+                <button class="btn btn-primary full" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ الاشتراك</button>
+                <div class="full subscription-admin-actions"><button class="sub-action-good" type="button" data-sub-quick="extend30">+30 يوم</button><button class="sub-action-main" type="button" data-sub-quick="activate">تفعيل</button><button class="sub-action-warn" type="button" data-sub-quick="suspend">إيقاف مؤقت</button><button class="sub-action-danger" type="button" data-sub-quick="cancel">إلغاء</button></div>
+              </form>
+            </article>
+
+            <article class="subscription-admin-card full">
+              <div class="subscription-admin-head"><div><span class="section-kicker">طلبات الاشتراك</span><h3>طلبات تنتظر قرار الإدارة</h3><p>الاعتماد يفعّل الباقة مباشرة حسب مدتها المحددة.</p></div><span>📨</span></div>
+              <div id="subscriptionRequestList" class="subscription-admin-list"></div>
+            </article>
+          </section>
         </section>
 
         <section class="admin-tab hidden" id="admin-tab-communications">
@@ -964,6 +1027,7 @@
   <script src="./assets/admin-communications.js?v=1"></script>
   <script src="./assets/admin-support.js?v=1"></script>
   <script src="./assets/admin-content-ops.js?v=1"></script>
+  <script src="./assets/admin-subscriptions.js?v=1"></script>
   <script src="./assets/admin.js?v=57"></script>
   <script src="./assets/admin-notifications.js"></script>
   <script src="./assets/ui-polish.js?v=1"></script>
