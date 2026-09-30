@@ -48,8 +48,8 @@ async function requestPlan(id,btn){
  const pending=requestRows().find(r=>r.status==='pending');if(pending)return C.toast('لديك طلب اشتراك قيد المراجعة بالفعل: '+(pending.planName||'الباقة المختارة')+'.','error');
  window.AcademyUI?.setButtonLoading(btn,true,'إرسال');
  try{
-   const ref=C.db.ref('subscriptionRequestsV1/'+user.uid).push(),now=Date.now();
-   await ref.set({studentId:user.uid,studentName:profile.name||'طالب',studentPhone:profile.phone||'',planId:id,planName:plan.name||'باقة',price:Number(plan.price||0),durationDays:Number(plan.durationDays||30),status:'pending',createdAt:now,updatedAt:now});
+   const ref=C.db.ref('subscriptionRequestsV1/'+user.uid).push(),now=Date.now(),renewal=access.subscription?.planId===id&&access.status==='active';
+   await ref.set({studentId:user.uid,studentName:profile.name||'طالب',studentPhone:profile.phone||'',planId:id,planName:plan.name||'باقة',price:Number(plan.price||0),durationDays:Number(plan.durationDays||30),requestType:renewal?'renewal':'new',status:'pending',createdAt:now,updatedAt:now});
    C.toast('تم إرسال طلب الاشتراك للإدارة ✅');
  }catch(err){console.error(err);C.toast('تعذر إرسال الطلب الآن.','error')}finally{window.AcademyUI?.setButtonLoading(btn,false)}
 }
