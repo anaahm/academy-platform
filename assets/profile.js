@@ -183,8 +183,9 @@ function render(){
   updateGradeOptions(false);
   $('studyGrade').value=String(profile.grade||1);
 
-  $('profileBadges').innerHTML=badges.map(b=>{
-    const unlocked=b.check(profile);
+  const badgeRows=window.AcademyGame?.badges?window.AcademyGame.badges(profile):badges.map(b=>({...b,unlocked:b.check(profile)}));
+  $('profileBadges').innerHTML=badgeRows.map(b=>{
+    const unlocked=!!b.unlocked;
     return '<article class="badge-item '+(unlocked?'unlocked':'locked')+'" aria-label="'+esc(b.name)+'، '+(unlocked?'مفتوحة':'مقفولة')+'"><span>'+b.emoji+'</span><strong>'+esc(b.name)+'</strong><small>'+esc(b.desc)+'</small>'+(unlocked?'<i class="fa-solid fa-circle-check badge-check"></i>':'<i class="fa-solid fa-lock badge-lock"></i>')+'</article>';
   }).join('');
 
