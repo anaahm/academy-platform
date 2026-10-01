@@ -18,7 +18,7 @@ function fixtures(){return {
  settings:{},posts:{},announcements:{},scheduleEvents:{},notificationBroadcasts:{},simulations:{},contentAnalytics:{lesson1:{questionStats:{0:{attempts:4,correct:1},1:{attempts:4,correct:4}}}},leaderboardV3:{},teacherSubmissions:{}
 }}
 let failures=0,scenarios=0;
-async function check(file,role='student',failurePath='',reviewMode=false,linkedMode=false){
+async function check(file,role='student',failurePath='',reviewMode=false,linkedMode=false,adminPreviewMode=false){
  const errors=[],writes=[],database=fixtures(),callbacks=[];
  if(role==='admin')database.adminProfiles.tester={isAdmin:true,name:'مدير الاختبار'};
  if(role==='teacher'||role==='admin'||(file==='teacher.html'&&role==='guest'))database.teacherProfiles.tester={name:'مدرس الاختبار',isActive:true,subjects:[{type:'public',stage:'prep',grade:'1',subject:'arabic'}]};
@@ -36,7 +36,7 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
  if(linkedMode)database.studentProfilesV3.tester.learningProgress={lesson1:{completed:true}};
  const v=new VirtualConsole();v.on('jsdomError',e=>{if(!/navigation|scrollTo|Not implemented/.test(e.message))errors.push(e.stack||e.message)});
  v.on('error',(...args)=>{if(!failurePath)errors.push(args.map(x=>x?.stack||String(x)).join(' '))});
- const dom=new JSDOM(readFileSync(file,'utf8').replace(/<link[^>]*>/g,''),{url:'https://example.test/academy/'+file+'?type=public&stage=prep&grade=1&subject=arabic&'+(linkedMode?'quiz=quiz2':'id=lesson1')+(reviewMode?'&reviewMistakes=1':''),runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:v});
+ const dom=new JSDOM(readFileSync(file,'utf8').replace(/<link[^>]*>/g,''),{url:'https://example.test/academy/'+file+'?type=public&stage=prep&grade=1&subject=arabic&'+(linkedMode?'quiz=quiz2':'id=lesson1')+(reviewMode?'&reviewMistakes=1':'')+(adminPreviewMode?'&adminPreview=1':''),runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:v});
  const w=dom.window;w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};
  w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});
  w.requestAnimationFrame=fn=>w.setTimeout(()=>fn(Date.now()),0);
@@ -168,8 +168,13 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    assert.match(w.document.querySelector('#linkedLessonQuizzes a')?.href||'',/quiz=quiz2/,'linked exam is offered only after completing the lesson journey');
   }
   if(file==='lesson.html'&&role==='student'&&!linkedMode){assert.match(w.document.getElementById('lessonContent').innerHTML,/student-inline\.jpg/,'student sees inline image inside rich explanation');assert.ok(w.document.getElementById('lessonContent').querySelector('h2'),'student sees rich explanation heading')}
-  if(file==='lesson.html'&&['admin','teacher','parent'].includes(role)){
+  if(file==='lesson.html'&&!adminPreviewMode&&['admin','teacher','parent'].includes(role)){
    assert.equal(auth.currentUser,null,role+' account is removed from the default student session on a protected student route');
+  }
+  if(file==='lesson.html'&&role==='admin'&&adminPreviewMode){
+   assert.equal(portalAuths['admin-portal']?.currentUser?.uid,'tester','admin preview uses isolated admin session');
+   assert.ok(w.document.getElementById('adminPreviewBanner'),'admin preview renders without borrowing the student session');
+   assert.match(w.document.getElementById('lessonTitle').textContent,/المبتدأ والخبر/,'isolated admin can preview the lesson');
   }
   if(file==='profile.html'){
    w.document.querySelector('[data-profile-tab="mistakes"]').click();
@@ -285,7 +290,7 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
 for(const file of files)await check(file,file==='admin.html'?'admin':file==='teacher.html'?'teacher':'student');
 await check('index.html','guest');await check('admin.html','guest');await check('teacher.html','guest');await check('teacher.html','teacher','assignmentSubmissions/');
 await check('parent.html','parent');
-await check('lesson.html','admin');await check('lesson.html','teacher');await check('lesson.html','parent');
+await check('lesson.html','admin');await check('lesson.html','teacher');await check('lesson.html','parent');await check('lesson.html','admin','',false,false,true);
 await check('lesson.html','student','',true);
 await check('lesson.html','student','',false,true);
 console.log(`DOM smoke: ${scenarios-failures}/${scenarios} scenarios passed. Uses in-memory Firebase fixtures, not live Firebase or layout rendering.`);
