@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link rel="stylesheet" href="./assets/styles.css">
-  <link rel="stylesheet" href="./assets/admin.css?v=42">
+  <link rel="stylesheet" href="./assets/admin.css?v=43">
   <link rel="stylesheet" href="./assets/ui-kit.css?v=35">
   <link rel="stylesheet" href="./assets/experience.css?v=34">
   <link rel="stylesheet" href="./assets/future-theme.css?v=1">
@@ -93,6 +93,7 @@
         <button data-admin-tab="support"><i class="fa-solid fa-headset"></i> الدعم والشكاوى <span id="supportAlertBadge" class="nav-badge hidden">0</span></button>
         <button data-admin-tab="notifications"><i class="fa-regular fa-bell"></i> الإشعارات الموجهة</button>
         <button data-admin-tab="announcements"><i class="fa-solid fa-bullhorn"></i> الإعلانات</button>
+        <button data-admin-tab="readiness"><i class="fa-solid fa-clipboard-check"></i> جاهزية الإطلاق <span id="releaseReadinessBadge" class="nav-badge hidden">0</span></button>
         <button data-admin-tab="settings"><i class="fa-solid fa-sliders"></i> الإعدادات</button>
       </nav>
 
@@ -715,6 +716,41 @@
           </article>
         </section>
 
+        <section class="admin-tab" id="admin-tab-readiness">
+          <div class="admin-section-head">
+            <div><span class="section-kicker">Phase 11</span><h2>مركز جاهزية الإطلاق</h2><p>فحص تشغيلي حي لمسارات المنصة، جودة المحتوى، وطوابير المراجعة قبل الانتقال إلى QA النهائي.</p></div>
+            <button class="btn btn-soft" id="releaseReadinessRefresh" type="button"><i class="fa-solid fa-rotate"></i> إعادة الفحص</button>
+          </div>
+          <section class="release-readiness-hero">
+            <div>
+              <span class="section-kicker">Release Readiness</span>
+              <h3>هل المنصة جاهزة للانتقال إلى الاختبار النهائي؟</h3>
+              <p id="releaseReadinessSummary">جاري فحص المسارات والبيانات التشغيلية...</p>
+            </div>
+            <div class="release-readiness-score"><strong id="releaseReadinessScore">0%</strong><span>جاهزية الفحوص الحالية</span></div>
+          </section>
+          <section class="release-readiness-stats">
+            <article><span class="rr-stat-icon danger"><i class="fa-solid fa-triangle-exclamation"></i></span><div><strong id="releaseCriticalCount">0</strong><small>مشكلات حرجة</small></div></article>
+            <article><span class="rr-stat-icon warning"><i class="fa-regular fa-clock"></i></span><div><strong id="releaseAttentionCount">0</strong><small>تحتاج متابعة</small></div></article>
+            <article><span class="rr-stat-icon success"><i class="fa-solid fa-circle-check"></i></span><div><strong id="releaseReadyCount">0</strong><small>فحوص ناجحة</small></div></article>
+            <article><span class="rr-stat-icon info"><i class="fa-solid fa-list-check"></i></span><div><strong id="releaseQueueCount">0</strong><small>عناصر في الطوابير</small></div></article>
+          </section>
+          <section class="release-readiness-grid">
+            <article class="admin-card">
+              <div class="admin-card-head"><div><span class="section-kicker">الفحوص الأساسية</span><h3>المسارات المطلوبة للإطلاق</h3></div><span>🧭</span></div>
+              <div id="releaseReadinessChecks" class="release-check-list"></div>
+            </article>
+            <article class="admin-card">
+              <div class="admin-card-head"><div><span class="section-kicker">مركز العمليات</span><h3>ما يحتاج تدخل الإدارة الآن</h3></div><span>🚦</span></div>
+              <div id="releaseReadinessQueues" class="release-queue-list"></div>
+            </article>
+            <article class="admin-card release-readiness-full">
+              <div class="admin-card-head"><div><span class="section-kicker">سلامة المحتوى</span><h3>العناصر الناقصة أو غير المكتملة</h3></div><span>🧪</span></div>
+              <div id="releaseReadinessIntegrity" class="release-integrity-list"></div>
+            </article>
+          </section>
+        </section>
+
         <section class="admin-tab" id="admin-tab-settings">
           <div class="admin-section-head"><div><span class="section-kicker">هوية المنصة</span><h2>الإعدادات</h2><p>بيانات عامة لا تحتوي أسرارًا أو مفاتيح API.</p></div></div>
           <article class="admin-card admin-form-card">
@@ -1040,7 +1076,7 @@
   <script src="./assets/admin-support.js?v=1"></script>
   <script src="./assets/admin-content-ops.js?v=1"></script>
   <script src="./assets/admin-subscriptions.js?v=1"></script>
-  <script src="./assets/admin.js?v=58"></script>
+  <script src="./assets/admin.js?v=59"></script>
   <script src="./assets/admin-notifications.js"></script>
   <script src="./assets/ui-polish.js?v=1"></script>
 </body>
