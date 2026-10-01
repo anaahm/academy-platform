@@ -1,8 +1,8 @@
 (() => {
 'use strict';
 if(!document.getElementById('admin-tab-notifications'))return;
-if(!firebase.apps.length)return;
-const db=firebase.database(),auth=firebase.auth(),$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const session=window.AcademyRoleSession?.get('admin-portal');if(!session)return;
+const db=session.db,auth=session.auth,$=id=>document.getElementById(id),$=(s,r=document)=>[...r.querySelectorAll(s)];
 let broadcasts={},listening=false;
 const esc=(v='')=>String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const typeLabel=t=>t==='azhar'?'أزهر':t==='public'?'تعليم عام':'كل المسارات';
