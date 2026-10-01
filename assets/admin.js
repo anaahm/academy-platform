@@ -311,7 +311,7 @@ function renderReleaseReadiness(){
  checksBox.innerHTML=checks.map(x=>'<article class="release-check '+(x.pass?'ok':x.critical?'critical':'attention')+'"><span><i class="fa-solid '+(x.pass?'fa-check':'fa-exclamation')+'"></i></span><div><strong>'+esc(x.label)+'</strong><small>'+esc(x.pass?x.detail:x.fail)+'</small></div><button type="button" data-readiness-tab="'+esc(x.tab)+'">فتح</button></article>').join('');
  queuesBox.innerHTML=queues.map(x=>'<article class="release-queue '+(x.count?'has-items':'clear')+'"><span><i class="fa-solid '+x.icon+'"></i></span><div><strong>'+esc(x.label)+'</strong><small>'+esc(x.hint)+'</small></div><b>'+x.count+'</b><button type="button" data-readiness-tab="'+esc(x.tab)+'">مراجعة</button></article>').join('');
  integrityBox.innerHTML=integrity.length?integrity.slice(0,30).map(x=>'<article class="release-integrity-item"><div><strong>'+esc(x.kind)+' — '+esc(x.title)+'</strong><small>ناقص: '+esc(x.missing.join('، '))+'</small></div><button type="button" data-readiness-tab="'+esc(x.tab)+'">إصلاح</button></article>').join(''):'<div class="release-all-clear"><span>✅</span><div><strong>سلامة المحتوى الأساسية جيدة</strong><small>لم يتم العثور على عنوان أو تصنيف أو رابط أساسي مفقود في العناصر الحالية.</small></div></div>';
- $('[data-readiness-tab]',$('admin-tab-readiness')).forEach(b=>b.onclick=()=>setTab(b.dataset.readinessTab));
+ document.querySelectorAll('#admin-tab-readiness [data-readiness-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.readinessTab));
  const refresh=$('releaseReadinessRefresh');if(refresh&&!refresh.dataset.bound){refresh.dataset.bound='true';refresh.onclick=()=>{renderReleaseReadiness();toast('تم تحديث فحص الجاهزية ✅')}}
 }
 function renderTab(tab){
