@@ -1,8 +1,9 @@
 (() => {
 'use strict';
 if(!window.firebase||!window.ACADEMY_FIREBASE_CONFIG)return;
-if(!firebase.apps.length)firebase.initializeApp(window.ACADEMY_FIREBASE_CONFIG);
-const auth=firebase.auth(),db=firebase.database(),DAY=86400000;
+const scoped=window.AcademyRoleSession?.page?.();
+if(!scoped&&!firebase.apps.length)firebase.initializeApp(window.ACADEMY_FIREBASE_CONFIG);
+const auth=scoped?.auth||firebase.auth(),db=scoped?.db||firebase.database(),DAY=86400000;
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const values=o=>Object.entries(o||{}).map(([id,v])=>({id,...(v||{})}));
 const path=location.pathname.split('/').pop()||'index.html';
