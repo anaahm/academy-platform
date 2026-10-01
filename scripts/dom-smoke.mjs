@@ -20,7 +20,7 @@ function fixtures(){return {
 let failures=0,scenarios=0;
 async function check(file,role='student',failurePath='',reviewMode=false,linkedMode=false){
  const errors=[],writes=[],database=fixtures(),callbacks=[];
- if(file==='admin.html'&&role==='admin')database.teacherSubmissions={tester:{quizSubmission:{submissionKind:'quiz',title:'اختبار المبتدأ والخبر',lessonId:'lesson1',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()},assignmentSubmission:{submissionKind:'assignment',title:'واجب جديد',instructions:'حل التدريبات',type:'public',stage:'prep',grade:'1',subject:'arabic',dueAt:Date.now()+86400000,maxScore:100,status:'pending',teacherId:'tester',createdAt:Date.now()}}};
+ if(file==='admin.html'&&role==='admin')database.teacherSubmissions={tester:{quizSubmission:{submissionKind:'quiz',title:'اختبار المبتدأ والخبر',lessonId:'lesson1',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()},assignmentSubmission:{submissionKind:'assignment',title:'واجب جديد',instructions:'حل التدريبات',type:'public',stage:'prep',grade:'1',subject:'arabic',dueAt:Date.now()+86400000,maxScore:100,status:'pending',teacherId:'tester',createdAt:Date.now()},lessonSubmission:{submissionKind:'lesson',title:'درس مقالي من المعلم',content:'هذا شرح مقالي كامل أرسله المعلم.',videoUrl:'https://youtu.be/test123',imageUrl:'https://example.test/lesson.jpg',imagePosition:'bottom',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()}}};
  if(file==='parent.html'&&role==='parent'){
   database.parentProfilesV4={tester:{name:'ولي أمر الاختبار',phone:'01012345678'}};
   database.parentLinksV4={tester:{child1:{studentId:'child1',linkedAt:Date.now()}}};
@@ -29,7 +29,7 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
  if(file==='profile.html')database.studentProfilesV3.tester.mistakeNotebook={lesson1:{0:{text:'ما ناتج 1 + 1؟',opts:['1','2'],chosen:0,correctAnswer:1,sourceType:'lesson',title:'المبتدأ والخبر',subject:'arabic',type:'public',stage:'prep',grade:'1'}}};
  if(reviewMode)database.studentProfilesV3.tester.mistakeNotebook={lesson1:{1:{text:'ما ناتج 2 + 2؟',opts:['4','5'],chosen:1,correctAnswer:0,sourceType:'lesson',title:'المبتدأ والخبر',subject:'arabic',type:'public',stage:'prep',grade:'1'}}};
  if(linkedMode)database.studentProfilesV3.tester.learningProgress={lesson1:{completed:true}};
- const v=new VirtualConsole();v.on('jsdomError',e=>{if(!/navigation|scrollTo|Not implemented/.test(e.message))errors.push(e.message)});
+ const v=new VirtualConsole();v.on('jsdomError',e=>{if(!/navigation|scrollTo|Not implemented/.test(e.message))errors.push(e.stack||e.message)});
  v.on('error',(...args)=>{if(!failurePath)errors.push(args.map(x=>x?.stack||String(x)).join(' '))});
  const dom=new JSDOM(readFileSync(file,'utf8').replace(/<link[^>]*>/g,''),{url:'https://example.test/academy/'+file+'?type=public&stage=prep&grade=1&subject=arabic&'+(linkedMode?'quiz=quiz2':'id=lesson1')+(reviewMode?'&reviewMistakes=1':''),runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:v});
  const w=dom.window;w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};
@@ -168,6 +168,13 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    w.document.querySelector('[data-approve="tester|assignmentSubmission"]').click();await new Promise(r=>setTimeout(r,15));
    assert.equal(get('assignments/new2/teacherId'),'tester','homework publishes only after admin approval');
    assert.equal(get('teacherSubmissions/tester/assignmentSubmission/status'),'approved');
+   assert.equal(get('lessons/new3'),null,'teacher lesson stays unpublished before approval');
+   w.document.querySelector('[data-approve="tester|lessonSubmission"]').click();await new Promise(r=>setTimeout(r,15));
+   assert.equal(get('lessons/new3/content'),'هذا شرح مقالي كامل أرسله المعلم.','approved teacher article is preserved');
+   assert.equal(get('lessons/new3/questions').length,1,'approved lesson training is preserved');
+   assert.equal(get('lessons/new3/videos/0/url'),'https://youtu.be/test123','approved teacher video is preserved');
+   assert.equal(get('lessons/new3/imagePosition'),'bottom','approved lesson image placement is preserved');
+   assert.equal(get('teacherSubmissions/tester/lessonSubmission/status'),'approved');
    const form=w.document.getElementById('createTeacherForm');
    w.document.getElementById('newTeacherName').value='مدرس جديد';w.document.getElementById('newTeacherEmail').value='newteacher@example.test';w.document.getElementById('newTeacherPassword').value='long-secure-password';
    form.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,20));
@@ -194,6 +201,23 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
     assert.equal(w.document.getElementById('teacherPortal').classList.contains('hidden'),false);
     assert.match(w.document.getElementById('teacherDifficultQuestions').textContent,/75% خطأ/);
     if(!failurePath){
+     w.document.getElementById('teacherStage').value='prep';w.document.getElementById('teacherStage').dispatchEvent(new w.Event('change'));
+     w.document.getElementById('teacherLessonTitle').value='درس مقالي تجريبي';
+     w.document.getElementById('teacherLessonContent').value='شرح مقالي من لوحة المعلم';
+     w.document.getElementById('teacherVideoUrl').value='https://youtu.be/test123';
+     w.document.getElementById('teacherLessonImage').value='https://example.test/lesson.jpg';
+     w.document.getElementById('teacherAddLessonQuestion').click();
+     const lessonRow=w.document.querySelector('#teacherLessonQuestionRows .teacher-question-row');
+     lessonRow.querySelector('.teacher-question-text').value='سؤال تدريب الدرس';
+     lessonRow.querySelectorAll('.teacher-question-option').forEach((input,i)=>input.value=i<2?'اختيار '+i:'');lessonRow.querySelector('.teacher-question-correct').value='1';
+     w.document.getElementById('teacherLessonQuestionsBulk').value=JSON.stringify([question]);w.document.getElementById('teacherImportLessonQuestions').click();
+     assert.equal(w.document.querySelectorAll('#teacherLessonQuestionRows .teacher-question-row').length,2,'lesson training supports individual and bulk questions');
+     w.document.getElementById('teacherSubmissionForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,22));
+     assert.equal(get('teacherSubmissions/tester/new1/submissionKind'),'lesson');
+     assert.equal(get('teacherSubmissions/tester/new1/content'),'شرح مقالي من لوحة المعلم');
+     assert.equal(get('teacherSubmissions/tester/new1/questions').length,2);
+     assert.equal(get('teacherSubmissions/tester/new1/videoUrl'),'https://youtu.be/test123');
+     assert.equal(get('lessons/new1'),null,'teacher cannot publish a full lesson directly');
      w.document.getElementById('teacherQuizStage').value='prep';w.document.getElementById('teacherQuizStage').dispatchEvent(new w.Event('change'));
      assert.equal(w.document.getElementById('teacherQuizLesson').querySelector('option[value="lesson1"]')?.value,'lesson1');
      w.document.getElementById('teacherQuizLesson').value='lesson1';w.document.getElementById('teacherQuizTitle').value='اختبار المدرس';
@@ -203,15 +227,15 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
      w.document.getElementById('teacherQuizBulk').value=JSON.stringify([question]);w.document.getElementById('teacherImportQuestions').click();
      assert.equal(w.document.querySelectorAll('.teacher-question-row').length,2,'individual and bulk questions can be combined');
      w.document.getElementById('teacherQuizForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,22));
-     assert.equal(get('teacherSubmissions/tester/new1/questions').length,2);
-     assert.equal(get('teacherSubmissions/tester/new1/status'),'pending');
-     assert.equal(get('quizzes/new1'),null,'teacher cannot publish quizzes directly');
+     assert.equal(get('teacherSubmissions/tester/new2/questions').length,2);
+     assert.equal(get('teacherSubmissions/tester/new2/status'),'pending');
+     assert.equal(get('quizzes/new2'),null,'teacher cannot publish quizzes directly');
      w.document.getElementById('assignmentTitle').value='واجب تجريبي';
      w.document.getElementById('assignmentStage').value='prep';w.document.getElementById('assignmentStage').dispatchEvent(new w.Event('change'));
      w.document.getElementById('assignmentDueAt').value=new Date(Date.now()+172800000).toISOString().slice(0,16);
      w.document.getElementById('teacherAssignmentForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,22));
-     assert.equal(get('teacherSubmissions/tester/new2/submissionKind'),'assignment');
-     assert.equal(get('assignments/new2'),null,'teacher cannot publish homework directly');
+     assert.equal(get('teacherSubmissions/tester/new3/submissionKind'),'assignment');
+     assert.equal(get('assignments/new3'),null,'teacher cannot publish homework directly');
     }
     for(const tab of w.document.querySelectorAll('[data-teacher-tab]'))tab.click();
     if(failurePath)assert.match(w.document.getElementById('teacherAssignmentSubmissions').textContent,/غير متاحة/);

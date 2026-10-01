@@ -139,6 +139,35 @@ function importQuizQuestions(){
  if(items.some(q=>q.opts.length>4||q.text.length>500||q.opts.some(o=>o.length>250)||String(q.explanation||'').length>1000))return toast('كل سؤال يقبل 2 إلى 4 خيارات، ونصًا لا يتجاوز 500 حرف، وتفسيرًا لا يتجاوز 1000 حرف.','error');
  items.forEach(addQuizQuestion);$('teacherQuizBulk').value='';toast('تمت إضافة '+items.length+' سؤال. راجعها قبل الإرسال.');
 }
+function updateLessonQuestionNumbers(){$$('#teacherLessonQuestionRows .question-position').forEach((node,i)=>node.textContent=i+1)}
+function addLessonQuestion(q={}){
+ const box=$('teacherLessonQuestionRows');if(!box)return null;
+ if(box.children.length>=100)return toast('الحد الأقصى 100 سؤال لتدريب الدرس.','error');
+ const row=document.createElement('article');row.className='teacher-question-row';
+ row.innerHTML='<div class="teacher-question-head"><strong>السؤال <span class="question-position"></span></strong><button type="button" class="teacher-remove-question" aria-label="حذف السؤال"><i class="fa-solid fa-trash"></i> حذف</button></div>'+
+   '<label><span>نص السؤال</span><textarea class="teacher-question-text" maxlength="500" rows="2" required>'+escapeHtml(q.text||q.question||'')+'</textarea></label>'+
+   '<div class="teacher-question-options">'+Array.from({length:4},(_,i)=>'<label><span>الخيار '+(i+1)+'</span><input class="teacher-question-option" maxlength="250" value="'+escapeHtml((q.opts||q.options||[])[i]||'')+'" '+(i<2?'required':'')+'></label>').join('')+'</div>'+
+   '<label><span>الإجابة الصحيحة</span><select class="teacher-question-correct">'+Array.from({length:4},(_,i)=>'<option value="'+i+'" '+(Number(q.correctAnswer)===i?'selected':'')+'>الخيار '+(i+1)+'</option>').join('')+'</select></label>'+
+   '<label><span>مستوى الصعوبة</span><select class="teacher-question-difficulty"><option value="1" '+(Number(q.difficulty||2)===1?'selected':'')+'>سهل</option><option value="2" '+(Number(q.difficulty||2)===2?'selected':'')+'>متوسط</option><option value="3" '+(Number(q.difficulty||2)===3?'selected':'')+'>صعب</option></select></label>'+
+   '<label class="full"><span>تفسير الإجابة — يظهر بعد الحل</span><textarea class="teacher-question-explanation" maxlength="1000" rows="2" placeholder="اشرح باختصار لماذا هذه الإجابة صحيحة...">'+escapeHtml(q.explanation||'')+'</textarea></label>';
+ row.querySelector('.teacher-remove-question').onclick=()=>{row.remove();updateLessonQuestionNumbers()};
+ box.append(row);updateLessonQuestionNumbers();return row;
+}
+function collectLessonQuestions(){
+ const rows=$$('#teacherLessonQuestionRows .teacher-question-row');if(!rows.length)return[];
+ return window.AcademyUtils.validateQuestions(rows.map((row,i)=>{
+   const opts=$$('.teacher-question-option',row).map(input=>input.value.trim());while(opts.length&&!opts.at(-1))opts.pop();
+   if(opts.length<2||opts.some(o=>!o))throw Error('أكمل الخيارات بالترتيب في سؤال الدرس '+(i+1)+'.');
+   return {text:row.querySelector('.teacher-question-text').value.trim(),opts,correctAnswer:Number(row.querySelector('.teacher-question-correct').value),difficulty:Number(row.querySelector('.teacher-question-difficulty')?.value||2),explanation:row.querySelector('.teacher-question-explanation')?.value.trim()||''};
+ }));
+}
+function importLessonQuestions(){
+ let items;try{items=JSON.parse($('teacherLessonQuestionsBulk').value.trim());items=window.AcademyUtils.validateQuestions(items)}catch(err){return toast('تعذر قراءة أسئلة الدرس: '+(err.message||'صيغة JSON غير صحيحة.'),'error')}
+ if(!items.length)return toast('لا توجد أسئلة في المجموعة.','error');
+ if(items.length+$$('#teacherLessonQuestionRows .teacher-question-row').length>100)return toast('الحد الأقصى 100 سؤال لتدريب الدرس.','error');
+ if(items.some(q=>q.opts.length>4||q.text.length>500||q.opts.some(o=>o.length>250)||String(q.explanation||'').length>1000))return toast('راجع أطوال نصوص أسئلة الدرس والاختيارات.','error');
+ items.forEach(addLessonQuestion);$('teacherLessonQuestionsBulk').value='';toast('تمت إضافة '+items.length+' سؤال لتدريب الدرس.');
+}
 async function submitTeacherQuiz(e){
  e.preventDefault();
  const lessonId=$('teacherQuizLesson').value,lesson=availableQuizLessons().find(l=>l.id===lessonId),type=$('teacherQuizType').value,stage=$('teacherQuizStage').value,grade=$('teacherQuizGrade').value,subject=$('teacherQuizSubject').value,title=$('teacherQuizTitle').value.trim();
@@ -466,22 +495,29 @@ function render(){
 async function submitContent(e){
  e.preventDefault();
  const btn=$('teacherSubmitBtn'),subjectId=$('teacherSubject').value,subjectName=$('teacherSubject').selectedOptions[0]?.textContent||subjectId;
+ const videoUrl=$('teacherVideoUrl').value.trim(),content=$('teacherLessonContent').value.trim(),rawImage=$('teacherLessonImage').value.trim();
+ let questions=[];try{questions=collectLessonQuestions()}catch(err){return toast(err.message,'error')}
  const payload={
-   title:$('teacherLessonTitle').value.trim(),videoUrl:$('teacherVideoUrl').value.trim(),
-   type:$('teacherEducationType').value,stage:$('teacherStage').value,grade:$('teacherGrade').value,
+   submissionKind:'lesson',title:$('teacherLessonTitle').value.trim(),videoUrl,content,
+   imageUrl:rawImage,imagePosition:$('teacherLessonImagePosition').value==='bottom'?'bottom':'top',
+   questions,type:$('teacherEducationType').value,stage:$('teacherStage').value,grade:$('teacherGrade').value,
    subject:subjectId,subjectName,unit:Number($('teacherUnit').value||1),notes:$('teacherNotes').value.trim(),
    status:'pending',teacherId:user.uid,teacherName:teacher.name||user.displayName||'',createdAt:Date.now()
  };
- if(!payload.title||!payload.videoUrl)return toast('أكمل عنوان الدرس ورابط الفيديو.','error');
+ if(!payload.title)return toast('اكتب عنوان الدرس.','error');
+ if(!payload.videoUrl&&!payload.content)return toast('أضف شرحًا مكتوبًا أو رابط فيديو واحدًا على الأقل.','error');
  if(!assignmentAllowed(payload.type,payload.stage,payload.grade,payload.subject))return toast('هذه المادة غير مسندة إلى حسابك.','error');
- try{
-   const video=new URL(payload.videoUrl);
-   if(!['youtube.com','www.youtube.com','m.youtube.com','youtu.be'].includes(video.hostname))return toast('أدخل رابط YouTube صحيحًا.','error');
- }catch{return toast('رابط الفيديو غير صحيح.','error')}
+ if(payload.videoUrl){
+   try{
+     const video=new URL(payload.videoUrl);
+     if(!['youtube.com','www.youtube.com','m.youtube.com','youtu.be'].includes(video.hostname))return toast('أدخل رابط YouTube صحيحًا.','error');
+   }catch{return toast('رابط الفيديو غير صحيح.','error')}
+ }
+ if(payload.imageUrl&&safeUrl(payload.imageUrl)==='#')return toast('رابط صورة الدرس غير صحيح.','error');
  window.AcademyUI?.setButtonLoading(btn,true,'إرسال');
  try{
    const ref=db.ref('teacherSubmissions/'+user.uid).push();await ref.set(payload);submissions[ref.key]=payload;
-   $('teacherSubmissionForm').reset();updateGrades();render();switchTab('home');toast('تم إرسال المحتوى للإدارة للمراجعة ✅');
+   $('teacherSubmissionForm').reset();$('teacherLessonQuestionRows').replaceChildren();$('teacherLessonQuestionsBulk').value='';updateGrades();render();switchTab('home');toast('تم إرسال الدرس الكامل للإدارة للمراجعة ✅');
  }catch(err){console.error(err);toast('تعذر الإرسال. راجع الاتصال أو حاول لاحقًا.','error')}
  finally{window.AcademyUI?.setButtonLoading(btn,false);updateSubmitAvailability()}
 }
@@ -525,6 +561,8 @@ $$('[data-teacher-tab]').forEach(b=>b.onclick=()=>switchTab(b.dataset.teacherTab
 $$('[data-open-teacher-submit]').forEach(b=>b.onclick=()=>switchTab('submit'));
 $('teacherStage').addEventListener('change',updateGrades);$('teacherGrade').addEventListener('change',updateSubjects);$('teacherEducationType').addEventListener('change',updateSubjects);
 $('teacherSubmissionForm').addEventListener('submit',submitContent);
+$('teacherAddLessonQuestion')?.addEventListener('click',()=>addLessonQuestion()?.querySelector('.teacher-question-text')?.focus());
+$('teacherImportLessonQuestions')?.addEventListener('click',importLessonQuestions);
 $('teacherQuizType').addEventListener('change',updateQuizSubjects);
 $('teacherQuizStage').addEventListener('change',updateQuizGrades);
 $('teacherQuizGrade').addEventListener('change',updateQuizSubjects);

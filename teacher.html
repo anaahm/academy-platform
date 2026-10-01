@@ -83,7 +83,7 @@
           </section>
 
           <section class="mix-teacher-quick-actions" aria-label="إجراءات سريعة">
-            <button type="button" data-open-teacher-submit><span class="blue"><i class="fa-solid fa-video"></i></span><div><strong>درس جديد</strong><small>أرسل فيديو للمراجعة</small></div><i class="fa-solid fa-chevron-left"></i></button>
+            <button type="button" data-open-teacher-submit><span class="blue"><i class="fa-solid fa-video"></i></span><div><strong>درس جديد</strong><small>مقال + فيديو + تدريب</small></div><i class="fa-solid fa-chevron-left"></i></button>
             <button type="button" data-teacher-tab="quizzes"><span class="violet"><i class="fa-solid fa-file-circle-question"></i></span><div><strong>اختبار جديد</strong><small>اربطه بدرس معتمد</small></div><i class="fa-solid fa-chevron-left"></i></button>
             <button type="button" data-teacher-tab="assignments"><span class="green"><i class="fa-solid fa-clipboard-check"></i></span><div><strong>واجب جديد</strong><small>أرسله لطلابك</small></div><i class="fa-solid fa-chevron-left"></i></button>
             <button type="button" data-teacher-tab="profile"><span class="orange"><i class="fa-solid fa-id-card"></i></span><div><strong>ملفي العام</strong><small>حدّث صورتك وبياناتك</small></div><i class="fa-solid fa-chevron-left"></i></button>
@@ -211,15 +211,30 @@
             <div class="teacher-card-head"><div><span class="section-kicker">إرسال للمراجعة</span><h3>إضافة درس أو فيديو جديد</h3></div><span>➕</span></div>
             <p class="profile-muted">المحتوى لن يظهر للطلاب قبل اعتماده من الإدارة.</p>
             <form id="teacherSubmissionForm" class="teacher-form">
-              <label><span>عنوان الدرس</span><input id="teacherLessonTitle" required placeholder="مثال: المفعول المطلق"></label>
-              <label><span>رابط YouTube</span><input id="teacherVideoUrl" required type="url" placeholder="https://youtube.com/..."></label>
+              <label><span>عنوان الدرس</span><input id="teacherLessonTitle" required maxlength="160" placeholder="مثال: المفعول المطلق"></label>
+              <label><span>رابط فيديو YouTube — اختياري</span><input id="teacherVideoUrl" type="url" dir="ltr" placeholder="https://youtube.com/..."></label>
               <label><span>نوع التعليم</span><select id="teacherEducationType"><option value="public">تربية وتعليم</option><option value="azhar">أزهر شريف</option></select></label>
               <label><span>المرحلة</span><select id="teacherStage"><option value="primary">ابتدائي</option><option value="prep">إعدادي</option><option value="sec">ثانوي</option></select></label>
               <label><span>الصف</span><select id="teacherGrade"></select></label>
               <label><span>المادة</span><select id="teacherSubject"></select></label>
               <label><span>الوحدة</span><select id="teacherUnit"><option value="1">الوحدة الأولى</option><option value="2">الوحدة الثانية</option><option value="3">الوحدة الثالثة</option><option value="4">الوحدة الرابعة</option><option value="5">الوحدة الخامسة</option><option value="6">الوحدة السادسة</option></select></label>
-              <label class="full"><span>ملاحظات للإدارة</span><textarea id="teacherNotes" placeholder="أي ملاحظات أو تفاصيل مهمة عن المحتوى..."></textarea></label>
-              <button class="btn btn-primary full" type="submit" id="teacherSubmitBtn"><i class="fa-solid fa-paper-plane"></i> إرسال للمراجعة</button>
+              <label><span>صورة توضيحية — اختياري</span><input id="teacherLessonImage" type="url" dir="ltr" placeholder="https://..."></label>
+              <label><span>مكان الصورة</span><select id="teacherLessonImagePosition"><option value="top">أعلى الشرح</option><option value="bottom">أسفل الشرح</option></select></label>
+              <label class="full"><span>الشرح المقالي / المكتوب</span><textarea id="teacherLessonContent" rows="9" maxlength="20000" placeholder="اكتب شرح الدرس كاملًا هنا... يمكن إنشاء درس مقالي بدون فيديو، أو الجمع بين الشرح المكتوب والفيديو."></textarea></label>
+              <div class="full teacher-quiz-editor">
+                <div class="teacher-card-head"><div><span class="section-kicker">تدريب الدرس</span><h3>أسئلة تظهر داخل الدرس</h3></div><button class="btn btn-soft" id="teacherAddLessonQuestion" type="button"><i class="fa-solid fa-plus"></i> إضافة سؤال</button></div>
+                <p class="profile-muted">اختياري: أضف تدريب الدرس سؤالًا سؤالًا، أو استخدم JSON. سيُنشر التدريب مع الدرس بعد موافقة الإدارة.</p>
+                <div id="teacherLessonQuestionRows" class="teacher-question-rows"></div>
+              </div>
+              <div class="full teacher-quiz-import">
+                <label for="teacherLessonQuestionsBulk"><span>إضافة أسئلة الدرس دفعة واحدة بصيغة JSON</span></label>
+                <textarea id="teacherLessonQuestionsBulk" dir="ltr" rows="6" placeholder='[{"text":"نص السؤال","opts":["الأول","الثاني","الثالث","الرابع"],"correctAnswer":0,"explanation":"الشرح"}]'></textarea>
+                <small>يمكن دمج الأسئلة الفردية مع المجموعة المستوردة. رقم الإجابة يبدأ من 0.</small>
+                <button class="btn btn-soft" id="teacherImportLessonQuestions" type="button"><i class="fa-solid fa-file-import"></i> إضافة الأسئلة من JSON</button>
+              </div>
+              <label class="full"><span>ملاحظات للإدارة</span><textarea id="teacherNotes" maxlength="2000" placeholder="أي ملاحظات أو تفاصيل مهمة عن المحتوى..."></textarea></label>
+              <div class="full comm-note"><i class="fa-solid fa-shield-halved"></i><span>يمكنك إرسال درس مقالي فقط، فيديو فقط، أو الجمع بينهما مع تدريب. لن يظهر أي جزء للطلاب قبل موافقة الإدارة.</span></div>
+              <button class="btn btn-primary full" type="submit" id="teacherSubmitBtn"><i class="fa-solid fa-paper-plane"></i> إرسال الدرس كاملًا للمراجعة</button>
             </form>
           </article>
         </section>
@@ -374,7 +389,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="./assets/firebase-config.js"></script>
-  <script src="./assets/teacher.js?v=46"></script>
+  <script src="./assets/teacher.js?v=47"></script>
 <script src="./assets/growth-pack.js?v=1"></script>
   <script src="./assets/teacher-communications.js?v=1"></script>
   <script src="./assets/teacher-support.js?v=1"></script>
