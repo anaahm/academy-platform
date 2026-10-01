@@ -101,6 +101,13 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
     assert.equal(w.document.getElementById('parentDashboard').hidden,true,'student session cannot open parent dashboard');
     assert.equal(auth.currentUser?.uid,'tester','parent route does not mutate the active student session');
   }
+  if(file==='index.html'&&role==='nonstudent'){
+   assert.equal(auth.currentUser,null,'non-student role is cleared from student home session');
+   assert.equal(w.document.getElementById('studentDashboard').classList.contains('hidden'),true,'non-student role never opens student dashboard');
+  }
+  if(file==='profile.html'&&role==='nonstudent'){
+   assert.equal(auth.currentUser,null,'non-student role is cleared from protected student profile');
+  }
   if(file==='index.html'&&role==='guest'){
    const field=id=>w.document.getElementById(id);
    field('registerName').value='طالب جديد';field('registerPhone').value='٠١٠١٢٣٤٥٦٧٨';field('registerPassword').value='12345678';
@@ -184,7 +191,7 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    assert.equal(get('studentProfilesV3/tester/mistakeNotebook/lesson1/0'),null,'correct retry clears the mistake');
   }
   if(file==='lesson.html'&&!linkedMode){assert.match(w.document.getElementById('lessonContent').innerHTML,/student-inline\.jpg/,'student sees inline image inside rich explanation');assert.ok(w.document.getElementById('lessonContent').querySelector('h2'),'student sees rich explanation heading')}
-  if(file==='profile.html'){
+  if(file==='profile.html'&&role==='student'){
    w.document.querySelector('[data-profile-tab="mistakes"]').click();
    assert.equal(w.document.getElementById('profileMistakeCount').textContent,'1');
    assert.match(w.document.getElementById('mistakeNotebookList').textContent,/إجابتك:[\s\S]*1[\s\S]*الصحيح:[\s\S]*2/);
@@ -304,6 +311,7 @@ for(const file of files)await check(file,file==='admin.html'?'admin':file==='tea
 await check('index.html','guest');await check('admin.html','guest');await check('teacher.html','guest');await check('teacher.html','teacher','assignmentSubmissions/');
 await check('parent.html','parent');
 await check('admin.html','student-route');await check('teacher.html','student-route');await check('parent.html','student-route');
+await check('index.html','nonstudent');await check('profile.html','nonstudent');
 await check('lesson.html','student','',true);
 await check('lesson.html','student','',false,true);
 console.log(`DOM smoke: ${scenarios-failures}/${scenarios} scenarios passed. Uses in-memory Firebase fixtures, not live Firebase or layout rendering.`);
