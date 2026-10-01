@@ -21,6 +21,11 @@ let failures=0,scenarios=0;
 async function check(file,role='student',failurePath='',reviewMode=false,linkedMode=false){
  const errors=[],writes=[],database=fixtures(),callbacks=[];
  if(file==='admin.html'&&role==='admin')database.teacherSubmissions={tester:{quizSubmission:{submissionKind:'quiz',title:'اختبار المبتدأ والخبر',lessonId:'lesson1',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()},assignmentSubmission:{submissionKind:'assignment',title:'واجب جديد',instructions:'حل التدريبات',type:'public',stage:'prep',grade:'1',subject:'arabic',dueAt:Date.now()+86400000,maxScore:100,status:'pending',teacherId:'tester',createdAt:Date.now()}}};
+ if(file==='parent.html'&&role==='parent'){
+  database.parentProfilesV4={tester:{name:'ولي أمر الاختبار',phone:'01012345678'}};
+  database.parentLinksV4={tester:{child1:{studentId:'child1',linkedAt:Date.now()}}};
+  database.studentProfilesV3.child1={name:'طالب مرتبط',educationType:'public',stage:'prep',grade:1,onboardingCompleted:true,lastActiveAt:Date.now()};
+ }
  if(file==='profile.html')database.studentProfilesV3.tester.mistakeNotebook={lesson1:{0:{text:'ما ناتج 1 + 1؟',opts:['1','2'],chosen:0,correctAnswer:1,sourceType:'lesson',title:'المبتدأ والخبر',subject:'arabic',type:'public',stage:'prep',grade:'1'}}};
  if(reviewMode)database.studentProfilesV3.tester.mistakeNotebook={lesson1:{1:{text:'ما ناتج 2 + 2؟',opts:['4','5'],chosen:1,correctAnswer:0,sourceType:'lesson',title:'المبتدأ والخبر',subject:'arabic',type:'public',stage:'prep',grade:'1'}}};
  if(linkedMode)database.studentProfilesV3.tester.learningProgress={lesson1:{completed:true}};
@@ -152,6 +157,9 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
   }
   if(file==='admin.html'&&role!=='guest'){
    for(const tab of w.document.querySelectorAll('[data-admin-tab]')){tab.click();await new Promise(r=>setTimeout(r,8));}
+   assert.ok(w.document.getElementById('releaseReadinessScore').textContent.endsWith('%'),'release readiness score renders');
+   assert.ok(Number(w.document.getElementById('releaseCriticalCount').textContent)>=1,'release readiness detects incomplete fixture content');
+   assert.equal(w.document.getElementById('releaseReadinessBadge').classList.contains('hidden'),false,'release readiness badge surfaces launch blockers');
    assert.equal(get('quizzes/new1'),null,'teacher quiz stays unpublished before approval');
    w.document.querySelector('[data-approve="tester|quizSubmission"]').click();await new Promise(r=>setTimeout(r,15));
    assert.equal(get('quizzes/new1/lessonId'),'lesson1','approved quiz links to chosen lesson');
@@ -170,6 +178,10 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    for(const cb of [...callbacks])await cb(auth.currentUser);
    assert.equal(auth.currentUser.uid,'newTeacher','admin page must not sign out a teacher in another tab');
    assert.equal(w.document.getElementById('adminApp').classList.contains('hidden'),true,'admin view stays protected');
+  }
+  if(file==='parent.html'&&role==='parent'){
+   assert.equal(w.document.getElementById('parentDashboard').hidden,false,'linked parent dashboard becomes visible');
+   assert.match(w.document.getElementById('children').textContent,/طالب مرتبط/,'parent can see linked student');
   }
   if(file==='teacher.html'){
    assert.ok(w.firebase.apps.some(app=>app.name==='teacher-portal'),'teacher portal uses its own Firebase auth session');
@@ -216,6 +228,7 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
 }
 for(const file of files)await check(file,file==='admin.html'?'admin':file==='teacher.html'?'teacher':'student');
 await check('index.html','guest');await check('admin.html','guest');await check('teacher.html','guest');await check('teacher.html','teacher','assignmentSubmissions/');
+await check('parent.html','parent');
 await check('lesson.html','student','',true);
 await check('lesson.html','student','',false,true);
 console.log(`DOM smoke: ${scenarios-failures}/${scenarios} scenarios passed. Uses in-memory Firebase fixtures, not live Firebase or layout rendering.`);
