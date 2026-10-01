@@ -145,7 +145,7 @@ async function loadProfile(user){
  if(state.adminPreview){state.profile={};return}
  if(!user){state.profile=null;return}
  const s=await db.ref('studentProfilesV3/'+user.uid).once('value');state.profile=s.val()||null;
- if($('learningAvatar'))$('learningAvatar').textContent=initials(state.profile.name||user.displayName||'طالب');
+ if($('learningAvatar'))$('learningAvatar').textContent=initials(state.profile?.name||user.displayName||'طالب');
 }
 
 /* subject */
