@@ -6,12 +6,12 @@ const question={text:'ما ناتج 1 + 1؟',opts:['1','2'],correctAnswer:1};
 const today=new Date(),date=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
 function fixtures(){return {
  studentProfilesV3:{tester:{name:'طالب الاختبار',educationType:'public',stage:'prep',grade:1,onboardingCompleted:true,stats:{totalXP:50,completedLessons:0,completedQuizzes:0,streak:1,level:1},studyPlanner:{task:{title:'مراجعة الدرس',date,done:false}},learningProgress:{}}},
- adminProfiles:{tester:{isAdmin:true,name:'مدير الاختبار'}},teacherProfiles:{tester:{name:'مدرس الاختبار',isActive:true,subjects:[{type:'public',stage:'prep',grade:'1',subject:'arabic'}]}},
+ adminProfiles:{admin1:{isAdmin:true,name:'مدير آخر'}},teacherProfiles:{teacher1:{name:'مدرس عام',isActive:true,subjects:[{type:'public',stage:'prep',grade:'1',subject:'arabic'}]}},
  customSubjects:{prep:{1:[{id:'arabic',name:'اللغة العربية',emoji:'📘',type:'public',imageUrl:'https://example.test/broken.jpg',units:[{name:'النحو'}]}]}},
- lessons:{lesson1:{title:'المبتدأ والخبر',content:'<h2>شرح تجريبي</h2><p>فقرة منسقة</p><figure class="rte-inline-image rte-image-medium"><img src="https://example.test/student-inline.jpg" alt="صورة الدرس"></figure>',contentFormat:'html',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,teacherId:'tester',videos:[],questions:[question,{text:'ما ناتج 2 + 2؟',opts:['4','5'],correctAnswer:0}]}},
- quizzes:{quiz1:{name:'اختبار النحو',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:0,questions:[question]},quiz2:{name:'اختبار مرتبط بالدرس',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,lessonId:'lesson1',teacherId:'tester',questions:[question]}},
+ lessons:{lesson1:{title:'المبتدأ والخبر',content:'<h2>شرح تجريبي</h2><p>فقرة منسقة</p><figure class="rte-inline-image rte-image-medium"><img src="https://example.test/student-inline.jpg" alt="صورة الدرس"></figure>',contentFormat:'html',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,teacherId:'teacher1',videos:[],questions:[question,{text:'ما ناتج 2 + 2؟',opts:['4','5'],correctAnswer:0}]}},
+ quizzes:{quiz1:{name:'اختبار النحو',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:0,questions:[question]},quiz2:{name:'اختبار مرتبط بالدرس',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,lessonId:'lesson1',teacherId:'teacher1',questions:[question]}},
  files:{file1:{title:'ملف بلا رابط',type:'public',stage:'prep',grade:'1',subject:'arabic',url:''}},
- assignments:{hw1:{title:'واجب النحو',instructions:'أجب',type:'public',stage:'prep',grade:'1',subject:'arabic',teacherId:'tester',maxScore:10,dueAt:Date.now()+86400000}},
+ assignments:{hw1:{title:'واجب النحو',instructions:'أجب',type:'public',stage:'prep',grade:'1',subject:'arabic',teacherId:'teacher1',maxScore:10,dueAt:Date.now()+86400000}},
  assignmentSubmissions:{hw1:{student2:{studentName:'طالب تجريبي',status:'submitted',text:'إجابة',submittedAt:Date.now()}}},
  liveSessions:{live1:{title:'بث مناسب',type:'public',stage:'prep',grade:'1',status:'live'},live2:{title:'بث لا يخص الطالب',stage:'sec',status:'live'}},
  community:{forums:{post1:{title:'مراجعة',content:'أهلًا',authorId:'tester',authorName:'طالب الاختبار',createdAt:Date.now()}},studyGroups:{}},
@@ -20,6 +20,8 @@ function fixtures(){return {
 let failures=0,scenarios=0;
 async function check(file,role='student',failurePath='',reviewMode=false,linkedMode=false){
  const errors=[],writes=[],database=fixtures(),callbacks=[];
+ if(role==='admin')database.adminProfiles.tester={isAdmin:true,name:'مدير الاختبار'};
+ if(role==='teacher')database.teacherProfiles.tester={name:'مدرس الاختبار',isActive:true,subjects:[{type:'public',stage:'prep',grade:'1',subject:'arabic'}]};
  if(file==='admin.html'&&role==='admin')database.teacherSubmissions={tester:{quizSubmission:{submissionKind:'quiz',title:'اختبار المبتدأ والخبر',lessonId:'lesson1',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()},assignmentSubmission:{submissionKind:'assignment',title:'واجب جديد',instructions:'حل التدريبات',type:'public',stage:'prep',grade:'1',subject:'arabic',dueAt:Date.now()+86400000,maxScore:100,status:'pending',teacherId:'tester',createdAt:Date.now()},lessonSubmission:{submissionKind:'lesson',title:'درس مقالي من المعلم',content:'<h2>عنوان الشرح</h2><p>هذا شرح مقالي كامل أرسله المعلم.</p><figure class="rte-inline-image rte-image-medium"><img src="https://example.test/inside.jpg" alt="صورة داخل الشرح"></figure>',contentFormat:'html',videoUrl:'https://youtu.be/test123',imageUrl:'https://example.test/lesson.jpg',imagePosition:'bottom',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()}}};
  if(file==='parent.html'&&role==='parent'){
   database.parentProfilesV4={tester:{name:'ولي أمر الاختبار',phone:'01012345678'}};
