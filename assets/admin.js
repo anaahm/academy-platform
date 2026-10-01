@@ -1,6 +1,7 @@
 (() => {
 'use strict';
 
+const firebaseConfig=window.ACADEMY_FIREBASE_CONFIG;
 const adminSession=window.AcademyRoleSession?.get('admin');
 if(!adminSession)throw new Error('Admin session unavailable');
 const auth=adminSession.auth,db=adminSession.db;
