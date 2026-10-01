@@ -139,7 +139,7 @@ function importQuizQuestions(){
  if(items.some(q=>q.opts.length>4||q.text.length>500||q.opts.some(o=>o.length>250)||String(q.explanation||'').length>1000))return toast('كل سؤال يقبل 2 إلى 4 خيارات، ونصًا لا يتجاوز 500 حرف، وتفسيرًا لا يتجاوز 1000 حرف.','error');
  items.forEach(addQuizQuestion);$('teacherQuizBulk').value='';toast('تمت إضافة '+items.length+' سؤال. راجعها قبل الإرسال.');
 }
-function updateLessonQuestionNumbers(){$('#teacherLessonQuestionRows .question-position').forEach((node,i)=>node.textContent=i+1)}
+function updateLessonQuestionNumbers(){$$('#teacherLessonQuestionRows .question-position').forEach((node,i)=>node.textContent=i+1)}
 function addLessonQuestion(q={}){
  const box=$('teacherLessonQuestionRows');if(!box)return null;
  if(box.children.length>=100)return toast('الحد الأقصى 100 سؤال لتدريب الدرس.','error');
@@ -154,9 +154,9 @@ function addLessonQuestion(q={}){
  box.append(row);updateLessonQuestionNumbers();return row;
 }
 function collectLessonQuestions(){
- const rows=$('#teacherLessonQuestionRows .teacher-question-row');if(!rows.length)return[];
+ const rows=$$('#teacherLessonQuestionRows .teacher-question-row');if(!rows.length)return[];
  return window.AcademyUtils.validateQuestions(rows.map((row,i)=>{
-   const opts=$('.teacher-question-option',row).map(input=>input.value.trim());while(opts.length&&!opts.at(-1))opts.pop();
+   const opts=$$('.teacher-question-option',row).map(input=>input.value.trim());while(opts.length&&!opts.at(-1))opts.pop();
    if(opts.length<2||opts.some(o=>!o))throw Error('أكمل الخيارات بالترتيب في سؤال الدرس '+(i+1)+'.');
    return {text:row.querySelector('.teacher-question-text').value.trim(),opts,correctAnswer:Number(row.querySelector('.teacher-question-correct').value),difficulty:Number(row.querySelector('.teacher-question-difficulty')?.value||2),explanation:row.querySelector('.teacher-question-explanation')?.value.trim()||''};
  }));
@@ -164,7 +164,7 @@ function collectLessonQuestions(){
 function importLessonQuestions(){
  let items;try{items=JSON.parse($('teacherLessonQuestionsBulk').value.trim());items=window.AcademyUtils.validateQuestions(items)}catch(err){return toast('تعذر قراءة أسئلة الدرس: '+(err.message||'صيغة JSON غير صحيحة.'),'error')}
  if(!items.length)return toast('لا توجد أسئلة في المجموعة.','error');
- if(items.length+$('#teacherLessonQuestionRows .teacher-question-row').length>100)return toast('الحد الأقصى 100 سؤال لتدريب الدرس.','error');
+ if(items.length+$$('#teacherLessonQuestionRows .teacher-question-row').length>100)return toast('الحد الأقصى 100 سؤال لتدريب الدرس.','error');
  if(items.some(q=>q.opts.length>4||q.text.length>500||q.opts.some(o=>o.length>250)||String(q.explanation||'').length>1000))return toast('راجع أطوال نصوص أسئلة الدرس والاختيارات.','error');
  items.forEach(addLessonQuestion);$('teacherLessonQuestionsBulk').value='';toast('تمت إضافة '+items.length+' سؤال لتدريب الدرس.');
 }
