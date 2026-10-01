@@ -44,6 +44,20 @@ function toast(msg,type='success'){
 async function getProfile(uid){
  const s=await db.ref('studentProfilesV3/'+uid).once('value');return s.val()||{};
 }
+async function conflictingRole(uid){
+ const checks=await Promise.allSettled([
+   db.ref('adminProfiles/'+uid).once('value'),
+   db.ref('teacherProfiles/'+uid).once('value'),
+   db.ref('parentProfilesV4/'+uid).once('value')
+ ]);
+ const admin=checks[0].status==='fulfilled'?checks[0].value.val():null;
+ const teacher=checks[1].status==='fulfilled'?checks[1].value.val():null;
+ const parent=checks[2].status==='fulfilled'?checks[2].value.val():null;
+ if(admin?.isAdmin===true)return'admin';
+ if(teacher&&teacher.isActive!==false)return'teacher';
+ if(parent)return'parent';
+ return'';
+}
 function subjectsFor(data,stage,grade,type){
  const list=[...(defaultSubjects[stage]||[])],custom=data?.customSubjects?.[stage]?.[grade],arr=Array.isArray(custom)?custom:Object.values(custom||{});
  arr.forEach(s=>{
@@ -63,7 +77,8 @@ async function requireStudent(){
    off=auth.onAuthStateChanged(async user=>{
      if(!user){off();location.replace('./index.html');return}
      try{
-       const profile=await getProfile(user.uid);
+       const [profile,otherRole]=await Promise.all([getProfile(user.uid),conflictingRole(user.uid)]);
+       if(otherRole){off();await auth.signOut().catch(()=>{});location.replace('./index.html?role='+encodeURIComponent(otherRole));return}
        if(!profile?.stage||!profile?.grade){off();location.replace('./index.html');return}
        off();window.AcademyUI?.hidePageLoading();resolve({user,profile});
      }catch(err){
@@ -95,5 +110,5 @@ async function syncAllTimeLeaderboard(uid,profile){
   await db.ref('leaderboardV3/allTime/'+uid).update({name:profile?.name||'طالب',xp:Number(stats.totalXP||0),quizzes:Number(stats.completedQuizzes||0),level:Number(stats.level||1),updatedAt:Date.now()});
 }
 
-window.AcademyCore={auth,db,esc,safeUrl,initials,typeLabel,stageLabel,gradeLabel,lessonUrl,quizUrl,subjectUrl,toast,getProfile,subjectsFor,subjectName,requireStudent,updateProfile,currentCtx,localDateKey,subjectProgressValue,subjectProgressPath,leaderboardKeys,addLeaderboardXP,syncAllTimeLeaderboard,stageNames,gradeNames,defaultSubjects};
+window.AcademyCore={auth,db,esc,conflictingRole,safeUrl,initials,typeLabel,stageLabel,gradeLabel,lessonUrl,quizUrl,subjectUrl,toast,getProfile,subjectsFor,subjectName,requireStudent,updateProfile,currentCtx,localDateKey,subjectProgressValue,subjectProgressPath,leaderboardKeys,addLeaderboardXP,syncAllTimeLeaderboard,stageNames,gradeNames,defaultSubjects};
 })();
