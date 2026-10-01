@@ -1519,6 +1519,14 @@
 
     window.AcademyUI?.showPageLoading('جاري تجهيز مساحتك التعليمية...');
     try {
+      const otherRole=await window.AcademyCore?.conflictingRole?.(user.uid);
+      if(otherRole){
+        await auth.signOut().catch(()=>{});
+        showPublicExperience();
+        const label=otherRole==='admin'?'الإدارة':otherRole==='teacher'?'المعلم':otherRole==='parent'?'ولي الأمر':'الحساب';
+        toast('هذا حساب '+label+' وليس حساب طالب. استخدم بوابة '+label+' المخصصة.','error');
+        return;
+      }
       if(!baseDataPromise) baseDataPromise=loadDatabaseSnapshot();
       await baseDataPromise;
       state.profile = await loadProfile(user.uid);
