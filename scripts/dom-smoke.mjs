@@ -129,9 +129,9 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    assert.match(w.document.getElementById('lessonTitle').textContent,/اختبار مرتبط/);
    assert.equal(w.document.getElementById('quizIntro').classList.contains('hidden'),false,'completed linked lesson unlocks its exam');
   }
-  if(file==='lesson.html'&&!reviewMode&&!linkedMode){
-   const b=w.document.getElementById('markCompleteBtn');if(b&&!b.disabled){b.click();b.click();await new Promise(r=>setTimeout(r,30));assert.equal(get('studentProfilesV3/tester/stats/totalXP'),100,'double click gives only one award');}
-   assert.match(w.document.querySelector('#linkedLessonQuizzes a')?.href||'',/quiz=quiz2/,'linked exam is offered after completing lesson');
+  if(file==='lesson.html'&&role==='student'&&!reviewMode&&!linkedMode){
+   const b=w.document.getElementById('markCompleteBtn');if(b&&!b.disabled){b.click();await new Promise(r=>setTimeout(r,10));assert.equal(get('studentProfilesV3/tester/learningProgress/lesson1/completed'),null,'lesson cannot be completed before its training');}
+   assert.equal(w.document.querySelector('#linkedLessonQuizzes a'),null,'linked exam stays locked before lesson completion');
    w.document.getElementById('startQuizBtn').click();assert.ok(w.document.querySelector('[data-a]'),'quiz options');
    assert.equal(w.document.getElementById('nextQuestionBtn').disabled,true,'must answer before moving on');
    w.document.querySelector('[data-a="0"]').click();
@@ -157,6 +157,13 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    w.document.querySelector('[data-a="1"]').click();w.document.getElementById('nextQuestionBtn').click();
    w.document.querySelector('[data-a="0"]').click();w.document.getElementById('nextQuestionBtn').click();await new Promise(r=>setTimeout(r,30));
    assert.equal(get('studentProfilesV3/tester/mistakeNotebook/lesson1/0'),null,'correct retry clears the mistake');
+   assert.equal(get('learningV4/reviews/tester/lesson1-0/status'),'scheduled','corrected mistake advances spaced review instead of remaining due');
+   assert.equal(get('learningV4/reviews/tester/lesson1-0/correctReviews'),1,'corrected mistake records a successful review');
+   const beforeComplete=Number(get('studentProfilesV3/tester/stats/totalXP')||0);b.click();b.click();await new Promise(r=>setTimeout(r,30));
+   assert.equal(get('studentProfilesV3/tester/learningProgress/lesson1/completed'),true,'lesson completes after training and mistakes are cleared');
+   assert.equal(get('studentProfilesV3/tester/stats/completedLessons'),1,'double completion click counts the lesson once');
+   assert.equal(Number(get('studentProfilesV3/tester/stats/totalXP')),beforeComplete+50,'lesson completion awards exactly 50 XP once');
+   assert.match(w.document.querySelector('#linkedLessonQuizzes a')?.href||'',/quiz=quiz2/,'linked exam is offered only after completing the lesson journey');
   }
   if(file==='lesson.html'&&role==='student'&&!linkedMode){assert.match(w.document.getElementById('lessonContent').innerHTML,/student-inline\.jpg/,'student sees inline image inside rich explanation');assert.ok(w.document.getElementById('lessonContent').querySelector('h2'),'student sees rich explanation heading')}
   if(file==='lesson.html'&&['admin','teacher','parent'].includes(role)){
