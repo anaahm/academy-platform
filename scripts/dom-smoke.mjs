@@ -22,6 +22,7 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
  const errors=[],writes=[],database=fixtures(),callbacks=[];
  if(role==='admin')database.adminProfiles.tester={isAdmin:true,name:'مدير الاختبار'};
  if(role==='teacher'||(file==='teacher.html'&&role==='guest'))database.teacherProfiles.tester={name:'مدرس الاختبار',isActive:true,subjects:[{type:'public',stage:'prep',grade:'1',subject:'arabic'}]};
+ if(role==='parent')database.parentProfilesV4={tester:{name:'ولي أمر الاختبار',phone:'01012345678'}};
  if(file==='admin.html'&&role==='admin')database.teacherSubmissions={tester:{quizSubmission:{submissionKind:'quiz',title:'اختبار المبتدأ والخبر',lessonId:'lesson1',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()},assignmentSubmission:{submissionKind:'assignment',title:'واجب جديد',instructions:'حل التدريبات',type:'public',stage:'prep',grade:'1',subject:'arabic',dueAt:Date.now()+86400000,maxScore:100,status:'pending',teacherId:'tester',createdAt:Date.now()},lessonSubmission:{submissionKind:'lesson',title:'درس مقالي من المعلم',content:'<h2>عنوان الشرح</h2><p>هذا شرح مقالي كامل أرسله المعلم.</p><figure class="rte-inline-image rte-image-medium"><img src="https://example.test/inside.jpg" alt="صورة داخل الشرح"></figure>',contentFormat:'html',videoUrl:'https://youtu.be/test123',imageUrl:'https://example.test/lesson.jpg',imagePosition:'bottom',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()}}};
  if(file==='parent.html'&&role==='parent'){
   database.parentProfilesV4={tester:{name:'ولي أمر الاختبار',phone:'01012345678'}};
@@ -157,7 +158,10 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    w.document.querySelector('[data-a="0"]').click();w.document.getElementById('nextQuestionBtn').click();await new Promise(r=>setTimeout(r,30));
    assert.equal(get('studentProfilesV3/tester/mistakeNotebook/lesson1/0'),null,'correct retry clears the mistake');
   }
-  if(file==='lesson.html'&&!linkedMode){assert.match(w.document.getElementById('lessonContent').innerHTML,/student-inline\.jpg/,'student sees inline image inside rich explanation');assert.ok(w.document.getElementById('lessonContent').querySelector('h2'),'student sees rich explanation heading')}
+  if(file==='lesson.html'&&role==='student'&&!linkedMode){assert.match(w.document.getElementById('lessonContent').innerHTML,/student-inline\.jpg/,'student sees inline image inside rich explanation');assert.ok(w.document.getElementById('lessonContent').querySelector('h2'),'student sees rich explanation heading')}
+  if(file==='lesson.html'&&['admin','teacher','parent'].includes(role)){
+   assert.equal(auth.currentUser,null,role+' account is removed from the default student session on a protected student route');
+  }
   if(file==='profile.html'){
    w.document.querySelector('[data-profile-tab="mistakes"]').click();
    assert.equal(w.document.getElementById('profileMistakeCount').textContent,'1');
@@ -272,6 +276,7 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
 for(const file of files)await check(file,file==='admin.html'?'admin':file==='teacher.html'?'teacher':'student');
 await check('index.html','guest');await check('admin.html','guest');await check('teacher.html','guest');await check('teacher.html','teacher','assignmentSubmissions/');
 await check('parent.html','parent');
+await check('lesson.html','admin');await check('lesson.html','teacher');await check('lesson.html','parent');
 await check('lesson.html','student','',true);
 await check('lesson.html','student','',false,true);
 console.log(`DOM smoke: ${scenarios-failures}/${scenarios} scenarios passed. Uses in-memory Firebase fixtures, not live Firebase or layout rendering.`);
