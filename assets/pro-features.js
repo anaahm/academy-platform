@@ -2,8 +2,9 @@
 'use strict';
 const cfg=window.ACADEMY_FIREBASE_CONFIG;
 if(!cfg||!window.firebase) return;
-if(!firebase.apps.length) firebase.initializeApp(cfg);
-const auth=firebase.auth(),db=firebase.database();
+const scoped=window.AcademyRoleSession?.page?.();
+if(!scoped&&!firebase.apps.length) firebase.initializeApp(cfg);
+const auth=scoped?.auth||firebase.auth(),db=scoped?.db||firebase.database();
 const now=()=>Date.now(), day=86400000;
 const dateKey=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const uid=()=>auth.currentUser?.uid||'';

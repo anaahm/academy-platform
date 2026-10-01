@@ -1,8 +1,8 @@
 (() => {
 'use strict';
 if(!window.firebase||!window.ACADEMY_FIREBASE_CONFIG)return;
-if(!firebase.apps.length)firebase.initializeApp(window.ACADEMY_FIREBASE_CONFIG);
-const auth=firebase.auth(),db=firebase.database(),$=id=>document.getElementById(id);
+const session=window.AcademyRoleSession?.get('admin-portal');if(!session)return;
+const auth=session.auth,db=session.db,$=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 let user=null,tickets=[],filter='open',search='',stop=null;
 const statusLabels={new:'جديدة',reviewing:'قيد المراجعة',in_progress:'جاري الحل',waiting_user:'مطلوب رد من المستخدم',resolved:'تم الحل',closed:'مغلقة'};

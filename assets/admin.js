@@ -3,8 +3,9 @@
 
 const firebaseConfig=window.ACADEMY_FIREBASE_CONFIG;
 if(!firebaseConfig) throw new Error('Firebase configuration is missing');
-if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth(),db=firebase.database();
+const adminSession=window.AcademyRoleSession?.get('admin-portal');
+if(!adminSession)throw new Error('Admin session helper is missing');
+const auth=adminSession.auth,db=adminSession.db;
 const $=id=>document.getElementById(id), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const askConfirm=opts=>window.AcademyUI?.confirm?window.AcademyUI.confirm(opts):(console.error('AcademyUI confirm unavailable'),Promise.resolve(false));
 

@@ -613,8 +613,8 @@ auth.onAuthStateChanged(async u=>{
    if($('teacherTopRole')){
      $('teacherTopRole').textContent=teacher?.role==='assistant'?'مساعد معلم • إعداد محتوى واختبارات':teacher?.role==='supervisor'?'مشرف مادة • متابعة المحتوى والتحليلات':'بوابة إدارة المحتوى التعليمي';
    }
-   if(!teacher){showNoAccess('الحساب الحالي ليس له ملف مدرس. الإدارة لازم تضيفه كمدرس أولًا.');return}
-   if(teacher.isActive!==true||teacher.status==='blocked'){showNoAccess('حساب المدرس غير مفعل حاليًا. تواصل مع الإدارة.');return}
+   if(!teacher){showNoAccess('الحساب الحالي ليس له ملف مدرس. الإدارة لازم تضيفه كمدرس أولًا.');await auth.signOut().catch(()=>{});return}
+   if(teacher.isActive!==true||teacher.status==='blocked'){showNoAccess('حساب المدرس غير مفعل حاليًا. تواصل مع الإدارة.');await auth.signOut().catch(()=>{});return}
 
    const [subjectsSnap,submissionSnap,directLessonsSnap,homeworkSnap,publicProfileSnap]=await Promise.all([
      db.ref('customSubjects').once('value'),

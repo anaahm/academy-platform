@@ -1,8 +1,8 @@
 (() => {
 'use strict';
 if(!window.firebase||!window.ACADEMY_FIREBASE_CONFIG)return;
-if(!firebase.apps.length)firebase.initializeApp(window.ACADEMY_FIREBASE_CONFIG);
-const auth=firebase.auth(),db=firebase.database(),$=id=>document.getElementById(id);
+const session=window.AcademyRoleSession?.get('admin-portal');if(!session)return;
+const auth=session.auth,db=session.db,$=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const ask=opts=>window.AcademyUI?.confirm?window.AcademyUI.confirm(opts):Promise.resolve(confirm(opts?.message||opts?.title||'تأكيد؟'));
 let user=null,plans={},students={},subscriptions={},requests={},customSubjects={},settings={},selectedStudentId='',editPlanId='',stops=[],bound=false;

@@ -386,6 +386,8 @@ auth.onAuthStateChanged(async u=>{
   if(!u){window.AcademyUI?.hidePageLoading();location.replace('./index.html');return}
   user=u;
   try{
+    const otherRole=await window.AcademyCore?.conflictingRole?.(u.uid);
+    if(otherRole){await auth.signOut().catch(()=>{});location.replace('./index.html?role='+encodeURIComponent(otherRole));return}
     const snap=await db.ref('studentProfilesV3/'+u.uid).once('value');
     profile=snap.val()||{};
     await syncPhoneDirectory();

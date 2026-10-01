@@ -39,6 +39,13 @@ test('Every stylesheet parses and the final responsive grid declarations are val
  const ast=css.parse(readFileSync('assets/experience.css','utf8'));
  css.walk(ast,n=>{if(n.type==='Declaration'&&n.property==='grid-template-columns')assert.equal(css.lexer.matchProperty(n.property,n.value).error,null,css.generate(n));});
 });
+test('Role portals declare isolated auth sessions and load the shared role-session helper',()=>{
+ const admin=readFileSync('admin.html','utf8'),teacher=readFileSync('teacher.html','utf8'),parent=readFileSync('parent.html','utf8');
+ assert.match(admin,/data-academy-auth-app="admin-portal"/);assert.match(admin,/role-session\.js/);
+ assert.match(teacher,/data-academy-auth-app="teacher-portal"/);assert.match(teacher,/role-session\.js/);
+ assert.match(parent,/data-academy-auth-app="parent-portal"/);assert.match(parent,/role-session\.js/);
+ const core=readFileSync('assets/student-core.js','utf8');assert.match(core,/conflictingRole/);assert.match(core,/parentProfilesV4/);
+});
 test('The authoritative hidden-state selector remains more specific than decorative selectors',()=>{
  assert.match(readFileSync('assets/experience.css','utf8'),/html body \.hidden,html body \[hidden\]\{display:none!important\}/);
 });

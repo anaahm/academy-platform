@@ -20,6 +20,9 @@ function fixtures(){return {
 let failures=0,scenarios=0;
 async function check(file,role='student',failurePath='',reviewMode=false,linkedMode=false){
  const errors=[],writes=[],database=fixtures(),callbacks=[];
+ if(role==='student'||role==='student-route'){delete database.adminProfiles.tester;delete database.teacherProfiles.tester}
+ if(role==='teacher'){delete database.adminProfiles.tester}
+ if(role==='parent'){delete database.adminProfiles.tester;delete database.teacherProfiles.tester}
  if(file==='admin.html'&&role==='admin')database.teacherSubmissions={tester:{quizSubmission:{submissionKind:'quiz',title:'اختبار المبتدأ والخبر',lessonId:'lesson1',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()},assignmentSubmission:{submissionKind:'assignment',title:'واجب جديد',instructions:'حل التدريبات',type:'public',stage:'prep',grade:'1',subject:'arabic',dueAt:Date.now()+86400000,maxScore:100,status:'pending',teacherId:'tester',createdAt:Date.now()},lessonSubmission:{submissionKind:'lesson',title:'درس مقالي من المعلم',content:'<h2>عنوان الشرح</h2><p>هذا شرح مقالي كامل أرسله المعلم.</p><figure class="rte-inline-image rte-image-medium"><img src="https://example.test/inside.jpg" alt="صورة داخل الشرح"></figure>',contentFormat:'html',videoUrl:'https://youtu.be/test123',imageUrl:'https://example.test/lesson.jpg',imagePosition:'bottom',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()}}};
  if(file==='parent.html'&&role==='parent'){
   database.parentProfilesV4={tester:{name:'ولي أمر الاختبار',phone:'01012345678'}};
@@ -50,10 +53,28 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    push:(value)=>{const child=ref(path+'/new'+(++pushed));if(value!==undefined)child.set(value);return child},transaction:async fn=>{const next=fn(clone(get(path)));if(next===undefined)return {committed:false,snapshot:snap(get(path))};set(path,next);return {committed:true,snapshot:snap(next)}}};return r;
  }
  const user=role==='guest'?null:{uid:'tester',displayName:'اختبار',email:'test@example.test',updateProfile:async()=>{},reload:async()=>{}};
+ const studentSessionUser=['admin','teacher','parent'].includes(role)?{uid:'studentSession',displayName:'طالب في تبويب آخر',email:'student@example.test'}:user;
  let createdEmail='',signedInEmail='';
- const auth={currentUser:user,onAuthStateChanged:fn=>{callbacks.push(fn);return ()=>{}},setPersistence:async()=>{},signInWithEmailAndPassword:async email=>{signedInEmail=email;auth.currentUser={uid:'tester',email:'test@example.test'};for(const fn of callbacks)await fn(auth.currentUser);return {user:auth.currentUser}},createUserWithEmailAndPassword:async email=>{createdEmail=email;auth.currentUser={uid:'newStudent',email,updateProfile:async()=>{}};for(const fn of callbacks)await fn(auth.currentUser);return {user:auth.currentUser}},sendPasswordResetEmail:async()=>{},signOut:async()=>{auth.currentUser=null;for(const fn of callbacks)await fn(null)}};
+ const auths=new Map(),authCallbackSets=new Map();
+ function makeAuth(key,initialUser=null){
+  if(auths.has(key))return auths.get(key);
+  const list=[];authCallbackSets.set(key,list);
+  const a={currentUser:initialUser,onAuthStateChanged:fn=>{list.push(fn);return ()=>{const i=list.indexOf(fn);if(i>=0)list.splice(i,1)}},setPersistence:async()=>{},
+   signInWithEmailAndPassword:async email=>{if(key==='[DEFAULT]')signedInEmail=email;a.currentUser={uid:'tester',email:'test@example.test',displayName:'اختبار',updateProfile:async()=>{},reload:async()=>{}};for(const fn of [...list])await fn(a.currentUser);return {user:a.currentUser}},
+   createUserWithEmailAndPassword:async email=>{if(key==='[DEFAULT]')createdEmail=email;a.currentUser={uid:'newStudent',email,updateProfile:async()=>{}};for(const fn of [...list])await fn(a.currentUser);return {user:a.currentUser}},
+   sendPasswordResetEmail:async()=>{},signOut:async()=>{a.currentUser=null;for(const fn of [...list])await fn(null)}};
+  auths.set(key,a);return a;
+ }
+ const auth=makeAuth('[DEFAULT]',studentSessionUser);
+ const roleInitial=name=>role==='guest'?null:(name==='admin-portal'&&role==='admin')||(name==='teacher-portal'&&role==='teacher')||(name==='parent-portal'&&role==='parent')?user:null;
  const secondaryApps=[];
- w.firebase={apps:[],initializeApp:(_config,name)=>{if(name==='teacher-portal'){const app={name,auth:()=>auth,database:()=>({ref})};w.firebase.apps.push(app);return app}if(name){const secondaryAuth={setPersistence:async()=>{},createUserWithEmailAndPassword:async(email,password)=>{assert.ok(password.length>=8);return {user:{uid:'newTeacher',email,delete:async()=>{}}}},signOut:async()=>{}};const app={name,auth:()=>secondaryAuth,delete:async()=>{}};secondaryApps.push(app);return app}w.firebase.apps.push({name:'[DEFAULT]'});return {auth:()=>auth}},auth:Object.assign(()=>auth,{Auth:{Persistence:{LOCAL:'local',NONE:'none'}},EmailAuthProvider:{credential:()=>({})}}),database:Object.assign(()=>({ref}),{ServerValue:{TIMESTAMP:Date.now(),increment:n=>n}})};
+ w.firebase={apps:[],initializeApp:(_config,name)=>{
+   const key=name||'[DEFAULT]';
+   if(!name){const app={name:key,auth:()=>auth,database:()=>({ref})};w.firebase.apps.push(app);return app}
+   if(['admin-portal','teacher-portal','parent-portal'].includes(name)){const roleAuth=makeAuth(name,roleInitial(name));const app={name,auth:()=>roleAuth,database:()=>({ref})};w.firebase.apps.push(app);return app}
+   const secondaryAuth={currentUser:null,setPersistence:async()=>{},createUserWithEmailAndPassword:async(email,password)=>{assert.ok(password.length>=8);secondaryAuth.currentUser={uid:'newTeacher',email,delete:async()=>{}};return {user:secondaryAuth.currentUser}},signOut:async()=>{secondaryAuth.currentUser=null}};
+   const app={name,auth:()=>secondaryAuth,database:()=>({ref}),delete:async()=>{}};secondaryApps.push(app);w.firebase.apps.push(app);return app
+  },auth:Object.assign(()=>auth,{Auth:{Persistence:{LOCAL:'local',NONE:'none'}},EmailAuthProvider:{credential:()=>({})}}),database:Object.assign(()=>({ref}),{ServerValue:{TIMESTAMP:Date.now(),increment:n=>n}})};
  const unhandled=e=>errors.push(String(e?.stack||e));process.on('unhandledRejection',unhandled);
  try{
   for(const script of w.document.querySelectorAll('script[src]')){
@@ -61,11 +82,31 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    try{w.eval(readFileSync(src.replace('./','').split('?')[0],'utf8')+'\n//# sourceURL='+src)}catch(e){errors.push(src+': '+e.stack)}
   }
   await new Promise(r=>setTimeout(r,15));
-  for(const cb of [...callbacks]){try{await cb(user)}catch(e){errors.push('auth: '+e.stack)}}
+  for(const [key,list] of authCallbackSets){const active=auths.get(key)?.currentUser||null;for(const cb of [...list]){try{await cb(active)}catch(e){errors.push('auth '+key+': '+e.stack)}}}
   await new Promise(r=>setTimeout(r,40));
   if(file==='index.html'){
-    assert.equal(w.document.getElementById('studentDashboard').classList.contains('hidden'),role==='guest');
-    if(role!=='guest')assert.equal(w.document.querySelectorAll('#dashboardSubjects a').length,6,'all default subjects render');
+    const studentReady=role==='student';
+    assert.equal(w.document.getElementById('studentDashboard').classList.contains('hidden'),!studentReady);
+    if(studentReady)assert.equal(w.document.querySelectorAll('#dashboardSubjects a').length,6,'all default subjects render');
+  }
+  if(role==='student-route'&&file==='admin.html'){
+    assert.equal(w.document.getElementById('adminApp').classList.contains('hidden'),true,'student session cannot open admin dashboard');
+    assert.equal(auth.currentUser?.uid,'tester','admin route does not mutate the active student session');
+  }
+  if(role==='student-route'&&file==='teacher.html'){
+    assert.equal(w.document.getElementById('teacherPortal').classList.contains('hidden'),true,'student session cannot open teacher dashboard');
+    assert.equal(auth.currentUser?.uid,'tester','teacher route does not mutate the active student session');
+  }
+  if(role==='student-route'&&file==='parent.html'){
+    assert.equal(w.document.getElementById('parentDashboard').hidden,true,'student session cannot open parent dashboard');
+    assert.equal(auth.currentUser?.uid,'tester','parent route does not mutate the active student session');
+  }
+  if(file==='index.html'&&role==='nonstudent'){
+   assert.equal(auth.currentUser,null,'non-student role is cleared from student home session');
+   assert.equal(w.document.getElementById('studentDashboard').classList.contains('hidden'),true,'non-student role never opens student dashboard');
+  }
+  if(file==='profile.html'&&role==='nonstudent'){
+   assert.equal(auth.currentUser,null,'non-student role is cleared from protected student profile');
   }
   if(file==='index.html'&&role==='guest'){
    const field=id=>w.document.getElementById(id);
@@ -150,13 +191,13 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    assert.equal(get('studentProfilesV3/tester/mistakeNotebook/lesson1/0'),null,'correct retry clears the mistake');
   }
   if(file==='lesson.html'&&!linkedMode){assert.match(w.document.getElementById('lessonContent').innerHTML,/student-inline\.jpg/,'student sees inline image inside rich explanation');assert.ok(w.document.getElementById('lessonContent').querySelector('h2'),'student sees rich explanation heading')}
-  if(file==='profile.html'){
+  if(file==='profile.html'&&role==='student'){
    w.document.querySelector('[data-profile-tab="mistakes"]').click();
    assert.equal(w.document.getElementById('profileMistakeCount').textContent,'1');
    assert.match(w.document.getElementById('mistakeNotebookList').textContent,/إجابتك:[\s\S]*1[\s\S]*الصحيح:[\s\S]*2/);
    assert.match(w.document.querySelector('.mistake-group a').href,/reviewMistakes=1/);
   }
-  if(file==='admin.html'&&role!=='guest'){
+  if(file==='admin.html'&&role==='admin'){
    assert.ok(w.document.querySelector('#newLessonContent + .rich-lesson-editor .rte-canvas'),'admin has professional rich lesson editor');
    for(const tab of w.document.querySelectorAll('[data-admin-tab]')){tab.click();await new Promise(r=>setTimeout(r,8));}
    assert.ok(w.document.getElementById('releaseReadinessScore').textContent.endsWith('%'),'release readiness score renders');
@@ -184,19 +225,29 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    form.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,20));
    assert.equal(get('teacherProfiles/newTeacher/name'),'مدرس جديد');assert.equal(get('teacherProfiles/newTeacher/email'),'newteacher@example.test');
    assert.equal(JSON.stringify(database).includes('long-secure-password'),false,'teacher password never stored in database');
-   assert.equal(auth.currentUser?.uid,'tester','admin session stays active');assert.equal(secondaryApps.length,1);
-   auth.currentUser={uid:'newTeacher',email:'newteacher@example.test'};
-   for(const cb of [...callbacks])await cb(auth.currentUser);
-   assert.equal(auth.currentUser.uid,'newTeacher','admin page must not sign out a teacher in another tab');
-   assert.equal(w.document.getElementById('adminApp').classList.contains('hidden'),true,'admin view stays protected');
+   const adminAuth=auths.get('admin-portal');
+   assert.equal(adminAuth.currentUser?.uid,'tester','admin keeps its own isolated session');assert.equal(secondaryApps.length,1);
+   assert.equal(auth.currentUser?.uid,'studentSession','admin activity does not replace the student session in another tab');
+   await adminAuth.signOut();
+   assert.equal(auth.currentUser?.uid,'studentSession','admin logout does not sign out the student session');
+   assert.equal(w.document.getElementById('adminApp').classList.contains('hidden'),true,'admin view hides after its own logout');
   }
   if(file==='parent.html'&&role==='parent'){
+   assert.ok(w.firebase.apps.some(app=>app.name==='parent-portal'),'parent portal uses its own Firebase auth session');
    assert.equal(w.document.getElementById('parentDashboard').hidden,false,'linked parent dashboard becomes visible');
    assert.match(w.document.getElementById('children').textContent,/طالب مرتبط/,'parent can see linked student');
+   assert.equal(auth.currentUser?.uid,'studentSession','opening parent portal does not replace student session');
+   await auths.get('parent-portal').signOut();
+   assert.equal(auth.currentUser?.uid,'studentSession','parent logout does not sign out student session');
+   assert.equal(w.document.getElementById('parentDashboard').hidden,true,'parent dashboard hides after parent logout');
   }
   if(file==='teacher.html'){
    assert.ok(w.firebase.apps.some(app=>app.name==='teacher-portal'),'teacher portal uses its own Firebase auth session');
-   if(role==='guest'){
+   const expectedDefault=role==='teacher'?'studentSession':role==='student-route'?'tester':null;
+   assert.equal(auth.currentUser?.uid,expectedDefault,'teacher portal does not replace the default student session');
+   if(role==='student-route'){
+    assert.equal(w.document.getElementById('teacherPortal').classList.contains('hidden'),true,'student cannot enter teacher portal');
+   }else if(role==='guest'){
     assert.equal(w.document.getElementById('teacherLoginForm').classList.contains('hidden'),false);
     w.document.getElementById('teacherLoginEmail').value='test@example.test';w.document.getElementById('teacherLoginPassword').value='correct-password';
     w.document.getElementById('teacherLoginForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,25));
@@ -259,6 +310,8 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
 for(const file of files)await check(file,file==='admin.html'?'admin':file==='teacher.html'?'teacher':'student');
 await check('index.html','guest');await check('admin.html','guest');await check('teacher.html','guest');await check('teacher.html','teacher','assignmentSubmissions/');
 await check('parent.html','parent');
+await check('admin.html','student-route');await check('teacher.html','student-route');await check('parent.html','student-route');
+await check('index.html','nonstudent');await check('profile.html','nonstudent');
 await check('lesson.html','student','',true);
 await check('lesson.html','student','',false,true);
 console.log(`DOM smoke: ${scenarios-failures}/${scenarios} scenarios passed. Uses in-memory Firebase fixtures, not live Firebase or layout rendering.`);

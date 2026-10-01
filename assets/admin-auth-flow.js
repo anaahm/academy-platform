@@ -2,8 +2,10 @@
 'use strict';
 if(!window.firebase || !firebase.auth || !firebase.database)return;
 const cfg=window.ACADEMY_FIREBASE_CONFIG;
-if(cfg && !firebase.apps.length)firebase.initializeApp(cfg);
-const auth=firebase.auth(),db=firebase.database();
+if(!cfg)return;
+const session=window.AcademyRoleSession?.get('admin-portal');
+if(!session)return;
+const auth=session.auth,db=session.db;
 const form=document.getElementById('adminLoginForm');
 const email=document.getElementById('adminEmail');
 const password=document.getElementById('adminPassword');
@@ -44,6 +46,7 @@ async function showForUser(user){
     const ok=await isAdmin(user);
     if(!ok){
       app?.classList.add('hidden');login?.classList.remove('hidden');
+      if(auth.currentUser?.uid===user.uid)await auth.signOut().catch(()=>{});
       notify('هذا الحساب ليس له صلاحية مدير. سجّل الدخول بحساب الإدارة إذا أردت فتح اللوحة.','error');
       return false;
     }
