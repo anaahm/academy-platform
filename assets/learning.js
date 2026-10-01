@@ -672,7 +672,8 @@ function renderVideo(l){
  });
 }
 function renderExplanation(l){
- $('lessonContent').innerHTML=l.content?format(l.content):'<p style="color:#94a3b8">لا يوجد شرح مكتوب لهذا الدرس حتى الآن.</p>';
+ const raw=String(l.content||''),isRich=l.contentFormat==='html'||/<(?:p|h[2-4]|ul|ol|blockquote|figure|img|strong|span|a)\\b/i.test(raw);
+ $('lessonContent').innerHTML=raw?(isRich?window.AcademyUtils.sanitizeRichHtml(raw):format(raw)):'<p style="color:#94a3b8">لا يوجد شرح مكتوب لهذا الدرس حتى الآن.</p>';
  if(l.imageUrl){const top=l.imagePosition==='top',w=$(top?'lessonTopImageWrap':'lessonBottomImageWrap'),im=$(top?'lessonTopImage':'lessonBottomImage');im.src=l.imageUrl;im.alt=l.title||'';w.classList.remove('hidden')}
 }
 function renderFiles(){
