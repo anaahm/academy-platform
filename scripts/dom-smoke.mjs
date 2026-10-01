@@ -8,7 +8,7 @@ function fixtures(){return {
  studentProfilesV3:{tester:{name:'طالب الاختبار',educationType:'public',stage:'prep',grade:1,onboardingCompleted:true,stats:{totalXP:50,completedLessons:0,completedQuizzes:0,streak:1,level:1},studyPlanner:{task:{title:'مراجعة الدرس',date,done:false}},learningProgress:{}}},
  adminProfiles:{tester:{isAdmin:true,name:'مدير الاختبار'}},teacherProfiles:{tester:{name:'مدرس الاختبار',isActive:true,subjects:[{type:'public',stage:'prep',grade:'1',subject:'arabic'}]}},
  customSubjects:{prep:{1:[{id:'arabic',name:'اللغة العربية',emoji:'📘',type:'public',imageUrl:'https://example.test/broken.jpg',units:[{name:'النحو'}]}]}},
- lessons:{lesson1:{title:'المبتدأ والخبر',content:'شرح تجريبي',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,teacherId:'tester',videos:[],questions:[question,{text:'ما ناتج 2 + 2؟',opts:['4','5'],correctAnswer:0}]}},
+ lessons:{lesson1:{title:'المبتدأ والخبر',content:'<h2>شرح تجريبي</h2><p>فقرة منسقة</p><figure class="rte-inline-image rte-image-medium"><img src="https://example.test/student-inline.jpg" alt="صورة الدرس"></figure>',contentFormat:'html',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,teacherId:'tester',videos:[],questions:[question,{text:'ما ناتج 2 + 2؟',opts:['4','5'],correctAnswer:0}]}},
  quizzes:{quiz1:{name:'اختبار النحو',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:0,questions:[question]},quiz2:{name:'اختبار مرتبط بالدرس',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,lessonId:'lesson1',teacherId:'tester',questions:[question]}},
  files:{file1:{title:'ملف بلا رابط',type:'public',stage:'prep',grade:'1',subject:'arabic',url:''}},
  assignments:{hw1:{title:'واجب النحو',instructions:'أجب',type:'public',stage:'prep',grade:'1',subject:'arabic',teacherId:'tester',maxScore:10,dueAt:Date.now()+86400000}},
@@ -20,7 +20,7 @@ function fixtures(){return {
 let failures=0,scenarios=0;
 async function check(file,role='student',failurePath='',reviewMode=false,linkedMode=false){
  const errors=[],writes=[],database=fixtures(),callbacks=[];
- if(file==='admin.html'&&role==='admin')database.teacherSubmissions={tester:{quizSubmission:{submissionKind:'quiz',title:'اختبار المبتدأ والخبر',lessonId:'lesson1',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()},assignmentSubmission:{submissionKind:'assignment',title:'واجب جديد',instructions:'حل التدريبات',type:'public',stage:'prep',grade:'1',subject:'arabic',dueAt:Date.now()+86400000,maxScore:100,status:'pending',teacherId:'tester',createdAt:Date.now()},lessonSubmission:{submissionKind:'lesson',title:'درس مقالي من المعلم',content:'هذا شرح مقالي كامل أرسله المعلم.',videoUrl:'https://youtu.be/test123',imageUrl:'https://example.test/lesson.jpg',imagePosition:'bottom',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()}}};
+ if(file==='admin.html'&&role==='admin')database.teacherSubmissions={tester:{quizSubmission:{submissionKind:'quiz',title:'اختبار المبتدأ والخبر',lessonId:'lesson1',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()},assignmentSubmission:{submissionKind:'assignment',title:'واجب جديد',instructions:'حل التدريبات',type:'public',stage:'prep',grade:'1',subject:'arabic',dueAt:Date.now()+86400000,maxScore:100,status:'pending',teacherId:'tester',createdAt:Date.now()},lessonSubmission:{submissionKind:'lesson',title:'درس مقالي من المعلم',content:'<h2>عنوان الشرح</h2><p>هذا شرح مقالي كامل أرسله المعلم.</p><figure class="rte-inline-image rte-image-medium"><img src="https://example.test/inside.jpg" alt="صورة داخل الشرح"></figure>',contentFormat:'html',videoUrl:'https://youtu.be/test123',imageUrl:'https://example.test/lesson.jpg',imagePosition:'bottom',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()}}};
  if(file==='parent.html'&&role==='parent'){
   database.parentProfilesV4={tester:{name:'ولي أمر الاختبار',phone:'01012345678'}};
   database.parentLinksV4={tester:{child1:{studentId:'child1',linkedAt:Date.now()}}};
@@ -149,6 +149,7 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    w.document.querySelector('[data-a="0"]').click();w.document.getElementById('nextQuestionBtn').click();await new Promise(r=>setTimeout(r,30));
    assert.equal(get('studentProfilesV3/tester/mistakeNotebook/lesson1/0'),null,'correct retry clears the mistake');
   }
+  if(file==='lesson.html'&&!linkedMode){assert.match(w.document.getElementById('lessonContent').innerHTML,/student-inline\.jpg/,'student sees inline image inside rich explanation');assert.ok(w.document.getElementById('lessonContent').querySelector('h2'),'student sees rich explanation heading')}
   if(file==='profile.html'){
    w.document.querySelector('[data-profile-tab="mistakes"]').click();
    assert.equal(w.document.getElementById('profileMistakeCount').textContent,'1');
@@ -156,6 +157,7 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    assert.match(w.document.querySelector('.mistake-group a').href,/reviewMistakes=1/);
   }
   if(file==='admin.html'&&role!=='guest'){
+   assert.ok(w.document.querySelector('#newLessonContent + .rich-lesson-editor .rte-canvas'),'admin has professional rich lesson editor');
    for(const tab of w.document.querySelectorAll('[data-admin-tab]')){tab.click();await new Promise(r=>setTimeout(r,8));}
    assert.ok(w.document.getElementById('releaseReadinessScore').textContent.endsWith('%'),'release readiness score renders');
    assert.ok(Number(w.document.getElementById('releaseCriticalCount').textContent)>=1,'release readiness detects incomplete fixture content');
@@ -170,7 +172,9 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    assert.equal(get('teacherSubmissions/tester/assignmentSubmission/status'),'approved');
    assert.equal(get('lessons/new3'),null,'teacher lesson stays unpublished before approval');
    w.document.querySelector('[data-approve="tester|lessonSubmission"]').click();await new Promise(r=>setTimeout(r,15));
-   assert.equal(get('lessons/new3/content'),'هذا شرح مقالي كامل أرسله المعلم.','approved teacher article is preserved');
+   assert.match(get('lessons/new3/content'),/<h2>عنوان الشرح<\/h2>/,'approved rich teacher article is preserved');
+   assert.match(get('lessons/new3/content'),/inside\.jpg/,'inline lesson image survives admin approval');
+   assert.equal(get('lessons/new3/contentFormat'),'html','approved lesson keeps rich content format');
    assert.equal(get('lessons/new3/questions').length,1,'approved lesson training is preserved');
    assert.equal(get('lessons/new3/videos/0/url'),'https://youtu.be/test123','approved teacher video is preserved');
    assert.equal(get('lessons/new3/imagePosition'),'bottom','approved lesson image placement is preserved');
@@ -203,7 +207,7 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
     if(!failurePath){
      w.document.getElementById('teacherStage').value='prep';w.document.getElementById('teacherStage').dispatchEvent(new w.Event('change'));
      w.document.getElementById('teacherLessonTitle').value='درس مقالي تجريبي';
-     w.document.getElementById('teacherLessonContent').value='شرح مقالي من لوحة المعلم';
+     const richCanvas=w.document.querySelector('#teacherLessonContent + .rich-lesson-editor .rte-canvas');assert.ok(richCanvas,'teacher has professional rich lesson editor');richCanvas.innerHTML='<h2>عنوان احترافي</h2><p><strong>شرح مقالي</strong> من لوحة المعلم</p><figure class="rte-inline-image rte-image-wide"><img src="https://example.test/teacher-inline.jpg" alt="صورة"></figure>';richCanvas.dispatchEvent(new w.Event('input',{bubbles:true}));
      w.document.getElementById('teacherVideoUrl').value='https://youtu.be/test123';
      w.document.getElementById('teacherLessonImage').value='https://example.test/lesson.jpg';
      w.document.getElementById('teacherAddLessonQuestion').click();
@@ -214,7 +218,9 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
      assert.equal(w.document.querySelectorAll('#teacherLessonQuestionRows .teacher-question-row').length,2,'lesson training supports individual and bulk questions');
      w.document.getElementById('teacherSubmissionForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,22));
      assert.equal(get('teacherSubmissions/tester/new1/submissionKind'),'lesson');
-     assert.equal(get('teacherSubmissions/tester/new1/content'),'شرح مقالي من لوحة المعلم');
+     assert.match(get('teacherSubmissions/tester/new1/content'),/<h2>عنوان احترافي<\/h2>/);
+     assert.match(get('teacherSubmissions/tester/new1/content'),/teacher-inline\.jpg/,'teacher can embed image inside article');
+     assert.equal(get('teacherSubmissions/tester/new1/contentFormat'),'html');
      assert.equal(get('teacherSubmissions/tester/new1/questions').length,2);
      assert.equal(get('teacherSubmissions/tester/new1/videoUrl'),'https://youtu.be/test123');
      assert.equal(get('lessons/new1'),null,'teacher cannot publish a full lesson directly');

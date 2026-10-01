@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import {readFileSync,readdirSync} from 'node:fs';
 import vm from 'node:vm';
 import * as css from 'css-tree';
-const context={window:{},URL,location:{href:'https://example.test/academy/index.html'}};
+import {JSDOM} from 'jsdom';
+const dom=new JSDOM('<!doctype html><html><body></body></html>');
+const context={window:{},URL,DOMParser:dom.window.DOMParser,location:{href:'https://example.test/academy/index.html'}};
 vm.runInNewContext(readFileSync('assets/academy-utils.js','utf8'),context);
 const U=context.window.AcademyUtils;
 test('URLs reject blank, script, credential URLs and preserve safe internal routes',()=>{
@@ -15,6 +17,10 @@ test('YouTube embeds require an exact approved host and an eleven-character vide
  const id='dQw4w9WgXcQ';
  for(const url of ['https://youtu.be/'+id,'https://www.youtube.com/watch?v='+id,'https://youtube.com/live/'+id])assert.match(U.youtubeEmbed(url),/youtube-nocookie\.com\/embed\/dQw4w9WgXcQ/);
  for(const url of ['https://youtube.com.evil.test/embed/'+id,'https://example.test/embed/'+id,'javascript:alert(1)',''])assert.equal(U.youtubeEmbed(url),'');
+});
+test('Rich lesson HTML keeps safe formatting and inline images while stripping executable markup',()=>{
+ const clean=U.sanitizeRichHtml('<h2 onclick="alert(1)">عنوان</h2><p style="text-align:center;position:fixed;color:#123456">شرح <script>alert(1)</script><a href="javascript:alert(1)">سيئ</a></p><figure class="rte-inline-image rte-image-medium evil"><img src="https://example.test/a.jpg" onerror="alert(1)" alt="صورة"></figure>');
+ assert.match(clean,/<h2>عنوان<\/h2>/);assert.match(clean,/text-align:center/);assert.match(clean,/color:#123456/);assert.doesNotMatch(clean,/position:fixed|onclick|onerror|script|javascript:/i);assert.match(clean,/rte-inline-image rte-image-medium/);assert.match(clean,/https:\/\/example\.test\/a\.jpg/);
 });
 test('Question validation preserves aliases and refuses invalid answer positions without dropping questions',()=>{
  const q={question:'سؤال',options:['أ','ب'],correctAnswer:1};

@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="./assets/ui-polish.css?v=1">
   <link rel="stylesheet" href="./assets/support.css?v=1">
   <link rel="stylesheet" href="./assets/communications.css?v=1">
-</head>
+  <link rel="stylesheet" href="./assets/rich-editor.css?v=1">\n</head>
 <body class="teacher-v3-body">
   <div id="toast" class="toast"></div>
 
@@ -218,9 +218,9 @@
               <label><span>الصف</span><select id="teacherGrade"></select></label>
               <label><span>المادة</span><select id="teacherSubject"></select></label>
               <label><span>الوحدة</span><select id="teacherUnit"><option value="1">الوحدة الأولى</option><option value="2">الوحدة الثانية</option><option value="3">الوحدة الثالثة</option><option value="4">الوحدة الرابعة</option><option value="5">الوحدة الخامسة</option><option value="6">الوحدة السادسة</option></select></label>
-              <label><span>صورة توضيحية — اختياري</span><input id="teacherLessonImage" type="url" dir="ltr" placeholder="https://..."></label>
+              <label><span>صورة غلاف/صورة مستقلة — اختياري</span><input id="teacherLessonImage" type="url" dir="ltr" placeholder="https://..."></label>
               <label><span>مكان الصورة</span><select id="teacherLessonImagePosition"><option value="top">أعلى الشرح</option><option value="bottom">أسفل الشرح</option></select></label>
-              <label class="full"><span>الشرح المقالي / المكتوب</span><textarea id="teacherLessonContent" rows="9" maxlength="20000" placeholder="اكتب شرح الدرس كاملًا هنا... يمكن إنشاء درس مقالي بدون فيديو، أو الجمع بين الشرح المكتوب والفيديو."></textarea></label>
+              <div class="full teacher-rich-explanation"><div class="teacher-card-head"><div><span class="section-kicker">شرح الدرس</span><h3>المحرر الاحترافي</h3><p class="profile-muted">اكتب المقال ونسّقه، وأدرج الصور داخل الشرح نفسه في أي موضع تريده.</p></div></div><textarea id="teacherLessonContent" rows="9" maxlength="60000" placeholder="اكتب شرح الدرس كاملًا هنا..."></textarea></div>
               <div class="full teacher-quiz-editor">
                 <div class="teacher-card-head"><div><span class="section-kicker">تدريب الدرس</span><h3>أسئلة تظهر داخل الدرس</h3></div><button class="btn btn-soft" id="teacherAddLessonQuestion" type="button"><i class="fa-solid fa-plus"></i> إضافة سؤال</button></div>
                 <p class="profile-muted">اختياري: أضف تدريب الدرس سؤالًا سؤالًا، أو استخدم JSON. سيُنشر التدريب مع الدرس بعد موافقة الإدارة.</p>
@@ -389,7 +389,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="./assets/firebase-config.js"></script>
-  <script src="./assets/teacher.js?v=47"></script>
+  <script src="./assets/rich-editor.js?v=1"></script>\n  <script src="./assets/teacher.js?v=48"></script>
 <script src="./assets/growth-pack.js?v=1"></script>
   <script src="./assets/teacher-communications.js?v=1"></script>
   <script src="./assets/teacher-support.js?v=1"></script>

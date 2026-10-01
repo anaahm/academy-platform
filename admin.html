@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link rel="stylesheet" href="./assets/styles.css">
-  <link rel="stylesheet" href="./assets/admin.css?v=43">
+  <link rel="stylesheet" href="./assets/admin.css?v=44">
   <link rel="stylesheet" href="./assets/ui-kit.css?v=35">
   <link rel="stylesheet" href="./assets/experience.css?v=34">
   <link rel="stylesheet" href="./assets/future-theme.css?v=1">
@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="./assets/support.css?v=1">
   <link rel="stylesheet" href="./assets/admin-content-ops.css?v=1">
   <link rel="stylesheet" href="./assets/subscription.css?v=1">
-</head>
+  <link rel="stylesheet" href="./assets/rich-editor.css?v=1">\n</head>
 <body class="admin-v3-body">
   <div id="toast" class="toast"></div>
 
@@ -865,10 +865,10 @@
           <div class="admin-video-editor-head"><span><b id="lessonVideoEditorCount">0</b> فيديو مضاف</span><button class="btn btn-soft" type="button" id="addLessonVideoRow"><i class="fa-solid fa-plus"></i> إضافة مدرس/فيديو</button></div>
           <div id="lessonVideosEditor" class="admin-video-editor"></div>
         </div>
-        <label><span>صورة توضيحية — اختياري</span><input id="newLessonImage" type="url" dir="ltr" placeholder="https://..."></label>
+        <label><span>صورة غلاف/صورة مستقلة للدرس — اختياري</span><input id="newLessonImage" type="url" dir="ltr" placeholder="https://..."></label>
         <label><span>مكان الصورة</span><select id="newLessonImagePosition"><option value="top">أعلى الشرح</option><option value="bottom">أسفل الشرح</option></select></label>
         <div class="full admin-inline-image-preview" id="lessonImagePreview"><span><i class="fa-regular fa-image"></i></span><div><strong>معاينة صورة الدرس</strong><small>إذا لم تضف صورة سيستخدم تصميم المادة تلقائيًا.</small></div></div>
-        <label class="full"><span>الشرح المكتوب</span><textarea id="newLessonContent" rows="7" placeholder="اكتب شرح الدرس هنا..."></textarea></label>
+        <div class="full"><div class="admin-editor-section-title"><span><i class="fa-solid fa-pen-ruler"></i></span><div><strong>الشرح المكتوب الاحترافي</strong><small>نسّق المقال وأدرج الصور والروابط مباشرة داخل الشرح في المكان المطلوب.</small></div></div><textarea id="newLessonContent" rows="7" placeholder="اكتب شرح الدرس هنا..."></textarea></div>
         <div class="full admin-question-editor-wrap admin-editor-section">
           <div class="admin-editor-section-title"><span><i class="fa-solid fa-bullseye"></i></span><div><strong>تدريب الدرس</strong><small>أضف الأسئلة واحدًا واحدًا، أو استورد مجموعة JSON دفعة واحدة.</small></div></div>
           <div class="admin-question-editor-head"><span><b id="lessonQuestionCountEditor">0</b> سؤال</span><button class="btn btn-soft" type="button" id="addLessonQuestion"><i class="fa-solid fa-plus"></i> سؤال جديد</button></div>
@@ -1076,7 +1076,7 @@
   <script src="./assets/admin-support.js?v=1"></script>
   <script src="./assets/admin-content-ops.js?v=1"></script>
   <script src="./assets/admin-subscriptions.js?v=1"></script>
-  <script src="./assets/admin.js?v=60"></script>
+  <script src="./assets/rich-editor.js?v=1"></script>\n  <script src="./assets/admin.js?v=61"></script>
   <script src="./assets/admin-notifications.js"></script>
   <script src="./assets/ui-polish.js?v=1"></script>
 </body>
