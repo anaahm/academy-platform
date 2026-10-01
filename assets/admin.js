@@ -231,6 +231,7 @@ const ADMIN_TAB_PATHS={
  teachers:['teacherProfiles','teacherSubmissions','studentProfilesV3','customSubjects','settings'],
  students:['studentProfilesV3'],
  subscriptions:[],
+ readiness:['adminProfiles','studentProfilesV3','parentProfilesV4','teacherProfiles','teacherSubmissions','communicationSubmissionsV1','supportTicketsV1','subscriptionRequestsV1','subscriptionPlansV1','studentSubscriptionsV1','subscriptionSettingsV1','lessons','quizzes','files','simulations','liveSessions','assignments','community'],
  news:['posts'],
  community:['community'],
  communications:[],
@@ -259,6 +260,7 @@ const adminMeta={
  support:['الدعم','الدعم والشكاوى'],
  notifications:['التواصل','الإشعارات الموجهة'],
  announcements:['التواصل','الإعلانات'],
+ readiness:['Phase 11','جاهزية الإطلاق'],
  settings:['المنصة','الإعدادات']
 };
 function renderAdminIdentity(){
@@ -266,8 +268,54 @@ function renderAdminIdentity(){
  $('adminEmailMini').textContent=currentUser?.email||'';
  $('adminAvatar').textContent=(adminName()[0]||'م').toUpperCase();
 }
+function flattenAdminNested(obj){
+ const out=[];Object.entries(obj||{}).forEach(([owner,items])=>Object.entries(items||{}).forEach(([id,v])=>out.push({owner,id,...(v||{})})));return out;
+}
+function releaseContentPublished(item){
+ return item?.workflowStatus!=='draft'&&item?.isHidden!==true&&Number(item?.publishAt||0)<=Date.now();
+}
+function renderReleaseReadiness(){
+ const checksBox=$('releaseReadinessChecks'),queuesBox=$('releaseReadinessQueues'),integrityBox=$('releaseReadinessIntegrity');if(!checksBox||!queuesBox||!integrityBox)return;
+ const lessons=values(root.lessons),quizzes=values(root.quizzes),files=values(root.files),teachers=values(root.teacherProfiles),students=values(root.studentProfilesV3),parents=values(root.parentProfilesV4);
+ const publishedLessons=lessons.filter(releaseContentPublished),publishedQuizzes=quizzes.filter(releaseContentPublished);
+ const pendingTeacher=flattenSubmissions().filter(x=>!x.status||x.status==='pending').length;
+ const pendingComm=flattenAdminNested(root.communicationSubmissionsV1).filter(x=>!x.status||x.status==='pending'||x.status==='approving').length;
+ const openSupport=flattenAdminNested(root.supportTicketsV1).filter(x=>!['resolved','closed'].includes(x.status)).length;
+ const pendingSubs=flattenAdminNested(root.subscriptionRequestsV1).filter(x=>x.status==='pending').length;
+ const activeTeachers=teachers.filter(x=>x.isActive!==false),activePlans=values(root.subscriptionPlansV1).filter(x=>x.isActive!==false);
+ const subscriptionEnforced=root.subscriptionSettingsV1?.enforceAccess===true;
+ const integrity=[];
+ lessons.forEach(x=>{const missing=[];if(!x.title)missing.push('العنوان');if(!x.type)missing.push('المسار');if(!x.stage)missing.push('المرحلة');if(!x.grade)missing.push('الصف');if(!x.subject)missing.push('المادة');if(missing.length)integrity.push({kind:'درس',title:x.title||x.id,missing,tab:'lessons'})});
+ quizzes.forEach(x=>{const missing=[];if(!x.name&&!x.title)missing.push('الاسم');if(!x.type)missing.push('المسار');if(!x.stage)missing.push('المرحلة');if(!x.grade)missing.push('الصف');if(!x.subject)missing.push('المادة');if(!Array.isArray(x.questions)||!x.questions.length)missing.push('الأسئلة');if(missing.length)integrity.push({kind:'اختبار',title:x.name||x.title||x.id,missing,tab:'quizzes'})});
+ files.forEach(x=>{const missing=[];if(!x.title)missing.push('العنوان');if(!x.url)missing.push('الرابط');if(!x.stage)missing.push('المرحلة');if(!x.grade)missing.push('الصف');if(!x.subject)missing.push('المادة');if(missing.length)integrity.push({kind:'ملف',title:x.title||x.id,missing,tab:'files'})});
+ const checks=[
+  {label:'صلاحية الإدارة',pass:values(root.adminProfiles).some(x=>x.isAdmin===true),detail:'يوجد حساب مدير موثّق يمكنه الوصول للعمليات الحساسة.',fail:'لا يوجد حساب مدير موثّق في البيانات.',tab:'settings',critical:true},
+  {label:'رحلة المدرس',pass:activeTeachers.length>0,detail:activeTeachers.length+' مدرس نشط متاح حاليًا.',fail:'لا يوجد مدرس نشط لاختبار رحلة المدرس.',tab:'teachers',critical:true},
+  {label:'رحلة الطالب',pass:students.length>0,detail:students.length+' حساب طالب متاح للاختبار.',fail:'لا يوجد حساب طالب لاختبار الرحلة الكاملة.',tab:'students',critical:true},
+  {label:'المحتوى المنشور',pass:publishedLessons.length>0&&publishedQuizzes.length>0,detail:publishedLessons.length+' درس منشور و'+publishedQuizzes.length+' اختبار منشور.',fail:'يجب وجود درس واختبار منشورين على الأقل لاختبار المسار.',tab:'lessons',critical:true},
+  {label:'سلامة المحتوى',pass:integrity.length===0,detail:'لا توجد عناصر ناقصة في البيانات الأساسية.',fail:integrity.length+' عنصرًا يحتاج استكمال بيانات.',tab:'content-ops',critical:true},
+  {label:'ولي الأمر',pass:parents.length>0,detail:parents.length+' حساب ولي أمر متاح لاختبار الربط والمتابعة.',fail:'لم يُختبر مسار ولي الأمر ببيانات فعلية بعد.',tab:'students',critical:false},
+  {label:'نظام الاشتراكات',pass:subscriptionEnforced&&activePlans.length>0,detail:'التحكم في الوصول مفعل ومعه '+activePlans.length+' باقة متاحة.',fail:subscriptionEnforced?'قفل الاشتراكات مفعل لكن لا توجد باقة نشطة.':'قفل الاشتراكات غير مفعل بعد؛ فعّله قبل الإطلاق إذا كان المحتوى المدفوع مطلوبًا.',tab:'subscriptions',critical:subscriptionEnforced&&activePlans.length===0}
+ ];
+ const passed=checks.filter(x=>x.pass).length,critical=checks.filter(x=>!x.pass&&x.critical).length,attention=checks.filter(x=>!x.pass&&!x.critical).length;
+ const queues=[
+  {label:'محتوى المدرسين',count:pendingTeacher,tab:'teachers',icon:'fa-chalkboard-user',hint:'طلبات محتوى تنتظر الاعتماد'},
+  {label:'التواصل',count:pendingComm,tab:'communications',icon:'fa-comments',hint:'أسئلة وردود ومنشورات تنتظر المراجعة'},
+  {label:'الدعم والشكاوى',count:openSupport,tab:'support',icon:'fa-headset',hint:'تذاكر لم تُغلق بعد'},
+  {label:'طلبات الاشتراك',count:pendingSubs,tab:'subscriptions',icon:'fa-crown',hint:'طلبات دفع أو تجديد تنتظر القرار'}
+ ];
+ const queueTotal=queues.reduce((n,x)=>n+x.count,0),score=Math.round((passed/checks.length)*100);
+ $('releaseReadinessScore').textContent=score+'%';$('releaseCriticalCount').textContent=critical;$('releaseAttentionCount').textContent=attention;$('releaseReadyCount').textContent=passed;$('releaseQueueCount').textContent=queueTotal;
+ const badge=$('releaseReadinessBadge');if(badge){const n=critical+queueTotal;badge.textContent=n;badge.classList.toggle('hidden',n===0)}
+ $('releaseReadinessSummary').textContent=critical?'يوجد '+critical+' فحص حرج يحتاج معالجة قبل QA النهائي.':queueTotal?'المسارات الأساسية سليمة، ويتبقى إنهاء '+queueTotal+' عنصرًا في طوابير الإدارة.':'الفحوص الحالية سليمة ولا توجد طوابير تشغيلية معلقة.';
+ checksBox.innerHTML=checks.map(x=>'<article class="release-check '+(x.pass?'ok':x.critical?'critical':'attention')+'"><span><i class="fa-solid '+(x.pass?'fa-check':'fa-exclamation')+'"></i></span><div><strong>'+esc(x.label)+'</strong><small>'+esc(x.pass?x.detail:x.fail)+'</small></div><button type="button" data-readiness-tab="'+esc(x.tab)+'">فتح</button></article>').join('');
+ queuesBox.innerHTML=queues.map(x=>'<article class="release-queue '+(x.count?'has-items':'clear')+'"><span><i class="fa-solid '+x.icon+'"></i></span><div><strong>'+esc(x.label)+'</strong><small>'+esc(x.hint)+'</small></div><b>'+x.count+'</b><button type="button" data-readiness-tab="'+esc(x.tab)+'">مراجعة</button></article>').join('');
+ integrityBox.innerHTML=integrity.length?integrity.slice(0,30).map(x=>'<article class="release-integrity-item"><div><strong>'+esc(x.kind)+' — '+esc(x.title)+'</strong><small>ناقص: '+esc(x.missing.join('، '))+'</small></div><button type="button" data-readiness-tab="'+esc(x.tab)+'">إصلاح</button></article>').join(''):'<div class="release-all-clear"><span>✅</span><div><strong>سلامة المحتوى الأساسية جيدة</strong><small>لم يتم العثور على عنوان أو تصنيف أو رابط أساسي مفقود في العناصر الحالية.</small></div></div>';
+ document.querySelectorAll('#admin-tab-readiness [data-readiness-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.readinessTab));
+ const refresh=$('releaseReadinessRefresh');if(refresh&&!refresh.dataset.bound){refresh.dataset.bound='true';refresh.onclick=()=>{renderReleaseReadiness();toast('تم تحديث فحص الجاهزية ✅')}}
+}
 function renderTab(tab){
- ({overview:renderOverview,analytics:renderAdminIntelligence,curriculum:renderCurriculum,lessons:renderLessons,quizzes:renderQuizzes,simulations:renderSimulations,files:renderFiles,live:renderLiveSessions,schedule:renderScheduleEvents,teachers:renderTeachers,students:renderStudents,news:renderNews,community:renderCommunityAdmin,announcements:loadAnnouncement,settings:loadSettings}[tab]||(()=>{}))();
+ ({overview:renderOverview,analytics:renderAdminIntelligence,curriculum:renderCurriculum,lessons:renderLessons,quizzes:renderQuizzes,simulations:renderSimulations,files:renderFiles,live:renderLiveSessions,schedule:renderScheduleEvents,teachers:renderTeachers,students:renderStudents,readiness:renderReleaseReadiness,news:renderNews,community:renderCommunityAdmin,announcements:loadAnnouncement,settings:loadSettings}[tab]||(()=>{}))();
 }
 function pathsForTab(tab){
  return [...new Set([...(ADMIN_TAB_PATHS[tab]||[]),...(tab==='overview'?ADMIN_CORE_PATHS:[])])];
