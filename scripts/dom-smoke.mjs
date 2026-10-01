@@ -20,6 +20,9 @@ function fixtures(){return {
 let failures=0,scenarios=0;
 async function check(file,role='student',failurePath='',reviewMode=false,linkedMode=false){
  const errors=[],writes=[],database=fixtures(),callbacks=[];
+ if(role==='student'){delete database.adminProfiles.tester;delete database.teacherProfiles.tester}
+ if(role==='teacher'){delete database.adminProfiles.tester}
+ if(role==='parent'){delete database.adminProfiles.tester;delete database.teacherProfiles.tester}
  if(file==='admin.html'&&role==='admin')database.teacherSubmissions={tester:{quizSubmission:{submissionKind:'quiz',title:'اختبار المبتدأ والخبر',lessonId:'lesson1',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()},assignmentSubmission:{submissionKind:'assignment',title:'واجب جديد',instructions:'حل التدريبات',type:'public',stage:'prep',grade:'1',subject:'arabic',dueAt:Date.now()+86400000,maxScore:100,status:'pending',teacherId:'tester',createdAt:Date.now()},lessonSubmission:{submissionKind:'lesson',title:'درس مقالي من المعلم',content:'<h2>عنوان الشرح</h2><p>هذا شرح مقالي كامل أرسله المعلم.</p><figure class="rte-inline-image rte-image-medium"><img src="https://example.test/inside.jpg" alt="صورة داخل الشرح"></figure>',contentFormat:'html',videoUrl:'https://youtu.be/test123',imageUrl:'https://example.test/lesson.jpg',imagePosition:'bottom',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()}}};
  if(file==='parent.html'&&role==='parent'){
   database.parentProfilesV4={tester:{name:'ولي أمر الاختبار',phone:'01012345678'}};
@@ -202,18 +205,25 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    form.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,20));
    assert.equal(get('teacherProfiles/newTeacher/name'),'مدرس جديد');assert.equal(get('teacherProfiles/newTeacher/email'),'newteacher@example.test');
    assert.equal(JSON.stringify(database).includes('long-secure-password'),false,'teacher password never stored in database');
-   assert.equal(auth.currentUser?.uid,'tester','admin session stays active');assert.equal(secondaryApps.length,1);
-   auth.currentUser={uid:'newTeacher',email:'newteacher@example.test'};
-   for(const cb of [...callbacks])await cb(auth.currentUser);
-   assert.equal(auth.currentUser.uid,'newTeacher','admin page must not sign out a teacher in another tab');
-   assert.equal(w.document.getElementById('adminApp').classList.contains('hidden'),true,'admin view stays protected');
+   const adminAuth=auths.get('admin-portal');
+   assert.equal(adminAuth.currentUser?.uid,'tester','admin keeps its own isolated session');assert.equal(secondaryApps.length,1);
+   assert.equal(auth.currentUser?.uid,'studentSession','admin activity does not replace the student session in another tab');
+   await adminAuth.signOut();
+   assert.equal(auth.currentUser?.uid,'studentSession','admin logout does not sign out the student session');
+   assert.equal(w.document.getElementById('adminApp').classList.contains('hidden'),true,'admin view hides after its own logout');
   }
   if(file==='parent.html'&&role==='parent'){
+   assert.ok(w.firebase.apps.some(app=>app.name==='parent-portal'),'parent portal uses its own Firebase auth session');
    assert.equal(w.document.getElementById('parentDashboard').hidden,false,'linked parent dashboard becomes visible');
    assert.match(w.document.getElementById('children').textContent,/طالب مرتبط/,'parent can see linked student');
+   assert.equal(auth.currentUser?.uid,'studentSession','opening parent portal does not replace student session');
+   await auths.get('parent-portal').signOut();
+   assert.equal(auth.currentUser?.uid,'studentSession','parent logout does not sign out student session');
+   assert.equal(w.document.getElementById('parentDashboard').hidden,true,'parent dashboard hides after parent logout');
   }
   if(file==='teacher.html'){
    assert.ok(w.firebase.apps.some(app=>app.name==='teacher-portal'),'teacher portal uses its own Firebase auth session');
+   assert.equal(auth.currentUser?.uid,role==='guest'?null:'studentSession','teacher portal does not replace the default student session');
    if(role==='guest'){
     assert.equal(w.document.getElementById('teacherLoginForm').classList.contains('hidden'),false);
     w.document.getElementById('teacherLoginEmail').value='test@example.test';w.document.getElementById('teacherLoginPassword').value='correct-password';
