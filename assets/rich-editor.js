@@ -77,7 +77,7 @@ class RichLessonEditor{
   input.value='';alt.value='';this.panel.classList.add('hidden');this.sync();this.canvas.focus();
  }
  attachImageButtons(){this.canvas.querySelectorAll('.rte-inline-remove').forEach(b=>b.onclick=()=>{b.closest('figure')?.remove();this.sync()})}
- getHTML(){return window.AcademyUtils?.sanitizeRichHtml?window.AcademyUtils.sanitizeRichHtml(this.canvas.innerHTML):this.canvas.innerHTML}
+ getHTML(){const clone=this.canvas.cloneNode(true);clone.querySelectorAll('.rte-inline-remove').forEach(x=>x.remove());clone.querySelectorAll('.selected').forEach(x=>x.classList.remove('selected'));return window.AcademyUtils?.sanitizeRichHtml?window.AcademyUtils.sanitizeRichHtml(clone.innerHTML):clone.innerHTML}
  setContent(value='',format='auto'){
   const raw=String(value||''),looksHtml=/<(?:p|h[1-6]|ul|ol|li|blockquote|figure|img|strong|em|div|br|span|a)\b/i.test(raw);
   this.canvas.innerHTML=(format==='html'||(format==='auto'&&looksHtml))?(window.AcademyUtils?.sanitizeRichHtml?window.AcademyUtils.sanitizeRichHtml(raw):raw):plainToHtml(raw);
