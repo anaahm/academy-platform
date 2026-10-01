@@ -20,7 +20,7 @@ function fixtures(){return {
 let failures=0,scenarios=0;
 async function check(file,role='student',failurePath='',reviewMode=false,linkedMode=false){
  const errors=[],writes=[],database=fixtures(),callbacks=[];
- if(file==='admin.html'&&role==='admin')database.teacherSubmissions={tester:{quizSubmission:{submissionKind:'quiz',title:'اختبار المبتدأ والخبر',lessonId:'lesson1',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()},assignmentSubmission:{submissionKind:'assignment',title:'واجب جديد',instructions:'حل التدريبات',type:'public',stage:'prep',grade:'1',subject:'arabic',dueAt:Date.now()+86400000,maxScore:100,status:'pending',teacherId:'tester',createdAt:Date.now()},lessonSubmission:{submissionKind:'lesson',title:'درس مقالي من المعلم',content:'هذا شرح مقالي كامل أرسله المعلم.',videoUrl:'https://youtu.be/test123',imageUrl:'https://example.test/lesson.jpg',imagePosition:'bottom',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()}}};
+ if(file==='admin.html'&&role==='admin')database.teacherSubmissions={tester:{quizSubmission:{submissionKind:'quiz',title:'اختبار المبتدأ والخبر',lessonId:'lesson1',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()},assignmentSubmission:{submissionKind:'assignment',title:'واجب جديد',instructions:'حل التدريبات',type:'public',stage:'prep',grade:'1',subject:'arabic',dueAt:Date.now()+86400000,maxScore:100,status:'pending',teacherId:'tester',createdAt:Date.now()},lessonSubmission:{submissionKind:'lesson',title:'درس مقالي من المعلم',content:'<h2>عنوان الشرح</h2><p>هذا شرح مقالي كامل أرسله المعلم.</p><figure class="rte-inline-image rte-image-medium"><img src="https://example.test/inside.jpg" alt="صورة داخل الشرح"></figure>',contentFormat:'html',videoUrl:'https://youtu.be/test123',imageUrl:'https://example.test/lesson.jpg',imagePosition:'bottom',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()}}};
  if(file==='parent.html'&&role==='parent'){
   database.parentProfilesV4={tester:{name:'ولي أمر الاختبار',phone:'01012345678'}};
   database.parentLinksV4={tester:{child1:{studentId:'child1',linkedAt:Date.now()}}};
@@ -156,6 +156,7 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    assert.match(w.document.querySelector('.mistake-group a').href,/reviewMistakes=1/);
   }
   if(file==='admin.html'&&role!=='guest'){
+   assert.ok(w.document.querySelector('#newLessonContent + .rich-lesson-editor .rte-canvas'),'admin has professional rich lesson editor');
    for(const tab of w.document.querySelectorAll('[data-admin-tab]')){tab.click();await new Promise(r=>setTimeout(r,8));}
    assert.ok(w.document.getElementById('releaseReadinessScore').textContent.endsWith('%'),'release readiness score renders');
    assert.ok(Number(w.document.getElementById('releaseCriticalCount').textContent)>=1,'release readiness detects incomplete fixture content');
@@ -170,7 +171,9 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    assert.equal(get('teacherSubmissions/tester/assignmentSubmission/status'),'approved');
    assert.equal(get('lessons/new3'),null,'teacher lesson stays unpublished before approval');
    w.document.querySelector('[data-approve="tester|lessonSubmission"]').click();await new Promise(r=>setTimeout(r,15));
-   assert.equal(get('lessons/new3/content'),'هذا شرح مقالي كامل أرسله المعلم.','approved teacher article is preserved');
+   assert.match(get('lessons/new3/content'),/<h2>عنوان الشرح<\/h2>/,'approved rich teacher article is preserved');
+   assert.match(get('lessons/new3/content'),/inside\.jpg/,'inline lesson image survives admin approval');
+   assert.equal(get('lessons/new3/contentFormat'),'html','approved lesson keeps rich content format');
    assert.equal(get('lessons/new3/questions').length,1,'approved lesson training is preserved');
    assert.equal(get('lessons/new3/videos/0/url'),'https://youtu.be/test123','approved teacher video is preserved');
    assert.equal(get('lessons/new3/imagePosition'),'bottom','approved lesson image placement is preserved');
@@ -203,7 +206,7 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
     if(!failurePath){
      w.document.getElementById('teacherStage').value='prep';w.document.getElementById('teacherStage').dispatchEvent(new w.Event('change'));
      w.document.getElementById('teacherLessonTitle').value='درس مقالي تجريبي';
-     w.document.getElementById('teacherLessonContent').value='شرح مقالي من لوحة المعلم';
+     const richCanvas=w.document.querySelector('#teacherLessonContent + .rich-lesson-editor .rte-canvas');assert.ok(richCanvas,'teacher has professional rich lesson editor');richCanvas.innerHTML='<h2>عنوان احترافي</h2><p><strong>شرح مقالي</strong> من لوحة المعلم</p><figure class="rte-inline-image rte-image-wide"><img src="https://example.test/teacher-inline.jpg" alt="صورة"></figure>';richCanvas.dispatchEvent(new w.Event('input',{bubbles:true}));
      w.document.getElementById('teacherVideoUrl').value='https://youtu.be/test123';
      w.document.getElementById('teacherLessonImage').value='https://example.test/lesson.jpg';
      w.document.getElementById('teacherAddLessonQuestion').click();
@@ -214,7 +217,9 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
      assert.equal(w.document.querySelectorAll('#teacherLessonQuestionRows .teacher-question-row').length,2,'lesson training supports individual and bulk questions');
      w.document.getElementById('teacherSubmissionForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,22));
      assert.equal(get('teacherSubmissions/tester/new1/submissionKind'),'lesson');
-     assert.equal(get('teacherSubmissions/tester/new1/content'),'شرح مقالي من لوحة المعلم');
+     assert.match(get('teacherSubmissions/tester/new1/content'),/<h2>عنوان احترافي<\/h2>/);
+     assert.match(get('teacherSubmissions/tester/new1/content'),/teacher-inline\.jpg/,'teacher can embed image inside article');
+     assert.equal(get('teacherSubmissions/tester/new1/contentFormat'),'html');
      assert.equal(get('teacherSubmissions/tester/new1/questions').length,2);
      assert.equal(get('teacherSubmissions/tester/new1/videoUrl'),'https://youtu.be/test123');
      assert.equal(get('lessons/new1'),null,'teacher cannot publish a full lesson directly');
