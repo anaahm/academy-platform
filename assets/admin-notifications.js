@@ -1,8 +1,8 @@
 (() => {
 'use strict';
 if(!document.getElementById('admin-tab-notifications'))return;
-if(!firebase.apps.length)return;
-const db=firebase.database(),auth=firebase.auth(),$=id=>document.getElementById(id),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const session=window.AcademyRoleSession?.get('admin');if(!session)return;
+const db=session.db,auth=session.auth,$=id=>document.getElementById(id),queryAll=(s,r=document)=>[...r.querySelectorAll(s)];
 let broadcasts={},listening=false;
 const esc=(v='')=>String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const typeLabel=t=>t==='azhar'?'أزهر':t==='public'?'تعليم عام':'كل المسارات';
@@ -26,8 +26,8 @@ function render(){
     const expired=n.expiresAt&&Date.now()>Number(n.expiresAt),active=n.isActive!==false&&!expired;
     return '<div class="admin-list-item"><div><strong>'+esc(n.title||'إشعار')+'</strong><small>'+esc(target)+'</small><small>'+esc((n.text||'').slice(0,120))+'</small></div><div class="admin-action-row"><span class="status-pill '+(active?'approved':'rejected')+'">'+(active?'نشط':'منتهي')+'</span><button class="admin-action-btn '+(n.isActive===false?'success':'')+'" data-broadcast-toggle="'+id+'"><i class="fa-solid '+(n.isActive===false?'fa-play':'fa-pause')+'"></i></button><button class="admin-action-btn danger" data-broadcast-delete="'+id+'"><i class="fa-solid fa-trash"></i></button></div></div>';
   }).join(''):'<div class="empty-admin"><span>📭</span><h3>لا توجد إشعارات موجهة</h3><p>أنشئ أول إشعار للفئة المناسبة.</p></div>';
-  $$('[data-broadcast-toggle]').forEach(b=>b.onclick=()=>db.ref('notificationBroadcasts/'+b.dataset.broadcastToggle+'/isActive').set(broadcasts?.[b.dataset.broadcastToggle]?.isActive===false));
-  $$('[data-broadcast-delete]').forEach(b=>b.onclick=async()=>{const ok=await window.AcademyUI.confirm({title:'حذف الإشعار؟',message:'سيتم حذف الإشعار الموجه ولن يظهر للطلاب بعد ذلك.',tone:'danger',acceptText:'حذف الإشعار'});if(ok)await db.ref('notificationBroadcasts/'+b.dataset.broadcastDelete).remove()});
+  queryAll('[data-broadcast-toggle]').forEach(b=>b.onclick=()=>db.ref('notificationBroadcasts/'+b.dataset.broadcastToggle+'/isActive').set(broadcasts?.[b.dataset.broadcastToggle]?.isActive===false));
+  queryAll('[data-broadcast-delete]').forEach(b=>b.onclick=async()=>{const ok=await window.AcademyUI.confirm({title:'حذف الإشعار؟',message:'سيتم حذف الإشعار الموجه ولن يظهر للطلاب بعد ذلك.',tone:'danger',acceptText:'حذف الإشعار'});if(ok)await db.ref('notificationBroadcasts/'+b.dataset.broadcastDelete).remove()});
 }
 $('broadcastStage').onchange=updateGrades;
 $('broadcastForm').onsubmit=async e=>{
@@ -48,7 +48,7 @@ $('broadcastForm').onsubmit=async e=>{
   }catch(err){console.error(err);toast('تعذر نشر الإشعار الآن.','error')}
   finally{window.AcademyUI?.setButtonLoading(btn,false)}
 };
-const nav=$$('[data-admin-tab="notifications"]')[0];
+const nav=queryAll('[data-admin-tab="notifications"]')[0];
 if(nav)nav.addEventListener('click',()=>{
   setTimeout(()=>{if($('adminSectionKicker'))$('adminSectionKicker').textContent='التواصل';if($('adminSectionTitle'))$('adminSectionTitle').textContent='الإشعارات الموجهة'},0);
 });

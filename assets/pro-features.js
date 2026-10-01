@@ -2,8 +2,10 @@
 'use strict';
 const cfg=window.ACADEMY_FIREBASE_CONFIG;
 if(!cfg||!window.firebase) return;
-if(!firebase.apps.length) firebase.initializeApp(cfg);
-const auth=firebase.auth(),db=firebase.database();
+const isParentPortal=(location.pathname.split('/').pop()||'')==='parent.html';
+const parentSession=isParentPortal?window.AcademyRoleSession?.get('parent'):null;
+if(!parentSession&&!firebase.apps.length) firebase.initializeApp(cfg);
+const auth=parentSession?.auth||firebase.auth(),db=parentSession?.db||firebase.database();
 const now=()=>Date.now(), day=86400000;
 const dateKey=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const uid=()=>auth.currentUser?.uid||'';
@@ -109,7 +111,14 @@ async function updateQuestionStats(questionId,correct,answer){
 }
 function adaptiveDifficulty(history=[]){const last=history.slice(-5);if(!last.length)return 2;const rate=last.filter(Boolean).length/last.length;return rate>=.8?3:rate<=.4?1:2}
 function selectAdaptiveQuestions(bank,history,count=10){const difficulty=adaptiveDifficulty(history);const scored=[...(bank||[])].sort((a,b)=>Math.abs(Number(a.difficulty||2)-difficulty)-Math.abs(Number(b.difficulty||2)-difficulty));return scored.slice(0,count)}
-async function submitAnswer(question,correct,answer,ctx={}){await updateQuestionStats(question.id,correct,answer);if(!correct)await logMistake(question,{...ctx,studentAnswer:answer});else await awardXP(2,'correct_answer',{questionId:question.id});}
+async function submitAnswer(question,correct,answer,ctx={}){
+ await updateQuestionStats(question.id,correct,answer);
+ if(!correct){await logMistake(question,{...ctx,studentAnswer:answer});return}
+ const userId=uid();if(!userId)return;
+ const review=await db.ref(paths.reviews+'/'+userId+'/'+question.id).once('value');
+ if(review.exists())await markReview(question.id,true,userId);
+ else await awardXP(2,'correct_answer',{questionId:question.id},userId);
+}
 async function saveDiagnostic(subject,result,userId=uid()){if(!userId)return;const id=dateKey();const strengths=(result.skills||[]).filter(x=>x.score>=80),weaknesses=(result.skills||[]).filter(x=>x.score<60);const report={subject,score:result.score||0,strengths,weaknesses,recommendations:weaknesses.map(x=>x.lessonId).filter(Boolean),createdAt:now()};await db.ref(paths.diagnostics+'/'+userId+'/'+subject+'/'+id).set(report);return report}
 async function recommendNext(ctx,userId=uid()){
  if(!userId)return null;const [m,r]=await Promise.all([db.ref(paths.mastery+'/'+userId).once('value'),db.ref(paths.reviews+'/'+userId).once('value')]);

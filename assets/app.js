@@ -1522,6 +1522,10 @@
       if(!baseDataPromise) baseDataPromise=loadDatabaseSnapshot();
       await baseDataPromise;
       state.profile = await loadProfile(user.uid);
+      if(!state.profile){
+        try{await auth.signOut()}catch{}
+        state.profile=null;showPublicExperience();toast('هذا الحساب ليس حساب طالب. استخدم بوابة الإدارة أو المعلم أو ولي الأمر المناسبة.','error');return;
+      }
       state.subscriptionAccess=window.AcademySubscription?await window.AcademySubscription.load(user.uid,state.profile,true).catch(()=>null):null;
       await updateDailyActivity(user.uid);
       state.profile = await loadProfile(user.uid);

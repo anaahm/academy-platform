@@ -1,8 +1,8 @@
 (() => {
 'use strict';
 if(!window.firebase||!window.ACADEMY_FIREBASE_CONFIG)return;
-if(!firebase.apps.length)firebase.initializeApp(window.ACADEMY_FIREBASE_CONFIG);
-const auth=firebase.auth(),db=firebase.database(),$=id=>document.getElementById(id);
+const session=window.AcademyRoleSession?.get('admin');if(!session)return;
+const auth=session.auth,db=session.db,$=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 let user=null,rows=[],filter='pending',search='',stop=null,teacherGroups={};
 function flatten(raw){

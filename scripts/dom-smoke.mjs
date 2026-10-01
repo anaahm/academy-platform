@@ -6,20 +6,25 @@ const question={text:'ما ناتج 1 + 1؟',opts:['1','2'],correctAnswer:1};
 const today=new Date(),date=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
 function fixtures(){return {
  studentProfilesV3:{tester:{name:'طالب الاختبار',educationType:'public',stage:'prep',grade:1,onboardingCompleted:true,stats:{totalXP:50,completedLessons:0,completedQuizzes:0,streak:1,level:1},studyPlanner:{task:{title:'مراجعة الدرس',date,done:false}},learningProgress:{}}},
- adminProfiles:{tester:{isAdmin:true,name:'مدير الاختبار'}},teacherProfiles:{tester:{name:'مدرس الاختبار',isActive:true,subjects:[{type:'public',stage:'prep',grade:'1',subject:'arabic'}]}},
+ adminProfiles:{admin1:{isAdmin:true,name:'مدير آخر'}},teacherProfiles:{teacher1:{name:'مدرس عام',isActive:true,subjects:[{type:'public',stage:'prep',grade:'1',subject:'arabic'}]}},
  customSubjects:{prep:{1:[{id:'arabic',name:'اللغة العربية',emoji:'📘',type:'public',imageUrl:'https://example.test/broken.jpg',units:[{name:'النحو'}]}]}},
- lessons:{lesson1:{title:'المبتدأ والخبر',content:'<h2>شرح تجريبي</h2><p>فقرة منسقة</p><figure class="rte-inline-image rte-image-medium"><img src="https://example.test/student-inline.jpg" alt="صورة الدرس"></figure>',contentFormat:'html',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,teacherId:'tester',videos:[],questions:[question,{text:'ما ناتج 2 + 2؟',opts:['4','5'],correctAnswer:0}]}},
- quizzes:{quiz1:{name:'اختبار النحو',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:0,questions:[question]},quiz2:{name:'اختبار مرتبط بالدرس',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,lessonId:'lesson1',teacherId:'tester',questions:[question]}},
+ lessons:{lesson1:{title:'المبتدأ والخبر',content:'<h2>شرح تجريبي</h2><p>فقرة منسقة</p><figure class="rte-inline-image rte-image-medium"><img src="https://example.test/student-inline.jpg" alt="صورة الدرس"></figure>',contentFormat:'html',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,teacherId:'teacher1',videos:[],questions:[question,{text:'ما ناتج 2 + 2؟',opts:['4','5'],correctAnswer:0}]}},
+ quizzes:{quiz1:{name:'اختبار النحو',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:0,questions:[question]},quiz2:{name:'اختبار مرتبط بالدرس',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,lessonId:'lesson1',teacherId:'teacher1',questions:[question]}},
  files:{file1:{title:'ملف بلا رابط',type:'public',stage:'prep',grade:'1',subject:'arabic',url:''}},
- assignments:{hw1:{title:'واجب النحو',instructions:'أجب',type:'public',stage:'prep',grade:'1',subject:'arabic',teacherId:'tester',maxScore:10,dueAt:Date.now()+86400000}},
+ assignments:{hw1:{title:'واجب النحو',instructions:'أجب',type:'public',stage:'prep',grade:'1',subject:'arabic',teacherId:'teacher1',maxScore:10,dueAt:Date.now()+86400000}},
  assignmentSubmissions:{hw1:{student2:{studentName:'طالب تجريبي',status:'submitted',text:'إجابة',submittedAt:Date.now()}}},
  liveSessions:{live1:{title:'بث مناسب',type:'public',stage:'prep',grade:'1',status:'live'},live2:{title:'بث لا يخص الطالب',stage:'sec',status:'live'}},
  community:{forums:{post1:{title:'مراجعة',content:'أهلًا',authorId:'tester',authorName:'طالب الاختبار',createdAt:Date.now()}},studyGroups:{}},
  settings:{},posts:{},announcements:{},scheduleEvents:{},notificationBroadcasts:{},simulations:{},contentAnalytics:{lesson1:{questionStats:{0:{attempts:4,correct:1},1:{attempts:4,correct:4}}}},leaderboardV3:{},teacherSubmissions:{}
 }}
 let failures=0,scenarios=0;
-async function check(file,role='student',failurePath='',reviewMode=false,linkedMode=false){
+async function check(file,role='student',failurePath='',reviewMode=false,linkedMode=false,adminPreviewMode=false){
  const errors=[],writes=[],database=fixtures(),callbacks=[];
+ if(role==='admin')database.adminProfiles.tester={isAdmin:true,name:'مدير الاختبار'};
+ if(role==='teacher'||role==='admin'||(file==='teacher.html'&&role==='guest'))database.teacherProfiles.tester={name:'مدرس الاختبار',isActive:true,subjects:[{type:'public',stage:'prep',grade:'1',subject:'arabic'}]};
+ if(role==='teacher'){database.lessons.lesson1.teacherId='tester';database.quizzes.quiz2.teacherId='tester';database.assignments.hw1.teacherId='tester';}
+ if(role==='parent')database.parentProfilesV4={tester:{name:'ولي أمر الاختبار',phone:'01012345678'}};
+ if(['admin','teacher','parent'].includes(role)){database.studentProfilesV3.student1={...database.studentProfilesV3.tester,name:'طالب آخر'};delete database.studentProfilesV3.tester;}
  if(file==='admin.html'&&role==='admin')database.teacherSubmissions={tester:{quizSubmission:{submissionKind:'quiz',title:'اختبار المبتدأ والخبر',lessonId:'lesson1',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()},assignmentSubmission:{submissionKind:'assignment',title:'واجب جديد',instructions:'حل التدريبات',type:'public',stage:'prep',grade:'1',subject:'arabic',dueAt:Date.now()+86400000,maxScore:100,status:'pending',teacherId:'tester',createdAt:Date.now()},lessonSubmission:{submissionKind:'lesson',title:'درس مقالي من المعلم',content:'<h2>عنوان الشرح</h2><p>هذا شرح مقالي كامل أرسله المعلم.</p><figure class="rte-inline-image rte-image-medium"><img src="https://example.test/inside.jpg" alt="صورة داخل الشرح"></figure>',contentFormat:'html',videoUrl:'https://youtu.be/test123',imageUrl:'https://example.test/lesson.jpg',imagePosition:'bottom',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()}}};
  if(file==='parent.html'&&role==='parent'){
   database.parentProfilesV4={tester:{name:'ولي أمر الاختبار',phone:'01012345678'}};
@@ -31,7 +36,7 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
  if(linkedMode)database.studentProfilesV3.tester.learningProgress={lesson1:{completed:true}};
  const v=new VirtualConsole();v.on('jsdomError',e=>{if(!/navigation|scrollTo|Not implemented/.test(e.message))errors.push(e.stack||e.message)});
  v.on('error',(...args)=>{if(!failurePath)errors.push(args.map(x=>x?.stack||String(x)).join(' '))});
- const dom=new JSDOM(readFileSync(file,'utf8').replace(/<link[^>]*>/g,''),{url:'https://example.test/academy/'+file+'?type=public&stage=prep&grade=1&subject=arabic&'+(linkedMode?'quiz=quiz2':'id=lesson1')+(reviewMode?'&reviewMistakes=1':''),runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:v});
+ const dom=new JSDOM(readFileSync(file,'utf8').replace(/<link[^>]*>/g,''),{url:'https://example.test/academy/'+file+'?type=public&stage=prep&grade=1&subject=arabic&'+(linkedMode?'quiz=quiz2':'id=lesson1')+(reviewMode?'&reviewMistakes=1':'')+(adminPreviewMode?'&adminPreview=1':''),runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:v});
  const w=dom.window;w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};
  w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});
  w.requestAnimationFrame=fn=>w.setTimeout(()=>fn(Date.now()),0);
@@ -52,8 +57,14 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
  const user=role==='guest'?null:{uid:'tester',displayName:'اختبار',email:'test@example.test',updateProfile:async()=>{},reload:async()=>{}};
  let createdEmail='',signedInEmail='';
  const auth={currentUser:user,onAuthStateChanged:fn=>{callbacks.push(fn);return ()=>{}},setPersistence:async()=>{},signInWithEmailAndPassword:async email=>{signedInEmail=email;auth.currentUser={uid:'tester',email:'test@example.test'};for(const fn of callbacks)await fn(auth.currentUser);return {user:auth.currentUser}},createUserWithEmailAndPassword:async email=>{createdEmail=email;auth.currentUser={uid:'newStudent',email,updateProfile:async()=>{}};for(const fn of callbacks)await fn(auth.currentUser);return {user:auth.currentUser}},sendPasswordResetEmail:async()=>{},signOut:async()=>{auth.currentUser=null;for(const fn of callbacks)await fn(null)}};
- const secondaryApps=[];
- w.firebase={apps:[],initializeApp:(_config,name)=>{if(name==='teacher-portal'){const app={name,auth:()=>auth,database:()=>({ref})};w.firebase.apps.push(app);return app}if(name){const secondaryAuth={setPersistence:async()=>{},createUserWithEmailAndPassword:async(email,password)=>{assert.ok(password.length>=8);return {user:{uid:'newTeacher',email,delete:async()=>{}}}},signOut:async()=>{}};const app={name,auth:()=>secondaryAuth,delete:async()=>{}};secondaryApps.push(app);return app}w.firebase.apps.push({name:'[DEFAULT]'});return {auth:()=>auth}},auth:Object.assign(()=>auth,{Auth:{Persistence:{LOCAL:'local',NONE:'none'}},EmailAuthProvider:{credential:()=>({})}}),database:Object.assign(()=>({ref}),{ServerValue:{TIMESTAMP:Date.now(),increment:n=>n}})};
+ const secondaryApps=[],portalAuths={};
+ const portalRole={ 'admin-portal':'admin','teacher-portal':'teacher','parent-portal':'parent' };
+ function makePortalAuth(portal){
+  const portalCallbacks=[],expected=portalRole[portal],initial=(role===expected)?user:null;
+  const a={currentUser:initial,onAuthStateChanged:fn=>{portalCallbacks.push(fn);Promise.resolve().then(()=>fn(a.currentUser));return()=>{}},setPersistence:async()=>{},sendPasswordResetEmail:async()=>{},signInWithEmailAndPassword:async email=>{signedInEmail=email;a.currentUser={uid:'tester',email:'test@example.test',displayName:'اختبار',updateProfile:async()=>{}};for(const fn of portalCallbacks)await fn(a.currentUser);return{user:a.currentUser}},createUserWithEmailAndPassword:async email=>{createdEmail=email;a.currentUser={uid:'tester',email,displayName:'اختبار',updateProfile:async()=>{}};for(const fn of portalCallbacks)await fn(a.currentUser);return{user:a.currentUser}},signOut:async()=>{a.currentUser=null;for(const fn of portalCallbacks)await fn(null)}};
+  portalAuths[portal]=a;return a;
+ }
+ w.firebase={apps:[],initializeApp:(_config,name)=>{if(name&&portalRole[name]){const scopedAuth=portalAuths[name]||makePortalAuth(name);const app={name,auth:()=>scopedAuth,database:()=>({ref})};w.firebase.apps.push(app);return app}if(name){const secondaryAuth={setPersistence:async()=>{},createUserWithEmailAndPassword:async(email,password)=>{assert.ok(password.length>=8);return {user:{uid:'newTeacher',email,delete:async()=>{}}}},signOut:async()=>{}};const app={name,auth:()=>secondaryAuth,delete:async()=>{}};secondaryApps.push(app);return app}w.firebase.apps.push({name:'[DEFAULT]'});return {auth:()=>auth,database:()=>({ref})}},auth:Object.assign(()=>auth,{Auth:{Persistence:{LOCAL:'local',NONE:'none'}},EmailAuthProvider:{credential:()=>({})}}),database:Object.assign(()=>({ref}),{ServerValue:{TIMESTAMP:Date.now(),increment:n=>n}})};
  const unhandled=e=>errors.push(String(e?.stack||e));process.on('unhandledRejection',unhandled);
  try{
   for(const script of w.document.querySelectorAll('script[src]')){
@@ -120,9 +131,9 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    assert.match(w.document.getElementById('lessonTitle').textContent,/اختبار مرتبط/);
    assert.equal(w.document.getElementById('quizIntro').classList.contains('hidden'),false,'completed linked lesson unlocks its exam');
   }
-  if(file==='lesson.html'&&!reviewMode&&!linkedMode){
-   const b=w.document.getElementById('markCompleteBtn');if(b&&!b.disabled){b.click();b.click();await new Promise(r=>setTimeout(r,30));assert.equal(get('studentProfilesV3/tester/stats/totalXP'),100,'double click gives only one award');}
-   assert.match(w.document.querySelector('#linkedLessonQuizzes a')?.href||'',/quiz=quiz2/,'linked exam is offered after completing lesson');
+  if(file==='lesson.html'&&role==='student'&&!reviewMode&&!linkedMode){
+   const b=w.document.getElementById('markCompleteBtn');if(b&&!b.disabled){b.click();await new Promise(r=>setTimeout(r,10));assert.equal(get('studentProfilesV3/tester/learningProgress/lesson1/completed'),null,'lesson cannot be completed before its training');}
+   assert.equal(w.document.querySelector('#linkedLessonQuizzes a'),null,'linked exam stays locked before lesson completion');
    w.document.getElementById('startQuizBtn').click();assert.ok(w.document.querySelector('[data-a]'),'quiz options');
    assert.equal(w.document.getElementById('nextQuestionBtn').disabled,true,'must answer before moving on');
    w.document.querySelector('[data-a="0"]').click();
@@ -148,8 +159,23 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    w.document.querySelector('[data-a="1"]').click();w.document.getElementById('nextQuestionBtn').click();
    w.document.querySelector('[data-a="0"]').click();w.document.getElementById('nextQuestionBtn').click();await new Promise(r=>setTimeout(r,30));
    assert.equal(get('studentProfilesV3/tester/mistakeNotebook/lesson1/0'),null,'correct retry clears the mistake');
+   assert.equal(get('learningV4/reviews/tester/lesson1-0/status'),'scheduled','corrected mistake advances spaced review instead of remaining due');
+   assert.equal(get('learningV4/reviews/tester/lesson1-0/correctReviews'),1,'corrected mistake records a successful review');
+   const beforeComplete=Number(get('studentProfilesV3/tester/stats/totalXP')||0);b.click();b.click();await new Promise(r=>setTimeout(r,30));
+   assert.equal(get('studentProfilesV3/tester/learningProgress/lesson1/completed'),true,'lesson completes after training and mistakes are cleared');
+   assert.equal(get('studentProfilesV3/tester/stats/completedLessons'),1,'double completion click counts the lesson once');
+   assert.equal(Number(get('studentProfilesV3/tester/stats/totalXP')),beforeComplete+50,'lesson completion awards exactly 50 XP once');
+   assert.match(w.document.querySelector('#linkedLessonQuizzes a')?.href||'',/quiz=quiz2/,'linked exam is offered only after completing the lesson journey');
   }
-  if(file==='lesson.html'&&!linkedMode){assert.match(w.document.getElementById('lessonContent').innerHTML,/student-inline\.jpg/,'student sees inline image inside rich explanation');assert.ok(w.document.getElementById('lessonContent').querySelector('h2'),'student sees rich explanation heading')}
+  if(file==='lesson.html'&&role==='student'&&!linkedMode){assert.match(w.document.getElementById('lessonContent').innerHTML,/student-inline\.jpg/,'student sees inline image inside rich explanation');assert.ok(w.document.getElementById('lessonContent').querySelector('h2'),'student sees rich explanation heading')}
+  if(file==='lesson.html'&&!adminPreviewMode&&['admin','teacher','parent'].includes(role)){
+   assert.equal(auth.currentUser,null,role+' account is removed from the default student session on a protected student route');
+  }
+  if(file==='lesson.html'&&role==='admin'&&adminPreviewMode){
+   assert.equal(portalAuths['admin-portal']?.currentUser?.uid,'tester','admin preview uses isolated admin session');
+   assert.ok(w.document.getElementById('adminPreviewBanner'),'admin preview renders without borrowing the student session');
+   assert.match(w.document.getElementById('lessonTitle').textContent,/المبتدأ والخبر/,'isolated admin can preview the lesson');
+  }
   if(file==='profile.html'){
    w.document.querySelector('[data-profile-tab="mistakes"]').click();
    assert.equal(w.document.getElementById('profileMistakeCount').textContent,'1');
@@ -184,18 +210,23 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    form.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,20));
    assert.equal(get('teacherProfiles/newTeacher/name'),'مدرس جديد');assert.equal(get('teacherProfiles/newTeacher/email'),'newteacher@example.test');
    assert.equal(JSON.stringify(database).includes('long-secure-password'),false,'teacher password never stored in database');
-   assert.equal(auth.currentUser?.uid,'tester','admin session stays active');assert.equal(secondaryApps.length,1);
-   auth.currentUser={uid:'newTeacher',email:'newteacher@example.test'};
+   assert.equal(portalAuths['admin-portal']?.currentUser?.uid,'tester','admin uses its own active session');assert.equal(secondaryApps.length,1);
+   auth.currentUser={uid:'otherStudent',email:'student@example.test'};
    for(const cb of [...callbacks])await cb(auth.currentUser);
-   assert.equal(auth.currentUser.uid,'newTeacher','admin page must not sign out a teacher in another tab');
-   assert.equal(w.document.getElementById('adminApp').classList.contains('hidden'),true,'admin view stays protected');
+   assert.equal(portalAuths['admin-portal']?.currentUser?.uid,'tester','student session changes do not alter admin session');
+   assert.equal(w.document.getElementById('adminApp').classList.contains('hidden'),false,'admin view remains active when default student session changes');
   }
   if(file==='parent.html'&&role==='parent'){
    assert.equal(w.document.getElementById('parentDashboard').hidden,false,'linked parent dashboard becomes visible');
    assert.match(w.document.getElementById('children').textContent,/طالب مرتبط/,'parent can see linked student');
+   assert.ok(w.firebase.apps.some(app=>app.name==='parent-portal'),'parent portal uses its own Firebase auth session');
+   const defaultBeforeParentLogout=auth.currentUser?.uid;await portalAuths['parent-portal'].signOut();await new Promise(r=>setTimeout(r,8));
+   assert.equal(auth.currentUser?.uid,defaultBeforeParentLogout,'parent logout does not sign out the default student session');
+   assert.equal(w.document.getElementById('parentDashboard').hidden,true,'parent dashboard closes after parent-only logout');
   }
   if(file==='teacher.html'){
    assert.ok(w.firebase.apps.some(app=>app.name==='teacher-portal'),'teacher portal uses its own Firebase auth session');
+   if(role!=='guest')assert.equal(portalAuths['teacher-portal']?.currentUser?.uid,'tester','teacher session is isolated from default student auth');
    if(role==='guest'){
     assert.equal(w.document.getElementById('teacherLoginForm').classList.contains('hidden'),false);
     w.document.getElementById('teacherLoginEmail').value='test@example.test';w.document.getElementById('teacherLoginPassword').value='correct-password';
@@ -259,6 +290,7 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
 for(const file of files)await check(file,file==='admin.html'?'admin':file==='teacher.html'?'teacher':'student');
 await check('index.html','guest');await check('admin.html','guest');await check('teacher.html','guest');await check('teacher.html','teacher','assignmentSubmissions/');
 await check('parent.html','parent');
+await check('lesson.html','admin');await check('lesson.html','teacher');await check('lesson.html','parent');await check('lesson.html','admin','',false,false,true);
 await check('lesson.html','student','',true);
 await check('lesson.html','student','',false,true);
 console.log(`DOM smoke: ${scenarios-failures}/${scenarios} scenarios passed. Uses in-memory Firebase fixtures, not live Firebase or layout rendering.`);

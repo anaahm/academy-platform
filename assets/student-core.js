@@ -64,7 +64,7 @@ async function requireStudent(){
      if(!user){off();location.replace('./index.html');return}
      try{
        const profile=await getProfile(user.uid);
-       if(!profile?.stage||!profile?.grade){off();location.replace('./index.html');return}
+       if(!profile?.stage||!profile?.grade){off();window.AcademyUI?.hidePageLoading();try{await auth.signOut()}catch{}location.replace('./index.html');return}
        off();window.AcademyUI?.hidePageLoading();resolve({user,profile});
      }catch(err){
        off();window.AcademyUI?.hidePageLoading();toast('تعذر تحميل بيانات حسابك الآن.','error');reject(err);

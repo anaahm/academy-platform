@@ -1,9 +1,9 @@
 (() => {
 'use strict';
 if(!window.firebase || !firebase.auth || !firebase.database)return;
-const cfg=window.ACADEMY_FIREBASE_CONFIG;
-if(cfg && !firebase.apps.length)firebase.initializeApp(cfg);
-const auth=firebase.auth(),db=firebase.database();
+const session=window.AcademyRoleSession?.get('admin');
+if(!session)return;
+const auth=session.auth,db=session.db;
 const form=document.getElementById('adminLoginForm');
 const email=document.getElementById('adminEmail');
 const password=document.getElementById('adminPassword');
@@ -45,6 +45,7 @@ async function showForUser(user){
     if(!ok){
       app?.classList.add('hidden');login?.classList.remove('hidden');
       notify('هذا الحساب ليس له صلاحية مدير. سجّل الدخول بحساب الإدارة إذا أردت فتح اللوحة.','error');
+      if(auth.currentUser?.uid===user.uid)await auth.signOut().catch(()=>{});
       return false;
     }
     login?.classList.add('hidden');app?.classList.remove('hidden');

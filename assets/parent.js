@@ -1,5 +1,6 @@
 (()=>{'use strict';
 const P=window.AcademyPro,$=id=>document.getElementById(id),DAY=86400000;
+P?.auth?.setPersistence?.(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
 function normalizePhone(raw=''){
