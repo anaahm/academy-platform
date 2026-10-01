@@ -192,18 +192,23 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    form.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,20));
    assert.equal(get('teacherProfiles/newTeacher/name'),'مدرس جديد');assert.equal(get('teacherProfiles/newTeacher/email'),'newteacher@example.test');
    assert.equal(JSON.stringify(database).includes('long-secure-password'),false,'teacher password never stored in database');
-   assert.equal(auth.currentUser?.uid,'tester','admin session stays active');assert.equal(secondaryApps.length,1);
-   auth.currentUser={uid:'newTeacher',email:'newteacher@example.test'};
+   assert.equal(portalAuths['admin-portal']?.currentUser?.uid,'tester','admin uses its own active session');assert.equal(secondaryApps.length,1);
+   auth.currentUser={uid:'otherStudent',email:'student@example.test'};
    for(const cb of [...callbacks])await cb(auth.currentUser);
-   assert.equal(auth.currentUser.uid,'newTeacher','admin page must not sign out a teacher in another tab');
-   assert.equal(w.document.getElementById('adminApp').classList.contains('hidden'),true,'admin view stays protected');
+   assert.equal(portalAuths['admin-portal']?.currentUser?.uid,'tester','student session changes do not alter admin session');
+   assert.equal(w.document.getElementById('adminApp').classList.contains('hidden'),false,'admin view remains active when default student session changes');
   }
   if(file==='parent.html'&&role==='parent'){
    assert.equal(w.document.getElementById('parentDashboard').hidden,false,'linked parent dashboard becomes visible');
    assert.match(w.document.getElementById('children').textContent,/طالب مرتبط/,'parent can see linked student');
+   assert.ok(w.firebase.apps.some(app=>app.name==='parent-portal'),'parent portal uses its own Firebase auth session');
+   const defaultBeforeParentLogout=auth.currentUser?.uid;await portalAuths['parent-portal'].signOut();await new Promise(r=>setTimeout(r,8));
+   assert.equal(auth.currentUser?.uid,defaultBeforeParentLogout,'parent logout does not sign out the default student session');
+   assert.equal(w.document.getElementById('parentDashboard').hidden,true,'parent dashboard closes after parent-only logout');
   }
   if(file==='teacher.html'){
    assert.ok(w.firebase.apps.some(app=>app.name==='teacher-portal'),'teacher portal uses its own Firebase auth session');
+   if(role!=='guest')assert.equal(portalAuths['teacher-portal']?.currentUser?.uid,'tester','teacher session is isolated from default student auth');
    if(role==='guest'){
     assert.equal(w.document.getElementById('teacherLoginForm').classList.contains('hidden'),false);
     w.document.getElementById('teacherLoginEmail').value='test@example.test';w.document.getElementById('teacherLoginPassword').value='correct-password';
