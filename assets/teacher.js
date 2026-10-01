@@ -498,7 +498,7 @@ async function submitContent(e){
  const videoUrl=$('teacherVideoUrl').value.trim(),content=$('teacherLessonContent').value.trim(),rawImage=$('teacherLessonImage').value.trim();
  let questions=[];try{questions=collectLessonQuestions()}catch(err){return toast(err.message,'error')}
  const payload={
-   submissionKind:'lesson',title:$('teacherLessonTitle').value.trim(),videoUrl,content,
+   submissionKind:'lesson',title:$('teacherLessonTitle').value.trim(),videoUrl,content,contentFormat:'html',
    imageUrl:rawImage,imagePosition:$('teacherLessonImagePosition').value==='bottom'?'bottom':'top',
    questions,type:$('teacherEducationType').value,stage:$('teacherStage').value,grade:$('teacherGrade').value,
    subject:subjectId,subjectName,unit:Number($('teacherUnit').value||1),notes:$('teacherNotes').value.trim(),
@@ -517,7 +517,7 @@ async function submitContent(e){
  window.AcademyUI?.setButtonLoading(btn,true,'إرسال');
  try{
    const ref=db.ref('teacherSubmissions/'+user.uid).push();await ref.set(payload);submissions[ref.key]=payload;
-   $('teacherSubmissionForm').reset();$('teacherLessonQuestionRows').replaceChildren();$('teacherLessonQuestionsBulk').value='';updateGrades();render();switchTab('home');toast('تم إرسال الدرس الكامل للإدارة للمراجعة ✅');
+   $('teacherSubmissionForm').reset();teacherLessonRichEditor?.clear();$('teacherLessonQuestionRows').replaceChildren();$('teacherLessonQuestionsBulk').value='';updateGrades();render();switchTab('home');toast('تم إرسال الدرس الكامل للإدارة للمراجعة ✅');
  }catch(err){console.error(err);toast('تعذر الإرسال. راجع الاتصال أو حاول لاحقًا.','error')}
  finally{window.AcademyUI?.setButtonLoading(btn,false);updateSubmitAvailability()}
 }
@@ -560,6 +560,7 @@ teacherNavTabs.forEach((b,i)=>b.onkeydown=e=>{
 $$('[data-teacher-tab]').forEach(b=>b.onclick=()=>switchTab(b.dataset.teacherTab));
 $$('[data-open-teacher-submit]').forEach(b=>b.onclick=()=>switchTab('submit'));
 $('teacherStage').addEventListener('change',updateGrades);$('teacherGrade').addEventListener('change',updateSubjects);$('teacherEducationType').addEventListener('change',updateSubjects);
+const teacherLessonRichEditor=window.AcademyRichEditor?.init('teacherLessonContent',{placeholder:'اكتب شرحًا احترافيًا للدرس... استخدم العناوين والقوائم والألوان وأدرج الصور داخل المقال من زر «صورة».'});
 $('teacherSubmissionForm').addEventListener('submit',submitContent);
 $('teacherAddLessonQuestion')?.addEventListener('click',()=>addLessonQuestion()?.querySelector('.teacher-question-text')?.focus());
 $('teacherImportLessonQuestions')?.addEventListener('click',importLessonQuestions);
