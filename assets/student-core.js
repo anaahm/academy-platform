@@ -56,6 +56,20 @@ function subjectsFor(data,stage,grade,type){
 function subjectName(data,id,stage,grade,type){
  return subjectsFor(data,stage,String(grade),type).find(s=>s.id===id)?.name||id||'مادة';
 }
+async function accountRole(uid){
+ const [a,t,p,s]=await Promise.all([
+  db.ref('adminProfiles/'+uid).once('value'),db.ref('teacherProfiles/'+uid).once('value'),db.ref('parentProfilesV4/'+uid).once('value'),db.ref('studentProfilesV3/'+uid).once('value')
+ ]);
+ if(a.val()?.isAdmin===true)return{role:'admin',profile:a.val()};
+ if(t.exists())return{role:'teacher',profile:t.val()};
+ if(p.exists())return{role:'parent',profile:p.val()};
+ if(s.exists())return{role:'student',profile:s.val()};
+ return{role:'unknown',profile:null};
+}
+async function leaveWrongStudentSession(role){
+ try{await auth.signOut()}catch{}
+ location.replace(role==='admin'?'./admin.html':role==='teacher'?'./teacher.html':role==='parent'?'./parent.html':'./index.html');
+}
 async function requireStudent(){
  window.AcademyUI?.showPageLoading('جاري تحميل حسابك وبياناتك الدراسية...');
  return new Promise((resolve,reject)=>{
@@ -63,7 +77,8 @@ async function requireStudent(){
    off=auth.onAuthStateChanged(async user=>{
      if(!user){off();location.replace('./index.html');return}
      try{
-       const profile=await getProfile(user.uid);
+       const resolved=await accountRole(user.uid),profile=resolved.profile;
+       if(resolved.role!=='student'){off();window.AcademyUI?.hidePageLoading();await leaveWrongStudentSession(resolved.role);return}
        if(!profile?.stage||!profile?.grade){off();location.replace('./index.html');return}
        off();window.AcademyUI?.hidePageLoading();resolve({user,profile});
      }catch(err){
@@ -95,5 +110,5 @@ async function syncAllTimeLeaderboard(uid,profile){
   await db.ref('leaderboardV3/allTime/'+uid).update({name:profile?.name||'طالب',xp:Number(stats.totalXP||0),quizzes:Number(stats.completedQuizzes||0),level:Number(stats.level||1),updatedAt:Date.now()});
 }
 
-window.AcademyCore={auth,db,esc,safeUrl,initials,typeLabel,stageLabel,gradeLabel,lessonUrl,quizUrl,subjectUrl,toast,getProfile,subjectsFor,subjectName,requireStudent,updateProfile,currentCtx,localDateKey,subjectProgressValue,subjectProgressPath,leaderboardKeys,addLeaderboardXP,syncAllTimeLeaderboard,stageNames,gradeNames,defaultSubjects};
+window.AcademyCore={auth,db,accountRole,esc,safeUrl,initials,typeLabel,stageLabel,gradeLabel,lessonUrl,quizUrl,subjectUrl,toast,getProfile,subjectsFor,subjectName,requireStudent,updateProfile,currentCtx,localDateKey,subjectProgressValue,subjectProgressPath,leaderboardKeys,addLeaderboardXP,syncAllTimeLeaderboard,stageNames,gradeNames,defaultSubjects};
 })();
