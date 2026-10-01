@@ -3,12 +3,12 @@
 
 const firebaseConfig = window.ACADEMY_FIREBASE_CONFIG || JSON.parse(localStorage.getItem('academyFirebaseConfig') || 'null');
 if(!firebaseConfig){ location.replace('./index.html'); return; }
-if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth(), db=firebase.database();
-const $=id=>document.getElementById(id), $$=(s,r=document)=>[...r.querySelectorAll(s)];
-const page=document.documentElement.dataset.page, params=new URLSearchParams(location.search);
+const page=document.documentElement.dataset.page, params=new URLSearchParams(location.search),requestedAdminPreview=params.get('adminPreview')==='1';
+const adminPreviewSession=requestedAdminPreview?window.AcademyRoleSession?.get('admin'):null;
+if(!adminPreviewSession&&!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const auth=adminPreviewSession?.auth||firebase.auth(), db=adminPreviewSession?.db||firebase.database();
+const $=id=>document.getElementById(id), $=(s,r=document)=>[...r.querySelectorAll(s)];
 const state={user:null,profile:null,access:null,data:{},lessons:[],quizzes:[],files:[],subject:null,currentLesson:null,unitLessons:[],quiz:null,quizIndex:0,teacherFilter:'',adminPreview:false};
-const requestedAdminPreview=params.get('adminPreview')==='1';
 
 const stages={primary:{name:'المرحلة الابتدائية',emoji:'🎒'},prep:{name:'المرحلة الإعدادية',emoji:'📚'},sec:{name:'المرحلة الثانوية',emoji:'🎓'}};
 const grades={
@@ -144,7 +144,7 @@ function format(text=''){
 async function loadProfile(user){
  if(state.adminPreview){state.profile={};return}
  if(!user){state.profile=null;return}
- const s=await db.ref('studentProfilesV3/'+user.uid).once('value');state.profile=s.val()||{};
+ const s=await db.ref('studentProfilesV3/'+user.uid).once('value');state.profile=s.val()||null;
  if($('learningAvatar'))$('learningAvatar').textContent=initials(state.profile.name||user.displayName||'طالب');
 }
 
@@ -1281,6 +1281,10 @@ async function init(){
        else renderAdminPreviewBanner();
      }
      await loadProfile(user);
+     if(page==='lesson'&&user&&!state.adminPreview&&!state.profile){
+       try{await auth.signOut()}catch{}
+       const login=new URL('./index.html',location.href);login.searchParams.set('auth','login');login.searchParams.set('return',location.pathname+location.search);location.replace(login.href);return;
+     }
      if(user&&!state.adminPreview&&window.AcademySubscription)state.access=await window.AcademySubscription.load(user.uid,state.profile,true);
      if(page==='subject'){renderSubject();bindLearningExplorer()}
      if(page==='lesson')renderLesson();
