@@ -912,6 +912,9 @@ async function markComplete(c,id){
  if(state.adminPreview){toast('وضع المعاينة لا يحفظ تقدمًا.');return}
  if(!state.user){toast('سجّل الدخول أولًا لحفظ تقدمك.','error');return}
  if(completingLesson||done(id))return;
+ const journey=lessonJourneyState();
+ if(journey.hasQuiz&&!journey.practiced){toast('أكمل تدريب الدرس أولًا قبل حفظ الدرس كمكتمل.','error');$('tabQuiz')?.click();return}
+ if(journey.errors>0){toast('راجع أخطاء التدريب أولًا قبل إكمال الدرس.','error');location.href=url('lesson.html',c,{id,reviewMistakes:'1'});return}
  completingLesson=true;
  const btn=$('markCompleteBtn'),head=$('markCompleteHeader');
  window.AcademyUI?.setButtonLoading(btn,true,'حفظ التقدم');if(head)head.disabled=true;
