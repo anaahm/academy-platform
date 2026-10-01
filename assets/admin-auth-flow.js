@@ -45,6 +45,7 @@ async function showForUser(user){
     if(!ok){
       app?.classList.add('hidden');login?.classList.remove('hidden');
       notify('هذا الحساب ليس له صلاحية مدير. سجّل الدخول بحساب الإدارة إذا أردت فتح اللوحة.','error');
+      if(auth.currentUser?.uid===user.uid)await auth.signOut().catch(()=>{});
       return false;
     }
     login?.classList.add('hidden');app?.classList.remove('hidden');
