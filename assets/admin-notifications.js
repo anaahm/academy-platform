@@ -1,7 +1,7 @@
 (() => {
 'use strict';
 if(!document.getElementById('admin-tab-notifications'))return;
-const session=window.AcademyRoleSession?.get('admin');if(!session)return;
+const db=session.db,auth=session.auth,$=id=>document.getElementById(id),$=(s,r=document)=>[...r.querySelectorAll(s)];
 const db=session.db,auth=session.auth,$=id=>document.getElementById(id),$=(s,r=document)=>[...r.querySelectorAll(s)];
 let broadcasts={},listening=false;
 const esc=(v='')=>String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
