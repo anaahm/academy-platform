@@ -295,9 +295,9 @@ function renderReleaseReadiness(){
   {label:'المحتوى المنشور',pass:publishedLessons.length>0&&publishedQuizzes.length>0,detail:publishedLessons.length+' درس منشور و'+publishedQuizzes.length+' اختبار منشور.',fail:'يجب وجود درس واختبار منشورين على الأقل لاختبار المسار.',tab:'lessons',critical:true},
   {label:'سلامة المحتوى',pass:integrity.length===0,detail:'لا توجد عناصر ناقصة في البيانات الأساسية.',fail:integrity.length+' عنصرًا يحتاج استكمال بيانات.',tab:'content-ops',critical:true},
   {label:'ولي الأمر',pass:parents.length>0,detail:parents.length+' حساب ولي أمر متاح لاختبار الربط والمتابعة.',fail:'لم يُختبر مسار ولي الأمر ببيانات فعلية بعد.',tab:'students',critical:false},
-  {label:'نظام الاشتراكات',pass:!subscriptionEnforced||activePlans.length>0,detail:subscriptionEnforced?'التحكم في الوصول مفعل ومعه '+activePlans.length+' باقة متاحة.':'قفل الاشتراكات غير مفعل حاليًا؛ المحتوى لن يُحجب بالإجبار.',fail:'قفل الاشتراكات مفعل لكن لا توجد باقة نشطة.',tab:'subscriptions',critical:subscriptionEnforced}
+  {label:'نظام الاشتراكات',pass:subscriptionEnforced&&activePlans.length>0,detail:'التحكم في الوصول مفعل ومعه '+activePlans.length+' باقة متاحة.',fail:subscriptionEnforced?'قفل الاشتراكات مفعل لكن لا توجد باقة نشطة.':'قفل الاشتراكات غير مفعل بعد؛ فعّله قبل الإطلاق إذا كان المحتوى المدفوع مطلوبًا.',tab:'subscriptions',critical:subscriptionEnforced&&activePlans.length===0}
  ];
- const passed=checks.filter(x=>x.pass).length,critical=checks.filter(x=>!x.pass&&x.critical).length,attention=checks.filter(x=>!x.pass&&!x.critical).length+(subscriptionEnforced?0:1);
+ const passed=checks.filter(x=>x.pass).length,critical=checks.filter(x=>!x.pass&&x.critical).length,attention=checks.filter(x=>!x.pass&&!x.critical).length;
  const queues=[
   {label:'محتوى المدرسين',count:pendingTeacher,tab:'teachers',icon:'fa-chalkboard-user',hint:'طلبات محتوى تنتظر الاعتماد'},
   {label:'التواصل',count:pendingComm,tab:'communications',icon:'fa-comments',hint:'أسئلة وردود ومنشورات تنتظر المراجعة'},
