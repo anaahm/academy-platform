@@ -8,7 +8,7 @@ function fixtures(){return {
  studentProfilesV3:{tester:{name:'طالب الاختبار',educationType:'public',stage:'prep',grade:1,onboardingCompleted:true,stats:{totalXP:50,completedLessons:0,completedQuizzes:0,streak:1,level:1},studyPlanner:{task:{title:'مراجعة الدرس',date,done:false}},learningProgress:{}}},
  adminProfiles:{tester:{isAdmin:true,name:'مدير الاختبار'}},teacherProfiles:{tester:{name:'مدرس الاختبار',isActive:true,subjects:[{type:'public',stage:'prep',grade:'1',subject:'arabic'}]}},
  customSubjects:{prep:{1:[{id:'arabic',name:'اللغة العربية',emoji:'📘',type:'public',imageUrl:'https://example.test/broken.jpg',units:[{name:'النحو'}]}]}},
- lessons:{lesson1:{title:'المبتدأ والخبر',content:'شرح تجريبي',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,teacherId:'tester',videos:[],questions:[question,{text:'ما ناتج 2 + 2؟',opts:['4','5'],correctAnswer:0}]}},
+ lessons:{lesson1:{title:'المبتدأ والخبر',content:'<h2>شرح تجريبي</h2><p>فقرة منسقة</p><figure class="rte-inline-image rte-image-medium"><img src="https://example.test/student-inline.jpg" alt="صورة الدرس"></figure>',contentFormat:'html',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,teacherId:'tester',videos:[],questions:[question,{text:'ما ناتج 2 + 2؟',opts:['4','5'],correctAnswer:0}]}},
  quizzes:{quiz1:{name:'اختبار النحو',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:0,questions:[question]},quiz2:{name:'اختبار مرتبط بالدرس',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,lessonId:'lesson1',teacherId:'tester',questions:[question]}},
  files:{file1:{title:'ملف بلا رابط',type:'public',stage:'prep',grade:'1',subject:'arabic',url:''}},
  assignments:{hw1:{title:'واجب النحو',instructions:'أجب',type:'public',stage:'prep',grade:'1',subject:'arabic',teacherId:'tester',maxScore:10,dueAt:Date.now()+86400000}},
@@ -149,6 +149,7 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    w.document.querySelector('[data-a="0"]').click();w.document.getElementById('nextQuestionBtn').click();await new Promise(r=>setTimeout(r,30));
    assert.equal(get('studentProfilesV3/tester/mistakeNotebook/lesson1/0'),null,'correct retry clears the mistake');
   }
+  if(file==='lesson.html'&&!linkedMode){assert.match(w.document.getElementById('lessonContent').innerHTML,/student-inline\.jpg/,'student sees inline image inside rich explanation');assert.ok(w.document.getElementById('lessonContent').querySelector('h2'),'student sees rich explanation heading')}
   if(file==='profile.html'){
    w.document.querySelector('[data-profile-tab="mistakes"]').click();
    assert.equal(w.document.getElementById('profileMistakeCount').textContent,'1');
