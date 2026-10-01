@@ -3,6 +3,11 @@
 const instances=new Map();
 const esc=(v='')=>String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const plainToHtml=(text='')=>esc(text).split(/\n{2,}/).map(p=>'<p>'+p.replace(/\n/g,'<br>')+'</p>').join('');
+const legacyToHtml=(text='')=>{
+ let s=esc(text).replace(/^###\s+(.+)$/gm,'<h4>$1</h4>').replace(/^##\s+(.+)$/gm,'<h3>$1</h3>').replace(/^#\s+(.+)$/gm,'<h2>$1</h2>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/^[-•]\s+(.+)$/gm,'<li>$1</li>');
+ s=s.replace(/(?:<li>[\s\S]*?<\/li>\s*)+/g,m=>'<ul>'+m+'</ul>');
+ return s.split(/\n{2,}/).map(b=>{b=b.trim();if(!b)return'';if(/^<(h\d|ul|ol|blockquote|figure)/.test(b))return b;return'<p>'+b.replace(/\n/g,'<br>')+'</p>'}).join('');
+};
 const icon={bold:'fa-bold',italic:'fa-italic',underline:'fa-underline',strikeThrough:'fa-strikethrough',justifyRight:'fa-align-right',justifyCenter:'fa-align-center',justifyLeft:'fa-align-left',insertUnorderedList:'fa-list-ul',insertOrderedList:'fa-list-ol',undo:'fa-rotate-left',redo:'fa-rotate-right',removeFormat:'fa-eraser'};
 function createButton(cmd,title){
  return '<button type="button" class="rte-btn" data-rte-cmd="'+cmd+'" title="'+title+'" aria-label="'+title+'"><i class="fa-solid '+icon[cmd]+'"></i></button>';
@@ -76,11 +81,11 @@ class RichLessonEditor{
   this.canvas.querySelectorAll('.rte-inline-remove').forEach(b=>b.onclick=()=>{b.closest('figure')?.remove();this.sync()});
   input.value='';alt.value='';this.panel.classList.add('hidden');this.sync();this.canvas.focus();
  }
- attachImageButtons(){this.canvas.querySelectorAll('.rte-inline-remove').forEach(b=>b.onclick=()=>{b.closest('figure')?.remove();this.sync()})}
+ attachImageButtons(){this.canvas.querySelectorAll('figure.rte-inline-image').forEach(fig=>{fig.setAttribute('contenteditable','false');let b=fig.querySelector('.rte-inline-remove');if(!b){b=document.createElement('button');b.type='button';b.className='rte-inline-remove';b.tabIndex=-1;b.setAttribute('aria-label','حذف الصورة');b.textContent='×';fig.appendChild(b)}b.onclick=()=>{fig.remove();this.sync()}})}
  getHTML(){const clone=this.canvas.cloneNode(true);clone.querySelectorAll('.rte-inline-remove').forEach(x=>x.remove());clone.querySelectorAll('.selected').forEach(x=>x.classList.remove('selected'));return window.AcademyUtils?.sanitizeRichHtml?window.AcademyUtils.sanitizeRichHtml(clone.innerHTML):clone.innerHTML}
  setContent(value='',format='auto'){
   const raw=String(value||''),looksHtml=/<(?:p|h[1-6]|ul|ol|li|blockquote|figure|img|strong|em|div|br|span|a)\b/i.test(raw);
-  this.canvas.innerHTML=(format==='html'||(format==='auto'&&looksHtml))?(window.AcademyUtils?.sanitizeRichHtml?window.AcademyUtils.sanitizeRichHtml(raw):raw):plainToHtml(raw);
+  this.canvas.innerHTML=(format==='html'||(format==='auto'&&looksHtml))?(window.AcademyUtils?.sanitizeRichHtml?window.AcademyUtils.sanitizeRichHtml(raw):raw):legacyToHtml(raw);
   this.attachImageButtons();this.sync();
  }
  clear(){this.canvas.innerHTML='';this.sync()}
