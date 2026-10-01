@@ -29,7 +29,7 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
  if(file==='profile.html')database.studentProfilesV3.tester.mistakeNotebook={lesson1:{0:{text:'ما ناتج 1 + 1؟',opts:['1','2'],chosen:0,correctAnswer:1,sourceType:'lesson',title:'المبتدأ والخبر',subject:'arabic',type:'public',stage:'prep',grade:'1'}}};
  if(reviewMode)database.studentProfilesV3.tester.mistakeNotebook={lesson1:{1:{text:'ما ناتج 2 + 2؟',opts:['4','5'],chosen:1,correctAnswer:0,sourceType:'lesson',title:'المبتدأ والخبر',subject:'arabic',type:'public',stage:'prep',grade:'1'}}};
  if(linkedMode)database.studentProfilesV3.tester.learningProgress={lesson1:{completed:true}};
- const v=new VirtualConsole();v.on('jsdomError',e=>{if(!/navigation|scrollTo|Not implemented/.test(e.message))errors.push(e.message)});
+ const v=new VirtualConsole();v.on('jsdomError',e=>{if(!/navigation|scrollTo|Not implemented/.test(e.message))errors.push(e.stack||e.message)});
  v.on('error',(...args)=>{if(!failurePath)errors.push(args.map(x=>x?.stack||String(x)).join(' '))});
  const dom=new JSDOM(readFileSync(file,'utf8').replace(/<link[^>]*>/g,''),{url:'https://example.test/academy/'+file+'?type=public&stage=prep&grade=1&subject=arabic&'+(linkedMode?'quiz=quiz2':'id=lesson1')+(reviewMode?'&reviewMistakes=1':''),runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:v});
  const w=dom.window;w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};
