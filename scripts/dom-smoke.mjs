@@ -201,6 +201,7 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
     assert.equal(w.document.getElementById('teacherPortal').classList.contains('hidden'),false);
     assert.match(w.document.getElementById('teacherDifficultQuestions').textContent,/75% خطأ/);
     if(!failurePath){
+     w.document.getElementById('teacherStage').value='prep';w.document.getElementById('teacherStage').dispatchEvent(new w.Event('change'));
      w.document.getElementById('teacherLessonTitle').value='درس مقالي تجريبي';
      w.document.getElementById('teacherLessonContent').value='شرح مقالي من لوحة المعلم';
      w.document.getElementById('teacherVideoUrl').value='https://youtu.be/test123';
