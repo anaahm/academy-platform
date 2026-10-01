@@ -50,10 +50,28 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    push:(value)=>{const child=ref(path+'/new'+(++pushed));if(value!==undefined)child.set(value);return child},transaction:async fn=>{const next=fn(clone(get(path)));if(next===undefined)return {committed:false,snapshot:snap(get(path))};set(path,next);return {committed:true,snapshot:snap(next)}}};return r;
  }
  const user=role==='guest'?null:{uid:'tester',displayName:'اختبار',email:'test@example.test',updateProfile:async()=>{},reload:async()=>{}};
+ const studentSessionUser=['admin','teacher','parent'].includes(role)?{uid:'studentSession',displayName:'طالب في تبويب آخر',email:'student@example.test'}:user;
  let createdEmail='',signedInEmail='';
- const auth={currentUser:user,onAuthStateChanged:fn=>{callbacks.push(fn);return ()=>{}},setPersistence:async()=>{},signInWithEmailAndPassword:async email=>{signedInEmail=email;auth.currentUser={uid:'tester',email:'test@example.test'};for(const fn of callbacks)await fn(auth.currentUser);return {user:auth.currentUser}},createUserWithEmailAndPassword:async email=>{createdEmail=email;auth.currentUser={uid:'newStudent',email,updateProfile:async()=>{}};for(const fn of callbacks)await fn(auth.currentUser);return {user:auth.currentUser}},sendPasswordResetEmail:async()=>{},signOut:async()=>{auth.currentUser=null;for(const fn of callbacks)await fn(null)}};
+ const auths=new Map(),authCallbackSets=new Map();
+ function makeAuth(key,initialUser=null){
+  if(auths.has(key))return auths.get(key);
+  const list=[];authCallbackSets.set(key,list);
+  const a={currentUser:initialUser,onAuthStateChanged:fn=>{list.push(fn);return ()=>{const i=list.indexOf(fn);if(i>=0)list.splice(i,1)}},setPersistence:async()=>{},
+   signInWithEmailAndPassword:async email=>{if(key==='[DEFAULT]')signedInEmail=email;a.currentUser={uid:'tester',email:'test@example.test',displayName:'اختبار',updateProfile:async()=>{},reload:async()=>{}};for(const fn of [...list])await fn(a.currentUser);return {user:a.currentUser}},
+   createUserWithEmailAndPassword:async email=>{if(key==='[DEFAULT]')createdEmail=email;a.currentUser={uid:'newStudent',email,updateProfile:async()=>{}};for(const fn of [...list])await fn(a.currentUser);return {user:a.currentUser}},
+   sendPasswordResetEmail:async()=>{},signOut:async()=>{a.currentUser=null;for(const fn of [...list])await fn(null)}};
+  auths.set(key,a);return a;
+ }
+ const auth=makeAuth('[DEFAULT]',studentSessionUser);
+ const roleInitial=name=>role==='guest'?null:(name==='admin-portal'&&role==='admin')||(name==='teacher-portal'&&role==='teacher')||(name==='parent-portal'&&role==='parent')?user:null;
  const secondaryApps=[];
- w.firebase={apps:[],initializeApp:(_config,name)=>{if(name==='teacher-portal'){const app={name,auth:()=>auth,database:()=>({ref})};w.firebase.apps.push(app);return app}if(name){const secondaryAuth={setPersistence:async()=>{},createUserWithEmailAndPassword:async(email,password)=>{assert.ok(password.length>=8);return {user:{uid:'newTeacher',email,delete:async()=>{}}}},signOut:async()=>{}};const app={name,auth:()=>secondaryAuth,delete:async()=>{}};secondaryApps.push(app);return app}w.firebase.apps.push({name:'[DEFAULT]'});return {auth:()=>auth}},auth:Object.assign(()=>auth,{Auth:{Persistence:{LOCAL:'local',NONE:'none'}},EmailAuthProvider:{credential:()=>({})}}),database:Object.assign(()=>({ref}),{ServerValue:{TIMESTAMP:Date.now(),increment:n=>n}})};
+ w.firebase={apps:[],initializeApp:(_config,name)=>{
+   const key=name||'[DEFAULT]';
+   if(!name){const app={name:key,auth:()=>auth,database:()=>({ref})};w.firebase.apps.push(app);return app}
+   if(['admin-portal','teacher-portal','parent-portal'].includes(name)){const roleAuth=makeAuth(name,roleInitial(name));const app={name,auth:()=>roleAuth,database:()=>({ref})};w.firebase.apps.push(app);return app}
+   const secondaryAuth={currentUser:null,setPersistence:async()=>{},createUserWithEmailAndPassword:async(email,password)=>{assert.ok(password.length>=8);secondaryAuth.currentUser={uid:'newTeacher',email,delete:async()=>{}};return {user:secondaryAuth.currentUser}},signOut:async()=>{secondaryAuth.currentUser=null}};
+   const app={name,auth:()=>secondaryAuth,database:()=>({ref}),delete:async()=>{}};secondaryApps.push(app);w.firebase.apps.push(app);return app
+  },auth:Object.assign(()=>auth,{Auth:{Persistence:{LOCAL:'local',NONE:'none'}},EmailAuthProvider:{credential:()=>({})}}),database:Object.assign(()=>({ref}),{ServerValue:{TIMESTAMP:Date.now(),increment:n=>n}})};
  const unhandled=e=>errors.push(String(e?.stack||e));process.on('unhandledRejection',unhandled);
  try{
   for(const script of w.document.querySelectorAll('script[src]')){
@@ -61,7 +79,7 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    try{w.eval(readFileSync(src.replace('./','').split('?')[0],'utf8')+'\n//# sourceURL='+src)}catch(e){errors.push(src+': '+e.stack)}
   }
   await new Promise(r=>setTimeout(r,15));
-  for(const cb of [...callbacks]){try{await cb(user)}catch(e){errors.push('auth: '+e.stack)}}
+  for(const [key,list] of authCallbackSets){const active=auths.get(key)?.currentUser||null;for(const cb of [...list]){try{await cb(active)}catch(e){errors.push('auth '+key+': '+e.stack)}}}
   await new Promise(r=>setTimeout(r,40));
   if(file==='index.html'){
     assert.equal(w.document.getElementById('studentDashboard').classList.contains('hidden'),role==='guest');
