@@ -190,7 +190,7 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
    assert.match(w.document.getElementById('mistakeNotebookList').textContent,/إجابتك:[\s\S]*1[\s\S]*الصحيح:[\s\S]*2/);
    assert.match(w.document.querySelector('.mistake-group a').href,/reviewMistakes=1/);
   }
-  if(file==='admin.html'&&role!=='guest'){
+  if(file==='admin.html'&&role==='admin'){
    assert.ok(w.document.querySelector('#newLessonContent + .rich-lesson-editor .rte-canvas'),'admin has professional rich lesson editor');
    for(const tab of w.document.querySelectorAll('[data-admin-tab]')){tab.click();await new Promise(r=>setTimeout(r,8));}
    assert.ok(w.document.getElementById('releaseReadinessScore').textContent.endsWith('%'),'release readiness score renders');
@@ -236,8 +236,11 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
   }
   if(file==='teacher.html'){
    assert.ok(w.firebase.apps.some(app=>app.name==='teacher-portal'),'teacher portal uses its own Firebase auth session');
-   assert.equal(auth.currentUser?.uid,role==='guest'?null:'studentSession','teacher portal does not replace the default student session');
-   if(role==='guest'){
+   const expectedDefault=role==='teacher'?'studentSession':role==='student-route'?'tester':null;
+   assert.equal(auth.currentUser?.uid,expectedDefault,'teacher portal does not replace the default student session');
+   if(role==='student-route'){
+    assert.equal(w.document.getElementById('teacherPortal').classList.contains('hidden'),true,'student cannot enter teacher portal');
+   }else if(role==='guest'){
     assert.equal(w.document.getElementById('teacherLoginForm').classList.contains('hidden'),false);
     w.document.getElementById('teacherLoginEmail').value='test@example.test';w.document.getElementById('teacherLoginPassword').value='correct-password';
     w.document.getElementById('teacherLoginForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,25));
