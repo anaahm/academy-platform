@@ -225,22 +225,6 @@
     container.querySelectorAll('[data-teacher-photo]').forEach(img=>img.addEventListener('error',()=>{img.parentElement.innerHTML='<span>'+(img.closest('a')?.querySelector('strong')?.textContent?.[0]||'م')+'</span>'},{once:true}));
   }
 
-  async function resolveStudentAccount(uid){
-    const [a,t,p,s]=await Promise.all([
-      database.ref('adminProfiles/'+uid).once('value'),database.ref('teacherProfiles/'+uid).once('value'),database.ref('parentProfilesV4/'+uid).once('value'),database.ref('studentProfilesV3/'+uid).once('value')
-    ]);
-    if(a.val()?.isAdmin===true)return{role:'admin',profile:null};
-    if(t.exists())return{role:'teacher',profile:null};
-    if(p.exists())return{role:'parent',profile:null};
-    return{role:s.exists()?'student':'unknown',profile:s.val()||null};
-  }
-  async function routeNonStudent(role){
-    const href=role==='admin'?'./admin.html':role==='teacher'?'./teacher.html':role==='parent'?'./parent.html':'';
-    if(!href)return false;
-    try{await auth.signOut()}catch{}
-    location.replace(href);return true;
-  }
-
   async function loadProfile(uid) {
     const snap = await database.ref('studentProfilesV3/' + uid).once('value');
     const profile=snap.val();
@@ -1537,13 +1521,11 @@
     try {
       if(!baseDataPromise) baseDataPromise=loadDatabaseSnapshot();
       await baseDataPromise;
-      const resolvedAccount=await resolveStudentAccount(user.uid);
-      if(resolvedAccount.role!=='student'){
-        if(await routeNonStudent(resolvedAccount.role))return;
-        state.profile=null;showPublicExperience();toast('هذا الحساب ليس حساب طالب. استخدم بوابة الحساب الصحيحة.','error');return;
+      state.profile = await loadProfile(user.uid);
+      if(!state.profile){
+        try{await auth.signOut()}catch{}
+        state.profile=null;showPublicExperience();toast('هذا الحساب ليس حساب طالب. استخدم بوابة الإدارة أو المعلم أو ولي الأمر المناسبة.','error');return;
       }
-      state.profile = resolvedAccount.profile;
-      if(auth.currentUser?.uid===user.uid&&state.profile?.phone)ensureStudentPhoneIndex(user.uid,state.profile).catch(()=>{});
       state.subscriptionAccess=window.AcademySubscription?await window.AcademySubscription.load(user.uid,state.profile,true).catch(()=>null):null;
       await updateDailyActivity(user.uid);
       state.profile = await loadProfile(user.uid);
