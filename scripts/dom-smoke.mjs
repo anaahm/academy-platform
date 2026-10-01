@@ -20,7 +20,7 @@ function fixtures(){return {
 let failures=0,scenarios=0;
 async function check(file,role='student',failurePath='',reviewMode=false,linkedMode=false){
  const errors=[],writes=[],database=fixtures(),callbacks=[];
- if(role==='student'){delete database.adminProfiles.tester;delete database.teacherProfiles.tester}
+ if(role==='student'||role==='student-route'){delete database.adminProfiles.tester;delete database.teacherProfiles.tester}
  if(role==='teacher'){delete database.adminProfiles.tester}
  if(role==='parent'){delete database.adminProfiles.tester;delete database.teacherProfiles.tester}
  if(file==='admin.html'&&role==='admin')database.teacherSubmissions={tester:{quizSubmission:{submissionKind:'quiz',title:'اختبار المبتدأ والخبر',lessonId:'lesson1',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()},assignmentSubmission:{submissionKind:'assignment',title:'واجب جديد',instructions:'حل التدريبات',type:'public',stage:'prep',grade:'1',subject:'arabic',dueAt:Date.now()+86400000,maxScore:100,status:'pending',teacherId:'tester',createdAt:Date.now()},lessonSubmission:{submissionKind:'lesson',title:'درس مقالي من المعلم',content:'<h2>عنوان الشرح</h2><p>هذا شرح مقالي كامل أرسله المعلم.</p><figure class="rte-inline-image rte-image-medium"><img src="https://example.test/inside.jpg" alt="صورة داخل الشرح"></figure>',contentFormat:'html',videoUrl:'https://youtu.be/test123',imageUrl:'https://example.test/lesson.jpg',imagePosition:'bottom',type:'public',stage:'prep',grade:'1',subject:'arabic',unit:1,questions:[question],status:'pending',teacherId:'tester',teacherName:'مدرس الاختبار',createdAt:Date.now()}}};
@@ -85,8 +85,21 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
   for(const [key,list] of authCallbackSets){const active=auths.get(key)?.currentUser||null;for(const cb of [...list]){try{await cb(active)}catch(e){errors.push('auth '+key+': '+e.stack)}}}
   await new Promise(r=>setTimeout(r,40));
   if(file==='index.html'){
-    assert.equal(w.document.getElementById('studentDashboard').classList.contains('hidden'),role==='guest');
-    if(role!=='guest')assert.equal(w.document.querySelectorAll('#dashboardSubjects a').length,6,'all default subjects render');
+    const studentReady=role==='student';
+    assert.equal(w.document.getElementById('studentDashboard').classList.contains('hidden'),!studentReady);
+    if(studentReady)assert.equal(w.document.querySelectorAll('#dashboardSubjects a').length,6,'all default subjects render');
+  }
+  if(role==='student-route'&&file==='admin.html'){
+    assert.equal(w.document.getElementById('adminApp').classList.contains('hidden'),true,'student session cannot open admin dashboard');
+    assert.equal(auth.currentUser?.uid,'tester','admin route does not mutate the active student session');
+  }
+  if(role==='student-route'&&file==='teacher.html'){
+    assert.equal(w.document.getElementById('teacherPortal').classList.contains('hidden'),true,'student session cannot open teacher dashboard');
+    assert.equal(auth.currentUser?.uid,'tester','teacher route does not mutate the active student session');
+  }
+  if(role==='student-route'&&file==='parent.html'){
+    assert.equal(w.document.getElementById('parentDashboard').hidden,true,'student session cannot open parent dashboard');
+    assert.equal(auth.currentUser?.uid,'tester','parent route does not mutate the active student session');
   }
   if(file==='index.html'&&role==='guest'){
    const field=id=>w.document.getElementById(id);
@@ -287,6 +300,7 @@ async function check(file,role='student',failurePath='',reviewMode=false,linkedM
 for(const file of files)await check(file,file==='admin.html'?'admin':file==='teacher.html'?'teacher':'student');
 await check('index.html','guest');await check('admin.html','guest');await check('teacher.html','guest');await check('teacher.html','teacher','assignmentSubmissions/');
 await check('parent.html','parent');
+await check('admin.html','student-route');await check('teacher.html','student-route');await check('parent.html','student-route');
 await check('lesson.html','student','',true);
 await check('lesson.html','student','',false,true);
 console.log(`DOM smoke: ${scenarios-failures}/${scenarios} scenarios passed. Uses in-memory Firebase fixtures, not live Firebase or layout rendering.`);
