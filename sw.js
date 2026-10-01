@@ -1,4 +1,4 @@
-const CACHE='academy-shell-2026-10-01-v89';
+const CACHE='academy-shell-2026-10-01-v90';
 const CORE=[
  './','./index.html','./offline.html',
  './explore.html','./search.html','./news.html','./subject.html','./lesson.html','./profile.html',
@@ -7,7 +7,7 @@ const CORE=[
  './assets/experience.css?v=39','./assets/future-theme.css?v=1','./assets/academy-mix-theme.css?v=26','./assets/gamification.css?v=1','./assets/ui-polish.css?v=1','./assets/communications.css?v=1','./assets/support.css?v=1','./assets/admin-content-ops.css?v=1','./assets/subscription.css?v=1','./assets/academy-utils.js',
  './assets/styles.css','./assets/learning.css?v=43','./assets/portal.css?v=42','./assets/hub.css','./assets/search.css','./assets/news.css','./assets/certificate.css','./assets/admin.css?v=44','./assets/admin-intelligence.css?v=1','./assets/ui-kit.css?v=35',
  './assets/ui-kit.js','./assets/student-shell.js','./assets/firebase-config.js','./assets/role-session.js?v=1','./assets/auth-flow.js','./assets/student-core.js','./assets/subscription-core.js?v=1','./assets/subscription.js?v=1','./assets/subscription-widget.js?v=1',
- './assets/app.js?v=53','./assets/learning.js?v=58','./assets/explore.js?v=3','./assets/search.js?v=5','./assets/news.js','./assets/profile.js?v=43',
+ './assets/app.js?v=53','./assets/learning.js?v=59','./assets/explore.js?v=3','./assets/search.js?v=5','./assets/news.js','./assets/profile.js?v=43',
  './assets/exam-center.js?v=46','./assets/simulations.js?v=1','./assets/progress.js?v=1','./assets/planner.js?v=1','./assets/assignments.js?v=3','./assets/weekly-report.js?v=1','./assets/schedule.js?v=1',
  './assets/library.js?v=4','./assets/live.js?v=2','./assets/community.js?v=2','./assets/gamification.js?v=1','./assets/challenges.js?v=1','./assets/leaderboard.js?v=2','./assets/ui-polish.js?v=1','./assets/student-communications.js?v=1','./assets/teacher-communications.js?v=1','./assets/admin-communications.js?v=1','./assets/student-communication-status.js?v=1','./assets/support.js?v=1','./assets/teacher-support.js?v=1','./assets/admin-support.js?v=1','./assets/admin-content-ops.js?v=1','./assets/admin-subscriptions.js?v=1','./assets/notification-engine.js?v=3','./assets/notifications.js?v=2','./assets/notification-widget.js?v=2',
  './assets/pro-features.js','./assets/pro-features.js?v=2','./assets/parent.js?v=2','./assets/growth-pack.css?v=1','./assets/growth-pack.js?v=1','./assets/planner-auto.js?v=1','./assets/smart-review.js?v=1','./assets/activity-tracker.js','./assets/admin-auth-flow.js?v=35','./assets/admin-intelligence.js?v=1','./assets/admin.js?v=62',
