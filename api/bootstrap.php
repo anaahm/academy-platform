@@ -126,17 +126,29 @@ function academy_value_type(mixed $value): string {
     return 'object';
 }
 
+function academy_flatten_value(string $path, mixed $value, array &$rows): void {
+    if (is_array($value) && !array_is_list($value) && count($value) > 0) {
+        foreach ($value as $key => $child) {
+            $childPath = $path === '' ? (string)$key : $path . '/' . (string)$key;
+            academy_flatten_value($childPath, $child, $rows);
+        }
+        return;
+    }
+    $rows[] = [$path, $value];
+}
+
 function academy_write_node(string $path, mixed $value, ?string $uid): void {
     $pdo=academy_db(); $path=academy_path($path);
+    $rows=[]; if($value!==null) academy_flatten_value($path,$value,$rows);
     $pdo->beginTransaction();
     try{
         if($path==='') $pdo->exec('DELETE FROM academy_data');
-        else{
-            $pdo->prepare('DELETE FROM academy_data WHERE path=? OR path LIKE ?')->execute([$path,$path.'/%']);
-        }
-        if($value!==null){
+        else $pdo->prepare('DELETE FROM academy_data WHERE path=? OR path LIKE ?')->execute([$path,$path.'/%']);
+        if($rows){
             $st=$pdo->prepare('INSERT INTO academy_data(path,value_json,value_type,updated_by) VALUES(?,?,?,?)');
-            $st->execute([$path,json_encode($value,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES),academy_value_type($value),$uid]);
+            foreach($rows as [$rowPath,$rowValue]){
+                $st->execute([$rowPath,json_encode($rowValue,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES),academy_value_type($rowValue),$uid]);
+            }
         }
         $pdo->commit();
     }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}
