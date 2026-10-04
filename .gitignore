@@ -1,2 +1,5 @@
 node_modules/
 qa-results/
+
+# Hostinger production secrets
+api/config.local.php
